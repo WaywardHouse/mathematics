@@ -54,15 +54,18 @@ destinations:
     career_example: "Soil scientist classifying land for agricultural suitability"
 
 hook: |
-  A structural steel section has a wall thickness of $\frac{3}{8}$ of
-  an inch. A soil sample is 0.42 clay, 0.35 silt, and 0.23 sand by
-  volume. A pharmacist measures 2.5 mL of a drug dissolved in 12.5 mL
-  of saline.
+  A recipe needs $\frac{3}{4}$ of a cup of flour and you want to
+  make half the recipe. How much flour do you use?
 
-  Measurement at the level of precision that engineering and science
-  require lives between the integers. Fractions and decimals are the
-  notation for that precision. They are not different things — a decimal
-  is a fraction with a power of ten underneath.
+  Four friends split a restaurant bill of £37.60 equally. What does
+  each person pay?
+
+  You run 2.5 km on Monday and 1.75 km on Wednesday. How far have
+  you run in total?
+
+  These are all fraction and decimal problems. The numbers sit between
+  the integers — and the arithmetic for handling them is a small set
+  of rules you can learn once and use everywhere.
 
 notation_introduced:
   - symbol: "a/b"
@@ -94,15 +97,18 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-A structural steel section has a wall thickness of $\frac{3}{8}$ of
-an inch. A soil sample is 0.42 clay, 0.35 silt, and 0.23 sand by
-volume. A pharmacist measures 2.5 mL of a drug dissolved in 12.5 mL
-of saline.
+A recipe needs $\frac{3}{4}$ of a cup of flour and you want to
+make half the recipe. How much flour do you use?
 
-Measurement at the level of precision that engineering and science
-require lives between the integers. Fractions and decimals are the
-notation for that precision. They are not different things — a decimal
-is a fraction with a power of ten underneath.
+Four friends split a restaurant bill of £37.60 equally. What does
+each person pay?
+
+You run 2.5 km on Monday and 1.75 km on Wednesday. How far have
+you run in total?
+
+These are all fraction and decimal problems. The numbers sit between
+the integers — and the arithmetic for handling them is a small set
+of rules you can learn once and use everywhere.
 
 ## What the notation is saying
 
@@ -120,28 +126,203 @@ They are interchangeable. $\frac{3}{4} = 0.75$. $\frac{1}{3} = 0.\overline{3}$
 divide numerator and denominator by 2. A fraction is in **lowest terms**
 when numerator and denominator share no common factor other than 1.
 
+---
+
+*Use the controls below to explore what a fraction looks like — as a divided rectangle and as a position on the number line.*
+
+```{ojs}
+//| echo: false
+viewof frac1_num = Inputs.range([1, 12], {
+  value: 3,
+  step: 1,
+  label: "Numerator (top)"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof frac1_den_raw = Inputs.range([1, 12], {
+  value: 4,
+  step: 1,
+  label: "Denominator (bottom)"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  // Enforce denominator >= numerator by silently clamping
+  const num = frac1_num;
+  const den = Math.max(frac1_den_raw, num);
+
+  // --- GCD helper for display in lowest terms ---
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+  const g = gcd(num, den);
+  const rn = num / g;
+  const rd = den / g;
+  const decimal = num / den;
+  const lowestLabel = rn === rd
+    ? `${rn} (= 1)`
+    : rd === 1
+      ? `${rn}`
+      : `${rn}/${rd}`;
+
+  const W = 560, H_rect = 80, H_line = 70;
+  const PAD = 40;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H_rect + H_line + 20}`)
+    .attr("width", "100%")
+    .attr("style", "max-width:560px; display:block; margin:0 auto; font-family:sans-serif;");
+
+  // ── Area model ──────────────────────────────────────────────
+  const rectW = W - 2 * PAD;
+  const partW = rectW / den;
+
+  const rectG = svg.append("g").attr("transform", `translate(${PAD}, 10)`);
+
+  for (let i = 0; i < den; i++) {
+    rectG.append("rect")
+      .attr("x", i * partW)
+      .attr("y", 0)
+      .attr("width", partW - 1)
+      .attr("height", H_rect)
+      .attr("fill", i < num ? "#2563eb" : "#e5e7eb")
+      .attr("stroke", "#94a3b8")
+      .attr("stroke-width", 0.5)
+      .attr("rx", 2);
+  }
+
+  // Fraction label centred above the shaded region
+  rectG.append("text")
+    .attr("x", (num * partW) / 2)
+    .attr("y", -4)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 13)
+    .attr("fill", "#1e3a5f")
+    .text(`${num}/${den}${g > 1 ? ` = ${lowestLabel}` : ""} = ${decimal.toFixed(6).replace(/\.?0+$/, "") || "0"}`);
+
+  // Shaded count label inside rectangle
+  if (num > 0) {
+    rectG.append("text")
+      .attr("x", (num * partW) / 2)
+      .attr("y", H_rect / 2 + 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", Math.min(14, partW * 0.7))
+      .attr("fill", "#ffffff")
+      .attr("font-weight", "bold")
+      .text(num === den ? "whole" : `${num} part${num > 1 ? "s" : ""}`);
+  }
+
+  // Unshaded count label
+  if (num < den) {
+    rectG.append("text")
+      .attr("x", num * partW + ((den - num) * partW) / 2)
+      .attr("y", H_rect / 2 + 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", Math.min(13, partW * 0.65))
+      .attr("fill", "#64748b")
+      .text(`${den - num} part${den - num > 1 ? "s" : ""}`);
+  }
+
+  // Area model axis label
+  rectG.append("text")
+    .attr("x", rectW / 2)
+    .attr("y", H_rect + 14)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 11)
+    .attr("fill", "#64748b")
+    .text(`Rectangle divided into ${den} equal part${den > 1 ? "s" : ""} — ${num} shaded`);
+
+  // ── Number line ──────────────────────────────────────────────
+  const lineY = H_rect + 20;
+  const lineG = svg.append("g").attr("transform", `translate(${PAD}, ${lineY + 10})`);
+
+  // Track line
+  lineG.append("line")
+    .attr("x1", 0).attr("y1", 20)
+    .attr("x2", rectW).attr("y2", 20)
+    .attr("stroke", "#94a3b8").attr("stroke-width", 2);
+
+  // Tick at 0
+  lineG.append("line")
+    .attr("x1", 0).attr("y1", 13).attr("x2", 0).attr("y2", 27)
+    .attr("stroke", "#374151").attr("stroke-width", 2);
+  lineG.append("text")
+    .attr("x", 0).attr("y", 40)
+    .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", "#374151")
+    .text("0");
+
+  // Tick at 1
+  lineG.append("line")
+    .attr("x1", rectW).attr("y1", 13).attr("x2", rectW).attr("y2", 27)
+    .attr("stroke", "#374151").attr("stroke-width", 2);
+  lineG.append("text")
+    .attr("x", rectW).attr("y", 40)
+    .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", "#374151")
+    .text("1");
+
+  // Fraction position marker
+  const markerX = decimal * rectW;
+  lineG.append("circle")
+    .attr("cx", markerX).attr("cy", 20)
+    .attr("r", 7)
+    .attr("fill", "#2563eb")
+    .attr("stroke", "#1e3a5f")
+    .attr("stroke-width", 1.5);
+
+  // Value label above marker
+  lineG.append("text")
+    .attr("x", markerX)
+    .attr("y", 10)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 12)
+    .attr("fill", "#1e3a5f")
+    .attr("font-weight", "bold")
+    .text(decimal.toFixed(4).replace(/\.?0+$/, "") || "0");
+
+  // Axis label
+  lineG.append("text")
+    .attr("x", rectW / 2).attr("y", 55)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#64748b")
+    .text("Number line from 0 to 1 — dot shows the same value");
+
+  return svg.node();
+}
+```
+
+::: {.callout-note appearance="simple"}
+If the denominator input goes below the numerator, the interactive clamps it to keep the fraction valid (≤ 1). Try setting numerator and denominator to the same value to see what "1 whole" looks like in both views.
+:::
+
+---
+
 ## The method
 
 **Multiplying fractions**
 
-Multiply numerators together; multiply denominators together:
+Multiply numerators together; multiply denominators together — that's it:
 $$\frac{a}{b} \times \frac{c}{d} = \frac{ac}{bd}$$
 
 Simplify before or after. Before is usually easier.
 
 **Dividing fractions**
 
-Multiply by the reciprocal of the divisor:
+Flip the second fraction and multiply — this is called multiplying by
+the reciprocal:
 $$\frac{a}{b} \div \frac{c}{d} = \frac{a}{b} \times \frac{d}{c} = \frac{ad}{bc}$$
 
-Remember: "flip and multiply."
+"Flip and multiply" works because $\frac{c}{d} \times \frac{d}{c} = 1$:
+the two fractions cancel each other out, leaving you with a clean
+multiplication.
 
 **Adding and subtracting fractions**
 
 Mixed numbers: convert first. Multiply the whole number by the
 denominator and add the numerator: $1\frac{1}{2} = \frac{(1 \times 2) + 1}{2} = \frac{3}{2}$.
 
-You need a common denominator. The simplest: multiply both denominators.
+You need a common denominator before you can add. The simplest route:
+multiply both denominators to get one that works for both.
 $$\frac{a}{b} + \frac{c}{d} = \frac{ad}{bd} + \frac{bc}{bd} = \frac{ad + bc}{bd}$$
 
 Simplify the result.
@@ -166,59 +347,253 @@ Division by a fraction is multiplication by its reciprocal because
 $\frac{a}{b} \times \frac{b}{a} = 1$ — they are inverses of each other.
 :::
 
+---
+
+*Use the calculator below to check any fraction arithmetic. Choose two fractions and an operation; the working is shown step by step.*
+
+```{ojs}
+//| echo: false
+viewof op_a_num = Inputs.range([1, 12], { value: 3, step: 1, label: "Fraction A — numerator" })
+```
+
+```{ojs}
+//| echo: false
+viewof op_a_den = Inputs.range([1, 12], { value: 4, step: 1, label: "Fraction A — denominator" })
+```
+
+```{ojs}
+//| echo: false
+viewof op_b_num = Inputs.range([1, 12], { value: 1, step: 1, label: "Fraction B — numerator" })
+```
+
+```{ojs}
+//| echo: false
+viewof op_b_den = Inputs.range([1, 12], { value: 2, step: 1, label: "Fraction B — denominator" })
+```
+
+```{ojs}
+//| echo: false
+viewof operation = Inputs.select(["×", "÷", "+", "−"], { label: "Operation", value: "×" })
+```
+
+```{ojs}
+//| echo: false
+{
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+  function simplify(n, d) {
+    if (d === 0) return [n, d];
+    const g = gcd(Math.abs(n), Math.abs(d));
+    return [n / g, d / g];
+  }
+  function fracStr(n, d) {
+    if (d === 1) return `${n}`;
+    return `${n}/${d}`;
+  }
+
+  const an = op_a_num, ad = op_a_den;
+  const bn = op_b_num, bd = op_b_den;
+
+  let steps = [];
+  let rn, rd;
+
+  if (operation === "×") {
+    rn = an * bn;
+    rd = ad * bd;
+    const [sn, sd] = simplify(rn, rd);
+    steps = [
+      `Multiply numerators: ${an} × ${bn} = ${rn}`,
+      `Multiply denominators: ${ad} × ${bd} = ${rd}`,
+      `Result: ${rn}/${rd}`,
+      (sn !== rn || sd !== rd) ? `Simplified: ${fracStr(sn, sd)}` : `Already in lowest terms`,
+      `As a decimal: ${(sn / sd).toFixed(6).replace(/\.?0+$/, "") || "0"}`
+    ];
+    [rn, rd] = [sn, sd];
+
+  } else if (operation === "÷") {
+    // Multiply by reciprocal of B
+    const flipN = bd, flipD = bn;
+    if (bn === 0) {
+      steps = ["Cannot divide by zero — set Fraction B numerator to at least 1."];
+      rn = NaN; rd = 1;
+    } else {
+      const rawN = an * flipN;
+      const rawD = ad * flipD;
+      const [sn, sd] = simplify(rawN, rawD);
+      steps = [
+        `Flip Fraction B: ${bn}/${bd} becomes ${flipN}/${flipD}`,
+        `Multiply: ${an}/${ad} × ${flipN}/${flipD}`,
+        `Numerators: ${an} × ${flipN} = ${rawN}`,
+        `Denominators: ${ad} × ${flipD} = ${rawD}`,
+        `Result: ${rawN}/${rawD}`,
+        (sn !== rawN || sd !== rawD) ? `Simplified: ${fracStr(sn, sd)}` : `Already in lowest terms`,
+        `As a decimal: ${(sn / sd).toFixed(6).replace(/\.?0+$/, "") || "0"}`
+      ];
+      [rn, rd] = [sn, sd];
+    }
+
+  } else {
+    // Addition or subtraction — find common denominator
+    const cd = ad * bd;  // common denominator (cross-multiply)
+    const aN = an * bd;
+    const bN = bn * ad;
+    const rawN = operation === "+" ? aN + bN : aN - bN;
+    const [sn, sd] = simplify(rawN, cd);
+    steps = [
+      `Common denominator: ${ad} × ${bd} = ${cd}`,
+      `Rewrite A: ${an}/${ad} = ${aN}/${cd}`,
+      `Rewrite B: ${bn}/${bd} = ${bN}/${cd}`,
+      operation === "+"
+        ? `Add numerators: ${aN} + ${bN} = ${rawN}`
+        : `Subtract numerators: ${aN} − ${bN} = ${rawN}`,
+      `Result: ${rawN}/${cd}`,
+      (sn !== rawN || sd !== cd) ? `Simplified: ${fracStr(sn, sd)}` : `Already in lowest terms`,
+      `As a decimal: ${isFinite(sn / sd) ? (sn / sd).toFixed(6).replace(/\.?0+$/, "") || "0" : "undefined"}`
+    ];
+    [rn, rd] = [sn, sd];
+  }
+
+  // ── Build SVG output ─────────────────────────────────────────
+  const W = 560, lineH = 24, topPad = 14, sidePad = 20;
+  const H = topPad + steps.length * lineH + 60 + 20;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", "max-width:560px; display:block; margin:0 auto; font-family:sans-serif; background:#f8fafc; border-radius:6px;");
+
+  // Header: A op B =
+  const headerText = `${an}/${ad}  ${operation}  ${bn}/${bd}`;
+  svg.append("text")
+    .attr("x", W / 2).attr("y", topPad + 16)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 16).attr("font-weight", "bold").attr("fill", "#1e3a5f")
+    .text(headerText);
+
+  // Step-by-step lines
+  steps.filter(Boolean).forEach((s, i) => {
+    const isLast = i === steps.filter(Boolean).length - 1;
+    svg.append("text")
+      .attr("x", sidePad).attr("y", topPad + 40 + i * lineH)
+      .attr("font-size", 13)
+      .attr("fill", isLast ? "#166534" : "#374151")
+      .attr("font-weight", isLast ? "bold" : "normal")
+      .text(`${i + 1}. ${s}`);
+  });
+
+  // Result box (only when result is valid)
+  if (isFinite(rn / rd)) {
+    const boxY = topPad + 40 + steps.filter(Boolean).length * lineH + 4;
+    svg.append("rect")
+      .attr("x", sidePad - 6).attr("y", boxY - 18)
+      .attr("width", W - 2 * sidePad + 12).attr("height", 36)
+      .attr("fill", "#dbeafe").attr("rx", 4).attr("stroke", "#93c5fd");
+
+    // Area model for + and −: two coloured bars side by side in proportion
+    if (operation === "+" || operation === "−") {
+      // Show A and B as proportional bars, stacked / subtracted
+      const barW = W - 2 * sidePad - 150;
+      const barH = 18;
+      const barX = sidePad + 145;
+      const barY = boxY - 16;
+      // A bar
+      const aFrac = Math.min(an / ad, 1);
+      const bFrac = Math.min(bn / bd, 1);
+      svg.append("rect")
+        .attr("x", barX).attr("y", barY)
+        .attr("width", aFrac * barW).attr("height", barH)
+        .attr("fill", "#2563eb").attr("opacity", 0.8).attr("rx", 2);
+      if (operation === "+") {
+        svg.append("rect")
+          .attr("x", barX + aFrac * barW).attr("y", barY)
+          .attr("width", bFrac * barW).attr("height", barH)
+          .attr("fill", "#16a34a").attr("opacity", 0.8).attr("rx", 2);
+      } else {
+        // Subtraction: show B removed from A
+        const removeW = Math.min(bFrac, aFrac) * barW;
+        svg.append("rect")
+          .attr("x", barX + aFrac * barW - removeW).attr("y", barY)
+          .attr("width", removeW).attr("height", barH)
+          .attr("fill", "#dc2626").attr("opacity", 0.5).attr("rx", 2)
+          .attr("stroke", "#dc2626").attr("stroke-dasharray", "3,2");
+      }
+      svg.append("rect")
+        .attr("x", barX).attr("y", barY)
+        .attr("width", barW).attr("height", barH)
+        .attr("fill", "none").attr("stroke", "#94a3b8").attr("rx", 2);
+      svg.append("text")
+        .attr("x", barX - 4).attr("y", barY + 13)
+        .attr("text-anchor", "end").attr("font-size", 10).attr("fill", "#64748b")
+        .text("0");
+      svg.append("text")
+        .attr("x", barX + barW + 4).attr("y", barY + 13)
+        .attr("text-anchor", "start").attr("font-size", 10).attr("fill", "#64748b")
+        .text("1");
+    }
+  }
+
+  return svg.node();
+}
+```
+
+---
+
 ## Worked examples
 
-**Example 1 — Engineering: mixed units.** A pipe fitting requires
-three sections: $\frac{3}{4}$ in., $1\frac{1}{2}$ in., and
-$\frac{5}{8}$ in. What is the total length?
+**Example 1 — Halving a recipe.** A recipe needs $\frac{3}{4}$ cup
+of flour, $1\frac{1}{2}$ cups of oats, and $\frac{5}{8}$ cup of
+sugar. You want to make half the recipe. What quantities do you need?
 
-Convert mixed numbers: $1\frac{1}{2} = \frac{3}{2}$.
+Multiply each ingredient by $\frac{1}{2}$.
 
-Common denominator for $\frac{3}{4}$, $\frac{3}{2}$, $\frac{5}{8}$
-is 8:
+Convert the mixed number first: $1\frac{1}{2} = \frac{3}{2}$.
 
-$$\frac{6}{8} + \frac{12}{8} + \frac{5}{8} = \frac{23}{8} = 2\frac{7}{8} \text{ in.}$$
+$$\frac{3}{4} \times \frac{1}{2} = \frac{3}{8} \text{ cup flour}$$
 
----
+$$\frac{3}{2} \times \frac{1}{2} = \frac{3}{4} \text{ cup oats}$$
 
-**Example 2 — Science: dilution.** A solution is prepared by mixing
-$\frac{2}{5}$ of one solution with $\frac{3}{5}$ of another. The first
-solution has concentration 0.8 mol/L; the second has 0.3 mol/L.
-What is the average concentration of the mixture?
-
-$$C = \frac{2}{5} \times 0.8 + \frac{3}{5} \times 0.3 = 0.32 + 0.18 = 0.50 \text{ mol/L}$$
-
-Check: $\frac{2}{5} + \frac{3}{5} = 1$. The fractions sum to 1 (it
-is a complete mixture), so no volume is unaccounted for.
+$$\frac{5}{8} \times \frac{1}{2} = \frac{5}{16} \text{ cup sugar}$$
 
 ---
 
-**Example 3 — Finance: apportioning costs.** A shared office has
-monthly costs of £4,800. Three tenants share costs in proportion to
-their floor area: $\frac{1}{3}$, $\frac{5}{12}$, and $\frac{1}{4}$.
-What does each pay?
+**Example 2 — Splitting costs.** Three friends split the cost of
+a camping trip. They agree to share costs in proportion to how
+many nights each stays: one friend stays $\frac{1}{3}$ of the
+nights, another $\frac{5}{12}$, and the third $\frac{1}{4}$.
+The total cost is £120. What does each pay?
 
-Check fractions sum to 1: $\frac{4}{12} + \frac{5}{12} + \frac{3}{12} = \frac{12}{12} = 1$. Good.
+Check the fractions sum to 1 first — to make sure everyone's share is accounted for:
+$$\frac{4}{12} + \frac{5}{12} + \frac{3}{12} = \frac{12}{12} = 1 \checkmark$$
 
-Tenant A: $\frac{1}{3} \times 4800 = £1,600$
+Friend A: $\frac{1}{3} \times 120 = £40$
 
-Tenant B: $\frac{5}{12} \times 4800 = £2,000$
+Friend B: $\frac{5}{12} \times 120 = £50$
 
-Tenant C: $\frac{1}{4} \times 4800 = £1,200$
+Friend C: $\frac{1}{4} \times 120 = £30$
 
-Total: £4,800. Check.
+Total: £120. Check.
 
 ---
 
-**Example 4 — Geography: soil fractions.** A soil scientist needs
-to know what fraction of a mixed sample is not clay. The clay
-fraction is 0.38. The remainder is silt and sand.
+**Example 3 — Running distances.** You run 2.5 km on Monday,
+1.75 km on Wednesday, and $\frac{7}{4}$ km on Friday. What is
+your total distance for the week?
 
-Non-clay fraction: $1 - 0.38 = 0.62$.
+Convert $\frac{7}{4}$ to a decimal so all three are in the same form:
+$\frac{7}{4} = 1.75$ km.
+
+$$2.5 + 1.75 + 1.75 = 6.0 \text{ km}$$
+
+---
+
+**Example 4 — What fraction is left?** A bag of rice is 0.38
+used up. What fraction remains? Express it as a decimal and as
+a fraction in lowest terms.
+
+Remaining: $1 - 0.38 = 0.62$.
 
 As a fraction: $0.62 = \frac{62}{100} = \frac{31}{50}$.
 
-$\frac{31}{50}$ of the sample is silt or sand.
+$\frac{31}{50}$ of the bag is left.
 
 ## Where this goes
 
@@ -236,10 +611,10 @@ only that you see the notation clearly.
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
 
+- Any time you split something equally — a bill, a recipe, a
+  distance — you're doing fraction arithmetic.
 - A structural engineer applies a safety factor of $\frac{3}{2}$
   (or 1.5) to every load — multiplying by a fraction.
-- A chemist computes a molar mass by dividing grams by moles —
-  a fraction with real units.
 - A financial model apportions costs, equity, and interest
   using decimal fractions at every step.
 - A GIS analyst computing land-cover proportions is adding
@@ -256,23 +631,23 @@ The arithmetic is identical. The precision matters.
 2. A recipe calls for $\frac{2}{3}$ cup of milk. You want to make
    $2\frac{1}{2}$ times the recipe. How much milk do you need?
 
-3. A field is 0.75 km long and 0.48 km wide. What is its area
+3. A sports pitch is 0.75 km long and 0.48 km wide. What is its area
    in km²? Express the answer as a decimal and as a fraction
    in lowest terms.
 
-4. Three pipes feed a tank. Each supplies $\frac{3}{8}$ of the
+4. Three taps fill a tank. Each supplies $\frac{3}{8}$ of the
    tank's capacity per hour. A drain removes $\frac{5}{8}$ of
    the tank's capacity per hour. Is the tank filling or
    emptying? At what net fraction per hour?
 
-5. A sample of rock is analysed: 0.44 feldspar, 0.29 quartz,
-   0.18 mica, and the rest is "other minerals." What fraction
-   is other minerals? Express as a decimal and a simplified
-   fraction.
+5. A bag of trail mix is analysed: 0.44 nuts, 0.29 dried fruit,
+   0.18 chocolate chips, and the rest is seeds. What fraction
+   is seeds? Express as a decimal and a simplified fraction.
 
-6. A pharmacist has a 0.5% drug solution and needs a 0.125%
-   solution for a paediatric dose. What fraction of the
-   0.5% solution will the diluted version be?
+6. You have a 500 mL bottle of juice concentrate. The instructions
+   say to mix it at $\frac{1}{4}$ strength. What fraction of the
+   final drink will be concentrate? How many mL of concentrate
+   goes into a 250 mL glass?
 
 7. Convert each to a decimal, then order from least to greatest:
    $\frac{7}{12}$, $\frac{3}{5}$, $0.58$, $\frac{11}{20}$, $0.\overline{6}$.

@@ -117,7 +117,7 @@ to the left. The further from zero, the larger the absolute value.
 $$\cdots \quad -4 \quad -3 \quad -2 \quad -1 \quad 0 \quad 1 \quad 2 \quad 3 \quad 4 \quad \cdots$$
 
 **Absolute value** $|x|$ strips the direction: $|{-3}| = 3$ and $|3| = 3$.
-It answers the question "how far from zero?" not "which side?"
+It answers "how far from zero?" — not "which side?"
 
 The inequality symbols $<$ and $>$ describe position on the line:
 $-5 < -1$ because $-5$ sits further left. This trips people up —
@@ -128,12 +128,203 @@ halfway between 0 and 1. $-0.7$ sits between $-1$ and $0$. The
 line is continuous: there is a location for every number, however
 precise.
 
+---
+
+*Use the slider below to place any number on the line. The arrow shows
+its distance from zero — that distance is its absolute value.*
+
+```{ojs}
+//| echo: false
+nlExplorer = {
+  const d3 = await require("d3@7");
+
+  const W = 560, H = 160;
+  const ML = 40, MR = 40, MT = 50, MB = 40;
+  const innerW = W - ML - MR;
+
+  const xMin = -10, xMax = 10;
+  const xScale = d3.scaleLinear([xMin, xMax], [0, innerW]);
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", W + "px");
+
+  // --- slider ---
+  const sliderLabel = container.append("label")
+    .style("display", "block")
+    .style("margin-bottom", "6px")
+    .style("font-size", "0.9rem");
+  sliderLabel.append("span").text("Position: ");
+  const valueSpan = sliderLabel.append("span")
+    .style("font-weight", "bold");
+
+  const slider = container.append("input")
+    .attr("type", "range")
+    .attr("min", xMin)
+    .attr("max", xMax)
+    .attr("step", 1)
+    .attr("value", -3)
+    .style("width", "100%")
+    .style("margin-bottom", "6px");
+
+  // --- SVG ---
+  const svg = container.append("svg")
+    .attr("width", W)
+    .attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("aria-label", "Interactive number line");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${ML},${MT})`);
+
+  // axis line
+  g.append("line")
+    .attr("x1", 0).attr("y1", 0)
+    .attr("x2", innerW).attr("y2", 0)
+    .attr("stroke", "#333").attr("stroke-width", 2);
+
+  // arrowheads on axis
+  g.append("polygon")
+    .attr("points", `${innerW},0 ${innerW-8},-4 ${innerW-8},4`)
+    .attr("fill", "#333");
+  g.append("polygon")
+    .attr("points", `0,0 8,-4 8,4`)
+    .attr("fill", "#333");
+
+  // tick marks and labels
+  for (let v = xMin; v <= xMax; v++) {
+    const x = xScale(v);
+    g.append("line")
+      .attr("x1", x).attr("y1", -6)
+      .attr("x2", x).attr("y2", 6)
+      .attr("stroke", v === 0 ? "#222" : "#777")
+      .attr("stroke-width", v === 0 ? 2 : 1);
+    g.append("text")
+      .attr("x", x)
+      .attr("y", 22)
+      .attr("text-anchor", "middle")
+      .attr("font-size", v === 0 ? "13px" : "11px")
+      .attr("font-weight", v === 0 ? "bold" : "normal")
+      .attr("fill", "#333")
+      .text(v);
+  }
+
+  // zero label
+  g.append("text")
+    .attr("x", xScale(0))
+    .attr("y", -14)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "11px")
+    .attr("fill", "#555")
+    .text("zero");
+
+  // distance arrow (from zero to point) — drawn under the axis
+  const arrowGroup = g.append("g").attr("transform", "translate(0,0)");
+
+  const arrowLine = arrowGroup.append("line")
+    .attr("y1", 36).attr("y2", 36)
+    .attr("stroke", "#d97706")
+    .attr("stroke-width", 2.5)
+    .attr("stroke-dasharray", "5,3");
+
+  const arrowHead = arrowGroup.append("polygon")
+    .attr("fill", "#d97706");
+
+  const distLabel = arrowGroup.append("text")
+    .attr("y", 56)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px")
+    .attr("fill", "#b45309")
+    .attr("font-weight", "bold");
+
+  // point marker
+  const pointGroup = g.append("g");
+  const pointCircle = pointGroup.append("circle")
+    .attr("r", 9)
+    .attr("fill", "#2563eb")
+    .attr("stroke", "#1e3a8a")
+    .attr("stroke-width", 2);
+
+  const pointLabel = pointGroup.append("text")
+    .attr("text-anchor", "middle")
+    .attr("y", -16)
+    .attr("font-size", "13px")
+    .attr("font-weight", "bold")
+    .attr("fill", "#1e3a8a");
+
+  const dirLabel = pointGroup.append("text")
+    .attr("text-anchor", "middle")
+    .attr("y", -30)
+    .attr("font-size", "11px")
+    .attr("fill", "#475569");
+
+  // absolute value text below SVG
+  const absDiv = container.append("div")
+    .style("font-size", "1rem")
+    .style("text-align", "center")
+    .style("margin-top", "4px")
+    .style("color", "#1e293b");
+
+  function update(v) {
+    const x = xScale(v);
+    const x0 = xScale(0);
+    const absV = Math.abs(v);
+
+    valueSpan.text(v);
+
+    // point
+    pointGroup.attr("transform", `translate(${x},0)`);
+    pointLabel.text(v);
+    dirLabel.text(v > 0 ? "positive \u2192" : v < 0 ? "\u2190 negative" : "zero");
+
+    // distance arrow
+    if (v !== 0) {
+      const left = Math.min(x, x0);
+      const right = Math.max(x, x0);
+      arrowLine
+        .attr("x1", left + 4)
+        .attr("x2", right - 4)
+        .attr("visibility", "visible");
+      if (v > 0) {
+        arrowHead
+          .attr("points", `${right},36 ${right-8},32 ${right-8},40`)
+          .attr("visibility", "visible");
+      } else {
+        arrowHead
+          .attr("points", `${left},36 ${left+8},32 ${left+8},40`)
+          .attr("visibility", "visible");
+      }
+      distLabel
+        .attr("x", (left + right) / 2)
+        .attr("visibility", "visible")
+        .text(`distance from zero = ${absV}`);
+    } else {
+      arrowLine.attr("visibility", "hidden");
+      arrowHead.attr("visibility", "hidden");
+      distLabel.attr("visibility", "hidden");
+    }
+
+    absDiv.text(`|${v}| = ${absV}`);
+  }
+
+  update(+slider.property("value"));
+
+  slider.on("input", function() {
+    update(+this.value);
+  });
+
+  return container.node();
+}
+```
+
+---
+
 ## The method
 
 **Placing a number on the line**
 
-1. Determine the sign: positive (right of zero) or negative (left).
-2. Determine the magnitude: how far from zero.
+1. Determine the sign: positive (right of zero) or negative (left) — this tells you which direction to go.
+2. Determine the magnitude: how far from zero — this tells you how far to go.
 3. Locate it. Every number has exactly one position.
 
 **Ordering numbers**
@@ -143,72 +334,301 @@ smaller, right is larger. For negative numbers: $-10 < -2 < 0 < 3 < 7$.
 
 **Absolute value**
 
-We will prove in Chapter 4 why $-(-7) = 7$. For now, take it as a rule: negating a negative gives a positive.
+The formula below looks slightly odd. Here is what it is doing: if $x$ is
+already positive, its distance from zero is just $x$. If $x$ is negative,
+its distance from zero is the positive version of it — which is $-x$.
+Negating a negative gives a positive.
 
 $|x| = x$ if $x \geq 0$; $|x| = -x$ if $x < 0$.
 
-So $|{-7}| = -(-7) = 7$.
+So $|{-7}| = -(-7) = 7$. We will prove in Chapter 4 why $-(-7) = 7$.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
 
-The number line is a model. "Negative" means "opposite direction from
-positive" — not "less real" or "doesn't exist". Absolute value removes
-direction because sometimes you only care about magnitude (distance,
-size, error) not sign. When you multiply two negatives to get a
-positive, it is because reversing direction twice returns you to
-where you started.
+"Negative" means "opposite direction from positive" — not "less real"
+or "doesn't exist." Absolute value removes direction because sometimes
+you only care about size (distance, error) not which way. When you
+multiply two negatives to get a positive, it is because reversing
+direction twice returns you to where you started.
 :::
 
 ## Worked examples
 
-**Example 1 — Finance.** A company's quarterly results are: Q1 profit
-£4,200; Q2 loss £1,800; Q3 profit £600; Q4 loss £3,100. Order the
-quarters from worst to best performance.
+**Example 1 — Sport.** A football team's goal difference across four
+matches: won by 3, lost by 2, won by 1, lost by 4. Express these as
+signed numbers and order them from worst to best.
 
-Expressing as signed numbers: Q1 = +4200, Q2 = −1800, Q3 = +600,
-Q4 = −3100.
+As signed numbers: +3, −2, +1, −4.
 
-Ordered from left to right on the number line:
+Place each on the number line and read left to right:
 
-$$-3100 < -1800 < 600 < 4200$$
+$$-4 < -2 < 1 < 3$$
 
-Worst to best: Q4, Q2, Q3, Q1.
+Worst to best: lost by 4, lost by 2, won by 1, won by 3.
 
 ---
 
-**Example 2 — Geography.** A surveying team records these elevations
-relative to sea level: summit +2,450 m; valley floor −60 m; coastal
-town +8 m; lake bed −340 m. What is the vertical distance from the
-lake bed to the summit?
+**Example 2 — Geography.** A group records these elevations
+relative to sea level: mountain peak +2,450 m; valley floor −60 m;
+coastal town +8 m; lake bed −340 m. What is the vertical distance
+from the lake bed to the peak?
 
-Vertical distance = $|2450 - (-340)| = |2450 + 340| = 2790$ m.
+Vertical distance = $|2450 - (-340)|$.
+
+That subtraction involves two negatives, so pause: subtracting a
+negative is the same as adding.
+
+$|2450 - (-340)| = |2450 + 340| = 2790$ m.
 
 The absolute value ensures we get a distance (positive), not a
 directed displacement.
 
 ---
 
-**Example 3 — Engineering.** A machine part must be 50.00 mm ± 0.05 mm.
-Measurements from the batch: 50.03, 49.96, 50.07, 49.98, 50.05.
-Which parts are out of tolerance?
+**Example 3 — Weather.** Five cities report overnight temperatures:
+−12°C, +3°C, −7°C, −19°C, +1°C. Which temperature is furthest
+from zero? Which is closest?
 
-Tolerance range: 49.95 to 50.05 mm.
+Find the absolute value of each: 12, 3, 7, 19, 1.
 
-Express each as a deviation from 50.00: +0.03, −0.04, +0.07, −0.02, +0.05.
-
-The measurement 50.07 has deviation +0.07. Since $|{+0.07}| = 0.07 > 0.05$,
-it is out of tolerance. All others are within ±0.05.
+Furthest from zero: −19°C (absolute value 19).
+Closest to zero: +1°C (absolute value 1).
 
 ---
 
-**Example 4 — Computing.** A temperature sensor reports values as a
-signed 8-bit integer (range −128 to +127). The current reading is
-−43. What does that represent, and what is its absolute value?
+**Example 4 — Money.** Your weekly pocket money is £15. You owe a
+friend £8 from last week. You spend £4 on a snack. Express your
+running total as signed numbers from the start of the week.
 
-The value −43 sits 43 units left of zero on the integer number line.
-It represents 43 degrees below the zero-point of the scale (e.g.,
-−43°C). Its absolute value $|{-43}| = 43$.
+Start: 0. Receive £15: position +15. Repay debt −8: position +7.
+Spend £4: position +3.
+
+Each transaction is a movement along the number line. You end up
+at +3, meaning £3 remaining.
+
+---
+
+*The interactive below lets you explore addition and subtraction as
+movement along the line. Set a starting value A, choose an operation,
+and adjust B to see where you land.*
+
+```{ojs}
+//| echo: false
+nlArithmetic = {
+  const d3 = await require("d3@7");
+
+  const W = 560, H = 170;
+  const ML = 40, MR = 40, MT = 60, MB = 30;
+  const innerW = W - ML - MR;
+  const xMin = -10, xMax = 10;
+  const xScale = d3.scaleLinear([xMin, xMax], [0, innerW]);
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", W + "px");
+
+  // --- controls row ---
+  const controls = container.append("div")
+    .style("display", "flex")
+    .style("gap", "16px")
+    .style("align-items", "flex-end")
+    .style("flex-wrap", "wrap")
+    .style("margin-bottom", "8px");
+
+  function makeNumberInput(parent, labelText, defaultVal) {
+    const wrap = parent.append("label")
+      .style("display", "flex")
+      .style("flex-direction", "column")
+      .style("font-size", "0.85rem")
+      .style("gap", "3px");
+    wrap.append("span").text(labelText);
+    const inp = wrap.append("input")
+      .attr("type", "range")
+      .attr("min", -10)
+      .attr("max", 10)
+      .attr("step", 1)
+      .attr("value", defaultVal)
+      .style("width", "120px");
+    const val = wrap.append("span")
+      .style("text-align", "center")
+      .style("font-weight", "bold");
+    return { inp, val };
+  }
+
+  const { inp: inpA, val: valA } = makeNumberInput(controls, "A (start)", 3);
+  const opWrap = controls.append("label")
+    .style("display", "flex")
+    .style("flex-direction", "column")
+    .style("font-size", "0.85rem")
+    .style("gap", "3px");
+  opWrap.append("span").text("Operation");
+  const opSel = opWrap.append("select")
+    .style("font-size", "1rem")
+    .style("padding", "2px 6px");
+  opSel.append("option").attr("value", "add").text("+ (add)");
+  opSel.append("option").attr("value", "sub").text("− (subtract)");
+
+  const { inp: inpB, val: valB } = makeNumberInput(controls, "B (amount)", -5);
+
+  // --- result line ---
+  const resultDiv = container.append("div")
+    .style("font-size", "1rem")
+    .style("text-align", "center")
+    .style("margin-bottom", "6px")
+    .style("font-weight", "bold")
+    .style("color", "#1e293b");
+
+  // --- SVG ---
+  const svg = container.append("svg")
+    .attr("width", W)
+    .attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("aria-label", "Number line showing arithmetic as movement");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${ML},${MT})`);
+
+  // axis
+  g.append("line")
+    .attr("x1", 0).attr("y1", 0)
+    .attr("x2", innerW).attr("y2", 0)
+    .attr("stroke", "#333").attr("stroke-width", 2);
+  g.append("polygon")
+    .attr("points", `${innerW},0 ${innerW-8},-4 ${innerW-8},4`)
+    .attr("fill", "#333");
+  g.append("polygon")
+    .attr("points", `0,0 8,-4 8,4`)
+    .attr("fill", "#333");
+
+  // ticks
+  for (let v = xMin; v <= xMax; v++) {
+    const x = xScale(v);
+    g.append("line")
+      .attr("x1", x).attr("y1", -5).attr("x2", x).attr("y2", 5)
+      .attr("stroke", v === 0 ? "#222" : "#888")
+      .attr("stroke-width", v === 0 ? 2 : 1);
+    g.append("text")
+      .attr("x", x).attr("y", 20)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "11px")
+      .attr("fill", "#444")
+      .text(v);
+  }
+
+  // movement arrow (drawn below axis)
+  const moveArrow = g.append("g");
+  const moveLine = moveArrow.append("line")
+    .attr("y1", 34).attr("y2", 34)
+    .attr("stroke", "#7c3aed").attr("stroke-width", 3);
+  const moveHead = moveArrow.append("polygon")
+    .attr("fill", "#7c3aed");
+  const moveLabel = moveArrow.append("text")
+    .attr("y", 55)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "11px")
+    .attr("fill", "#5b21b6");
+
+  // point A
+  const ptA = g.append("g");
+  ptA.append("circle").attr("r", 8)
+    .attr("fill", "#0369a1").attr("stroke", "#075985").attr("stroke-width", 2);
+  ptA.append("text")
+    .attr("y", -14).attr("text-anchor", "middle")
+    .attr("font-size", "12px").attr("fill", "#075985").attr("font-weight", "bold")
+    .attr("class", "ptA-label");
+  ptA.append("text")
+    .attr("y", -26).attr("text-anchor", "middle")
+    .attr("font-size", "10px").attr("fill", "#0369a1")
+    .text("A");
+
+  // point result
+  const ptR = g.append("g");
+  ptR.append("circle").attr("r", 8)
+    .attr("fill", "#16a34a").attr("stroke", "#15803d").attr("stroke-width", 2);
+  ptR.append("text")
+    .attr("y", -14).attr("text-anchor", "middle")
+    .attr("font-size", "12px").attr("fill", "#15803d").attr("font-weight", "bold")
+    .attr("class", "ptR-label");
+  ptR.append("text")
+    .attr("y", -26).attr("text-anchor", "middle")
+    .attr("font-size", "10px").attr("fill", "#16a34a")
+    .text("Result");
+
+  function clamp(v) {
+    return Math.max(xMin, Math.min(xMax, v));
+  }
+
+  function update() {
+    const a = +inpA.property("value");
+    const b = +inpB.property("value");
+    const op = opSel.property("value");
+    const result = clamp(op === "add" ? a + b : a - b);
+    const opChar = op === "add" ? "+" : "−";
+    const bDisplay = op === "sub" ? b : b;
+
+    valA.text(a);
+    valB.text(b);
+
+    const xA = xScale(a);
+    const xR = xScale(result);
+
+    ptA.attr("transform", `translate(${xA},0)`);
+    ptA.select(".ptA-label").text(a);
+
+    ptR.attr("transform", `translate(${xR},0)`);
+    ptR.select(".ptR-label").text(result);
+
+    // movement arrow
+    if (a !== result) {
+      const leftX = Math.min(xA, xR);
+      const rightX = Math.max(xA, xR);
+      moveLine.attr("x1", leftX + 4).attr("x2", rightX - 4).attr("visibility", "visible");
+      if (result > a) {
+        moveHead.attr("points", `${rightX},34 ${rightX-8},30 ${rightX-8},38`).attr("visibility", "visible");
+      } else {
+        moveHead.attr("points", `${leftX},34 ${leftX+8},30 ${leftX+8},38`).attr("visibility", "visible");
+      }
+      moveLabel
+        .attr("x", (leftX + rightX) / 2)
+        .attr("visibility", "visible")
+        .text(`move ${Math.abs(result - a)} ${result > a ? "right" : "left"}`);
+    } else {
+      moveLine.attr("visibility", "hidden");
+      moveHead.attr("visibility", "hidden");
+      moveLabel.attr("visibility", "hidden");
+    }
+
+    resultDiv.text(`${a} ${opChar} ${b} = ${result}${Math.abs(a + (op === "add" ? b : -b)) > 10 ? " (clamped to line range)" : ""}`);
+  }
+
+  update();
+  inpA.on("input", update);
+  inpB.on("input", update);
+  opSel.on("change", update);
+
+  // legend
+  const legend = container.append("div")
+    .style("display", "flex").style("gap", "16px").style("font-size", "0.8rem")
+    .style("margin-top", "4px").style("flex-wrap", "wrap");
+  const items = [
+    { color: "#0369a1", label: "A — starting value" },
+    { color: "#16a34a", label: "Result" },
+    { color: "#7c3aed", label: "Movement (the operation)" }
+  ];
+  items.forEach(({ color, label }) => {
+    const item = legend.append("div").style("display", "flex").style("align-items", "center").style("gap", "5px");
+    item.append("div")
+      .style("width", "14px").style("height", "14px")
+      .style("border-radius", "50%").style("background", color).style("flex-shrink", "0");
+    item.append("span").text(label);
+  });
+
+  return container.node();
+}
+```
+
+---
 
 ## Where this goes
 
@@ -227,14 +647,11 @@ change — it accumulates meaning.
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
 
-- An engineer writing ±0.05 mm on a technical drawing is placing
-  an acceptable range on the number line.
-- An accountant reading a balance sheet uses signed numbers for
-  every asset and liability.
-- A geographer recording elevation above and below sea level uses
-  the number line with zero at sea level.
-- A programmer specifying a signed integer type is deciding how
-  much of the number line to represent in memory.
+- A weather forecaster reading −18°C is placing a temperature on
+  the number line with zero at freezing.
+- A diver tracking depth uses a signed number with zero at the surface.
+- A games scoreboard showing −5 (penalty points) is using the same idea.
+- An app showing your bank balance in red is showing you a negative number.
 
 Same structure. Different labels.
 :::
@@ -253,14 +670,13 @@ which numbers go where before you compute.
    coldest to warmest. What is the difference in temperature
    between the warmest and coldest cities?
 
-3. A share price changes each day this week: Mon −£1.20,
-   Tue +£0.85, Wed −£2.40, Thu +£3.10, Fri −£0.60.
-   On which day was the change furthest from zero?
-   *(Use absolute values to compare.)*
+3. A football team's weekly goal differences are: Mon −1, Tue +2,
+   Wed −3, Thu +4, Fri −1. On which day was the result furthest
+   from zero? *(Use absolute values to compare.)*
 
-4. A precision component must measure 25.000 mm ± 0.002 mm.
-   Four samples measure: 25.001, 24.998, 25.003, 24.999 mm.
-   Which samples pass? Express each deviation as a signed number.
+4. Five friends pool money for a trip. Their balances in the group
+   fund are: +£12, −£5, +£3, −£18, +£8. Order from least to most.
+   Who owes the most?
 
 5. Place these numbers on a number line sketch and order them
    from least to greatest: $-1.5$, $2$, $0$, $-3$, $0.7$, $-0.5$.

@@ -51,15 +51,19 @@ destinations:
     career_example: "Hydrologist setting design standards for bridges and culverts"
 
 hook: |
-  A weather forecast says 70% chance of rain. A factory produces
-  1,000 bolts per day; the defect rate is 0.3%. A clinical trial
-  reports a drug reduces blood pressure by 12 mmHg on average,
-  with a range of 8 mmHg across the measured group.
+  A football team scores 1, 3, 0, 2, 1, 4, 1 goals across seven
+  matches. What is their typical score?
 
-  These are not vague statements. Each one encodes a precise claim
-  about how a process behaves across many instances. Understanding
-  them requires knowing what an average actually measures, what
-  spread means, and why probability is a fraction between 0 and 1.
+  A weather forecast says 70% chance of rain. What does that actually
+  mean?
+
+  Two students both average 65% on their tests, but one scores
+  between 60–70% every time and the other swings from 20% to 100%.
+  Are they the same?
+
+  These questions all need the same toolkit: averages, spread, and
+  probability. The numbers tell you something — but only if you know
+  which number to look at.
 
 notation_introduced:
   - symbol: "x̄"
@@ -94,15 +98,19 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-A weather forecast says 70% chance of rain. A factory produces
-1,000 bolts per day; the defect rate is 0.3%. A clinical trial
-reports a drug reduces blood pressure by 12 mmHg on average,
-with a range of 8 mmHg across the measured group.
+A football team scores 1, 3, 0, 2, 1, 4, 1 goals across seven
+matches. What is their typical score?
 
-These are not vague statements. Each one encodes a precise claim
-about how a process behaves across many instances. Understanding
-them requires knowing what an average actually measures, what
-spread means, and why probability is a fraction between 0 and 1.
+A weather forecast says 70% chance of rain. What does that actually
+mean?
+
+Two students both average 65% on their tests, but one scores
+between 60–70% every time and the other swings from 20% to 100%.
+Are they the same?
+
+These questions all need the same toolkit: averages, spread, and
+probability. The numbers tell you something — but only if you know
+which number to look at.
 
 ## What the notation is saying
 
@@ -128,7 +136,7 @@ $$P(A) = \frac{\text{number of favourable outcomes}}{\text{total number of equal
 $P(A) = 0$: impossible. $P(A) = 1$: certain. All probabilities
 for a complete set of outcomes sum to 1.
 
-**Relative frequency**: when you cannot count outcomes theoretically,
+**Relative frequency**: when you can't count outcomes theoretically,
 estimate probability from data:
 $$P(A) \approx \frac{\text{number of times A occurred}}{\text{total trials}}$$
 
@@ -136,8 +144,8 @@ $$P(A) \approx \frac{\text{number of times A occurred}}{\text{total trials}}$$
 
 **Computing the mean**
 
-1. Add all values.
-2. Divide by the count.
+1. Add all values — to get the total.
+2. Divide by the count — to find the fair share per value.
 
 **Computing the median**
 
@@ -154,7 +162,8 @@ Lower quartile Q1 = median of the lower half.
 Upper quartile Q3 = median of the upper half.
 $\text{IQR} = Q3 - Q1$.
 
-The IQR describes the spread of the middle 50% of the data.
+The IQR describes the spread of the middle 50% of the data —
+it ignores the extremes at both ends.
 
 **Computing probability from equally likely outcomes**
 
@@ -178,76 +187,490 @@ of a complete set of outcomes. When probabilities sum to more than
 missed some outcomes.
 :::
 
+---
+
+*Edit any of the seven scores below. Watch the mean, median, range, and IQR update instantly — and see the difference between mean and median when you push one value to an extreme.*
+
+```{ojs}
+//| echo: false
+viewof v1 = Inputs.number({ label: "Score 1", value: 62, min: 0, max: 100, step: 1 })
+```
+
+```{ojs}
+//| echo: false
+viewof v2 = Inputs.number({ label: "Score 2", value: 71, min: 0, max: 100, step: 1 })
+```
+
+```{ojs}
+//| echo: false
+viewof v3 = Inputs.number({ label: "Score 3", value: 58, min: 0, max: 100, step: 1 })
+```
+
+```{ojs}
+//| echo: false
+viewof v4 = Inputs.number({ label: "Score 4", value: 74, min: 0, max: 100, step: 1 })
+```
+
+```{ojs}
+//| echo: false
+viewof v5 = Inputs.number({ label: "Score 5", value: 66, min: 0, max: 100, step: 1 })
+```
+
+```{ojs}
+//| echo: false
+viewof v6 = Inputs.number({ label: "Score 6", value: 70, min: 0, max: 100, step: 1 })
+```
+
+```{ojs}
+//| echo: false
+viewof v7 = Inputs.number({ label: "Score 7", value: 63, min: 0, max: 100, step: 1 })
+```
+
+```{ojs}
+//| echo: false
+{
+  // ── Helpers ──────────────────────────────────────────────────
+  function medianOf(arr) {
+    const s = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(s.length / 2);
+    return s.length % 2 === 1 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  }
+  function quartiles(arr) {
+    const s = [...arr].sort((a, b) => a - b);
+    const n = s.length;
+    const lower = s.slice(0, Math.floor(n / 2));
+    const upper = n % 2 === 0 ? s.slice(n / 2) : s.slice(Math.ceil(n / 2));
+    return { q1: medianOf(lower), q3: medianOf(upper) };
+  }
+
+  // ── Data ─────────────────────────────────────────────────────
+  const raw = [v1, v2, v3, v4, v5, v6, v7].map(x => isFinite(x) ? x : 0);
+  const sorted = [...raw].sort((a, b) => a - b);
+  const n = raw.length;
+  const sum = raw.reduce((a, b) => a + b, 0);
+  const mean = sum / n;
+  const med = medianOf(raw);
+  const range_ = sorted[n - 1] - sorted[0];
+  const { q1, q3 } = quartiles(raw);
+  const iqr = q3 - q1;
+  const medIdx = Math.floor(n / 2); // index in sorted array (0-based)
+
+  // ── Layout ───────────────────────────────────────────────────
+  const W = 560, PAD = 40, DOT_AREA_H = 120, STATS_H = 110;
+  const H = DOT_AREA_H + STATS_H + 20;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", "max-width:560px; display:block; margin:0 auto; font-family:sans-serif;");
+
+  // ── Dot plot ─────────────────────────────────────────────────
+  const plotW = W - 2 * PAD;
+  const xMin = 0, xMax = 100;
+  const xScale = v => PAD + (v - xMin) / (xMax - xMin) * plotW;
+  const axisY = 70;
+
+  // Axis line
+  svg.append("line")
+    .attr("x1", PAD).attr("y1", axisY)
+    .attr("x2", W - PAD).attr("y2", axisY)
+    .attr("stroke", "#94a3b8").attr("stroke-width", 1.5);
+
+  // Tick marks every 10
+  for (let t = 0; t <= 100; t += 10) {
+    const x = xScale(t);
+    svg.append("line")
+      .attr("x1", x).attr("y1", axisY - 4)
+      .attr("x2", x).attr("y2", axisY + 4)
+      .attr("stroke", "#94a3b8").attr("stroke-width", 1);
+    svg.append("text")
+      .attr("x", x).attr("y", axisY + 15)
+      .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", "#64748b")
+      .text(t);
+  }
+
+  // Axis label
+  svg.append("text")
+    .attr("x", W / 2).attr("y", axisY + 28)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#64748b")
+    .text("Test score (0–100)");
+
+  // Dots — stack duplicates
+  const stackCount = {};
+  raw.forEach(v => { stackCount[v] = (stackCount[v] || 0) + 1; });
+  const placed = {};
+  raw.forEach(v => {
+    placed[v] = (placed[v] || 0);
+    const cx = xScale(v);
+    const cy = axisY - 12 - placed[v] * 16;
+    svg.append("circle")
+      .attr("cx", cx).attr("cy", cy).attr("r", 7)
+      .attr("fill", "#475569").attr("stroke", "#1e293b").attr("stroke-width", 1);
+    placed[v]++;
+  });
+
+  // Mean vertical line
+  svg.append("line")
+    .attr("x1", xScale(mean)).attr("y1", 8)
+    .attr("x2", xScale(mean)).attr("y2", axisY)
+    .attr("stroke", "#2563eb").attr("stroke-width", 2)
+    .attr("stroke-dasharray", "4,2");
+  svg.append("text")
+    .attr("x", xScale(mean)).attr("y", 6)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#2563eb")
+    .attr("font-weight", "bold")
+    .text(`Mean ${mean.toFixed(1)}`);
+
+  // Median vertical line
+  const medOffset = Math.abs(xScale(med) - xScale(mean)) < 20 ? 12 : 0;
+  svg.append("line")
+    .attr("x1", xScale(med)).attr("y1", 8)
+    .attr("x2", xScale(med)).attr("y2", axisY)
+    .attr("stroke", "#dc2626").attr("stroke-width", 2)
+    .attr("stroke-dasharray", "6,2");
+  svg.append("text")
+    .attr("x", xScale(med)).attr("y", 6 + medOffset)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#dc2626")
+    .attr("font-weight", "bold")
+    .text(`Median ${med}`);
+
+  // ── Stats table ───────────────────────────────────────────────
+  const tY = DOT_AREA_H + 4;
+
+  // Background panel
+  svg.append("rect")
+    .attr("x", PAD - 10).attr("y", tY)
+    .attr("width", W - 2 * PAD + 20).attr("height", STATS_H)
+    .attr("fill", "#f1f5f9").attr("rx", 4);
+
+  const col1 = PAD, col2 = PAD + 180, col3 = PAD + 360;
+  const rowH = 22;
+
+  const stats = [
+    [`Mean  x̄  =  (${raw.join(" + ")}) ÷ ${n}`, `= ${mean.toFixed(2)}`],
+    [`Median (middle of sorted list)`, `= ${med}`],
+    [`Range  =  ${sorted[n-1]} − ${sorted[0]}`, `= ${range_}`],
+    [`Q1 = ${q1}   Q3 = ${q3}   IQR = Q3 − Q1`, `= ${iqr}`],
+  ];
+
+  stats.forEach(([label, val], i) => {
+    svg.append("text")
+      .attr("x", col1).attr("y", tY + 20 + i * rowH)
+      .attr("font-size", 12).attr("fill", "#1e293b")
+      .text(label);
+    svg.append("text")
+      .attr("x", W - PAD).attr("y", tY + 20 + i * rowH)
+      .attr("text-anchor", "end").attr("font-size", 12)
+      .attr("fill", i === 0 ? "#2563eb" : i === 1 ? "#dc2626" : "#374151")
+      .attr("font-weight", "bold")
+      .text(val);
+  });
+
+  // Sorted list display
+  svg.append("text")
+    .attr("x", PAD).attr("y", tY + STATS_H - 8)
+    .attr("font-size", 11).attr("fill", "#64748b")
+    .text(`Sorted: ${sorted.join(", ")}`);
+
+  return svg.node();
+}
+```
+
+::: {.callout-tip appearance="simple"}
+**Try this:** change Score 1 from 62 to 2. Watch the mean drop noticeably while the median barely shifts. That is the difference between the two measures — and why it matters which one you use.
+:::
+
+---
+
 ## Worked examples
 
-**Example 1 — Science: measurement uncertainty.** A student measures
-the length of a component seven times:
-48.3, 48.5, 48.4, 48.6, 48.3, 48.7, 48.4 mm.
-Report the mean and range.
+**Example 1 — Test scores.** A student scores the following in
+seven tests: 62, 71, 58, 74, 66, 70, 63. Find the mean, median,
+and range.
 
-Ordered: 48.3, 48.3, 48.4, 48.4, 48.5, 48.6, 48.7.
+Ordered: 58, 62, 63, 66, 70, 71, 74.
 
-Mean:
-$$\bar{x} = \frac{48.3 + 48.5 + 48.4 + 48.6 + 48.3 + 48.7 + 48.4}{7} = \frac{339.2}{7} = 48.46 \text{ mm}$$
+Mean — add all values, then divide by 7:
+$$\bar{x} = \frac{62 + 71 + 58 + 74 + 66 + 70 + 63}{7} = \frac{464}{7} = 66.3$$
 
-Range: $48.7 - 48.3 = 0.4$ mm.
+Range — highest minus lowest:
+$$74 - 58 = 16$$
 
-Median: 4th value = 48.4 mm. The mean and median are close
-(the data is roughly symmetric), which is reassuring.
+Median — the 4th value in the ordered list:
+$$66$$
+
+The mean and median are close, which tells you the scores are
+fairly evenly spread — no extreme result is pulling the average up or down.
 
 ---
 
 **Example 1b — IQR for the same dataset.**
-Ordered data (7 values): 48.3, 48.3, 48.4, **48.4**, 48.5, 48.6, 48.7.
+Ordered data (7 values): 58, 62, 63, **66**, 70, 71, 74.
 
-The median is the 4th value: 48.4. For an odd-count dataset,
+The median is the 4th value: 66. For an odd-count dataset,
 exclude the median when splitting into halves.
 
-Lower half (values 1–3): 48.3, 48.3, 48.4. Q1 = median = 48.3.
+Lower half (values 1–3): 58, 62, 63. Q1 = median = 62.
 
-Upper half (values 5–7): 48.5, 48.6, 48.7. Q3 = median = 48.6.
+Upper half (values 5–7): 70, 71, 74. Q3 = median = 71.
 
-$$\text{IQR} = Q3 - Q1 = 48.6 - 48.3 = 0.3 \text{ mm}$$
+$$\text{IQR} = Q3 - Q1 = 71 - 62 = 9$$
 
-The middle 50% of measurements span 0.3 mm.
-
----
-
-**Example 2 — Geography: flood probability.** A hydrologist's
-records show that, in 80 years of data, river discharge exceeded
-the flood threshold 4 times. Estimate the probability of a flood
-in any given year.
-
-$$P(\text{flood}) \approx \frac{4}{80} = \frac{1}{20} = 0.05 = 5\%$$
-
-This is a "20-year flood" — the average recurrence interval is
-$\frac{1}{0.05} = 20$ years. A bridge designed to this standard
-has a 5% chance of being exceeded in any single year.
+The middle 50% of scores sit within a 9-point range.
 
 ---
 
-**Example 3 — Computing: quality control.** A production line
-makes 500 components per shift. 8 are defective. What is the
-defect rate, and what is the probability a randomly selected
-component is defect-free?
+**Example 2 — Weather probability.** Over the past 60 days, it
+has rained on 15 of them. Estimate the probability of rain on any
+given day.
 
-$$P(\text{defective}) = \frac{8}{500} = 0.016 = 1.6\%$$
+$$P(\text{rain}) \approx \frac{15}{60} = \frac{1}{4} = 0.25 = 25\%$$
 
-$$P(\text{defect-free}) = 1 - 0.016 = 0.984 = 98.4\%$$
+This is a relative frequency estimate — it uses past data rather
+than counting equally likely outcomes. The more data you have,
+the more reliable the estimate.
 
 ---
 
-**Example 4 — Finance: expected outcome.** An investor estimates
-a project has a 60% chance of returning £8,000 profit and a 40%
-chance of returning −£3,000 (a loss). What is the expected value
-of the investment?
+**Example 3 — Picking from a group.** A class has 12 students
+who play sport: 5 play football, 4 play basketball, and 3 play
+tennis. One student is picked at random to represent the class.
+What is the probability they play football? What is the probability
+they do not play basketball?
 
-$$E = (0.6 \times 8000) + (0.4 \times (-3000)) = 4800 - 1200 = £3,600$$
+$$P(\text{football}) = \frac{5}{12}$$
 
-The expected value is £3,600. This does not mean £3,600 is a
-possible outcome — it means that across many similar investments,
-the average outcome would be £3,600. It is a tool for comparing
-options, not a guarantee.
+$$P(\text{not basketball}) = \frac{12 - 4}{12} = \frac{8}{12} = \frac{2}{3}$$
+
+---
+
+**Example 4 — Expected score.** A game show gives two options:
+take £300 for certain, or spin a wheel that pays £800 with
+probability 0.5 and £0 with probability 0.5.
+What is the expected value of spinning the wheel?
+
+$$E = (0.5 \times 800) + (0.5 \times 0) = 400 + 0 = £400$$
+
+The expected value of spinning is £400 — higher than the certain
+£300. But "expected value" means the average across many spins,
+not a guarantee for this one spin. You could walk away with nothing.
+
+---
+
+*The simulator below shows the difference between theoretical probability and what actually happens in a finite number of draws. Results vary each time you click — that is the point.*
+
+```{ojs}
+//| echo: false
+viewof red_count = Inputs.range([1, 10], {
+  value: 3,
+  step: 1,
+  label: "Red counters in bag"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof blue_count = Inputs.range([1, 10], {
+  value: 5,
+  step: 1,
+  label: "Blue counters in bag"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof sim_button = Inputs.button("Simulate 100 draws")
+```
+
+```{ojs}
+//| echo: false
+{
+  // Trigger on button press (sim_button changes each click)
+  sim_button;
+
+  const total = red_count + blue_count;
+  const pRed = red_count / total;
+  const pBlue = blue_count / total;
+
+  // Run 100 draws using Math.random()
+  // Note: results vary on each click — this is intentional and illustrates
+  // that probability is a long-run prediction, not a guarantee for any
+  // finite sample.
+  const N = 100;
+  let simRed = 0, simBlue = 0;
+  for (let i = 0; i < N; i++) {
+    if (Math.random() < pRed) simRed++; else simBlue++;
+  }
+  const simPRed = simRed / N;
+  const simPBlue = simBlue / N;
+
+  // ── Layout ───────────────────────────────────────────────────
+  const W = 560, H = 300, PAD_L = 120, PAD_R = 30, PAD_T = 30, PAD_B = 60;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", "max-width:560px; display:block; margin:0 auto; font-family:sans-serif;");
+
+  // ── Bag visualisation (left panel) ───────────────────────────
+  // Show counters as small circles in a 4-column grid, coloured and labelled
+  const allCounters = [
+    ...Array(red_count).fill("red"),
+    ...Array(blue_count).fill("blue")
+  ];
+  const COLS = 4;
+  const CR = 10, CG = 5; // circle radius, gap
+  const gridX0 = 6, gridY0 = PAD_T + 10;
+  allCounters.forEach((colour, i) => {
+    const col = i % COLS;
+    const row = Math.floor(i / COLS);
+    const cx = gridX0 + col * (CR * 2 + CG) + CR;
+    const cy = gridY0 + row * (CR * 2 + CG) + CR;
+    svg.append("circle")
+      .attr("cx", cx).attr("cy", cy).attr("r", CR)
+      .attr("fill", colour === "red" ? "#dc2626" : "#2563eb")
+      .attr("stroke", colour === "red" ? "#7f1d1d" : "#1e3a5f")
+      .attr("stroke-width", 1.5);
+  });
+
+  // Bag label
+  svg.append("text")
+    .attr("x", gridX0 + (COLS * (CR * 2 + CG)) / 2)
+    .attr("y", H - PAD_B + 15)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#374151")
+    .text(`Bag: ${red_count} red, ${blue_count} blue`);
+
+  svg.append("text")
+    .attr("x", gridX0 + (COLS * (CR * 2 + CG)) / 2)
+    .attr("y", H - PAD_B + 27)
+    .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", "#64748b")
+    .text(`Total: ${total}`);
+
+  // ── Bar chart ────────────────────────────────────────────────
+  const barData = [
+    { label: "Red",  theory: pRed,  sim: simPRed,  colour: "#dc2626", stripe: "#7f1d1d" },
+    { label: "Blue", theory: pBlue, sim: simPBlue, colour: "#2563eb", stripe: "#1e3a5f" }
+  ];
+
+  const groupW = plotW / barData.length;
+  const barW = groupW * 0.35;
+  const yScale = v => PAD_T + plotH * (1 - v);
+
+  // Y axis
+  svg.append("line")
+    .attr("x1", PAD_L).attr("y1", PAD_T)
+    .attr("x2", PAD_L).attr("y2", PAD_T + plotH)
+    .attr("stroke", "#94a3b8").attr("stroke-width", 1.5);
+
+  // Y ticks
+  [0, 0.25, 0.5, 0.75, 1.0].forEach(v => {
+    const y = yScale(v);
+    svg.append("line")
+      .attr("x1", PAD_L - 5).attr("y1", y)
+      .attr("x2", PAD_L).attr("y2", y)
+      .attr("stroke", "#94a3b8").attr("stroke-width", 1);
+    svg.append("text")
+      .attr("x", PAD_L - 8).attr("y", y + 4)
+      .attr("text-anchor", "end").attr("font-size", 10).attr("fill", "#64748b")
+      .text(v.toFixed(2));
+    // Gridline
+    svg.append("line")
+      .attr("x1", PAD_L).attr("y1", y)
+      .attr("x2", PAD_L + plotW).attr("y2", y)
+      .attr("stroke", "#e2e8f0").attr("stroke-width", 1);
+  });
+
+  // Y axis label
+  svg.append("text")
+    .attr("transform", `translate(${PAD_L - 40}, ${PAD_T + plotH / 2}) rotate(-90)`)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#374151")
+    .text("Probability / relative frequency");
+
+  // X axis
+  svg.append("line")
+    .attr("x1", PAD_L).attr("y1", PAD_T + plotH)
+    .attr("x2", PAD_L + plotW).attr("y2", PAD_T + plotH)
+    .attr("stroke", "#94a3b8").attr("stroke-width", 1.5);
+
+  barData.forEach((d, gi) => {
+    const gx = PAD_L + gi * groupW + groupW / 2;
+
+    // Theory bar (solid fill)
+    const th = yScale(d.theory);
+    const thH = (PAD_T + plotH) - th;
+    svg.append("rect")
+      .attr("x", gx - barW - 2).attr("y", th)
+      .attr("width", barW).attr("height", thH)
+      .attr("fill", d.colour).attr("opacity", 0.9)
+      .attr("rx", 2);
+
+    // Sim bar (hatched: lighter fill + dashed outline)
+    const sh = yScale(d.sim);
+    const shH = (PAD_T + plotH) - sh;
+    svg.append("rect")
+      .attr("x", gx + 2).attr("y", sh)
+      .attr("width", barW).attr("height", shH)
+      .attr("fill", d.colour).attr("opacity", 0.35)
+      .attr("stroke", d.colour).attr("stroke-width", 1.5)
+      .attr("stroke-dasharray", "4,2")
+      .attr("rx", 2);
+
+    // Value labels on bars
+    svg.append("text")
+      .attr("x", gx - barW / 2 - 2).attr("y", th - 3)
+      .attr("text-anchor", "middle").attr("font-size", 10)
+      .attr("fill", d.stripe).attr("font-weight", "bold")
+      .text(`${(d.theory * 100).toFixed(0)}%`);
+
+    svg.append("text")
+      .attr("x", gx + barW / 2 + 2).attr("y", sh - 3)
+      .attr("text-anchor", "middle").attr("font-size", 10)
+      .attr("fill", d.stripe).attr("font-weight", "bold")
+      .text(`${(d.sim * 100).toFixed(0)}%`);
+
+    // Group label (colour name)
+    svg.append("text")
+      .attr("x", gx).attr("y", PAD_T + plotH + 16)
+      .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", "#374151")
+      .text(d.label);
+  });
+
+  // ── Legend ───────────────────────────────────────────────────
+  const legX = PAD_L + 10, legY = PAD_T + 6;
+  // Solid = theory
+  svg.append("rect")
+    .attr("x", legX).attr("y", legY).attr("width", 14).attr("height", 10)
+    .attr("fill", "#374151").attr("opacity", 0.8).attr("rx", 1);
+  svg.append("text")
+    .attr("x", legX + 18).attr("y", legY + 9)
+    .attr("font-size", 10).attr("fill", "#374151")
+    .text("Theoretical probability");
+
+  svg.append("rect")
+    .attr("x", legX + 150).attr("y", legY).attr("width", 14).attr("height", 10)
+    .attr("fill", "#374151").attr("opacity", 0.35)
+    .attr("stroke", "#374151").attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "3,2").attr("rx", 1);
+  svg.append("text")
+    .attr("x", legX + 168).attr("y", legY + 9)
+    .attr("font-size", 10).attr("fill", "#374151")
+    .text(`Simulated (${N} draws)`);
+
+  // ── Summary line ─────────────────────────────────────────────
+  svg.append("text")
+    .attr("x", W / 2).attr("y", H - 10)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#374151")
+    .text(`Red: theory ${(pRed*100).toFixed(1)}%  vs  simulated ${(simPRed*100).toFixed(0)}%  |  Blue: theory ${(pBlue*100).toFixed(1)}%  vs  simulated ${(simPBlue*100).toFixed(0)}%`);
+
+  return svg.node();
+}
+```
+
+::: {.callout-note appearance="simple"}
+**Simulation note:** each click on "Simulate 100 draws" generates a fresh set of random draws. The simulated bars will be close to the theoretical bars but rarely identical — that gap between prediction and observation is real and expected. With 1 000 draws the bars would be closer; with 10 draws they might be very far apart. More data means a more reliable estimate.
+:::
 
 ## Where this goes
 
@@ -265,14 +688,14 @@ learning loss functions. The concept is old. The applications are new.
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
 
+- Sports commentators and coaches use averages and ranges to
+  compare players' performance over a season.
+- A weather forecast's percentage chance of rain is a probability
+  estimated from thousands of past days with similar conditions.
 - A lab scientist reports every measurement with ± uncertainty —
   that is a statement about spread.
-- A risk analyst computes expected loss: probability times
-  magnitude, summed across scenarios.
 - A data scientist evaluates a classifier by its error rate —
   a probability computed from test data.
-- A hydrologist sizing a culvert uses return-period probability
-  to decide how large to build it.
 
 Statistics is not a course you take. It is a way of reading
 claims about the world.
@@ -280,12 +703,12 @@ claims about the world.
 
 ## Exercises
 
-1. The daily high temperatures for one week in Edmonton (°C):
+1. The daily high temperatures for one week (°C):
    −4, −7, −2, 1, 3, −1, −5.
    Find the mean, median, and range.
 
 2. A student scores 62, 71, 85, 68, 90, 74, and 55 on seven
-   tests. Find the mean and median. A ninth student joins the
+   tests. Find the mean and median. A new student joins the
    group with a score of 4. Recalculate the mean. Does the
    median change? What does this show about which measure is
    more stable under an extreme value?
@@ -300,12 +723,13 @@ claims about the world.
    b) What is P(not blue)?
    c) What is P(red or green)?
 
-5. A factory tests a batch of 200 electronic components and
-   finds 7 fail. Estimate the probability of a component
-   failing. Out of the next production run of 5,000, how
-   many failures would you expect?
+5. A school canteen tracks how many students choose each lunch
+   option over 200 days: hot meal 110 times, sandwich 60 times,
+   salad 30 times. Estimate the probability a randomly chosen
+   day has more than half the students choosing a hot meal.
+   Out of the next 50 days, how many would you expect?
 
-6. An investor has three options:
+6. A quiz game has three options:
    - Option A: 80% chance of +£500, 20% chance of −£200
    - Option B: 50% chance of +£900, 50% chance of −£100
    - Option C: certain return of +£280
@@ -314,7 +738,7 @@ claims about the world.
    Which would you choose, and why might expected value alone
    not be the only consideration?
 
-7. A set of 9 measurements has a median of 14.2 and a mean of
+7. A set of 9 test scores has a median of 14.2 and a mean of
    15.1. One outlier is identified and removed, leaving 8 values
    with a mean of 14.6. What was the outlier value?
    *(Hint: total of 9 values = mean × 9. Total of remaining 8 = new mean × 8. Outlier = first total − second total.)*

@@ -55,8 +55,8 @@ destinations:
 
 hook: |
   Your phone battery drains 3% per hour on standby. A savings account
-  pays 4.5% annual interest. A diesel engine is 42% thermally efficient.
-  A city's population grew 1.8% last year.
+  pays 4.5% annual interest. A streaming service puts its prices up
+  by 8%. Your favourite team's win rate this season is 60%.
 
   All four are the same operation: a fraction expressed out of a
   hundred, applied to a quantity. The difference is what the quantity
@@ -90,8 +90,8 @@ kreyszig_chapter: null
 ---
 
 Your phone battery drains 3% per hour on standby. A savings account
-pays 4.5% annual interest. A diesel engine is 42% thermally efficient.
-A city's population grew 1.8% last year.
+pays 4.5% annual interest. A streaming service puts its prices up
+by 8%. Your favourite team's win rate this season is 60%.
 
 All four are the same operation: a fraction expressed out of a
 hundred, applied to a quantity. The difference is what the quantity
@@ -109,8 +109,9 @@ $$\text{amount} = Q \times \frac{p}{100}$$
 
 $$\text{percent change} = \frac{\text{new} - \text{original}}{\text{original}} \times 100$$
 
-**A rate** is a ratio with different units: speed is km/h, flow is
-litres/min, interest is £/year. The structure is the same.
+**A rate** is a ratio with different units: speed is km/h, data use is
+MB/day, interest is £/year. The structure is the same as percent —
+one quantity compared to another.
 
 **Compound growth** applies a rate repeatedly. After $n$ periods at
 rate $r$ (expressed as a decimal), a quantity $Q_0$ becomes:
@@ -134,14 +135,16 @@ Convert percent to decimal first: $7\% = 0.07$; $120\% = 1.20$.
 
 **Percent increase / decrease**
 
-Increase $Q$ by $p\%$: multiply by $(1 + \frac{p}{100})$.
-Decrease $Q$ by $p\%$: multiply by $(1 - \frac{p}{100})$.
+To increase $Q$ by $p\%$: multiply by $(1 + \frac{p}{100})$ — one
+step does the same job as finding the percent and then adding it.
 
-A single multiplier is faster than finding the percent and adding separately.
+To decrease $Q$ by $p\%$: multiply by $(1 - \frac{p}{100})$.
 
 **Finding the original after a percent change**
 
-If after a $p\%$ increase the value is $V$:
+If after a $p\%$ increase the value is $V$, work backwards by
+dividing by the multiplier rather than multiplying:
+
 $$Q_0 = \frac{V}{1 + \frac{p}{100}}$$
 
 **Compound growth**
@@ -153,37 +156,175 @@ $Q_n = Q_0 \times (1 + r)^n$ where $r = \frac{p}{100}$.
 
 Each compounding period, the new starting point is the previous
 result. Multiplying by $(1+r)$ once applies the rate for one period.
-Multiplying twice gives $(1+r)^2$ — the same as applying it to the
+Applying it again gives $(1+r)^2$ — the rate is now applied to the
 already-grown quantity. The exponent is just repeated multiplication.
-This is why compound growth eventually overwhelms any linear trend:
-the base grows, and the next period's growth is taken from that
-larger base.
+This is why compound growth eventually overtakes any flat trend: the
+base grows, so the next period's growth is larger than the last.
 :::
+
+---
+
+**Interactive: Percent change visualiser.** Adjust the original value and the percent change. The bar shows the result and the single-step multiplier used.
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+viewof origVal = Inputs.number(
+  { label: "Original value", min: 1, max: 10000, step: 1, value: 100 }
+)
+```
+
+```{ojs}
+//| echo: false
+viewof pctChange = Inputs.range(
+  [-50, 100], { label: "Percent change (%)", step: 1, value: 20 }
+)
+```
+
+```{ojs}
+//| echo: false
+{
+  const W = 560;
+  const H = 160;
+  const BAR_Y = 60;
+  const BAR_H = 36;
+  const LABEL_Y = BAR_Y + BAR_H + 20;
+  const MULT_Y = LABEL_Y + 22;
+  const PAD_L = 12;
+  const PAD_R = 12;
+
+  // Derived values — guard against NaN/zero
+  const orig = Number.isFinite(origVal) && origVal > 0 ? origVal : 100;
+  const pct  = Number.isFinite(pctChange) ? pctChange : 0;
+  const multiplier = 1 + pct / 100;
+  const newVal = orig * multiplier;
+
+  // Scale: always show at least max(orig, newVal); min width 1
+  const maxVal = Math.max(orig, newVal, 1);
+  const usableW = W - PAD_L - PAD_R;
+  const scale = usableW / maxVal;
+
+  const origW  = Math.max(orig  * scale, 1);
+  const newW   = Math.max(newVal * scale, 1);
+
+  // Colours: increase = teal, decrease = amber, neutral = slate
+  const isIncrease = pct > 0;
+  const isDecrease = pct < 0;
+  const origColour = "#4b5563";  // slate-600
+  const newColour  = isIncrease ? "#0d9488"  // teal-600
+                   : isDecrease ? "#d97706"  // amber-600
+                   : "#4b5563";
+
+  const sign = pct >= 0 ? "+" : "";
+  const multSign = multiplier >= 1 ? "×" : "×";
+
+  const multStr = multiplier.toFixed(2);
+  const newValStr = Number.isInteger(newVal)
+    ? newVal.toString()
+    : newVal.toFixed(2);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", "max-width:" + W + "px; font-family: inherit;");
+
+  // Original bar
+  svg.append("rect")
+    .attr("x", PAD_L)
+    .attr("y", BAR_Y)
+    .attr("width", origW)
+    .attr("height", BAR_H)
+    .attr("fill", origColour)
+    .attr("rx", 3);
+
+  // Original label (above bar, left-aligned)
+  svg.append("text")
+    .attr("x", PAD_L)
+    .attr("y", BAR_Y - 6)
+    .attr("fill", origColour)
+    .attr("font-size", "12px")
+    .attr("font-weight", "600")
+    .text(`Original: ${orig}`);
+
+  // New value bar (drawn below original as a second row)
+  const BAR2_Y = BAR_Y + BAR_H + 10;
+
+  svg.append("rect")
+    .attr("x", PAD_L)
+    .attr("y", BAR2_Y)
+    .attr("width", newW)
+    .attr("height", BAR_H)
+    .attr("fill", newColour)
+    .attr("rx", 3);
+
+  // New value label (above second bar, right of bar if space allows)
+  const newLabelX = PAD_L + newW + 6;
+  const newLabelAnchor = newLabelX + 120 < W ? "start" : "end";
+  const newLabelXAdj   = newLabelAnchor === "end" ? PAD_L + newW - 4 : newLabelX;
+
+  svg.append("text")
+    .attr("x", newLabelXAdj)
+    .attr("y", BAR2_Y + BAR_H / 2 + 5)
+    .attr("fill", newColour)
+    .attr("font-size", "13px")
+    .attr("font-weight", "700")
+    .attr("text-anchor", newLabelAnchor)
+    .text(`New value: ${newValStr}`);
+
+  // Multiplier label at bottom
+  const changeLabel = isIncrease
+    ? `${sign}${pct}% means × ${multStr}  (multiply by ${multStr} in one step)`
+    : isDecrease
+    ? `${sign}${pct}% means × ${multStr}  (multiply by ${multStr} in one step)`
+    : `0% means × 1.00  (no change)`;
+
+  svg.append("text")
+    .attr("x", PAD_L)
+    .attr("y", BAR2_Y + BAR_H + 20)
+    .attr("fill", "#374151")
+    .attr("font-size", "12px")
+    .text(changeLabel);
+
+  return svg.node();
+}
+```
+
+---
 
 ## Worked examples
 
-**Example 1 — Finance: compound interest.** You invest £2,000 at
-3.5% annual interest, compounded annually. What is the balance
-after 5 years?
+**Example 1 — Savings: compound interest.** You put £2,000 into a
+savings account at 3.5% annual interest, compounded every year.
+What is the balance after 5 years?
+
+Set up the compound formula with $Q_0 = 2000$, $r = 0.035$, $n = 5$:
 
 $$Q_5 = 2000 \times (1.035)^5$$
 
-$(1.035)^5 = 1.1877$ (to 4 d.p.) (Use a calculator for the exponent — repeated multiplication of 1.035 five times gives this result.)
+Work out $(1.035)^5$ — that is 1.035 multiplied by itself five times.
+Using a calculator: $(1.035)^5 = 1.1877$ (to 4 d.p.).
 
 $$Q_5 = 2000 \times 1.1877 = £2,375.40$$
 
 Compare to simple interest: $5 \times 3.5\% \times 2000 = £350$,
-giving £2,350. Compound beats simple by £25.40 even over 5 years.
+giving £2,350. The compounded version is £25.40 more — the gap
+grows larger the longer you leave it.
 
 ---
 
-**Example 2 — Engineering: efficiency.** A motor draws 1,800 W of
-electrical power. Its mechanical efficiency is 88%. What useful
-mechanical power does it deliver?
+**Example 2 — Phone plan.** A mobile plan costs £25 per month.
+The provider raises prices by 12%. What is the new monthly cost?
+How much extra do you pay over a year?
 
-$$\text{output power} = 1800 \times 0.88 = 1584 \text{ W}$$
+New cost: $25 \times (1 + 0.12) = 25 \times 1.12 = £28$.
 
-The remaining $1800 - 1584 = 216$ W is dissipated as heat.
+Extra per month: $£28 - £25 = £3$.
+
+Extra over a year: $£3 \times 12 = £36$.
 
 ---
 
@@ -203,6 +344,8 @@ $$P_{10} = 850{,}000 \times 1.1495 \approx 977{,}000$$
 atoms of a radioactive isotope that decays at 12% per hour. How many
 atoms remain after 4 hours?
 
+This is compound decay — each hour, 12% is lost, so 88% remains.
+
 $$N_4 = 5000 \times (1 - 0.12)^4 = 5000 \times (0.88)^4$$
 
 $(0.88)^4 = 0.5997$
@@ -210,6 +353,186 @@ $(0.88)^4 = 0.5997$
 $$N_4 = 5000 \times 0.5997 \approx 2,999 \text{ atoms}$$
 
 In 4 hours, roughly 40% of the atoms have decayed.
+
+---
+
+**Interactive: Compound growth explorer.** Adjust the annual rate and number of years. The bars show the compounded value year by year. The dashed line shows what simple interest would give over the same period.
+
+```{ojs}
+//| echo: false
+viewof annualRate = Inputs.range(
+  [0, 20], { label: "Annual rate (%)", step: 0.5, value: 5 }
+)
+```
+
+```{ojs}
+//| echo: false
+viewof numYears = Inputs.range(
+  [1, 20], { label: "Number of years", step: 1, value: 10 }
+)
+```
+
+```{ojs}
+//| echo: false
+{
+  const W = 560;
+  const H = 300;
+  const MARGIN = { top: 30, right: 20, bottom: 50, left: 62 };
+  const innerW = W - MARGIN.left - MARGIN.right;
+  const innerH = H - MARGIN.top - MARGIN.bottom;
+
+  const Q0 = 1000;  // base value — shown as index, labelled clearly
+  const r  = (Number.isFinite(annualRate) ? annualRate : 5) / 100;
+  const N  = Number.isFinite(numYears) && numYears >= 1 ? Math.round(numYears) : 10;
+
+  // Build data arrays (year 0 to N)
+  const years = d3.range(0, N + 1);
+  const compound = years.map(n => Q0 * Math.pow(1 + r, n));
+  const simple   = years.map(n => Q0 * (1 + r * n));
+
+  const finalCompound = compound[N];
+  const finalSimple   = simple[N];
+  const extraStr = (finalCompound - finalSimple).toFixed(2);
+
+  const yMax = Math.max(...compound, ...simple) * 1.08;
+
+  const xScale = d3.scaleBand()
+    .domain(years)
+    .range([0, innerW])
+    .padding(0.18);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, yMax])
+    .range([innerH, 0]);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${MARGIN.left},${MARGIN.top})`);
+
+  // Gridlines
+  g.append("g")
+    .attr("class", "grid")
+    .call(
+      d3.axisLeft(yScale)
+        .ticks(5)
+        .tickSize(-innerW)
+        .tickFormat("")
+    )
+    .call(gg => gg.select(".domain").remove())
+    .call(gg => gg.selectAll("line").attr("stroke", "#e5e7eb").attr("stroke-dasharray", "3,3"));
+
+  // Compound bars
+  g.selectAll(".bar-compound")
+    .data(years)
+    .enter()
+    .append("rect")
+      .attr("class", "bar-compound")
+      .attr("x", d => xScale(d))
+      .attr("y", d => yScale(compound[d]))
+      .attr("width", xScale.bandwidth())
+      .attr("height", d => innerH - yScale(compound[d]))
+      .attr("fill", "#0d9488")
+      .attr("rx", 2);
+
+  // Simple interest line
+  const lineGen = d3.line()
+    .x(d => xScale(d) + xScale.bandwidth() / 2)
+    .y(d => yScale(simple[d]));
+
+  g.append("path")
+    .datum(years)
+    .attr("fill", "none")
+    .attr("stroke", "#d97706")
+    .attr("stroke-width", 2)
+    .attr("stroke-dasharray", "5,4")
+    .attr("d", lineGen);
+
+  // Simple interest dots
+  g.selectAll(".dot-simple")
+    .data(years)
+    .enter()
+    .append("circle")
+      .attr("cx", d => xScale(d) + xScale.bandwidth() / 2)
+      .attr("cy", d => yScale(simple[d]))
+      .attr("r", 3)
+      .attr("fill", "#d97706");
+
+  // X axis
+  g.append("g")
+    .attr("transform", `translate(0,${innerH})`)
+    .call(
+      d3.axisBottom(xScale)
+        .tickValues(years.filter((_, i) => N <= 10 || i % 2 === 0))
+        .tickFormat(d => `Y${d}`)
+    )
+    .call(gg => gg.select(".domain").attr("stroke", "#9ca3af"))
+    .call(gg => gg.selectAll("text").attr("font-size", "11px"));
+
+  // X axis label
+  g.append("text")
+    .attr("x", innerW / 2)
+    .attr("y", innerH + 40)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#6b7280")
+    .attr("font-size", "12px")
+    .text("Year");
+
+  // Y axis
+  g.append("g")
+    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => `£${d}`))
+    .call(gg => gg.select(".domain").attr("stroke", "#9ca3af"))
+    .call(gg => gg.selectAll("text").attr("font-size", "11px"));
+
+  // Final value label on last bar
+  g.append("text")
+    .attr("x", xScale(N) + xScale.bandwidth() / 2)
+    .attr("y", yScale(finalCompound) - 6)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#065f46")
+    .attr("font-size", "11px")
+    .attr("font-weight", "700")
+    .text(`£${finalCompound.toFixed(0)}`);
+
+  // Legend
+  const legendY = -18;
+  // Compound bar swatch
+  g.append("rect")
+    .attr("x", 0).attr("y", legendY - 9).attr("width", 12).attr("height", 12)
+    .attr("fill", "#0d9488").attr("rx", 2);
+  g.append("text")
+    .attr("x", 16).attr("y", legendY)
+    .attr("fill", "#374151").attr("font-size", "11px")
+    .text("Compound growth");
+
+  // Simple line swatch
+  g.append("line")
+    .attr("x1", 140).attr("y1", legendY - 3)
+    .attr("x2", 152).attr("y2", legendY - 3)
+    .attr("stroke", "#d97706").attr("stroke-width", 2).attr("stroke-dasharray", "4,3");
+  g.append("text")
+    .attr("x", 156).attr("y", legendY)
+    .attr("fill", "#374151").attr("font-size", "11px")
+    .text("Simple interest");
+
+  // Extra label
+  g.append("text")
+    .attr("x", innerW)
+    .attr("y", innerH + 40)
+    .attr("text-anchor", "end")
+    .attr("fill", "#0d9488")
+    .attr("font-size", "12px")
+    .attr("font-weight", "600")
+    .text(`Compounding adds £${extraStr} extra over ${N} year${N === 1 ? "" : "s"}`);
+
+  return svg.node();
+}
+```
+
+---
 
 ## Where this goes
 
@@ -233,14 +556,14 @@ The consequences are not.
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
 
-- A financial advisor comparing two savings products is computing
-  compound interest on each.
-- An electrical engineer specifying a transformer lists its
-  efficiency as a percent.
-- A public health analyst tracking disease spread uses a growth
-  rate — the same $(1+r)^n$ structure.
-- A geographer projecting water demand uses population growth
-  as a percent per year.
+- A savings account paying 4% a year is using the compound formula —
+  the interest each year is calculated on the new, larger balance.
+- A streaming service raising prices by 8% is applying a percent
+  increase to a base price.
+- A sports commentator quoting a 65% win rate is expressing
+  a fraction as a percent.
+- A phone showing "battery 23%" is telling you what fraction of
+  capacity remains.
 
 The arithmetic is identical. The stakes vary.
 :::

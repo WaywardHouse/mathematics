@@ -57,15 +57,15 @@ destinations:
     career_example: "Cartographer or GIS analyst working with spatial data"
 
 hook: |
-  A concrete mix calls for 1 part cement, 2 parts sand, 3 parts gravel
-  by volume. You have 40 litres of gravel. How much cement and sand
-  do you need?
+  A recipe for 4 people needs 300 g of flour. You're cooking for 10.
+  How much flour do you need?
 
   A map is drawn at 1:25,000. A road measures 8 cm on the map.
   How long is it on the ground?
 
-  A car engine produces 180 Nm of torque. The gearbox has a ratio
-  of 4.5:1. What torque reaches the wheels?
+  You and two friends split a streaming subscription. The monthly
+  cost is £14.99 for three people. One friend joins. What does
+  each person pay now?
 
   These three questions share the same calculation underneath.
 
@@ -96,15 +96,15 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-A concrete mix calls for 1 part cement, 2 parts sand, 3 parts gravel
-by volume. You have 40 litres of gravel. How much cement and sand
-do you need?
+A recipe for 4 people needs 300 g of flour. You're cooking for 10.
+How much flour do you need?
 
 A map is drawn at 1:25,000. A road measures 8 cm on the map.
 How long is it on the ground?
 
-A car engine produces 180 Nm of torque. The gearbox has a ratio
-of 4.5:1. What torque reaches the wheels?
+You and two friends split a streaming subscription. The monthly
+cost is £14.99 for three people. One friend joins. What does
+each person pay now?
 
 These three questions share the same calculation underneath.
 
@@ -122,20 +122,187 @@ where $k$ is a constant. Double $x$, you double $y$. Halve $x$,
 you halve $y$. The ratio $\frac{y}{x} = k$ stays fixed.
 
 Write this as $y \propto x$ (read: "$y$ is proportional to $x$").
-The constant $k$ is called the **constant of proportionality**.
+The constant $k$ is called the **constant of proportionality** — it
+is the fixed multiplier that links the two quantities.
 
-A proportion equation is:
+A proportion equation sets two ratios equal:
 
 $$\frac{a}{b} = \frac{c}{d}$$
 
 Read: "$a$ is to $b$ as $c$ is to $d$." If you know three of the four
-values, you can find the fourth by cross-multiplying: $ad = bc$.
+values, you can find the fourth. The next section shows how.
+
+---
+
+*Adjust the two parts of a ratio below. The bars show how A and B
+relate to each other and to the total.*
+
+```{ojs}
+//| echo: false
+ratioVis = {
+  const d3 = await require("d3@7");
+
+  const W = 560, H = 200;
+  const ML = 20, MR = 20, MT = 20, MB = 20;
+  const innerW = W - ML - MR;
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", W + "px");
+
+  // controls
+  const controls = container.append("div")
+    .style("display", "flex")
+    .style("gap", "24px")
+    .style("align-items", "flex-end")
+    .style("flex-wrap", "wrap")
+    .style("margin-bottom", "10px");
+
+  function makeSlider(parent, labelText, defaultVal) {
+    const wrap = parent.append("label")
+      .style("display", "flex")
+      .style("flex-direction", "column")
+      .style("font-size", "0.85rem")
+      .style("gap", "3px");
+    const header = wrap.append("div")
+      .style("display", "flex").style("justify-content", "space-between");
+    header.append("span").text(labelText);
+    const valSpan = header.append("span").style("font-weight", "bold");
+    const inp = wrap.append("input")
+      .attr("type", "range")
+      .attr("min", 1).attr("max", 20).attr("step", 1)
+      .attr("value", defaultVal)
+      .style("width", "160px");
+    return { inp, valSpan };
+  }
+
+  const { inp: inpA, valSpan: vsA } = makeSlider(controls, "Part A", 3);
+  const { inp: inpB, valSpan: vsB } = makeSlider(controls, "Part B", 5);
+
+  // info line
+  const infoDiv = container.append("div")
+    .style("font-size", "0.95rem")
+    .style("text-align", "center")
+    .style("margin-bottom", "10px")
+    .style("color", "#1e293b");
+
+  // SVG
+  const svg = container.append("svg")
+    .attr("width", W)
+    .attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("aria-label", "Ratio bar visualisation");
+
+  const g = svg.append("g").attr("transform", `translate(${ML},${MT})`);
+
+  const BAR_H = 36;
+  const GAP = 16;
+  const rows = [
+    { label: "A", y: 0, fill: "#2563eb", stroke: "#1e3a8a" },
+    { label: "B", y: BAR_H + GAP, fill: "#d97706", stroke: "#92400e" },
+    { label: "Total (A+B)", y: (BAR_H + GAP) * 2, fill: "#64748b", stroke: "#334155" }
+  ];
+
+  // background tracks
+  rows.forEach(row => {
+    g.append("rect")
+      .attr("x", 0).attr("y", row.y)
+      .attr("width", innerW).attr("height", BAR_H)
+      .attr("fill", "#f1f5f9").attr("rx", 4);
+  });
+
+  // bar rects
+  const barRects = rows.map(row => {
+    return g.append("rect")
+      .attr("x", 0).attr("y", row.y)
+      .attr("height", BAR_H)
+      .attr("fill", row.fill).attr("rx", 4);
+  });
+
+  // row labels (left side, outside)
+  rows.forEach(row => {
+    g.append("text")
+      .attr("x", -8)
+      .attr("y", row.y + BAR_H / 2 + 4)
+      .attr("text-anchor", "end")
+      .attr("font-size", "12px")
+      .attr("fill", "#334155")
+      .attr("font-weight", "bold")
+      .text(row.label);
+  });
+
+  // value labels inside bars
+  const barLabels = rows.map(row => {
+    return g.append("text")
+      .attr("y", row.y + BAR_H / 2 + 5)
+      .attr("font-size", "13px")
+      .attr("font-weight", "bold")
+      .attr("fill", "#fff");
+  });
+
+  function update() {
+    const a = +inpA.property("value");
+    const b = +inpB.property("value");
+    const total = a + b;
+    const maxVal = 20; // slider max for A and B; total can reach 40
+
+    vsA.text(a);
+    vsB.text(b);
+
+    const values = [a, b, total];
+    const maxDisplay = 40; // total bar always represents full width when a=b=20
+
+    values.forEach((v, i) => {
+      const w = (v / maxDisplay) * innerW;
+      barRects[i].attr("width", Math.max(w, 4));
+      barLabels[i]
+        .attr("x", Math.max(w / 2, 20))
+        .attr("text-anchor", "middle")
+        .text(v);
+    });
+
+    const decimal = (a / b).toFixed(3);
+    infoDiv.html(
+      `A : B = <strong>${a} : ${b}</strong> &nbsp;|&nbsp; ` +
+      `A / B = <strong>${decimal}</strong> &nbsp;|&nbsp; ` +
+      `Total parts = <strong>${total}</strong>`
+    );
+  }
+
+  update();
+  inpA.on("input", update);
+  inpB.on("input", update);
+
+  // legend
+  const legend = container.append("div")
+    .style("display", "flex").style("gap", "16px").style("font-size", "0.8rem")
+    .style("margin-top", "6px").style("flex-wrap", "wrap");
+  [
+    { color: "#2563eb", label: "Part A" },
+    { color: "#d97706", label: "Part B" },
+    { color: "#64748b", label: "Total (A + B)" }
+  ].forEach(({ color, label }) => {
+    const item = legend.append("div").style("display", "flex").style("align-items", "center").style("gap", "5px");
+    item.append("div")
+      .style("width", "14px").style("height", "14px").style("border-radius", "3px")
+      .style("background", color).style("flex-shrink", "0");
+    item.append("span").text(label);
+  });
+
+  return container.node();
+}
+```
+
+---
 
 ## The method
 
 **Finding a missing value in a proportion**
 
-Given $\frac{a}{b} = \frac{c}{d}$, find $d$:
+Given $\frac{a}{b} = \frac{c}{d}$, find $d$.
+
+Multiply both sides by $bd$ — this clears both denominators at once,
+leaving $ad = bc$. Rearranging for $d$:
 
 $$d = \frac{bc}{a}$$
 
@@ -143,9 +310,9 @@ $$d = \frac{bc}{a}$$
 
 To divide total $T$ in the ratio $a:b$:
 
-1. Count the total number of parts: $a + b$
-2. Value of one part: $T \div (a + b)$
-3. First share: $a \times$ (one part); second share: $b \times$ (one part)
+1. Count the total number of parts: $a + b$ — this tells you how many equal slices the whole is cut into.
+2. Value of one part: $T \div (a + b)$ — the size of each slice.
+3. First share: $a \times$ (one part); second share: $b \times$ (one part) — multiply each person's slices by the slice size.
 
 **Cascaded ratios**
 
@@ -168,29 +335,134 @@ Then for any other $x$: $y = kx$.
 ::: {.callout-note appearance="simple"}
 **Why this works**
 
-A ratio is a relative relationship — it does not depend on the size of
-either quantity, only on their comparison. When two quantities are
-proportional, their ratio $k$ is constant by definition. Cross-
-multiplication works because multiplying both sides of $\frac{a}{b} =
-\frac{c}{d}$ by $bd$ gives $ad = bc$ — a balanced equation.
+A ratio is a relative relationship — it does not depend on the size
+of either quantity, only on their comparison. When two quantities
+are proportional, their ratio $k$ is constant by definition.
+Cross-multiplication works because multiplying both sides of
+$\frac{a}{b} = \frac{c}{d}$ by $bd$ gives $ad = bc$ — a balanced
+equation.
 :::
+
+---
+
+*Enter three known values in a proportion. The fourth is calculated
+for you. Use this to check your worked-example answers.*
+
+```{ojs}
+//| echo: false
+proportionSolver = {
+  const d3 = await require("d3@7");
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", "560px");
+
+  container.append("p")
+    .style("font-size", "0.85rem")
+    .style("margin-bottom", "10px")
+    .style("color", "#475569")
+    .text("Given a/b = c/d, enter a, b, and c — d is calculated. Enter any three values to find the fourth.");
+
+  // controls grid
+  const grid = container.append("div")
+    .style("display", "grid")
+    .style("grid-template-columns", "repeat(4, 1fr)")
+    .style("gap", "12px")
+    .style("align-items", "end")
+    .style("margin-bottom", "14px");
+
+  function makeField(parent, labelText, defaultVal, isResult) {
+    const wrap = parent.append("label")
+      .style("display", "flex")
+      .style("flex-direction", "column")
+      .style("font-size", "0.85rem")
+      .style("gap", "4px");
+    wrap.append("span")
+      .style("font-weight", "bold")
+      .style("color", isResult ? "#15803d" : "#1e293b")
+      .text(labelText);
+    const inp = wrap.append("input")
+      .attr("type", "number")
+      .attr("step", "any")
+      .attr("value", defaultVal)
+      .style("width", "100%")
+      .style("font-size", "1rem")
+      .style("padding", "4px 6px")
+      .style("border", isResult ? "2px solid #16a34a" : "1px solid #cbd5e1")
+      .style("border-radius", "4px")
+      .style("background", isResult ? "#f0fdf4" : "#fff")
+      .property("readOnly", isResult);
+    return inp;
+  }
+
+  const inpA2 = makeField(grid, "a", 3, false);
+  const inpB2 = makeField(grid, "b", 4, false);
+  const inpC2 = makeField(grid, "c", 6, false);
+  const inpD2 = makeField(grid, "d = b·c ÷ a", "?", true);
+
+  // equation display
+  const eqDiv = container.append("div")
+    .style("font-size", "1.1rem")
+    .style("text-align", "center")
+    .style("margin-bottom", "10px")
+    .style("padding", "10px")
+    .style("background", "#f8fafc")
+    .style("border-radius", "6px")
+    .style("border", "1px solid #e2e8f0");
+
+  // explanation line
+  const explDiv = container.append("div")
+    .style("font-size", "0.85rem")
+    .style("color", "#475569")
+    .style("text-align", "center");
+
+  function update() {
+    const a = parseFloat(inpA2.property("value"));
+    const b = parseFloat(inpB2.property("value"));
+    const c = parseFloat(inpC2.property("value"));
+
+    if (isNaN(a) || isNaN(b) || isNaN(c) || a === 0) {
+      inpD2.property("value", "—");
+      eqDiv.text("Enter values for a, b, and c above (a must not be zero).");
+      explDiv.text("");
+      return;
+    }
+
+    const d = (b * c) / a;
+    const dDisplay = Number.isInteger(d) ? d : d.toFixed(4);
+    inpD2.property("value", dDisplay);
+
+    eqDiv.html(
+      `${a} / ${b} = ${c} / <strong style="color:#15803d">${dDisplay}</strong>`
+    );
+    explDiv.text(`d = b × c ÷ a = ${b} × ${c} ÷ ${a} = ${dDisplay}`);
+  }
+
+  update();
+  inpA2.on("input", update);
+  inpB2.on("input", update);
+  inpC2.on("input", update);
+
+  return container.node();
+}
+```
+
+---
 
 ## Worked examples
 
-**Example 1 — Engineering: gear ratio.** A motor shaft turns at
-1,800 rpm. It is connected through a 6:1 gear reduction. What is
-the output speed? What is the torque multiplication?
+**Example 1 — Recipe scaling.** A recipe for 4 people needs 300 g
+flour, 150 g butter, and 80 g sugar. How much of each do you need
+for 10 people?
 
-Gear ratio 6:1 means the output turns once for every 6 input
-rotations. Output speed:
+The quantities scale in proportion with the number of people. Find
+the ratio of new to old: $\frac{10}{4} = 2.5$.
 
-$$\text{output speed} = \frac{1800}{6} = 300 \text{ rpm}$$
+Multiply each ingredient by 2.5 — this keeps everything in the same ratio:
 
-Power = torque × speed. If the speed halves, and power is
-preserved (ignoring losses), the torque must double to compensate.
-By conservation of power (ignoring losses), torque multiplies
-by the same factor: $\times 6$. If input torque is 10 Nm,
-output torque is 60 Nm.
+$$\text{flour: } 300 \times 2.5 = 750 \text{ g}$$
+$$\text{butter: } 150 \times 2.5 = 375 \text{ g}$$
+$$\text{sugar: } 80 \times 2.5 = 200 \text{ g}$$
 
 ---
 
@@ -198,23 +470,23 @@ output torque is 60 Nm.
 a 1:50,000 map. What is the actual length of the road?
 
 Map scale $1:50,000$ means 1 unit on the map = 50,000 units on
-the ground.
+the ground. Multiply to convert:
 
 $$\text{actual length} = 7.4 \text{ cm} \times 50,000 = 370,000 \text{ cm} = 3.7 \text{ km}$$
 
 ---
 
-**Example 3 — Science: dilution.** A lab protocol requires a 1:400
-dilution of a stock solution. You need 10 mL of diluted solution.
-How much stock solution do you use?
+**Example 3 — Splitting costs.** Three friends split a monthly
+phone plan costing £36 in the ratio 2:3:1 (based on how much data
+each uses). How much does each pay?
 
-Ratio 1:400 means 1 part stock per 400 parts total (or 399 parts
-diluent — here we use the pharmaceutical convention of 1 part in
-400 total).
+Total parts: $2 + 3 + 1 = 6$. One part = $£36 \div 6 = £6$.
 
-$$\text{stock volume} = \frac{1}{400} \times 10 \text{ mL} = 0.025 \text{ mL} = 25 \text{ µL}$$
+Friend A (2 parts): $2 \times £6 = £12$
+Friend B (3 parts): $3 \times £6 = £18$
+Friend C (1 part): $1 \times £6 = £6$
 
-Make up to 10 mL with diluent. Stock proportion: $\frac{0.025}{10} = \frac{1}{400}$. Check.
+Check: $£12 + £18 + £6 = £36$. Yes.
 
 ---
 
@@ -248,21 +520,21 @@ any rule that maps inputs to outputs.
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
 
-- A mechanical engineer calculating gear or pulley ratios is
-  applying proportion directly.
-- A cartographer using a map scale is applying ratio: every
-  measurement on the map is a proportional reduction.
-- A chemist preparing a dilution series is dividing a quantity
-  in a fixed ratio at each step.
-- A financial analyst comparing companies by price-to-earnings
-  or debt-to-equity is computing ratios.
+- Scaling a recipe up or down is proportion — every ingredient
+  changes by the same factor.
+- Reading a map involves ratio: every measurement on paper is a
+  proportional reduction of the real distance.
+- Splitting a bill by how much each person ordered is dividing
+  a quantity in a ratio.
+- A gear ratio on a bike tells you how many times the back wheel
+  turns for each turn of the pedals.
 
 The arithmetic is identical in every case.
 :::
 
 ## Exercises
 
-1. A recipe for 4 people needs 300g flour, 150g butter, and 80g
+1. A recipe for 4 people needs 300 g flour, 150 g butter, and 80 g
    sugar. Scale the recipe to serve 7 people. *(Exact grams to
    one decimal place.)*
 

@@ -50,17 +50,17 @@ destinations:
     career_example: "Financial analyst building a cash flow model"
 
 hook: |
-  A structural beam carries a load. The force compresses it: −45 kN.
-  The beam's self-weight adds further compression: −12 kN. The wind
-  creates a tension: +8 kN. What is the net force?
+  Your bank balance is £40 and you spend £60. You're now at −£20.
 
-  A bank account has £240. Three debits of £80 each arrive. What
-  is the new balance?
+  It's −3°C at night. By morning it's dropped another 8 degrees.
+  Where are you on the thermometer?
 
-  The temperature drops from −3°C to −19°C overnight. By how many
-  degrees did it drop?
+  You're on the ground floor of a car park. The exit is two floors
+  up; the lower deck is three floors down. Which direction is floor −3?
 
-  Three questions. One operation: addition on the integer number line.
+  All three questions use the same operation: addition on the integer
+  number line. Negative numbers aren't strange — they're just the
+  left side of zero.
 
 notation_introduced:
   - symbol: "−a"
@@ -92,17 +92,17 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-A structural beam carries a load. The force compresses it: −45 kN.
-The beam's self-weight adds further compression: −12 kN. The wind
-creates a tension: +8 kN. What is the net force?
+Your bank balance is £40 and you spend £60. You're now at −£20.
 
-A bank account has £240. Three debits of £80 each arrive. What
-is the new balance?
+It's −3°C at night. By morning it's dropped another 8 degrees.
+Where are you on the thermometer?
 
-The temperature drops from −3°C to −19°C overnight. By how many
-degrees did it drop?
+You're on the ground floor of a car park. The exit is two floors
+up; the lower deck is three floors down. Which direction is floor −3?
 
-Three questions. One operation: addition on the integer number line.
+All three questions use the same operation: addition on the integer
+number line. Negative numbers aren't strange — they're just the
+left side of zero.
 
 ## What the notation is saying
 
@@ -111,16 +111,18 @@ An **integer** is any whole number: ..., −3, −2, −1, 0, 1, 2, 3, ...
 The negative sign in front of a number means "opposite direction":
 $-5$ is 5 units to the left of zero.
 
-Adding a negative is movement to the left:
+Adding a negative moves you left on the number line:
 $$7 + (-3) = 7 - 3 = 4$$
 
-Subtracting a negative is movement to the right — you reverse
-direction twice:
+Subtracting a negative moves you right — you reverse direction twice:
 $$5 - (-2) = 5 + 2 = 7$$
 
-**The double negative rule:** $-(-a) = a$. Remove two negatives and
-you get the original positive. Think of it as: "take away a debt"
-is the same as "give money."
+That second one trips people up. Think of it this way: if someone
+cancels a debt you owe, you end up better off. Taking away a negative
+is the same as adding a positive.
+
+**The double negative rule:** $-(-a) = a$. Two negatives cancel out
+and you get the original positive back.
 
 **Sign rules for multiplication and division:**
 
@@ -134,6 +136,152 @@ is the same as "give money."
 Same signs give positive. Different signs give negative. The same
 rules apply to division.
 
+---
+
+**Interactive: Signed number line.** Set a starting value and a change. The arrow shows the movement; the equation updates live.
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+viewof startVal = Inputs.range(
+  [-10, 10], { label: "Starting value", step: 1, value: 3 }
+)
+```
+
+```{ojs}
+//| echo: false
+viewof changeVal = Inputs.range(
+  [-10, 10], { label: "Change (add this)", step: 1, value: -5 }
+)
+```
+
+```{ojs}
+//| echo: false
+{
+  const W = 560;
+  const H = 130;
+  const LINE_Y = 58;
+  const TICK_H = 10;
+  const PAD_L = 28;
+  const PAD_R = 28;
+  const MIN_VAL = -15;
+  const MAX_VAL = 15;
+
+  const start  = Number.isFinite(startVal)  ? Math.round(startVal)  : 3;
+  const change = Number.isFinite(changeVal) ? Math.round(changeVal) : -5;
+  const result = start + change;
+
+  // Clamp result display — result can go outside visible range; still show equation
+  const visibleResult = Math.max(MIN_VAL, Math.min(MAX_VAL, result));
+
+  const usableW = W - PAD_L - PAD_R;
+  const xScale = d3.scaleLinear()
+    .domain([MIN_VAL, MAX_VAL])
+    .range([PAD_L, PAD_L + usableW]);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Number line
+  svg.append("line")
+    .attr("x1", PAD_L - 8).attr("y1", LINE_Y)
+    .attr("x2", PAD_L + usableW + 8).attr("y2", LINE_Y)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+
+  // Arrowheads on line ends
+  const arrowPath = (x, y, dir) =>
+    `M${x},${y} L${x + dir * 7},${y - 5} L${x + dir * 7},${y + 5} Z`;
+  svg.append("path").attr("d", arrowPath(PAD_L - 8, LINE_Y, -1)).attr("fill", "#9ca3af");
+  svg.append("path").attr("d", arrowPath(PAD_L + usableW + 8, LINE_Y, 1)).attr("fill", "#9ca3af");
+
+  // Tick marks and labels
+  for (let v = MIN_VAL; v <= MAX_VAL; v++) {
+    const x = xScale(v);
+    const isMajor = v % 5 === 0;
+    svg.append("line")
+      .attr("x1", x).attr("y1", LINE_Y - (isMajor ? TICK_H : TICK_H * 0.6))
+      .attr("x2", x).attr("y2", LINE_Y + (isMajor ? TICK_H : TICK_H * 0.6))
+      .attr("stroke", isMajor ? "#6b7280" : "#d1d5db")
+      .attr("stroke-width", isMajor ? 1.5 : 1);
+    if (isMajor) {
+      svg.append("text")
+        .attr("x", x).attr("y", LINE_Y + TICK_H + 13)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#6b7280").attr("font-size", "11px")
+        .text(v);
+    }
+  }
+
+  // Arrow showing movement (from start to result, clamped to visible range)
+  const arrowStartX  = xScale(Math.max(MIN_VAL, Math.min(MAX_VAL, start)));
+  const arrowEndX    = xScale(visibleResult);
+  const ARROW_Y      = LINE_Y - 22;
+  const isOutOfRange = result < MIN_VAL || result > MAX_VAL;
+
+  if (change !== 0) {
+    const colour = change > 0 ? "#0d9488" : "#d97706";
+    svg.append("line")
+      .attr("x1", arrowStartX).attr("y1", ARROW_Y)
+      .attr("x2", arrowEndX).attr("y2", ARROW_Y)
+      .attr("stroke", colour).attr("stroke-width", 2.5);
+
+    // Arrowhead at end
+    const dir = change > 0 ? 1 : -1;
+    svg.append("path")
+      .attr("d", `M${arrowEndX},${ARROW_Y} L${arrowEndX - dir * 8},${ARROW_Y - 5} L${arrowEndX - dir * 8},${ARROW_Y + 5} Z`)
+      .attr("fill", colour);
+  }
+
+  // Start position dot
+  svg.append("circle")
+    .attr("cx", arrowStartX).attr("cy", LINE_Y)
+    .attr("r", 7)
+    .attr("fill", "#4b5563")
+    .attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+  svg.append("text")
+    .attr("x", arrowStartX).attr("cy", LINE_Y)
+    .attr("y", LINE_Y - 12)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#374151").attr("font-size", "11px").attr("font-weight", "600")
+    .text(start);
+
+  // Result position dot
+  const resultColour = result > 0 ? "#0d9488" : result < 0 ? "#d97706" : "#4b5563";
+  svg.append("circle")
+    .attr("cx", xScale(visibleResult)).attr("cy", LINE_Y)
+    .attr("r", 7)
+    .attr("fill", resultColour)
+    .attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+  svg.append("text")
+    .attr("x", xScale(visibleResult))
+    .attr("y", LINE_Y + TICK_H + 28)
+    .attr("text-anchor", "middle")
+    .attr("fill", resultColour).attr("font-size", "11px").attr("font-weight", "700")
+    .text(isOutOfRange ? `${result} (off scale)` : result);
+
+  // Equation label
+  const changeSign = change >= 0 ? `+ ${change}` : `+ (${change})`;
+  const eqLabel    = `${start}  ${changeSign}  =  ${result}`;
+  svg.append("text")
+    .attr("x", W / 2).attr("y", H - 6)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#1f2937").attr("font-size", "13px").attr("font-weight", "700")
+    .text(eqLabel);
+
+  return svg.node();
+}
+```
+
+---
+
 ## The method
 
 **Addition and subtraction**
@@ -146,14 +294,14 @@ move left. Your result is where you land.
 
 **Multiplication**
 
-1. Multiply the absolute values (ignore signs).
+1. Multiply the absolute values (ignore signs for now).
 2. Count the number of negative factors.
    - Even number of negatives → positive result.
    - Odd number of negatives → negative result.
 
 **Division**
 
-Same rule: divide absolute values, then apply sign rule.
+Same rule: divide the absolute values, then apply the sign rule.
 
 **Order of operations with signed numbers**
 
@@ -174,51 +322,227 @@ $0 = (-3)(4 + (-4)) = (-3)(4) + (-3)(-4) = -12 + (-3)(-4)$, so
 $(-3)(-4) = 12$.
 :::
 
+---
+
+**Interactive: Sign rules for multiplication.** Click any cell in the table to see the calculation and the rule in action. All four combinations are visible at once.
+
+```{ojs}
+//| echo: false
+viewof selectedCell = {
+  // Default to top-left cell on load
+  const init = { a: 1, b: 1 };
+  return Inputs.input(init);
+}
+```
+
+```{ojs}
+//| echo: false
+{
+  // Fixed example magnitudes for each sign combination
+  // Rows: sign of first number (+/-)
+  // Cols: sign of second number (+/-)
+  const COMBOS = [
+    { aSign: +1, bSign: +1, aAbs: 3, bAbs: 4, row: 0, col: 0 },
+    { aSign: +1, bSign: -1, aAbs: 3, bAbs: 4, row: 0, col: 1 },
+    { aSign: -1, bSign: +1, aAbs: 3, bAbs: 4, row: 1, col: 0 },
+    { aSign: -1, bSign: -1, aAbs: 3, bAbs: 4, row: 1, col: 1 },
+  ];
+
+  const W = 560;
+  const H = 280;
+  const CELL_W = 200;
+  const CELL_H = 88;
+  const GRID_X = 100;
+  const GRID_Y = 50;
+  const COL_HEADER_Y = 28;
+  const ROW_HEADER_X = 52;
+
+  const posColour  = "#0d9488";  // teal-600 — positive result
+  const negColour  = "#d97706";  // amber-600 — negative result
+  const selStroke  = "#1f2937";
+  const dimFill    = "#f9fafb";
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit; cursor: pointer;`);
+
+  // Column headers: sign of second number
+  const colLabels = ["Second number: +", "Second number: −"];
+  colLabels.forEach((label, ci) => {
+    svg.append("text")
+      .attr("x", GRID_X + ci * CELL_W + CELL_W / 2)
+      .attr("y", COL_HEADER_Y)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#374151")
+      .attr("font-size", "12px")
+      .attr("font-weight", "600")
+      .text(label);
+  });
+
+  // Row headers: sign of first number
+  const rowLabels = ["First: +", "First: −"];
+  rowLabels.forEach((label, ri) => {
+    svg.append("text")
+      .attr("x", ROW_HEADER_X)
+      .attr("y", GRID_Y + ri * CELL_H + CELL_H / 2 + 4)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#374151")
+      .attr("font-size", "12px")
+      .attr("font-weight", "600")
+      .text(label);
+  });
+
+  COMBOS.forEach(c => {
+    const aVal   = c.aSign * c.aAbs;
+    const bVal   = c.bSign * c.bAbs;
+    const result = aVal * bVal;
+    const isPos  = result > 0;
+    const colour = isPos ? posColour : negColour;
+
+    const sel = selectedCell;
+    const isSelected = sel && sel.a === c.aSign && sel.b === c.bSign;
+
+    const cellX = GRID_X + c.col * CELL_W;
+    const cellY = GRID_Y + c.row * CELL_H;
+
+    // Cell background
+    const g = svg.append("g")
+      .attr("transform", `translate(${cellX},${cellY})`)
+      .style("cursor", "pointer")
+      .on("click", () => {
+        selectedCell.value = { a: c.aSign, b: c.bSign };
+        selectedCell.dispatchEvent(new Event("input"));
+      });
+
+    g.append("rect")
+      .attr("width", CELL_W - 4)
+      .attr("height", CELL_H - 4)
+      .attr("x", 2).attr("y", 2)
+      .attr("rx", 6)
+      .attr("fill", isSelected ? colour : dimFill)
+      .attr("stroke", isSelected ? selStroke : "#d1d5db")
+      .attr("stroke-width", isSelected ? 2 : 1);
+
+    // Calculation line: e.g. "+3 × −4 = −12"
+    const aStr = c.aSign > 0 ? `+${c.aAbs}` : `−${c.aAbs}`;
+    const bStr = c.bSign > 0 ? `+${c.bAbs}` : `−${c.bAbs}`;
+    const rStr = result > 0 ? `+${Math.abs(result)}` : `−${Math.abs(result)}`;
+
+    g.append("text")
+      .attr("x", (CELL_W - 4) / 2)
+      .attr("y", 28)
+      .attr("text-anchor", "middle")
+      .attr("fill", isSelected ? "#fff" : "#1f2937")
+      .attr("font-size", "16px")
+      .attr("font-weight", "700")
+      .text(`${aStr} × ${bStr} = ${rStr}`);
+
+    // Sign rule label
+    const aSignWord = c.aSign > 0 ? "positive" : "negative";
+    const bSignWord = c.bSign > 0 ? "positive" : "negative";
+    const rSignWord = isPos ? "positive" : "negative";
+    const ruleLine1 = `${aSignWord} × ${bSignWord}`;
+    const ruleLine2 = `= ${rSignWord}`;
+
+    g.append("text")
+      .attr("x", (CELL_W - 4) / 2)
+      .attr("y", 50)
+      .attr("text-anchor", "middle")
+      .attr("fill", isSelected ? "#fff" : "#6b7280")
+      .attr("font-size", "11px")
+      .text(ruleLine1);
+
+    g.append("text")
+      .attr("x", (CELL_W - 4) / 2)
+      .attr("y", 64)
+      .attr("text-anchor", "middle")
+      .attr("fill", isSelected ? "#fff" : colour)
+      .attr("font-size", "11px")
+      .attr("font-weight", "600")
+      .text(ruleLine2);
+
+    // Shape badge: circle = positive, diamond = negative (redundant encoding)
+    const BADGE_X = (CELL_W - 4) / 2;
+    const BADGE_Y = 78;
+    if (isPos) {
+      g.append("circle")
+        .attr("cx", BADGE_X).attr("cy", BADGE_Y - 4)
+        .attr("r", 5)
+        .attr("fill", "none")
+        .attr("stroke", isSelected ? "#fff" : colour)
+        .attr("stroke-width", 1.5);
+    } else {
+      g.append("polygon")
+        .attr("points", `${BADGE_X},${BADGE_Y - 9} ${BADGE_X + 6},${BADGE_Y - 4} ${BADGE_X},${BADGE_Y + 1} ${BADGE_X - 6},${BADGE_Y - 4}`)
+        .attr("fill", "none")
+        .attr("stroke", isSelected ? "#fff" : colour)
+        .attr("stroke-width", 1.5);
+    }
+  });
+
+  // Summary rule line at bottom
+  svg.append("text")
+    .attr("x", W / 2)
+    .attr("y", H - 10)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#374151")
+    .attr("font-size", "12px")
+    .text("Same signs → positive result   |   Different signs → negative result   |   Click any cell to highlight it");
+
+  return svg.node();
+}
+```
+
+---
+
 ## Worked examples
 
-**Example 1 — Engineering: net force.** A structural column
-experiences three axial forces: a dead load of −65 kN (compression),
-a live load of −40 kN (compression), and a wind uplift of +18 kN
-(tension). What is the net force?
+**Example 1 — Bank balance.** You start the week with £50 in your
+account. You spend £30 on food, £25 on a game, and then get paid
+£60 from a part-time shift. What's your balance at the end of the week?
 
-$$F_\text{net} = (-65) + (-40) + 18 = -105 + 18 = -87 \text{ kN}$$
+Add up all the changes — spends are negative, income is positive:
+$$50 + (-30) + (-25) + 60 = 50 - 30 - 25 + 60 = 55$$
 
-Net: 87 kN compression. The column is in compression overall.
-
----
-
-**Example 2 — Finance: running balance.** A business account starts
-the week at £3,200. Transactions: −£480 (supplier), −£1,150
-(payroll), +£2,300 (client payment), −£95 (utilities). End balance?
-
-$$3200 + (-480) + (-1150) + 2300 + (-95)$$
-$$= 3200 - 480 - 1150 + 2300 - 95$$
-$$= 3775$$
-
-End balance: £3,775.
+End balance: £55.
 
 ---
 
-**Example 3 — Science: temperature change.** At noon a weather
-station records +14°C. At midnight the temperature is −9°C. What
-is the change in temperature?
+**Example 2 — Temperature change.** The temperature at 6 am is
+−5°C. By midday it has risen 14°C. By midnight it has fallen 18°C
+from the midday high. What is the midnight temperature?
 
-$$\Delta T = -9 - (+14) = -9 - 14 = -23°\text{C}$$
+Work through the changes in order:
 
-The temperature fell by 23°C. The sign tells us the direction:
-negative means it got colder.
+$$-5 + 14 = 9°\text{C} \quad \text{(midday)}$$
+$$9 - 18 = -9°\text{C} \quad \text{(midnight)}$$
+
+The midnight temperature is −9°C.
 
 ---
 
-**Example 4 — Computing: signed overflow.** A program uses a
-signed 8-bit integer (range −128 to 127). The variable holds
-value 120. Adding 15 would give 135, but 135 > 127. In most
-languages it wraps to $135 - 256 = -121$.
+**Example 3 — Score in a game.** A quiz game gives +5 for a correct
+answer and −3 for a wrong one. A player gets 4 right and 6 wrong.
+What is their score?
 
-This is integer arithmetic modulo 256, interpreted as signed:
-$120 + 15 = 135$, and $135 - 256 = -121$. A classic bug in
-low-level code that results in a large positive becoming a
-large negative.
+Correct answers: $4 \times 5 = 20$.
+Wrong answers: $6 \times (-3) = -18$ — six negatives, so the result is negative.
+
+Total score: $20 + (-18) = 2$.
+
+---
+
+**Example 4 — Running total with negatives.** Evaluate
+$(-4) \times (-3) + 2 \times (-5)$ without a calculator.
+
+Handle the multiplications first — left to right:
+
+$(-4) \times (-3) = 12$ (same signs → positive), giving $12$.
+
+$2 \times (-5) = -10$ (different signs → negative), giving $-10$.
+
+Now add: $12 + (-10) = 2$.
 
 ## Where this goes
 
@@ -236,28 +560,26 @@ it is a physical error.
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
 
-- A structural engineer assigns positive and negative conventions
-  for forces before analysing any structure — the sign conventions
-  are the analysis.
+- A bank account or budget uses signed arithmetic every time
+  money moves in or out — the balance is an integer sum.
+- A weather forecast compares signed temperatures to report
+  how much warmer or colder one day was than another.
 - A physicist writing Newton's second law includes sign:
   $F = ma$, where $F < 0$ means the force acts in the negative
   direction.
-- A financial analyst tracking cash flow sums positive inflows
-  and negative outflows to find net position.
-- A programmer writing embedded firmware must track whether
-  arithmetic will overflow a signed type boundary.
+- A programmer writing low-level code must track whether
+  arithmetic will overflow a signed integer's range.
 
 The rules are short. The mistakes, when you forget them, are expensive.
 :::
 
 ## Exercises
 
-1. A submersible is at −240 m. It descends a further 85 m.
-   What is its new depth? Then it ascends 120 m. Final depth?
+1. A lift starts at floor 0 (ground). It goes down 3 floors,
+   then up 7 floors, then down 2 floors. What floor is it on?
 
-2. A company's profit/loss for four quarters: −£12,400;
-   +£8,700; −£3,200; +£19,500. What is the annual net profit
-   or loss?
+2. A player's scores across five rounds of a quiz game:
+   −4, +7, −2, +9, −3. What is their total score?
 
 3. Evaluate without a calculator:
    a) $(-8) \times (-6)$
@@ -265,17 +587,17 @@ The rules are short. The mistakes, when you forget them, are expensive.
    c) $4 \times (-9) \times (-2)$
    d) $(-3)^3$
 
-4. A structural beam has three point loads: −20 kN at one end,
-   −35 kN at the midpoint, and a reaction of +55 kN at the
-   support. Is the beam in equilibrium? *(Net force = 0 if yes.)*
+4. The temperature at midnight is −6°C. It rises by 11°C by
+   noon, then drops 15°C by the following midnight. What is
+   the temperature at the end?
 
 5. The lowest temperature ever recorded in Canada is −63°C
    (Snag, Yukon). The highest is +45°C (Lytton, BC). What is
    the range — the difference between highest and lowest?
 
-6. A signed 8-bit integer holds the value −50. The program
-   multiplies it by −3. What is the result? Is it within the
-   range −128 to 127?
+6. A student owes three friends £8 each. They earn £40 doing
+   odd jobs. After paying back all three debts, how much
+   money do they have?
 
 7. A share price opens at £14.50. Changes over five days:
    −£0.80, +£1.20, −£2.40, +£0.35, −£0.90. What is the
