@@ -65,51 +65,48 @@ book:
         - vol-06/02-distributions.qmd
         - vol-06/03-statistical-inference.qmd
         - vol-06/04-data-analysis.qmd
-    - part: "Volume 7 — Engineering mathematics"
+    - part: "Volume 7 — Engineering mathematics: ODEs"
       chapters:
         - vol-07/index.qmd
-        - part: "Ordinary differential equations"
-          chapters:
-            - vol-07/odes/01-first-order.qmd
-            - vol-07/odes/02-second-order.qmd
-            - vol-07/odes/03-systems-phase-plane.qmd
-            - vol-07/odes/04-laplace-transforms.qmd
-        - part: "Linear algebra and vector calculus"
-          chapters:
-            - vol-07/linear-algebra/01-matrices-systems.qmd
-            - vol-07/linear-algebra/02-eigenvalues.qmd
-            - vol-07/linear-algebra/03-vector-differential.qmd
-            - vol-07/linear-algebra/04-vector-integral.qmd
-        - part: "Fourier analysis and PDEs"
-          chapters:
-            - vol-07/fourier-pdes/01-fourier-series.qmd
-            - vol-07/fourier-pdes/02-fourier-transforms.qmd
-            - vol-07/fourier-pdes/03-partial-differential-equations.qmd
-        - part: "Complex analysis"
-          chapters:
-            - vol-07/complex-analysis/01-complex-functions.qmd
-            - vol-07/complex-analysis/02-complex-integration.qmd
-            - vol-07/complex-analysis/03-series-residues.qmd
-            - vol-07/complex-analysis/04-conformal-mapping.qmd
-        - part: "Numerical methods"
-          chapters:
-            - vol-07/numerics/01-numerical-methods.qmd
-            - vol-07/numerics/02-numerical-linear-algebra.qmd
-            - vol-07/numerics/03-numerical-odes-pdes.qmd
-        - part: "Optimisation"
-          chapters:
-            - vol-07/optimisation/01-linear-programming.qmd
-            - vol-07/optimisation/02-graphs-networks.qmd
-        - part: "Probability and statistics"
-          chapters:
-            - vol-07/probability/01-probability-theory.qmd
-            - vol-07/probability/02-mathematical-statistics.qmd
+        - vol-07/odes/01-first-order.qmd
+        - vol-07/odes/02-second-order.qmd
+        - vol-07/odes/03-systems-phase-plane.qmd
+        - vol-07/odes/04-laplace-transforms.qmd
+    - part: "Volume 7 — Linear algebra and vector calculus"
+      chapters:
+        - vol-07/linear-algebra/01-matrices-systems.qmd
+        - vol-07/linear-algebra/02-eigenvalues.qmd
+        - vol-07/linear-algebra/03-vector-differential.qmd
+        - vol-07/linear-algebra/04-vector-integral.qmd
+    - part: "Volume 7 — Fourier analysis and PDEs"
+      chapters:
+        - vol-07/fourier-pdes/01-fourier-series.qmd
+        - vol-07/fourier-pdes/02-fourier-transforms.qmd
+        - vol-07/fourier-pdes/03-partial-differential-equations.qmd
+    - part: "Volume 7 — Complex analysis"
+      chapters:
+        - vol-07/complex-analysis/01-complex-functions.qmd
+        - vol-07/complex-analysis/02-complex-integration.qmd
+        - vol-07/complex-analysis/03-series-residues.qmd
+        - vol-07/complex-analysis/04-conformal-mapping.qmd
+    - part: "Volume 7 — Numerical methods"
+      chapters:
+        - vol-07/numerics/01-numerical-methods.qmd
+        - vol-07/numerics/02-numerical-linear-algebra.qmd
+        - vol-07/numerics/03-numerical-odes-pdes.qmd
+    - part: "Volume 7 — Optimisation and probability"
+      chapters:
+        - vol-07/optimisation/01-linear-programming.qmd
+        - vol-07/optimisation/02-graphs-networks.qmd
+        - vol-07/probability/01-probability-theory.qmd
+        - vol-07/probability/02-mathematical-statistics.qmd
 
 format:
   html:
     theme:
-      light: [flatly, assets/css/wayward.scss]
-      dark: [darkly, assets/css/wayward-dark.scss]
+      light: flatly
+      dark: darkly
+    css: assets/css/quarto-wayward.css
     code-fold: true
     toc: true
     toc-depth: 3
@@ -117,7 +114,7 @@ format:
     fig-align: center
     callout-appearance: simple
     smooth-scroll: true
-    include-in-header: assets/js/wayfinding.html
+    include-in-header: assets/includes/quarto-head.html
 
   pdf:
     documentclass: scrbook
@@ -129,8 +126,6 @@ format:
     fontfamily: libertinus
     colorlinks: true
 
-bibliography: references.bib
-csl: assets/chicago-author-date.csl
 
 execute:
   freeze: auto

@@ -1,6 +1,68 @@
 ---
 title: "How to Use This Series"
-status: "seed"
+subtitle: "Where to start, how to navigate, what the notation means"
 ---
 
-*Seed — front matter to be completed before content is written.*
+## Where to start
+
+You do not have to start at Volume 1.
+
+The series runs from arithmetic to engineering mathematics, but it is not a ladder — it is a map. Find the place where you lost the thread and start there. The wayfinding map shows you the prerequisites for any chapter so you can backfill exactly what you need.
+
+If you are not sure where that is, a rough guide:
+
+| Where you are | Start here |
+|---|---|
+| Struggled with high school maths | Volume 1 or 2 |
+| Passed high school, never felt sure why | Volume 3 or 4 |
+| About to start university maths | Volume 5 |
+| In an engineering degree, finding the maths hard | Volume 7 |
+
+## How chapters are structured
+
+Every chapter opens with two or three concrete situations that share the same underlying mathematical structure. The mathematics comes from the situation, not the other way round.
+
+After the opening:
+
+1. The notation is introduced and read in plain English beside it
+2. The method is shown, stepped through, with a verification
+3. A brief explanation of why the method works
+4. Two to four worked examples from different fields
+5. Where the chapter leads — the specific topics it opens up
+6. Exercises
+
+## The exercises
+
+Exercises come in four types. The type is stated at the start of each exercise set.
+
+**Puzzle** — convergent, satisfying, one clean answer. The interesting work is setting up the equation, not solving it.
+
+**Drill** — repetitive by design. Some things require fluency, and fluency requires repetition.
+
+**Investigation** — open-ended, more than one valid answer. These ask you to explore.
+
+**Project** — extended, usually involving a real dataset or context.
+
+## What the notation is doing
+
+Notation is a compression tool. It lets you write in three symbols what would otherwise take three sentences. This series introduces each symbol when it is first needed, reads it in plain English immediately beside it, and notes how heavy a lift it is — some symbols need one sentence, some need a whole section.
+
+If a piece of notation stops you, look for the plain-language reading in the same paragraph. It will be there.
+
+## The destination fields
+
+Every chapter is tagged with the fields it serves:
+
+- **Engineering** — structural, electrical, mechanical, chemical, software
+- **Hard sciences** — physics, chemistry, biology, earth sciences
+- **Finance and quant** — financial modelling, actuarial science, econometrics
+- **Computing and data** — CS, machine learning, data science, cryptography
+- **Geography and environment** — GIS, climate science, environmental modelling
+
+The tags are there to answer the question "why am I learning this". Each chapter's worked examples cover at least three of its tagged fields.
+
+## The prerequisites
+
+Each chapter states what you need coming in. If a prerequisite chapter is incomplete in your knowledge, the wayfinding map will tell you which earlier chapter covers it.
+
+The prerequisites are genuine — not padding. If a chapter says it requires limits, it means you will need limits to follow the argument.
