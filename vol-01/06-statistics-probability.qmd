@@ -1,6 +1,306 @@
 ---
 title: "Statistics and probability"
-status: "seed"
+subtitle: "Reasoning honestly from limited data"
+
+volume: 1
+chapter: 6
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You can add and divide numbers. You know what a fraction is.
+  You have encountered averages before.
+
+rewrite: |
+  Data is a sample, not a population. A single average hides the
+  spread. Probability is a number between 0 and 1 that measures
+  how likely an outcome is, based on either counting or frequency.
+  The right question is never just "what is the average?" — it
+  is also "how much does it vary, and how confident can we be?"
+
+opens_to:
+  - id: "v6c1-stat-advanced"
+    label: "Probability and data"
+    volume: 6
+    relationship: "enables"
+  - id: "v2c3-patterns"
+    label: "Patterns and sequences"
+    volume: 2
+    relationship: "enriches"
+  - id: "v1c3-pct"
+    label: "Percent and rates"
+    volume: 1
+    relationship: "enriches"
+
+prerequisite_ids:
+  - "v1c1-num"
+  - "v1c3-pct"
+
+destinations:
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Every experimental measurement is reported with uncertainty — the standard deviation of repeated trials."
+    career_example: "Lab scientist reporting a measured value with its uncertainty"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "A portfolio's expected return is a probability-weighted average of outcomes — the definition of expected value."
+    career_example: "Risk analyst pricing insurance or financial products"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "A spam filter assigns each email a probability of being spam — basic statistics is the engine underneath."
+    career_example: "Data scientist building and evaluating a classification model"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "A 100-year flood event has a 1% probability of occurring in any given year — this is statistical return period."
+    career_example: "Hydrologist setting design standards for bridges and culverts"
+
+hook: |
+  A weather forecast says 70% chance of rain. A factory produces
+  1,000 bolts per day; the defect rate is 0.3%. A clinical trial
+  reports a drug reduces blood pressure by 12 mmHg on average,
+  with a standard deviation of 4 mmHg.
+
+  These are not vague statements. Each one encodes a precise claim
+  about how a process behaves across many instances. Understanding
+  them requires knowing what an average actually measures, what
+  spread means, and why probability is a fraction between 0 and 1.
+
+notation_introduced:
+  - symbol: "x̄"
+    reads_as: "x-bar, the sample mean"
+    notation_weight: 2
+  - symbol: "n"
+    reads_as: "the number of observations in a sample"
+    notation_weight: 1
+  - symbol: "Σ"
+    reads_as: "sigma, meaning sum all the following terms"
+    notation_weight: 3
+  - symbol: "P(A)"
+    reads_as: "the probability of event A"
+    notation_weight: 2
+  - symbol: "P(A) = m/n"
+    reads_as: "probability equals favourable outcomes divided by total equally likely outcomes"
+    notation_weight: 2
+  - symbol: "range, IQR"
+    reads_as: "range is max minus min; IQR is the interquartile range (middle 50%)"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 7
+  strand: "Statistics and Probability"
+  outcome: "SP1"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A weather forecast says 70% chance of rain. A factory produces
+1,000 bolts per day; the defect rate is 0.3%. A clinical trial
+reports a drug reduces blood pressure by 12 mmHg on average,
+with a standard deviation of 4 mmHg.
+
+These are not vague statements. Each one encodes a precise claim
+about how a process behaves across many instances. Understanding
+them requires knowing what an average actually measures, what
+spread means, and why probability is a fraction between 0 and 1.
+
+## What the notation is saying
+
+**The mean** $\bar{x}$ is the sum of all values divided by the
+number of values. Given data $x_1, x_2, \ldots, x_n$:
+
+$$\bar{x} = \frac{x_1 + x_2 + \cdots + x_n}{n} = \frac{\sum x_i}{n}$$
+
+The $\Sigma$ (capital sigma) means "sum all of the following."
+It is notation for a loop: add every term $x_i$ for $i = 1$ to $n$.
+
+**The median** is the middle value when the data are ordered.
+If there are two middle values, take their mean. The median is
+less sensitive to extreme values than the mean.
+
+**The range** is maximum minus minimum. It measures total spread
+but is heavily influenced by outliers.
+
+**Probability** of event $A$ is:
+
+$$P(A) = \frac{\text{number of favourable outcomes}}{\text{total number of equally likely outcomes}}$$
+
+$P(A) = 0$: impossible. $P(A) = 1$: certain. All probabilities
+for a complete set of outcomes sum to 1.
+
+**Relative frequency**: when you cannot count outcomes theoretically,
+estimate probability from data:
+$$P(A) \approx \frac{\text{number of times A occurred}}{\text{total trials}}$$
+
+## The method
+
+**Computing the mean**
+
+1. Add all values.
+2. Divide by the count.
+
+**Computing the median**
+
+1. Order the values from least to greatest.
+2. If $n$ is odd, the median is the value at position $\frac{n+1}{2}$.
+3. If $n$ is even, average the values at positions $\frac{n}{2}$ and $\frac{n}{2}+1$.
+
+**Computing the range and IQR**
+
+Range: $\max - \min$.
+
+IQR (interquartile range): split the ordered data in half.
+Lower quartile Q1 = median of the lower half.
+Upper quartile Q3 = median of the upper half.
+$\text{IQR} = Q3 - Q1$.
+
+The IQR describes the spread of the middle 50% of the data.
+
+**Computing probability from equally likely outcomes**
+
+1. Count total possible outcomes.
+2. Count outcomes that match event $A$.
+3. Divide.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+The mean is the "balance point" of a data set — if you placed
+equal weights at each value on a number line, the mean is where
+the line would balance. The median is the "middle" — it splits
+the data 50/50. They give the same answer for symmetric data;
+they diverge when the data is skewed. The median is more robust:
+one extreme outlier shifts the mean but not the median.
+
+Probability is defined between 0 and 1 because it is a fraction
+of a complete set of outcomes. When probabilities sum to more than
+1, you have double-counted. When they sum to less than 1, you have
+missed some outcomes.
+:::
+
+## Worked examples
+
+**Example 1 — Science: measurement uncertainty.** A student measures
+the length of a component seven times:
+48.3, 48.5, 48.4, 48.6, 48.3, 48.7, 48.4 mm.
+Report the mean and range.
+
+Ordered: 48.3, 48.3, 48.4, 48.4, 48.5, 48.6, 48.7.
+
+Mean:
+$$\bar{x} = \frac{48.3 + 48.5 + 48.4 + 48.6 + 48.3 + 48.7 + 48.4}{7} = \frac{339.2}{7} = 48.46 \text{ mm}$$
+
+Range: $48.7 - 48.3 = 0.4$ mm.
+
+Median: 4th value = 48.4 mm. The mean and median are close
+(the data is roughly symmetric), which is reassuring.
+
+---
+
+**Example 2 — Geography: flood probability.** A hydrologist's
+records show that, in 80 years of data, river discharge exceeded
+the flood threshold 4 times. Estimate the probability of a flood
+in any given year.
+
+$$P(\text{flood}) \approx \frac{4}{80} = \frac{1}{20} = 0.05 = 5\%$$
+
+This is a "20-year flood" — the average recurrence interval is
+$\frac{1}{0.05} = 20$ years. A bridge designed to this standard
+has a 5% chance of being exceeded in any single year.
+
+---
+
+**Example 3 — Computing: quality control.** A production line
+makes 500 components per shift. 8 are defective. What is the
+defect rate, and what is the probability a randomly selected
+component is defect-free?
+
+$$P(\text{defective}) = \frac{8}{500} = 0.016 = 1.6\%$$
+
+$$P(\text{defect-free}) = 1 - 0.016 = 0.984 = 98.4\%$$
+
+---
+
+**Example 4 — Finance: expected outcome.** An investor estimates
+a project has a 60% chance of returning £8,000 profit and a 40%
+chance of returning −£3,000 (a loss). What is the expected value
+of the investment?
+
+$$E = (0.6 \times 8000) + (0.4 \times (-3000)) = 4800 - 1200 = £3,600$$
+
+The expected value is £3,600. This does not mean £3,600 is a
+possible outcome — it means that across many similar investments,
+the average outcome would be £3,600. It is a tool for comparing
+options, not a guarantee.
+
+## Where this goes
+
+This chapter gives you the vocabulary — mean, median, spread,
+probability — that makes statistical arguments legible. **Volume 6**
+develops this substantially: probability distributions, hypothesis
+testing, and regression. That is where statistics becomes a tool
+for making decisions under uncertainty rather than just summarising data.
+
+The expected value calculation in Example 4 is also the foundation
+of decision theory, financial option pricing (Black-Scholes is built
+on expected values under a probability distribution), and machine
+learning loss functions. The concept is old. The applications are new.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A lab scientist reports every measurement with ± uncertainty —
+  that is a statement about spread.
+- A risk analyst computes expected loss: probability times
+  magnitude, summed across scenarios.
+- A data scientist evaluates a classifier by its error rate —
+  a probability computed from test data.
+- A hydrologist sizing a culvert uses return-period probability
+  to decide how large to build it.
+
+Statistics is not a course you take. It is a way of reading
+claims about the world.
+:::
+
+## Exercises
+
+1. The daily high temperatures for one week in Edmonton (°C):
+   −4, −7, −2, 1, 3, −1, −5.
+   Find the mean, median, and range.
+
+2. A student scores 62, 71, 85, 68, 90, 74, and 55 on seven
+   tests. Find the mean and median. Which better represents
+   their "typical" performance, and why?
+
+3. A standard die has faces 1–6. What is the probability of
+   rolling a number greater than 4? Of rolling an even number?
+   Of rolling a 7?
+
+4. A bag contains 4 red, 6 blue, and 2 green marbles.
+   A marble is drawn at random.
+   a) What is P(red)?
+   b) What is P(not blue)?
+   c) What is P(red or green)?
+
+5. A factory tests a batch of 200 electronic components and
+   finds 7 fail. Estimate the probability of a component
+   failing. Out of the next production run of 5,000, how
+   many failures would you expect?
+
+6. An investor has three options:
+   - Option A: 80% chance of +£500, 20% chance of −£200
+   - Option B: 50% chance of +£900, 50% chance of −£100
+   - Option C: certain return of +£280
+
+   Compute the expected value of each option. Which is highest?
+   Which would you choose, and why might expected value alone
+   not be the only consideration?
+
+7. A set of 9 measurements has a median of 14.2 and a mean of
+   15.1. One outlier is identified and removed, leaving 8 values
+   with a mean of 14.6. What was the outlier value?
+   *(Hint: work backwards from the definition of the mean.)*

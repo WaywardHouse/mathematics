@@ -1,6 +1,278 @@
 ---
 title: "Ratio and proportion"
-status: "seed"
+subtitle: "Comparing two quantities of the same kind"
+
+volume: 1
+chapter: 2
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You can express any quantity as a number with a unit. You can
+  divide one number by another.
+
+rewrite: |
+  A ratio is a comparison by division. Two quantities are proportional
+  when their ratio stays constant — when one changes, the other changes
+  by the same factor. This single structure underlies scale, dilution,
+  gear ratios, map reading, and most of the relationships in science.
+
+opens_to:
+  - id: "v1c3-pct"
+    label: "Percent and rates"
+    volume: 1
+    relationship: "enables"
+  - id: "v2c1-linear-eq"
+    label: "Linear equations"
+    volume: 2
+    relationship: "enriches"
+  - id: "v3c1-geom"
+    label: "Geometry and measurement"
+    volume: 3
+    relationship: "enriches"
+  - id: "v3c2-trig"
+    label: "Trigonometry"
+    volume: 3
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "v1c1-num"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "A gear ratio of 3:1 means the output shaft turns once for every three turns of the input shaft — every torque and speed calculation starts here."
+    career_example: "Mechanical engineer designing a transmission"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Preparing a 1:200 dilution of a reagent is a direct application of proportion."
+    career_example: "Lab technician preparing solutions of known concentration"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "A price-to-earnings ratio of 15:1 means you are paying £15 for every £1 of annual earnings."
+    career_example: "Equity analyst comparing companies across sectors"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "A map scale of 1:50,000 means 1 cm on the map represents 50,000 cm (500 m) on the ground."
+    career_example: "Cartographer or GIS analyst working with spatial data"
+
+hook: |
+  A concrete mix calls for 1 part cement, 2 parts sand, 3 parts gravel
+  by volume. You have 40 litres of gravel. How much cement and sand
+  do you need?
+
+  A map is drawn at 1:25,000. A road measures 8 cm on the map.
+  How long is it on the ground?
+
+  A car engine produces 180 Nm of torque. The gearbox has a ratio
+  of 4.5:1. What torque reaches the wheels?
+
+  These three questions share the same calculation underneath.
+
+notation_introduced:
+  - symbol: "a:b"
+    reads_as: "the ratio of a to b"
+    notation_weight: 2
+  - symbol: "a/b"
+    reads_as: "a divided by b, or a per b"
+    notation_weight: 1
+  - symbol: "∝"
+    reads_as: "is proportional to"
+    notation_weight: 2
+  - symbol: "k"
+    reads_as: "the constant of proportionality"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 8
+  strand: "Number"
+  outcome: "N3"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A concrete mix calls for 1 part cement, 2 parts sand, 3 parts gravel
+by volume. You have 40 litres of gravel. How much cement and sand
+do you need?
+
+A map is drawn at 1:25,000. A road measures 8 cm on the map.
+How long is it on the ground?
+
+A car engine produces 180 Nm of torque. The gearbox has a ratio
+of 4.5:1. What torque reaches the wheels?
+
+These three questions share the same calculation underneath.
+
+## What the notation is saying
+
+The ratio $a:b$ means "for every $a$ of the first thing, there are
+$b$ of the second." It is a comparison by division. Writing $a:b$
+is the same as writing the fraction $\frac{a}{b}$.
+
+Two quantities $y$ and $x$ are **proportional** when:
+
+$$y = kx$$
+
+where $k$ is a constant. Double $x$, you double $y$. Halve $x$,
+you halve $y$. The ratio $\frac{y}{x} = k$ stays fixed.
+
+Write this as $y \propto x$ (read: "$y$ is proportional to $x$").
+The constant $k$ is called the **constant of proportionality**.
+
+A proportion equation is:
+
+$$\frac{a}{b} = \frac{c}{d}$$
+
+Read: "$a$ is to $b$ as $c$ is to $d$." If you know three of the four
+values, you can find the fourth by cross-multiplying: $ad = bc$.
+
+## The method
+
+**Finding a missing value in a proportion**
+
+Given $\frac{a}{b} = \frac{c}{d}$, find $d$:
+
+$$d = \frac{bc}{a}$$
+
+**Dividing a quantity in a given ratio**
+
+To divide total $T$ in the ratio $a:b$:
+
+1. Count the total number of parts: $a + b$
+2. Value of one part: $T \div (a + b)$
+3. First share: $a \times$ (one part); second share: $b \times$ (one part)
+
+**Finding a constant of proportionality**
+
+Given one known pair $(x_0, y_0)$ where $y \propto x$:
+
+$$k = \frac{y_0}{x_0}$$
+
+Then for any other $x$: $y = kx$.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+A ratio is a relative relationship — it does not depend on the size of
+either quantity, only on their comparison. When two quantities are
+proportional, their ratio $k$ is constant by definition. Cross-
+multiplication works because multiplying both sides of $\frac{a}{b} =
+\frac{c}{d}$ by $bd$ gives $ad = bc$ — a balanced equation.
+:::
+
+## Worked examples
+
+**Example 1 — Engineering: gear ratio.** A motor shaft turns at
+1,800 rpm. It is connected through a 6:1 gear reduction. What is
+the output speed? What is the torque multiplication?
+
+Gear ratio 6:1 means the output turns once for every 6 input
+rotations. Output speed:
+
+$$\text{output speed} = \frac{1800}{6} = 300 \text{ rpm}$$
+
+By conservation of power (ignoring losses), torque multiplies
+by the same factor: $\times 6$. If input torque is 10 Nm,
+output torque is 60 Nm.
+
+---
+
+**Example 2 — Geography: map scale.** A road appears as 7.4 cm on
+a 1:50,000 map. What is the actual length of the road?
+
+Map scale $1:50,000$ means 1 unit on the map = 50,000 units on
+the ground.
+
+$$\text{actual length} = 7.4 \text{ cm} \times 50,000 = 370,000 \text{ cm} = 3.7 \text{ km}$$
+
+---
+
+**Example 3 — Science: dilution.** A lab protocol requires a 1:400
+dilution of a stock solution. You need 10 mL of diluted solution.
+How much stock solution do you use?
+
+Ratio 1:400 means 1 part stock per 400 parts total (or 399 parts
+diluent — here we use the pharmaceutical convention of 1 part in
+400 total).
+
+$$\text{stock volume} = \frac{1}{400} \times 10 \text{ mL} = 0.025 \text{ mL} = 25 \text{ µL}$$
+
+Make up to 10 mL with diluent. Stock proportion: $\frac{0.025}{10} = \frac{1}{400}$. Check.
+
+---
+
+**Example 4 — Finance: dividing profit.** Two partners invest in a
+business in the ratio 3:5. The year's profit is £24,000. How much
+does each receive?
+
+Total parts: $3 + 5 = 8$. One part = $£24,000 \div 8 = £3,000$.
+
+Partner A (3 parts): $3 \times £3,000 = £9,000$
+Partner B (5 parts): $5 \times £3,000 = £15,000$
+
+Check: $£9,000 + £15,000 = £24,000$. Yes.
+
+## Where this goes
+
+Proportion is the first multiplicative relationship you encounter.
+**Percent and rates** (Chapter 3) is proportion restricted to a
+denominator of 100 — a special case of this chapter.
+
+Later, proportion reappears inside trigonometry (the sine ratio
+is a ratio of lengths) and in logarithms (where proportional
+growth becomes additive). In engineering mathematics, dimensional
+analysis — checking that equations are consistent in their units —
+is a systematic application of ratio.
+
+The notation $y \propto x$ is also the simplest case of a functional
+relationship. Volume 3's treatment of functions generalises this to
+any rule that maps inputs to outputs.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A mechanical engineer calculating gear or pulley ratios is
+  applying proportion directly.
+- A cartographer using a map scale is applying ratio: every
+  measurement on the map is a proportional reduction.
+- A chemist preparing a dilution series is dividing a quantity
+  in a fixed ratio at each step.
+- A financial analyst comparing companies by price-to-earnings
+  or debt-to-equity is computing ratios.
+
+The arithmetic is identical in every case.
+:::
+
+## Exercises
+
+1. A recipe for 4 people needs 300g flour, 150g butter, and 80g
+   sugar. Scale the recipe to serve 7 people. *(Exact grams to
+   one decimal place.)*
+
+2. A map has scale 1:25,000. Two towns are 14.6 cm apart on the
+   map. What is the actual distance in kilometres?
+
+3. A car engine produces 250 Nm of torque. It drives through a
+   gearbox with a 3.8:1 ratio, then a differential with a 3.2:1
+   ratio. What is the torque at the rear wheels?
+
+4. Silver and copper are mixed in the ratio 7:3 by mass to make
+   an alloy. You need 2.5 kg of alloy. How many grams of each
+   metal do you need?
+
+5. A 500 mL bottle of concentrated cleaning fluid requires
+   diluting 1:15 before use. How many litres of diluted product
+   can you make from one bottle?
+
+6. Three investors share profits in the ratio 2:3:7. Total
+   profit this year is £48,000. How much does each investor
+   receive?
+
+7. A gear system has a driver gear with 24 teeth and a driven
+   gear with 60 teeth. What is the gear ratio? If the driver
+   rotates at 900 rpm, what is the speed of the driven gear?

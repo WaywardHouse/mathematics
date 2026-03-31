@@ -1,6 +1,286 @@
 ---
 title: "Integers and signed arithmetic"
-status: "seed"
+subtitle: "Moving in both directions"
+
+volume: 1
+chapter: 4
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You know where positive and negative numbers sit on the number line.
+  You can add and subtract positive whole numbers.
+
+rewrite: |
+  Adding a negative is the same as subtracting a positive. Subtracting
+  a negative is the same as adding a positive. The sign rules for
+  multiplication and division follow from these two facts. Signed
+  arithmetic is movement on the number line, and the rules describe
+  how direction and distance combine.
+
+opens_to:
+  - id: "v2c1-linear-eq"
+    label: "Linear equations"
+    volume: 2
+    relationship: "enables"
+  - id: "v1c5-fractions"
+    label: "Fractions and decimals"
+    volume: 1
+    relationship: "enriches"
+  - id: "v3c1-geom"
+    label: "Geometry and measurement"
+    volume: 3
+    relationship: "enriches"
+
+prerequisite_ids:
+  - "v1c1-num"
+
+destinations:
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Electric charge is signed: protons carry +1, electrons carry −1, and the net charge of an atom is the integer sum."
+    career_example: "Physicist computing net charge in particle interactions"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Stress is signed: tension is positive, compression is negative — a steel column under load carries a negative axial force."
+    career_example: "Structural engineer analysing forces in a frame"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Signed integers are a data type in every programming language; overflow into negative values is a real bug category."
+    career_example: "Systems programmer avoiding integer overflow errors"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Cash flow is signed: inflows are positive, outflows negative — net cash flow is their integer sum."
+    career_example: "Financial analyst building a cash flow model"
+
+hook: |
+  A structural beam carries a load. The force compresses it: −45 kN.
+  The beam's self-weight adds further compression: −12 kN. The wind
+  creates a tension: +8 kN. What is the net force?
+
+  A bank account has £240. Three debits of £80 each arrive. What
+  is the new balance?
+
+  The temperature drops from −3°C to −19°C overnight. By how many
+  degrees did it drop?
+
+  Three questions. One operation: addition on the integer number line.
+
+notation_introduced:
+  - symbol: "−a"
+    reads_as: "negative a, or the opposite of a"
+    notation_weight: 1
+  - symbol: "a + (−b)"
+    reads_as: "a plus negative b, which equals a minus b"
+    notation_weight: 2
+  - symbol: "−(−a)"
+    reads_as: "the negative of a negative, which equals positive a"
+    notation_weight: 2
+  - symbol: "(+)(+) = +, (−)(−) = +"
+    reads_as: "same signs multiply to give positive"
+    notation_weight: 2
+  - symbol: "(+)(−) = −, (−)(+) = −"
+    reads_as: "different signs multiply to give negative"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 7
+  strand: "Number"
+  outcome: "N6"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A structural beam carries a load. The force compresses it: −45 kN.
+The beam's self-weight adds further compression: −12 kN. The wind
+creates a tension: +8 kN. What is the net force?
+
+A bank account has £240. Three debits of £80 each arrive. What
+is the new balance?
+
+The temperature drops from −3°C to −19°C overnight. By how many
+degrees did it drop?
+
+Three questions. One operation: addition on the integer number line.
+
+## What the notation is saying
+
+An **integer** is any whole number: ..., −3, −2, −1, 0, 1, 2, 3, ...
+
+The negative sign in front of a number means "opposite direction":
+$-5$ is 5 units to the left of zero.
+
+Adding a negative is movement to the left:
+$$7 + (-3) = 7 - 3 = 4$$
+
+Subtracting a negative is movement to the right — you reverse
+direction twice:
+$$5 - (-2) = 5 + 2 = 7$$
+
+**The double negative rule:** $-(-a) = a$. Remove two negatives and
+you get the original positive. Think of it as: "take away a debt"
+is the same as "give money."
+
+**Sign rules for multiplication and division:**
+
+| Operation | Sign result |
+|-----------|-------------|
+| $(+) \times (+)$ | $+$ |
+| $(-) \times (-)$ | $+$ |
+| $(+) \times (-)$ | $-$ |
+| $(-) \times (+)$ | $-$ |
+
+Same signs give positive. Different signs give negative. The same
+rules apply to division.
+
+## The method
+
+**Addition and subtraction**
+
+Rewrite every subtraction as addition of the opposite:
+$a - b = a + (-b)$.
+
+Then use the number line: positive means move right, negative means
+move left. Your result is where you land.
+
+**Multiplication**
+
+1. Multiply the absolute values (ignore signs).
+2. Count the number of negative factors.
+   - Even number of negatives → positive result.
+   - Odd number of negatives → negative result.
+
+**Division**
+
+Same rule: divide absolute values, then apply sign rule.
+
+**Order of operations with signed numbers**
+
+Brackets first. Then signs attached to numbers. Then multiply/divide
+left to right. Then add/subtract left to right.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+Think of multiplication as repeated addition. $3 \times (-4)$ means
+"add $-4$ three times": $(-4) + (-4) + (-4) = -12$. That gives
+$(+) \times (-) = (-)$.
+
+For $(-) \times (-)$: $-3 \times (-4)$ means "add $-4$ negative three
+times." Adding a negative thing a negative number of times is removing
+it — which is positive. The algebraic proof uses the distributive law:
+$0 = (-3)(4 + (-4)) = (-3)(4) + (-3)(-4) = -12 + (-3)(-4)$, so
+$(-3)(-4) = 12$.
+:::
+
+## Worked examples
+
+**Example 1 — Engineering: net force.** A structural column
+experiences three axial forces: a dead load of −65 kN (compression),
+a live load of −40 kN (compression), and a wind uplift of +18 kN
+(tension). What is the net force?
+
+$$F_\text{net} = (-65) + (-40) + 18 = -105 + 18 = -87 \text{ kN}$$
+
+Net: 87 kN compression. The column is in compression overall.
+
+---
+
+**Example 2 — Finance: running balance.** A business account starts
+the week at £3,200. Transactions: −£480 (supplier), −£1,150
+(payroll), +£2,300 (client payment), −£95 (utilities). End balance?
+
+$$3200 + (-480) + (-1150) + 2300 + (-95)$$
+$$= 3200 - 480 - 1150 + 2300 - 95$$
+$$= 3775$$
+
+End balance: £3,775.
+
+---
+
+**Example 3 — Science: temperature change.** At noon a weather
+station records +14°C. At midnight the temperature is −9°C. What
+is the change in temperature?
+
+$$\Delta T = -9 - (+14) = -9 - 14 = -23°\text{C}$$
+
+The temperature fell by 23°C. The sign tells us the direction:
+negative means it got colder.
+
+---
+
+**Example 4 — Computing: signed overflow.** A program uses a
+signed 8-bit integer (range −128 to 127). The variable holds
+value 120. Adding 15 would give 135, but 135 > 127. In most
+languages it wraps to $135 - 256 = -121$.
+
+This is integer arithmetic modulo 256, interpreted as signed:
+$120 + 15 = 135$, and $135 - 256 = -121$. A classic bug in
+low-level code that results in a large positive becoming a
+large negative.
+
+## Where this goes
+
+Signed arithmetic is the prerequisite for **linear equations**
+(Volume 2, Chapter 1). When you solve $3x - 7 = -19$, you need
+to add 7 to both sides and handle the resulting $-12$ correctly.
+Every algebraic manipulation involves signed numbers.
+
+In physics, signed quantities appear everywhere: displacement,
+velocity, acceleration, force, work, charge, and potential are all
+signed. The sign carries physical meaning — it encodes direction
+or polarity. Getting the sign wrong is not just a numerical error;
+it is a physical error.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A structural engineer assigns positive and negative conventions
+  for forces before analysing any structure — the sign conventions
+  are the analysis.
+- A physicist writing Newton's second law includes sign:
+  $F = ma$, where $F < 0$ means the force acts in the negative
+  direction.
+- A financial analyst tracking cash flow sums positive inflows
+  and negative outflows to find net position.
+- A programmer writing embedded firmware must track whether
+  arithmetic will overflow a signed type boundary.
+
+The rules are short. The mistakes, when you forget them, are expensive.
+:::
+
+## Exercises
+
+1. A submersible is at −240 m. It descends a further 85 m.
+   What is its new depth? Then it ascends 120 m. Final depth?
+
+2. A company's profit/loss for four quarters: −£12,400;
+   +£8,700; −£3,200; +£19,500. What is the annual net profit
+   or loss?
+
+3. Evaluate without a calculator:
+   a) $(-8) \times (-6)$
+   b) $(-15) \div 3$
+   c) $4 \times (-9) \times (-2)$
+   d) $(-3)^3$
+
+4. A structural beam has three point loads: −20 kN at one end,
+   −35 kN at the midpoint, and a reaction of +55 kN at the
+   support. Is the beam in equilibrium? *(Net force = 0 if yes.)*
+
+5. The lowest temperature ever recorded in Canada is −63°C
+   (Snag, Yukon). The highest is +45°C (Lytton, BC). What is
+   the range — the difference between highest and lowest?
+
+6. A signed 8-bit integer holds the value −50. The program
+   multiplies it by −3. What is the result? Is it within the
+   range −128 to 127?
+
+7. A share price opens at £14.50. Changes over five days:
+   −£0.80, +£1.20, −£2.40, +£0.35, −£0.90. What is the
+   closing price on day 5?

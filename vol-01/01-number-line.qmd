@@ -1,6 +1,269 @@
 ---
-title: "The number line"
-status: "seed"
+title: "Numbers and the number line"
+subtitle: "Placing any number exactly"
+
+volume: 1
+chapter: 1
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You can count. You know that 7 is more than 3, and that you can add,
+  subtract, multiply, and divide whole numbers.
+
+rewrite: |
+  Every number — whole, fractional, negative, irrational — has exactly
+  one location on a line. Understanding arithmetic means understanding
+  how those locations relate to each other and to zero.
+
+opens_to:
+  - id: "v1c2-ratio"
+    label: "Ratio and proportion"
+    volume: 1
+    relationship: "enables"
+  - id: "v1c3-pct"
+    label: "Percent and rates"
+    volume: 1
+    relationship: "enables"
+  - id: "v1c4-integers"
+    label: "Integers and signed arithmetic"
+    volume: 1
+    relationship: "enables"
+  - id: "v1c5-fractions"
+    label: "Fractions and decimals"
+    volume: 1
+    relationship: "enables"
+  - id: "v2c1-linear-eq"
+    label: "Linear equations"
+    volume: 2
+    relationship: "motivates"
+
+prerequisite_ids: []
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Tolerances in machining are specified as ±0.05 mm — a signed range around a target value on the number line."
+    career_example: "Mechanical engineer specifying component tolerances"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "pH is a logarithmic scale — a real number placed on a line from 0 to 14 that represents concentration."
+    career_example: "Chemist comparing acidity across reactions"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "A profit/loss statement is a signed number: positive for gain, negative for loss."
+    career_example: "Accountant reconciling quarterly figures"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Memory addresses are non-negative integers; offsets are signed — understanding both requires the number line."
+    career_example: "Systems programmer managing pointer arithmetic"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "Altitude above and below sea level is a signed number; sea level is zero."
+    career_example: "Surveyor recording elevation data"
+
+hook: |
+  A bank balance of −£40 is not the same as no money — it is a real
+  position, 40 units to the left of zero. An altitude of −85 metres
+  is the Dead Sea shore. A temperature of −18°C is your freezer.
+
+  Numbers below zero are not a trick. They are the language of anything
+  that can be in deficit, in debt, below a reference point. The number
+  line is the map that shows where every number lives — and why the
+  rules of arithmetic have the shape they do.
+
+notation_introduced:
+  - symbol: "0"
+    reads_as: "zero, the reference point"
+    notation_weight: 1
+  - symbol: "−"
+    reads_as: "negative, or the opposite direction from positive"
+    notation_weight: 2
+  - symbol: "|x|"
+    reads_as: "the absolute value of x — how far from zero, ignoring direction"
+    notation_weight: 2
+  - symbol: "<, >"
+    reads_as: "less than, greater than"
+    notation_weight: 1
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 7
+  strand: "Number"
+  outcome: "N1"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A bank balance of −£40 is not the same as no money — it is a real
+position, 40 units to the left of zero. An altitude of −85 metres
+is the Dead Sea shore. A temperature of −18°C is your freezer.
+
+Numbers below zero are not a trick. They are the language of anything
+that can be in deficit, in debt, below a reference point. The number
+line is the map that shows where every number lives — and why the
+rules of arithmetic have the shape they do.
+
+## What the notation is saying
+
+Draw a horizontal line. Mark a point in the middle and call it **0**.
+Every positive number lives to the right; every negative number lives
+to the left. The further from zero, the larger the absolute value.
+
+$$\cdots \quad -4 \quad -3 \quad -2 \quad -1 \quad 0 \quad 1 \quad 2 \quad 3 \quad 4 \quad \cdots$$
+
+**Absolute value** $|x|$ strips the direction: $|{-3}| = 3$ and $|3| = 3$.
+It answers the question "how far from zero?" not "which side?"
+
+The inequality symbols $<$ and $>$ describe position on the line:
+$-5 < -1$ because $-5$ sits further left. This trips people up —
+$-5$ feels "bigger" in magnitude, but it is smaller as a number.
+
+Fractions and decimals also live on this line. $\frac{1}{2}$ sits
+halfway between 0 and 1. $-0.7$ sits between $-1$ and $0$. The
+line is continuous: there is a location for every number, however
+precise.
+
+## The method
+
+**Placing a number on the line**
+
+1. Determine the sign: positive (right of zero) or negative (left).
+2. Determine the magnitude: how far from zero.
+3. Locate it. Every number has exactly one position.
+
+**Ordering numbers**
+
+To order a list of numbers, locate each one on the line. Left is
+smaller, right is larger. For negative numbers: $-10 < -2 < 0 < 3 < 7$.
+
+**Absolute value**
+
+$|x| = x$ if $x \geq 0$; $|x| = -x$ if $x < 0$.
+
+So $|{-7}| = -(-7) = 7$. The negative of a negative is positive.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+The number line is a model. "Negative" means "opposite direction from
+positive" — not "less real" or "doesn't exist". Absolute value removes
+direction because sometimes you only care about magnitude (distance,
+size, error) not sign. When you multiply two negatives to get a
+positive, it is because reversing direction twice returns you to
+where you started.
+:::
+
+## Worked examples
+
+**Example 1 — Finance.** A company's quarterly results are: Q1 profit
+£4,200; Q2 loss £1,800; Q3 profit £600; Q4 loss £3,100. Order the
+quarters from worst to best performance.
+
+Expressing as signed numbers: Q1 = +4200, Q2 = −1800, Q3 = +600,
+Q4 = −3100.
+
+Ordered from left to right on the number line:
+
+$$-3100 < -1800 < 600 < 4200$$
+
+Worst to best: Q4, Q2, Q3, Q1.
+
+---
+
+**Example 2 — Geography.** A surveying team records these elevations
+relative to sea level: summit +2,450 m; valley floor −60 m; coastal
+town +8 m; lake bed −340 m. What is the vertical distance from the
+lake bed to the summit?
+
+Vertical distance = $|2450 - (-340)| = |2450 + 340| = 2790$ m.
+
+The absolute value ensures we get a distance (positive), not a
+directed displacement.
+
+---
+
+**Example 3 — Engineering.** A machine part must be 50.00 mm ± 0.05 mm.
+Measurements from the batch: 50.03, 49.96, 50.07, 49.98, 50.05.
+Which parts are out of tolerance?
+
+Tolerance range: 49.95 to 50.05 mm.
+
+Express each as a deviation from 50.00: +0.03, −0.04, +0.07, −0.02, +0.05.
+
+The measurement 50.07 has deviation +0.07. Since $|{+0.07}| = 0.07 > 0.05$,
+it is out of tolerance. All others are within ±0.05.
+
+---
+
+**Example 4 — Computing.** A temperature sensor reports values as a
+signed 8-bit integer (range −128 to +127). The current reading is
+−43. What does that represent, and what is its absolute value?
+
+The value −43 sits 43 units left of zero on the integer number line.
+It represents 43 degrees below the zero-point of the scale (e.g.,
+−43°C). Its absolute value $|{-43}| = 43$.
+
+## Where this goes
+
+The number line is the foundation every later chapter assumes.
+**Integers and signed arithmetic** (Chapter 4) takes addition,
+subtraction, multiplication, and division into negative territory
+— all of which are just movements along this line. **Fractions and
+decimals** (Chapter 5) fill in the gaps between the integers.
+
+Further on, the line becomes an axis. In Volume 2, the horizontal
+axis of a graph is the number line, and a linear equation traces a
+path along it. In Volume 5, limits are defined precisely as behaviour
+near a point on the line. The model you are building here does not
+change — it accumulates meaning.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- An engineer writing ±0.05 mm on a technical drawing is placing
+  an acceptable range on the number line.
+- An accountant reading a balance sheet uses signed numbers for
+  every asset and liability.
+- A geographer recording elevation above and below sea level uses
+  the number line with zero at sea level.
+- A programmer specifying a signed integer type is deciding how
+  much of the number line to represent in memory.
+
+Same structure. Different labels.
+:::
+
+## Exercises
+
+Each problem has a clean answer. The interesting part is setting up
+which numbers go where before you compute.
+
+1. A diver descends from the surface to −28 m, then swims to a
+   coral shelf at −15 m, then ascends to −5 m before surfacing.
+   List these depths in order from deepest to shallowest.
+
+2. Four cities report overnight temperatures: Edmonton −23°C,
+   Vancouver +4°C, Winnipeg −31°C, Toronto −8°C. Order from
+   coldest to warmest. What is the difference in temperature
+   between the warmest and coldest cities?
+
+3. A share price changes each day this week: Mon −£1.20,
+   Tue +£0.85, Wed −£2.40, Thu +£3.10, Fri −£0.60.
+   On which day was the change furthest from zero?
+   *(Use absolute values to compare.)*
+
+4. A precision component must measure 25.000 mm ± 0.002 mm.
+   Four samples measure: 25.001, 24.998, 25.003, 24.999 mm.
+   Which samples pass? Express each deviation as a signed number.
+
+5. Place these numbers on a number line sketch and order them
+   from least to greatest: $-\frac{3}{4}$, $1.2$, $0$, $-2$,
+   $\frac{5}{4}$, $-0.5$.
+
+6. A submarine is at −180 m. A fish swims at −45 m. A buoy
+   floats at +2 m. What is the distance between the submarine
+   and the buoy? Between the fish and the submarine?

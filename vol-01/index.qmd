@@ -1,6 +1,33 @@
 ---
 title: "Volume 1 — Numbers and operations"
-status: "seed"
+status: "draft"
 ---
 
-*Seed — front matter to be completed before content is written.*
+The central move of this volume is placement.
+
+Every number has a location: on a line, relative to zero, relative to
+other numbers. This volume is about understanding that structure — not
+as abstract symbol manipulation, but as a description of real things.
+Debts and credits. Divided portions. Rates of change. Samples from
+populations.
+
+You already know that numbers exist. What this volume builds is
+fluency with how they relate — how to scale them (ratio), express them
+as parts of wholes (fractions and decimals), talk about change
+(percents and rates), move in both directions from zero (integers),
+and reason about collections of them (statistics and probability).
+
+None of this requires anything beyond counting. But it requires
+counting carefully, in the right direction, with the right units.
+That discipline is what the rest of the series stands on.
+
+## Chapters
+
+| Chapter | Title | Core move |
+|---------|-------|-----------|
+| 1 | Numbers and the number line | Placing any number exactly |
+| 2 | Ratio and proportion | Comparing two quantities of the same kind |
+| 3 | Percent and rates | Expressing change as a fraction of something |
+| 4 | Integers and signed arithmetic | Extending the number line in both directions |
+| 5 | Fractions and decimals | Arithmetic with parts of wholes |
+| 6 | Statistics and probability | Reasoning honestly from limited data |

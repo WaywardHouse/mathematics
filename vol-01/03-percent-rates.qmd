@@ -1,6 +1,275 @@
 ---
 title: "Percent and rates"
-status: "seed"
+subtitle: "Expressing change as a fraction of something"
+
+volume: 1
+chapter: 3
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You can express any two quantities as a ratio. You know what
+  it means for a number to be a fraction of a whole.
+
+rewrite: |
+  Percent is ratio with a fixed denominator of 100. A rate is a
+  ratio of two different units. Both express change or comparison
+  in a form that makes different-sized things comparable. Compound
+  growth and decay are percent applied repeatedly.
+
+opens_to:
+  - id: "v2c1-linear-eq"
+    label: "Linear equations"
+    volume: 2
+    relationship: "enriches"
+  - id: "v3c5-exp-log"
+    label: "Exponents and logarithms"
+    volume: 3
+    relationship: "motivates"
+  - id: "v1c6-stat-basic"
+    label: "Statistics and probability"
+    volume: 1
+    relationship: "enriches"
+
+prerequisite_ids:
+  - "v1c1-num"
+  - "v1c2-ratio"
+
+destinations:
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Compound interest is a percent applied repeatedly — the foundation of every savings, loan, and investment calculation."
+    career_example: "Financial advisor calculating real returns after inflation"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Radioactive decay is a rate: a fixed percentage of the remaining atoms disintegrate per unit time."
+    career_example: "Radiographer calculating patient dose rates"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Efficiency is output power divided by input power, expressed as a percent — every machine loses some."
+    career_example: "Electrical engineer specifying transformer efficiency"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "Population growth rate — percent change per year — drives every urban planning projection."
+    career_example: "Urban planner modelling infrastructure demand over 20 years"
+
+hook: |
+  Your phone battery drains 3% per hour on standby. A savings account
+  pays 4.5% annual interest. A diesel engine is 42% thermally efficient.
+  A city's population grew 1.8% last year.
+
+  All four are the same operation: a fraction expressed out of a
+  hundred, applied to a quantity. The difference is what the quantity
+  is, and whether the percent is applied once or repeatedly.
+
+notation_introduced:
+  - symbol: "%"
+    reads_as: "per cent, or divided by 100"
+    notation_weight: 1
+  - symbol: "p/100"
+    reads_as: "the decimal equivalent of p percent"
+    notation_weight: 1
+  - symbol: "r"
+    reads_as: "rate of change per period"
+    notation_weight: 2
+  - symbol: "(1 + r)^n"
+    reads_as: "a quantity grown at rate r for n periods"
+    notation_weight: 3
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 8
+  strand: "Number"
+  outcome: "N4"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+Your phone battery drains 3% per hour on standby. A savings account
+pays 4.5% annual interest. A diesel engine is 42% thermally efficient.
+A city's population grew 1.8% last year.
+
+All four are the same operation: a fraction expressed out of a
+hundred, applied to a quantity. The difference is what the quantity
+is, and whether the percent is applied once or repeatedly.
+
+## What the notation is saying
+
+**Percent** means per hundred. $p\%$ is the same as $\frac{p}{100}$.
+
+To find $p\%$ of a quantity $Q$: multiply $Q$ by $\frac{p}{100}$.
+
+$$\text{amount} = Q \times \frac{p}{100}$$
+
+**Percent change** compares a change to the original:
+
+$$\text{percent change} = \frac{\text{new} - \text{original}}{\text{original}} \times 100$$
+
+**A rate** is a ratio with different units: speed is km/h, flow is
+litres/min, interest is £/year. The structure is the same.
+
+**Compound growth** applies a rate repeatedly. After $n$ periods at
+rate $r$ (expressed as a decimal), a quantity $Q_0$ becomes:
+
+$$Q_n = Q_0 \times (1 + r)^n$$
+
+**Compound decay** uses $1 - r$ instead:
+
+$$Q_n = Q_0 \times (1 - r)^n$$
+
+The exponent $n$ is why compound growth and decay are not linear —
+they accelerate in a way that simple percent change does not.
+
+## The method
+
+**Simple percent of a quantity**
+
+$p\%$ of $Q$ = $Q \times \frac{p}{100}$
+
+Convert percent to decimal first: $7\% = 0.07$; $120\% = 1.20$.
+
+**Percent increase / decrease**
+
+Increase $Q$ by $p\%$: multiply by $(1 + \frac{p}{100})$.
+Decrease $Q$ by $p\%$: multiply by $(1 - \frac{p}{100})$.
+
+A single multiplier is faster than finding the percent and adding separately.
+
+**Finding the original after a percent change**
+
+If after a $p\%$ increase the value is $V$:
+$$Q_0 = \frac{V}{1 + \frac{p}{100}}$$
+
+**Compound growth**
+
+$Q_n = Q_0 \times (1 + r)^n$ where $r = \frac{p}{100}$.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+Each compounding period, the new starting point is the previous
+result. Multiplying by $(1+r)$ once applies the rate for one period.
+Multiplying twice gives $(1+r)^2$ — the same as applying it to the
+already-grown quantity. The exponent is just repeated multiplication.
+This is why compound growth eventually overwhelms any linear trend:
+the base grows, and the next period's growth is taken from that
+larger base.
+:::
+
+## Worked examples
+
+**Example 1 — Finance: compound interest.** You invest £2,000 at
+3.5% annual interest, compounded annually. What is the balance
+after 5 years?
+
+$$Q_5 = 2000 \times (1.035)^5$$
+
+$(1.035)^5 = 1.1877$ (to 4 d.p.)
+
+$$Q_5 = 2000 \times 1.1877 = £2,375.40$$
+
+Compare to simple interest: $5 \times 3.5\% \times 2000 = £350$,
+giving £2,350. Compound beats simple by £25.40 even over 5 years.
+
+---
+
+**Example 2 — Engineering: efficiency.** A motor draws 1,800 W of
+electrical power. Its mechanical efficiency is 88%. What useful
+mechanical power does it deliver?
+
+$$\text{output power} = 1800 \times 0.88 = 1584 \text{ W}$$
+
+The remaining $1800 - 1584 = 216$ W is dissipated as heat.
+
+---
+
+**Example 3 — Geography: population.** A city has a population of
+850,000. The annual growth rate is 1.4%. What is the projected
+population in 10 years?
+
+$$P_{10} = 850{,}000 \times (1.014)^{10}$$
+
+$(1.014)^{10} = 1.1495$ (to 4 d.p.)
+
+$$P_{10} = 850{,}000 \times 1.1495 \approx 977{,}000$$
+
+---
+
+**Example 4 — Science: radioactive decay.** A sample contains 5,000
+atoms of a radioactive isotope that decays at 12% per hour. How many
+atoms remain after 4 hours?
+
+$$N_4 = 5000 \times (1 - 0.12)^4 = 5000 \times (0.88)^4$$
+
+$(0.88)^4 = 0.5997$
+
+$$N_4 = 5000 \times 0.5997 \approx 2,999 \text{ atoms}$$
+
+In 4 hours, roughly 40% of the atoms have decayed.
+
+## Where this goes
+
+Percent applied once is straightforward proportion. Applied
+repeatedly, it produces exponential behaviour — and **exponents
+and logarithms** (Volume 3, Chapter 5) is where that behaviour
+is studied properly. Logarithms undo the compounding: if you want
+to know how long it takes for a quantity to double, you are solving
+an exponential equation, which requires a logarithm.
+
+**Statistics and probability** (Chapter 6) uses rates constantly:
+probability is a rate between 0 and 1, and relative frequency is
+a percent.
+
+In finance, virtually every calculation — present value, future
+value, yield, annuity — is a variant of the compound formula. In
+engineering, efficiency, signal attenuation, and structural safety
+factors are all percent-based ratios. The formula here is simple.
+The consequences are not.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A financial advisor comparing two savings products is computing
+  compound interest on each.
+- An electrical engineer specifying a transformer lists its
+  efficiency as a percent.
+- A public health analyst tracking disease spread uses a growth
+  rate — the same $(1+r)^n$ structure.
+- A geographer projecting water demand uses population growth
+  as a percent per year.
+
+The arithmetic is identical. The stakes vary.
+:::
+
+## Exercises
+
+1. A laptop costs £1,149. It is on sale at 15% off. What is the
+   sale price?
+
+2. A city had 320,000 residents in 2015 and 387,000 in 2025.
+   What was the total percent change over that decade?
+
+3. An investment grows from £4,500 to £5,200 over 3 years.
+   What was the approximate annual growth rate?
+   *(Estimate; you do not yet need logarithms — try 3–4 percent
+   and refine.)*
+
+4. A water tank contains 12,000 litres. It leaks at a rate of
+   5% of its current volume per day. How much water remains
+   after 1 week?
+
+5. A car tyre has a stated efficiency rating of 92% for energy
+   transfer from engine torque to road thrust. If the engine
+   delivers 95 kW, what power actually moves the car?
+
+6. A country's annual inflation rate is 2.8%. A loaf of bread
+   costs £1.40 today. What will it cost in 8 years at this rate?
+
+7. A business owner offers a 10% early-payment discount.
+   A customer receives an invoice for £3,400. They pay early.
+   How much do they pay? What percent of the original price
+   was the discount in pounds?
