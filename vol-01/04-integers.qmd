@@ -27,13 +27,9 @@ opens_to:
     label: "Fractions and decimals"
     volume: 1
     relationship: "enriches"
-  - id: "v3c1-geom"
-    label: "Geometry and measurement"
-    volume: 3
-    relationship: "enriches"
 
 prerequisite_ids:
-  - "v1c1-num"
+  - "num"
 
 destinations:
   - field: "sci"

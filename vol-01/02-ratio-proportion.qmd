@@ -36,7 +36,7 @@ opens_to:
     relationship: "motivates"
 
 prerequisite_ids:
-  - "v1c1-num"
+  - "num"
 
 destinations:
   - field: "eng"
@@ -147,6 +147,16 @@ To divide total $T$ in the ratio $a:b$:
 2. Value of one part: $T \div (a + b)$
 3. First share: $a \times$ (one part); second share: $b \times$ (one part)
 
+**Cascaded ratios**
+
+Two ratios applied in series multiply. A 3:1 ratio followed by a
+4:1 ratio gives a combined ratio of $3 \times 4 = 12:1$.
+
+**Gear ratio from tooth counts**
+
+For meshing gears, the ratio equals the number of teeth on the
+driven gear divided by the teeth on the driving gear.
+
 **Finding a constant of proportionality**
 
 Given one known pair $(x_0, y_0)$ where $y \propto x$:
@@ -176,6 +186,8 @@ rotations. Output speed:
 
 $$\text{output speed} = \frac{1800}{6} = 300 \text{ rpm}$$
 
+Power = torque × speed. If the speed halves, and power is
+preserved (ignoring losses), the torque must double to compensate.
 By conservation of power (ignoring losses), torque multiplies
 by the same factor: $\times 6$. If input torque is 10 Nm,
 output torque is 60 Nm.

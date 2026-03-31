@@ -27,14 +27,10 @@ opens_to:
     label: "Patterns and sequences"
     volume: 2
     relationship: "enriches"
-  - id: "v1c3-pct"
-    label: "Percent and rates"
-    volume: 1
-    relationship: "enriches"
 
 prerequisite_ids:
-  - "v1c1-num"
-  - "v1c3-pct"
+  - "num"
+  - "pct"
 
 destinations:
   - field: "sci"
@@ -47,7 +43,7 @@ destinations:
     career_example: "Risk analyst pricing insurance or financial products"
   - field: "comp"
     label: "Computing and data"
-    hook: "A spam filter assigns each email a probability of being spam — basic statistics is the engine underneath."
+    hook: "A Naïve Bayes spam filter assigns each email a probability of being spam — direct application of this chapter's probability rules."
     career_example: "Data scientist building and evaluating a classification model"
   - field: "geo"
     label: "Geography and environment"
@@ -58,7 +54,7 @@ hook: |
   A weather forecast says 70% chance of rain. A factory produces
   1,000 bolts per day; the defect rate is 0.3%. A clinical trial
   reports a drug reduces blood pressure by 12 mmHg on average,
-  with a standard deviation of 4 mmHg.
+  with a range of 8 mmHg across the measured group.
 
   These are not vague statements. Each one encodes a precise claim
   about how a process behaves across many instances. Understanding
@@ -91,8 +87,8 @@ exercises:
 
 alberta_curriculum:
   grade: 7
-  strand: "Statistics and Probability"
-  outcome: "SP1"
+  strand: "Statistics and Probability (Gr 7–8)"
+  outcome: "SP1/SP2"
 uofa_course: null
 stroud_programme: null
 kreyszig_chapter: null
@@ -101,7 +97,7 @@ kreyszig_chapter: null
 A weather forecast says 70% chance of rain. A factory produces
 1,000 bolts per day; the defect rate is 0.3%. A clinical trial
 reports a drug reduces blood pressure by 12 mmHg on average,
-with a standard deviation of 4 mmHg.
+with a range of 8 mmHg across the measured group.
 
 These are not vague statements. Each one encodes a precise claim
 about how a process behaves across many instances. Understanding
@@ -201,6 +197,22 @@ Median: 4th value = 48.4 mm. The mean and median are close
 
 ---
 
+**Example 1b — IQR for the same dataset.**
+Ordered data (7 values): 48.3, 48.3, 48.4, **48.4**, 48.5, 48.6, 48.7.
+
+The median is the 4th value: 48.4. For an odd-count dataset,
+exclude the median when splitting into halves.
+
+Lower half (values 1–3): 48.3, 48.3, 48.4. Q1 = median = 48.3.
+
+Upper half (values 5–7): 48.5, 48.6, 48.7. Q3 = median = 48.6.
+
+$$\text{IQR} = Q3 - Q1 = 48.6 - 48.3 = 0.3 \text{ mm}$$
+
+The middle 50% of measurements span 0.3 mm.
+
+---
+
 **Example 2 — Geography: flood probability.** A hydrologist's
 records show that, in 80 years of data, river discharge exceeded
 the flood threshold 4 times. Estimate the probability of a flood
@@ -273,8 +285,10 @@ claims about the world.
    Find the mean, median, and range.
 
 2. A student scores 62, 71, 85, 68, 90, 74, and 55 on seven
-   tests. Find the mean and median. Which better represents
-   their "typical" performance, and why?
+   tests. Find the mean and median. A ninth student joins the
+   group with a score of 4. Recalculate the mean. Does the
+   median change? What does this show about which measure is
+   more stable under an extreme value?
 
 3. A standard die has faces 1–6. What is the probability of
    rolling a number greater than 4? Of rolling an even number?
@@ -303,4 +317,4 @@ claims about the world.
 7. A set of 9 measurements has a median of 14.2 and a mean of
    15.1. One outlier is identified and removed, leaving 8 values
    with a mean of 14.6. What was the outlier value?
-   *(Hint: work backwards from the definition of the mean.)*
+   *(Hint: total of 9 values = mean × 9. Total of remaining 8 = new mean × 8. Outlier = first total − second total.)*

@@ -22,9 +22,9 @@ opens_to:
     label: "Linear equations"
     volume: 2
     relationship: "enriches"
-  - id: "v3c5-exp-log"
+  - id: "v4c1-exp-log"
     label: "Exponents and logarithms"
-    volume: 3
+    volume: 4
     relationship: "motivates"
   - id: "v1c6-stat-basic"
     label: "Statistics and probability"
@@ -32,8 +32,8 @@ opens_to:
     relationship: "enriches"
 
 prerequisite_ids:
-  - "v1c1-num"
-  - "v1c2-ratio"
+  - "num"
+  - "ratio"
 
 destinations:
   - field: "biz"
@@ -168,7 +168,7 @@ after 5 years?
 
 $$Q_5 = 2000 \times (1.035)^5$$
 
-$(1.035)^5 = 1.1877$ (to 4 d.p.)
+$(1.035)^5 = 1.1877$ (to 4 d.p.) (Use a calculator for the exponent — repeated multiplication of 1.035 five times gives this result.)
 
 $$Q_5 = 2000 \times 1.1877 = £2,375.40$$
 
@@ -215,7 +215,7 @@ In 4 hours, roughly 40% of the atoms have decayed.
 
 Percent applied once is straightforward proportion. Applied
 repeatedly, it produces exponential behaviour — and **exponents
-and logarithms** (Volume 3, Chapter 5) is where that behaviour
+and logarithms** (Volume 4, Chapter 1) is where that behaviour
 is studied properly. Logarithms undo the compounding: if you want
 to know how long it takes for a quantity to double, you are solving
 an exponential equation, which requires a logarithm.
@@ -262,9 +262,9 @@ The arithmetic is identical. The stakes vary.
    5% of its current volume per day. How much water remains
    after 1 week?
 
-5. A car tyre has a stated efficiency rating of 92% for energy
-   transfer from engine torque to road thrust. If the engine
-   delivers 95 kW, what power actually moves the car?
+5. A car's drivetrain transfers engine power to the wheels with
+   87% efficiency. If the engine produces 110 kW, what power
+   reaches the wheels? What percentage is lost?
 
 6. A country's annual inflation rate is 2.8%. A loaf of bread
    costs £1.40 today. What will it cost in 8 years at this rate?

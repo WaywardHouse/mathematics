@@ -22,13 +22,9 @@ opens_to:
     label: "Linear equations"
     volume: 2
     relationship: "enriches"
-  - id: "v1c2-ratio"
-    label: "Ratio and proportion"
-    volume: 1
-    relationship: "enriches"
-  - id: "v3c5-exp-log"
+  - id: "v4c1-exp-log"
     label: "Exponents and logarithms"
-    volume: 3
+    volume: 4
     relationship: "enriches"
   - id: "v5c1-limits"
     label: "Limits and continuity"
@@ -36,8 +32,8 @@ opens_to:
     relationship: "motivates"
 
 prerequisite_ids:
-  - "v1c1-num"
-  - "v1c4-integers"
+  - "num"
+  - "integers"
 
 destinations:
   - field: "eng"
@@ -142,6 +138,9 @@ Remember: "flip and multiply."
 
 **Adding and subtracting fractions**
 
+Mixed numbers: convert first. Multiply the whole number by the
+denominator and add the numerator: $1\frac{1}{2} = \frac{(1 \times 2) + 1}{2} = \frac{3}{2}$.
+
 You need a common denominator. The simplest: multiply both denominators.
 $$\frac{a}{b} + \frac{c}{d} = \frac{ad}{bd} + \frac{bc}{bd} = \frac{ad + bc}{bd}$$
 
@@ -158,9 +157,11 @@ Decimal → fraction: write the decimal over its place-value denominator, then s
 A fraction $\frac{a}{b}$ is a number. The rules for arithmetic with
 fractions follow from the same rules that govern whole numbers —
 distribution, commutativity, and the fact that multiplying by 1
-changes nothing. When we write $\frac{a}{b} \times \frac{b}{b}$ to
-create a common denominator, we are multiplying by $\frac{b}{b} = 1$.
-The fraction's value is unchanged; only its representation changes.
+changes nothing. To add $\frac{a}{b} + \frac{c}{d}$, rewrite the
+first fraction as $\frac{a}{b} \times \frac{d}{d} = \frac{ad}{bd}$
+and the second as $\frac{c}{d} \times \frac{b}{b} = \frac{bc}{bd}$.
+Both multiplications are by 1, so neither fraction's value changes —
+only its representation. The result is $\frac{ad + bc}{bd}$.
 Division by a fraction is multiplication by its reciprocal because
 $\frac{a}{b} \times \frac{b}{a} = 1$ — they are inverses of each other.
 :::
@@ -274,4 +275,4 @@ The arithmetic is identical. The precision matters.
    0.5% solution will the diluted version be?
 
 7. Convert each to a decimal, then order from least to greatest:
-   $\frac{7}{12}$, $\frac{3}{5}$, $0.58$, $\frac{11}{20}$, $0.6\overline{1}$.
+   $\frac{7}{12}$, $\frac{3}{5}$, $0.58$, $\frac{11}{20}$, $0.\overline{6}$.

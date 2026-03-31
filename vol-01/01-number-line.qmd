@@ -143,9 +143,11 @@ smaller, right is larger. For negative numbers: $-10 < -2 < 0 < 3 < 7$.
 
 **Absolute value**
 
+We will prove in Chapter 4 why $-(-7) = 7$. For now, take it as a rule: negating a negative gives a positive.
+
 $|x| = x$ if $x \geq 0$; $|x| = -x$ if $x < 0$.
 
-So $|{-7}| = -(-7) = 7$. The negative of a negative is positive.
+So $|{-7}| = -(-7) = 7$.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -261,8 +263,7 @@ which numbers go where before you compute.
    Which samples pass? Express each deviation as a signed number.
 
 5. Place these numbers on a number line sketch and order them
-   from least to greatest: $-\frac{3}{4}$, $1.2$, $0$, $-2$,
-   $\frac{5}{4}$, $-0.5$.
+   from least to greatest: $-1.5$, $2$, $0$, $-3$, $0.7$, $-0.5$.
 
 6. A submarine is at −180 m. A fish swims at −45 m. A buoy
    floats at +2 m. What is the distance between the submarine
