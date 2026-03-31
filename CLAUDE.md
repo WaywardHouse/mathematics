@@ -8,6 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 *Wayward House Mathematics* is a seven-volume Quarto book — arithmetic foundations through engineering mathematics — built for people who want to understand mathematics, not just pass it. Every chapter is driven by a formal front matter schema that encodes its place in the mathematical topology before any prose is written.
 
+### Reader mandate
+
+The series is written for a breadth of learners — neurotypical and neurodiverse. This shapes every content decision:
+
+- **Prose** explains the *why* behind each step, not just the *what*. Language is calibrated to the layer (plain and everyday for pre-university; more precise for university and engineering).
+- **Examples** are drawn from the reader's actual world at the relevant age/stage — not abstract professional scenarios.
+- **Interactivity** is not optional decoration. Every chapter should have at least one interactive element that lets the reader *manipulate* the concept and see the consequence. Some learners cannot build understanding from symbolic prose alone; they need to see a concept move. The viz-artist agent runs on every chapter, not just chapters with obvious graphs.
+- **Multiple representations** of the same idea — symbolic, visual, numerical, verbal — support learners with dyscalculia, dyslexia, ADHD, and other profiles, as well as anyone who simply learns differently from the assumed default.
+
 ## Commands
 
 ```bash
@@ -75,9 +84,9 @@ author       →  math-prof  →  engineer-prof / data-cs-prof
                                      ↓
                               student (readability)
                                      ↓
-                              editor (voice)
+                              editor (voice + language)
                                      ↓
-                              viz-artist (if interactive content needed)
+                              viz-artist (interactive elements — runs on every chapter)
 ```
 
 ### Agent responsibilities
@@ -91,13 +100,13 @@ author       →  math-prof  →  engineer-prof / data-cs-prof
 | `tester-qa` | Front matter schema compliance, topology cross-references, build integrity |
 | `student` | Readability check at the chapter's target layer |
 | `editor` | Voice consistency and prose quality |
-| `viz-artist` | Interactive figures, topology bloom, function plots (OJS/D3) |
+| `viz-artist` | Interactive figures for every chapter — number lines, sliders, animated concept demos, topology bloom (OJS/D3) |
 
-You do not need to run all agents on every chapter. `tester-qa` should always run before `review` status is set. `math-prof` should always run before `final`.
+`tester-qa` must run before `review` status is set. `math-prof` must run before `final`. `viz-artist` runs on every chapter — interactivity is not optional.
 
 ### Voice (enforced by editor)
 
-Terse. Real-world first. Unshowy. Chapters open with concrete situations, not definitions. No reassurance. No preamble. The mathematics does the work.
+Clear, direct, and human. Chapters open with concrete situations from the reader's actual world at that age. No padding, no fake enthusiasm, no preamble — but also not cold or dismissive. Terse means no wasted words, not an impatient tone. Language is calibrated to the chapter's layer: everyday vocabulary for pre-university, more precise for university and engineering.
 
 ---
 
