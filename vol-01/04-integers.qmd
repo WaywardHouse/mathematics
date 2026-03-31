@@ -1,0 +1,6 @@
+---
+title: "Integers and signed arithmetic"
+status: "seed"
+---
+
+*Seed — front matter to be completed before content is written.*

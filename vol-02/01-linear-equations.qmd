@@ -1,0 +1,264 @@
+---
+title: "Linear equations"
+subtitle: "Finding the unknown"
+
+volume: 2
+chapter: 1
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know that numbers relate to each other.
+  Some of those relationships have a gap — a missing value.
+
+rewrite: |
+  An equation is a relationship with a named gap.
+  Solving it means finding what fills the gap without
+  breaking the relationship.
+
+opens_to:
+  - id: "v2c2-inequalities"
+    label: "Inequalities"
+    volume: 2
+    relationship: "enables"
+  - id: "v2c4-graphing"
+    label: "Graphing relations"
+    volume: 2
+    relationship: "enriches"
+  - id: "v3c4-functions"
+    label: "Functions and relations"
+    volume: 3
+    relationship: "motivates"
+  - id: "v7-odes"
+    label: "Differential equations"
+    volume: 7
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "v1c4-integers"
+  - "v1c2-ratio"
+  - "v2c3-patterns"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Kirchhoff's voltage law is a linear equation."
+    career_example: "Electrical engineer balancing circuit loads"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Chemical equilibrium is a system of linear equations."
+    career_example: "Chemist calculating reaction conditions"
+  - field: "biz"
+    label: "Finance"
+    hook: "Break-even analysis is a linear equation."
+    career_example: "Financial analyst modelling cost structures"
+  - field: "comp"
+    label: "Computing"
+    hook: "Linear regression fits a line by solving for its unknowns."
+    career_example: "Data scientist building predictive models"
+  - field: "geo"
+    label: "Geography"
+    hook: "Population projections solve for an unknown future value."
+    career_example: "Urban planner modelling growth scenarios"
+
+hook: |
+  How many hours to cover the rent. When the cheaper phone plan becomes
+  worth it. What dose for this body weight.
+
+  These are all the same question underneath: you know the relationship,
+  you're missing one of the values. A linear equation is just that
+  relationship written down, with a placeholder for the missing part.
+
+notation_introduced:
+  - symbol: "x"
+    reads_as: "the unknown"
+    notation_weight: 1
+  - symbol: "="
+    reads_as: "both sides describe the same amount"
+    notation_weight: 1
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 9
+  strand: "Variables, Equations and Inequalities"
+  outcome: "4.1"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+How many hours to cover the rent. When the cheaper phone plan becomes
+worth it. What dose for this body weight.
+
+These are all the same question underneath: you know the relationship,
+you're missing one of the values. A linear equation is just that
+relationship written down, with a placeholder for the missing part.
+
+## What the notation is saying
+
+$$3x + 7 = 22$$
+
+Read it as: three of something, plus seven, gives twenty-two. The $x$ is
+the placeholder — a name for the gap in our knowledge. The equals sign
+means both sides describe the same amount.
+
+Peel away what's around the unknown until it stands alone. Three of
+something plus seven is twenty-two, so three of something is fifteen,
+so the something is five. Check: $3 \times 5 + 7 = 22$. Yes.
+
+That move — isolating the unknown — is what this chapter is about.
+
+The concept stays this simple. What gets harder is the notation
+accumulating, and equations appearing inside larger problems where it
+isn't obvious that's what they are.
+
+## The method
+
+The rule is: whatever you do to one side of the equals sign, do to the
+other. The equation is a balance. You can add weight to both sides,
+remove weight from both sides, or multiply both sides by the same
+amount — as long as you do the same thing to both, the balance holds.
+
+$$3x + 7 = 22$$
+
+Subtract 7 from both sides:
+
+$$3x = 15$$
+
+Divide both sides by 3:
+
+$$x = 5$$
+
+That's it. Two operations, one unknown, done.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+The equals sign is a statement that two things are the same amount.
+If you change one side without changing the other, they're no longer
+the same amount — you've broken the equation. Doing the same thing
+to both sides preserves the equality. That's the whole method.
+:::
+
+## Worked examples
+
+**Example 1.** A plumber charges a £50 call-out fee plus £40 per hour.
+The bill comes to £210. How many hours did the job take?
+
+Let $h$ = hours worked.
+
+$$50 + 40h = 210$$
+
+$$40h = 160$$
+
+$$h = 4$$
+
+Four hours. Check: $50 + 40 \times 4 = 50 + 160 = 210$. Yes.
+
+---
+
+**Example 2.** Two phone plans. Plan A costs £15 per month plus £0.10
+per minute of calls. Plan B costs £25 per month with unlimited calls.
+At how many minutes per month does Plan B become cheaper?
+
+Let $m$ = minutes per month.
+
+Plan A costs: $15 + 0.1m$
+
+Plan B costs: $25$
+
+They're equal when:
+
+$$15 + 0.1m = 25$$
+
+$$0.1m = 10$$
+
+$$m = 100$$
+
+At 100 minutes per month they cost the same. Above 100 minutes,
+Plan B is cheaper.
+
+---
+
+**Example 3.** A solution is 30% alcohol by volume. How many litres of
+pure water must be added to 2 litres of this solution to bring it down
+to 20% alcohol?
+
+The amount of alcohol stays fixed at $0.30 \times 2 = 0.6$ litres.
+After adding $w$ litres of water, the total volume is $2 + w$ litres,
+and we want the alcohol fraction to be 20%:
+
+$$\frac{0.6}{2 + w} = 0.2$$
+
+$$0.6 = 0.2(2 + w)$$
+
+$$0.6 = 0.4 + 0.2w$$
+
+$$0.2 = 0.2w$$
+
+$$w = 1$$
+
+Add 1 litre of water. This is the kind of calculation a pharmacist,
+a chemist, or a process engineer does routinely.
+
+## Where this goes
+
+Linear equations with one unknown are the simplest case. From here,
+two directions open.
+
+The first is **more unknowns** — two equations, two unknowns; three
+equations, three unknowns. Systems of linear equations. We reach those
+in Volume 4, and they become the foundation of matrix algebra and
+eventually of the numerical methods that underpin modern engineering
+and machine learning.
+
+The second is **more structure** — what if the unknown appears in a
+more complex relationship? What if the relationship isn't linear at all?
+That opens polynomials, then functions, then calculus. The $x$ in this
+chapter is the same $x$ you'll meet in all of those — just with more
+company around it.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- An electrical engineer writing Kirchhoff's voltage law is solving
+  a linear equation for current or voltage.
+- A pharmacist calculating a dose by body weight is solving a linear
+  equation.
+- A financial analyst finding a break-even point is solving a linear
+  equation.
+- A data scientist fitting a regression line is solving a system of
+  linear equations.
+
+The tool is the same. The domain changes.
+:::
+
+## Exercises
+
+These are puzzles, not drills. Each one has a clean answer, but the
+interesting part is setting up the equation — translating the situation
+into the notation before you solve it.
+
+1. A taxi charges £2.50 plus £1.20 per kilometre. A journey costs
+   £11.50. How far was the journey?
+
+2. A recipe makes 12 biscuits using 200g of flour. You have 550g
+   of flour. How many biscuits can you make? *(Set up an equation
+   first. Don't just divide.)*
+
+3. Two cyclists start 120km apart and ride toward each other. One
+   rides at 20km/h, the other at 25km/h. After how many hours do
+   they meet?
+
+4. A tank holds 800 litres of water and drains at 35 litres per
+   minute. A second tank holds 200 litres and fills at 15 litres
+   per minute. After how many minutes do they contain the same
+   amount?
+
+5. A contractor quotes £3,200 for a job that will take her team
+   some number of days. The fixed materials cost is £800; the
+   rest is labour at £160 per person per day, with a team of 3.
+   How many days is the job?

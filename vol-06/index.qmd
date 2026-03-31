@@ -1,0 +1,6 @@
+---
+title: "Volume 6 — Probability and data"
+status: "seed"
+---
+
+*Seed — front matter to be completed before content is written.*

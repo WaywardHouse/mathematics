@@ -1,0 +1,27 @@
+---
+title: "Volume 2 — Patterns and algebra"
+---
+
+The central move of this volume is naming the gap.
+
+You already know how numbers behave. This volume is about what happens
+when one of the numbers is missing — and about the notation that lets
+you work with that absence as if it were a thing you could hold.
+
+By the end of this volume you will be able to write a relationship down
+symbolically, solve for unknowns, recognise when a relationship is
+linear versus something else, and read a graph as a statement about
+how two quantities relate.
+
+These are not abstract skills. They are the toolkit that every
+quantitative field — engineering, science, finance, computing,
+geography — uses before it reaches for anything more sophisticated.
+
+## Chapters
+
+| Chapter | Title | Core move |
+|---------|-------|-----------|
+| 1 | Linear equations | Isolating the unknown |
+| 2 | Inequalities | When the answer is a range |
+| 3 | Patterns and sequences | When the relationship repeats |
+| 4 | Graphing relations | When the relationship has a shape |

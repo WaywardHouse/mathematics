@@ -1,0 +1,6 @@
+---
+title: "Exponents and logarithms"
+status: "seed"
+---
+
+*Seed — front matter to be completed before content is written.*

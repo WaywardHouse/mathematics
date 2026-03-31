@@ -1,0 +1,189 @@
+# Wayward House Mathematics — Chapter Front Matter Schema
+# Version 0.1
+#
+# Every chapter .qmd file opens with a YAML block conforming to this schema.
+# Fields marked [REQUIRED] must be present for the build to succeed.
+# Fields marked [GENERATED] are populated automatically by scripts/build-nav.py
+# Fields marked [OPTIONAL] enrich the wayfinding layer but are not blocking.
+#
+# The schema serves three purposes:
+#   1. Authorial discipline — you cannot write the chapter until you can
+#      state the rewriting rule clearly (axiom + rewrite)
+#   2. Wayfinding generation — feeds the bloom visualisation and nav prose
+#   3. Series integrity — ensures every chapter has a legible place in
+#      the topology before a word of content is written
+
+# ── Identity ────────────────────────────────────────────────────────────────
+
+title: ""               # [REQUIRED] Short, plain. No "Introduction to".
+subtitle: ""            # [REQUIRED] One phrase naming the core move.
+
+volume: ~               # [REQUIRED] Integer 1–7
+chapter: ~              # [REQUIRED] Integer, unique within volume
+section: ""             # [OPTIONAL] For vol-07 sub-parts (odes/fourier etc.)
+
+layer: ""               # [REQUIRED] One of:
+                        #   pre-university | bridge | university | engineering
+                        # Determines which ring of the bloom this sits in.
+
+status: "seed"          # [REQUIRED] One of: seed | draft | review | final
+
+
+# ── L-system grammar ────────────────────────────────────────────────────────
+# These fields are AUTHORIAL ONLY. They never appear verbatim in the rendered
+# chapter. They are the formal statement of the rewriting rule this chapter
+# embodies. If you cannot fill these in cleanly, the chapter is not ready.
+
+axiom: ""               # [REQUIRED] What the reader already holds coming in.
+                        # One or two plain sentences. No jargon.
+                        # Example: "You already know that numbers relate to
+                        # each other. Some of those relationships have a gap."
+
+rewrite: ""             # [REQUIRED] The rule that fires in this chapter.
+                        # What does the reader hold differently on the way out?
+                        # Example: "An equation is a relationship with a named
+                        # gap. Solving it means finding what fills the gap
+                        # without breaking the relationship."
+
+opens_to:               # [REQUIRED] What this chapter makes visible.
+  - id: ""              # Chapter id (volume-chapter slug, e.g. "v2c1-linear")
+    label: ""           # Short human label
+    volume: ~           # Integer
+    relationship: ""    # One of: enables | enriches | motivates
+                        #   enables   — direct prerequisite
+                        #   enriches  — deepens understanding but not blocking
+                        #   motivates — shows why the target chapter matters
+
+
+# ── Wayfinding ──────────────────────────────────────────────────────────────
+
+prerequisite_ids: []    # [REQUIRED] List of chapter id slugs.
+                        # Empty list is valid for Vol 1 Chapter 1 only.
+
+destinations:           # [REQUIRED] At least one entry.
+  - field: ""           # One of: eng | sci | biz | comp | geo
+    label: ""           # Display name for the field
+    hook: ""            # One sentence. Concrete. No "is used in".
+                        # Example: "Kirchhoff's voltage law is a linear equation."
+    career_example: ""  # [OPTIONAL] A specific role that uses this daily.
+
+
+# ── Chapter shape ───────────────────────────────────────────────────────────
+
+hook: ""                # [REQUIRED] The opening paragraph(s) of the chapter.
+                        # Written here, rendered verbatim as the chapter lede.
+                        # Terse. Real-world first. No reassurance.
+                        # This is the hardest field to write. Write it last.
+
+notation_introduced:    # [OPTIONAL] List symbols introduced in this chapter.
+  - symbol: ""          # The symbol as it appears on the page
+    reads_as: ""        # How to say it in plain English
+    notation_weight: ~  # Integer 1–5.
+                        #   1 = needs one sentence
+                        #   3 = needs a sidebar
+                        #   5 = needs its own section
+
+exercises:
+  type: ""              # [REQUIRED] One of: puzzle | drill | investigation | project
+                        #   puzzle      — convergent, satisfying, short
+                        #   drill       — repetitive by design, builds fluency
+                        #   investigation — open-ended, multiple valid answers
+                        #   project     — extended, real dataset or context
+  real_world_context: ~ # [REQUIRED] true | false
+
+
+# ── Curriculum alignment ────────────────────────────────────────────────────
+# Cross-references to external curricula and texts.
+# All optional — present where known, null where not applicable.
+
+alberta_curriculum:
+  grade: ~              # Integer or null
+  strand: ""
+  outcome: ""
+
+uofa_course: ""         # e.g. "MATH 100" or null for pre-university chapters
+
+stroud_programme: ~     # Integer (1–32) or null
+kreyszig_chapter: ~     # Integer (1–25) or null
+
+
+# ── Example populated instance ──────────────────────────────────────────────
+#
+# title: "Linear equations"
+# subtitle: "Finding the unknown"
+# volume: 2
+# chapter: 1
+# layer: "pre-university"
+# status: "draft"
+#
+# axiom: |
+#   You already know that numbers relate to each other.
+#   Some of those relationships have a gap — a missing value.
+# rewrite: |
+#   An equation is a relationship with a named gap.
+#   Solving it means finding what fills the gap without
+#   breaking the relationship.
+# opens_to:
+#   - id: "v2c2-inequalities"
+#     label: "Inequalities"
+#     volume: 2
+#     relationship: "enables"
+#   - id: "v2c4-graphing"
+#     label: "Graphing relations"
+#     volume: 2
+#     relationship: "enriches"
+#   - id: "v3c4-functions"
+#     label: "Functions and relations"
+#     volume: 3
+#     relationship: "motivates"
+#
+# prerequisite_ids:
+#   - "v1c4-integers"
+#   - "v1c2-ratio"
+#   - "v2c3-patterns"
+#
+# destinations:
+#   - field: "eng"
+#     label: "Engineering"
+#     hook: "Kirchhoff's voltage law is a linear equation."
+#     career_example: "Electrical engineer balancing circuit loads"
+#   - field: "sci"
+#     label: "Sciences"
+#     hook: "Chemical equilibrium is a system of linear equations."
+#   - field: "biz"
+#     label: "Finance"
+#     hook: "Break-even analysis is a linear equation."
+#   - field: "comp"
+#     label: "Computing"
+#     hook: "Linear regression fits a line by solving for its unknowns."
+#   - field: "geo"
+#     label: "Geography"
+#     hook: "Population projections solve for an unknown future value."
+#
+# hook: |
+#   How many hours to cover the rent. When the cheaper phone plan becomes
+#   worth it. What dose for this body weight.
+#
+#   These are all the same question underneath: you know the relationship,
+#   you're missing one of the values. A linear equation is just that
+#   relationship written down, with a placeholder for the missing part.
+#
+# notation_introduced:
+#   - symbol: "x"
+#     reads_as: "the unknown"
+#     notation_weight: 1
+#   - symbol: "="
+#     reads_as: "both sides describe the same amount"
+#     notation_weight: 1
+#
+# exercises:
+#   type: "puzzle"
+#   real_world_context: true
+#
+# alberta_curriculum:
+#   grade: 9
+#   strand: "Variables, Equations & Inequalities"
+#   outcome: "4.1"
+# uofa_course: null
+# stroud_programme: null
+# kreyszig_chapter: null

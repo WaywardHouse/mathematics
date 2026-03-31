@@ -1,0 +1,138 @@
+project:
+  type: book
+  output-dir: _site
+
+book:
+  title: "Wayward House Mathematics"
+  subtitle: "A series for people who want to understand, not just pass"
+  author: "Paul Downey"
+  date: last-modified
+  search: true
+  repo-url: https://github.com/wayward-house/mathematics
+  repo-actions: [edit, issue]
+  sharing: [twitter, linkedin]
+  sidebar:
+    style: docked
+    background: light
+
+  chapters:
+    - index.qmd
+    - part: "The map"
+      chapters:
+        - map/wayfinding.qmd
+        - map/how-to-use.qmd
+    - part: "Volume 1 — Numbers and operations"
+      chapters:
+        - vol-01/index.qmd
+        - vol-01/01-number-line.qmd
+        - vol-01/02-ratio-proportion.qmd
+        - vol-01/03-percent-rates.qmd
+        - vol-01/04-integers.qmd
+        - vol-01/05-fractions-decimals.qmd
+        - vol-01/06-statistics-probability.qmd
+    - part: "Volume 2 — Patterns and algebra"
+      chapters:
+        - vol-02/index.qmd
+        - vol-02/01-linear-equations.qmd
+        - vol-02/02-inequalities.qmd
+        - vol-02/03-patterns-sequences.qmd
+        - vol-02/04-graphing-relations.qmd
+    - part: "Volume 3 — Shape and measure"
+      chapters:
+        - vol-03/index.qmd
+        - vol-03/01-geometry-measurement.qmd
+        - vol-03/02-trigonometry.qmd
+        - vol-03/03-polynomials-factoring.qmd
+        - vol-03/04-functions-relations.qmd
+    - part: "Volume 4 — Functions and change"
+      chapters:
+        - vol-04/index.qmd
+        - vol-04/01-exponents-logarithms.qmd
+        - vol-04/02-complex-numbers.qmd
+        - vol-04/03-systems-matrices.qmd
+        - vol-04/04-sequences-series.qmd
+    - part: "Volume 5 — Analysis and proof"
+      chapters:
+        - vol-05/index.qmd
+        - vol-05/01-limits-continuity.qmd
+        - vol-05/02-differential-calculus.qmd
+        - vol-05/03-integral-calculus.qmd
+        - vol-05/04-proof-reasoning.qmd
+    - part: "Volume 6 — Probability and data"
+      chapters:
+        - vol-06/index.qmd
+        - vol-06/01-probability-theory.qmd
+        - vol-06/02-distributions.qmd
+        - vol-06/03-statistical-inference.qmd
+        - vol-06/04-data-analysis.qmd
+    - part: "Volume 7 — Engineering mathematics"
+      chapters:
+        - vol-07/index.qmd
+        - part: "Ordinary differential equations"
+          chapters:
+            - vol-07/odes/01-first-order.qmd
+            - vol-07/odes/02-second-order.qmd
+            - vol-07/odes/03-systems-phase-plane.qmd
+            - vol-07/odes/04-laplace-transforms.qmd
+        - part: "Linear algebra and vector calculus"
+          chapters:
+            - vol-07/linear-algebra/01-matrices-systems.qmd
+            - vol-07/linear-algebra/02-eigenvalues.qmd
+            - vol-07/linear-algebra/03-vector-differential.qmd
+            - vol-07/linear-algebra/04-vector-integral.qmd
+        - part: "Fourier analysis and PDEs"
+          chapters:
+            - vol-07/fourier-pdes/01-fourier-series.qmd
+            - vol-07/fourier-pdes/02-fourier-transforms.qmd
+            - vol-07/fourier-pdes/03-partial-differential-equations.qmd
+        - part: "Complex analysis"
+          chapters:
+            - vol-07/complex-analysis/01-complex-functions.qmd
+            - vol-07/complex-analysis/02-complex-integration.qmd
+            - vol-07/complex-analysis/03-series-residues.qmd
+            - vol-07/complex-analysis/04-conformal-mapping.qmd
+        - part: "Numerical methods"
+          chapters:
+            - vol-07/numerics/01-numerical-methods.qmd
+            - vol-07/numerics/02-numerical-linear-algebra.qmd
+            - vol-07/numerics/03-numerical-odes-pdes.qmd
+        - part: "Optimisation"
+          chapters:
+            - vol-07/optimisation/01-linear-programming.qmd
+            - vol-07/optimisation/02-graphs-networks.qmd
+        - part: "Probability and statistics"
+          chapters:
+            - vol-07/probability/01-probability-theory.qmd
+            - vol-07/probability/02-mathematical-statistics.qmd
+
+format:
+  html:
+    theme:
+      light: [flatly, assets/css/wayward.scss]
+      dark: [darkly, assets/css/wayward-dark.scss]
+    code-fold: true
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    fig-align: center
+    callout-appearance: simple
+    smooth-scroll: true
+    include-in-header: assets/js/wayfinding.html
+
+  pdf:
+    documentclass: scrbook
+    geometry:
+      - top=25mm
+      - bottom=25mm
+      - left=30mm
+      - right=25mm
+    fontfamily: libertinus
+    colorlinks: true
+
+bibliography: references.bib
+csl: assets/chicago-author-date.csl
+
+execute:
+  freeze: auto
+  echo: false
+  warning: false

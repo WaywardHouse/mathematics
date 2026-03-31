@@ -1,0 +1,6 @@
+---
+title: "Volume 5 — Analysis and proof"
+status: "seed"
+---
+
+*Seed — front matter to be completed before content is written.*

@@ -1,0 +1,49 @@
+---
+title: "Wayward House Mathematics"
+subtitle: "A series for people who want to understand, not just pass"
+---
+
+Most mathematics education answers the question *how*. This series
+tries to answer *what*, *why*, and *where this goes*.
+
+It starts where the difficulty usually starts — not at the beginning
+of mathematics, but at the point where the notation begins to feel
+like it belongs to someone else. Each volume takes a set of tools,
+shows what they actually are, and points toward where they're used
+in the world.
+
+The series runs from the foundations of arithmetic through to
+university-level engineering mathematics. You don't have to start at
+Volume 1. Start where you lost the thread.
+
+## The map
+
+Before you begin, it's worth seeing the whole territory. The
+[wayfinding map](map/wayfinding.qmd) shows how the topics connect,
+which fields they lead to, and how the mathematics opens up as you
+move through the series.
+
+## The volumes
+
+| Volume | Content | Roughly equivalent to |
+|--------|---------|----------------------|
+| 1 | Numbers and operations | Alberta Gr 7–8 |
+| 2 | Patterns and algebra | Alberta Gr 8–9 |
+| 3 | Shape and measure | Alberta Gr 9–10 |
+| 4 | Functions and change | Alberta Gr 10–11 |
+| 5 | Analysis and proof | Alberta Gr 11–12 |
+| 6 | Probability and data | Alberta Gr 11–12 |
+| 7 | Engineering mathematics | First and second year university |
+
+The grade equivalents are approximate and are there for orientation
+only. They are not labels.
+
+## How to use this series
+
+Each chapter opens with what you need coming in, and closes with what
+it opens up. The exercises are puzzles, not drills — they're designed
+to be interesting rather than repetitive.
+
+If a piece of notation stops you, look for the plain-language
+reading immediately beside it. Notation is a compression tool, not a
+gatekeeping device. This series treats it as such.

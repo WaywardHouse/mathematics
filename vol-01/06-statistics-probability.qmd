@@ -1,0 +1,6 @@
+---
+title: "Statistics and probability"
+status: "seed"
+---
+
+*Seed — front matter to be completed before content is written.*
