@@ -2,7 +2,7 @@
 
 A series for people who want to understand mathematics, not just pass it.
 
-Seven volumes running from arithmetic foundations through to university
+Eight volumes running from arithmetic foundations through to upper-year
 engineering mathematics. Built with [Quarto](https://quarto.org).
 
 ## Structure
@@ -25,14 +25,15 @@ wayward-maths/
 ├── vol-04/                  # Functions and change
 ├── vol-05/                  # Analysis and proof
 ├── vol-06/                  # Probability and data
-└── vol-07/                  # Engineering mathematics
-    ├── odes/
-    ├── linear-algebra/
-    ├── fourier-pdes/
-    ├── complex-analysis/
-    ├── numerics/
-    ├── optimisation/
-    └── probability/
+├── vol-07/                  # Engineering mathematics
+│   ├── odes/
+│   ├── linear-algebra/
+│   ├── fourier-pdes/
+│   ├── complex-analysis/
+│   ├── numerics/
+│   ├── optimisation/
+│   └── probability/
+└── vol-08/                  # Upper-year engineering mathematics
 ```
 
 ## Design principles
@@ -77,7 +78,9 @@ The topology is triangulated from three sources:
 - **Kreyszig, Advanced Engineering Mathematics (10th ed.)**
   — conceptual architecture for Volume 7
 - **University of Alberta MATH sequence** — MATH 100, 101, 102, 209,
-  201 — the institutional prerequisite structure
+  201 — the institutional prerequisite structure for Volume 7
+- **University of Alberta upper-year engineering catalogue**
+  — the discipline-facing mathematical methods that anchor Volume 8
 
 ## Building
 
@@ -89,5 +92,7 @@ quarto render     # Full build to _site/
 
 ## Status
 
-Early development. Volume 2, Chapter 1 (Linear equations) is the
-proof-of-concept chapter. Everything else is scaffolding.
+Early development, but no longer just scaffolding. Volume 7 contains
+substantial drafted and review-stage chapters; Volume 8 is now scaffolded
+as the next curriculum layer for upper-year engineering mathematics.
+# waywardhouse-maths
