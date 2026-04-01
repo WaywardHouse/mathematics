@@ -9,6 +9,7 @@
 #   2  bridge           Gr 12 into first-year university
 #   3  university       U of A MATH 100–209–201 sequence
 #   4  engineering      Kreyszig Parts A–G
+#   5  discipline       Upper-year engineering mathematics in context
 
 # ── Destination fields ───────────────────────────────────────────────────────
 
@@ -134,6 +135,16 @@ nodes:
     hook: >
       Anything that accumulates or repeats. The seed of calculus.
 
+  - id: graphing
+    label: Graphing relations
+    layer: 1
+    volume: 2
+    fields: [eng, sci, biz, comp]
+    hook: >
+      Every equation is a line waiting to be drawn. The picture and the
+      algebra are the same relationship in two different languages.
+    chapter_ref: "vol-02/04-graphing-relations.qmd"
+
   - id: geom
     label: Geometry and measurement
     layer: 1
@@ -169,11 +180,22 @@ nodes:
   - id: exp_log
     label: Exponents and logarithms
     layer: 1
-    volume: 3
+    volume: 4
     fields: [sci, biz, eng, comp]
     hook: >
       Exponential growth and decay. Pandemics, interest, signal strength,
       radioactive decay.
+    chapter_ref: "vol-04/01-exponents-logarithms.qmd"
+
+  - id: systems
+    label: Systems of equations
+    layer: 1
+    volume: 4
+    fields: [eng, sci, biz, comp]
+    hook: >
+      Two unknowns, two constraints. The simplest case of a problem
+      that scales all the way to machine learning.
+    chapter_ref: "vol-04/03-systems-matrices.qmd"
 
   - id: seq_series
     label: Sequences and series
@@ -257,7 +279,7 @@ nodes:
   - id: lin_alg
     label: Applied linear algebra
     layer: 3
-    volume: 4
+    volume: 7
     fields: [eng, sci, comp]
     hook: >
       Matrices, eigenvalues, eigenvectors. The geometry of systems
@@ -408,6 +430,72 @@ nodes:
     kreyszig: "Ch 24–25"
 
 
+  # Layer 5 — Discipline-facing upper-year engineering mathematics
+
+  - id: control_feedback
+    label: Control, feedback, and stability
+    layer: 5
+    volume: 8
+    fields: [eng, comp, sci]
+    hook: >
+      Turns dynamic models into decisions about stability, transient
+      response, robustness, and feedback design.
+
+  - id: discrete_systems
+    label: Discrete-time systems and signal processing
+    layer: 5
+    volume: 8
+    fields: [eng, comp, sci]
+    hook: >
+      Sampled systems, recurrences, filters, and spectra. The mathematics
+      of sensors, DSP, embedded systems, and experimental data streams.
+
+  - id: continuum_transport
+    label: Continuum mechanics and transport
+    layer: 5
+    volume: 8
+    fields: [eng, sci, geo]
+    hook: >
+      Stress, strain, flux, diffusion, and conservation laws expressed as
+      local field statements with global consequences.
+
+  - id: computational_methods
+    label: Computational methods for engineering models
+    layer: 5
+    volume: 8
+    fields: [eng, comp, geo]
+    hook: >
+      Meshes, weak forms, conservation, and solver structure — the route
+      from governing equation to trustworthy simulation.
+
+  - id: estimation_inverse
+    label: Estimation, inverse problems, and filtering
+    layer: 5
+    volume: 8
+    fields: [eng, comp, geo, sci]
+    hook: >
+      Recovering hidden states, parameters, and histories from noisy data.
+      Central to control, sensing, remote sensing, and data assimilation.
+
+  - id: reliability
+    label: Reliability, stochastic systems, and quality
+    layer: 5
+    volume: 8
+    fields: [eng, biz, comp]
+    hook: >
+      Failure rates, queues, defects, and operational variability. The
+      mathematics of engineering risk once randomness is structural.
+
+  - id: nonlinear_optim
+    label: Nonlinear optimisation for design and operations
+    layer: 5
+    volume: 8
+    fields: [eng, biz, comp]
+    hook: >
+      Real design spaces curve. Nonlinear constraints and tradeoffs turn
+      "best" into a geometric and computational question.
+
+
 # ── Prerequisite edges ───────────────────────────────────────────────────────
 # Format: [from, to, relationship]
 # relationship: enables | enriches | motivates
@@ -428,6 +516,7 @@ edges:
   - [num, patterns, enables]
   - [patterns, seq_series, enables]
   - [patterns, exp_log, motivates]
+  - [exp_log, seq_series, enriches]
   - [geom, trig, enables]
   - [linear_eq, geom, enriches]
   - [func, trig, enriches]
@@ -489,3 +578,21 @@ edges:
   - [lin_alg_advanced, odes, enriches]
   - [numerics, pdes, enriches]
   - [numerics, odes, enriches]
+
+  # Layer 4 to Layer 5
+  - [laplace, control_feedback, enables]
+  - [lin_alg_advanced, control_feedback, enriches]
+  - [fourier_transform, discrete_systems, enables]
+  - [numerics, discrete_systems, enriches]
+  - [vector_integral, continuum_transport, enriches]
+  - [pdes, continuum_transport, enables]
+  - [numerics, computational_methods, enables]
+  - [continuum_transport, computational_methods, enables]
+  - [prob_stats, estimation_inverse, enables]
+  - [control_feedback, estimation_inverse, enriches]
+  - [discrete_systems, estimation_inverse, enriches]
+  - [prob_stats, reliability, enables]
+  - [estimation_inverse, reliability, enriches]
+  - [optimisation, nonlinear_optim, enables]
+  - [computational_methods, nonlinear_optim, enriches]
+  - [reliability, nonlinear_optim, enriches]

@@ -13,7 +13,7 @@ shows what they actually are, and points toward where they're used
 in the world.
 
 The series runs from the foundations of arithmetic through to
-university-level engineering mathematics. You don't have to start at
+upper-year engineering mathematics. You don't have to start at
 Volume 1. Start where you lost the thread.
 
 ## The map
@@ -33,7 +33,8 @@ move through the series.
 | 4 | Functions and change | Alberta Gr 10–11 |
 | 5 | Analysis and proof | Alberta Gr 11–12 |
 | 6 | Probability and data | Alberta Gr 11–12 |
-| 7 | Engineering mathematics | First and second year university |
+| 7 | Engineering mathematics | U of A first and second year engineering maths |
+| 8 | Upper-year engineering mathematics | U of A years 3 and 4 mathematical methods |
 
 The grade equivalents are approximate and are there for orientation
 only. They are not labels.

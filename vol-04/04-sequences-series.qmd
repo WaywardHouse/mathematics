@@ -1,6 +1,831 @@
 ---
 title: "Sequences and series"
-status: "seed"
+subtitle: "When adding up becomes its own question"
+
+volume: 4
+chapter: 4
+layer: "pre-university"
+status: "review"
+
+axiom: |
+  You know how sequences work — arithmetic ones grow by adding a fixed
+  gap, geometric ones grow by multiplying by a fixed ratio. You can
+  find any term using the nth-term formula.
+
+rewrite: |
+  A series is what you get when you add the terms of a sequence together.
+  That addition has a structure you can exploit. For geometric series,
+  that structure extends to infinitely many terms — and sometimes the
+  infinite sum is a perfectly ordinary finite number.
+
+opens_to:
+  - id: "v5c1-limits"
+    label: "Limits and continuity"
+    volume: 5
+    relationship: "motivates"
+  - id: "v5c3-integral-calculus"
+    label: "Integral calculus"
+    volume: 5
+    relationship: "motivates"
+  - id: "v7c1-fourier-series"
+    label: "Fourier series"
+    volume: 7
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "patterns"
+  - "exp_log"
+
+destinations:
+  - field: "biz"
+    label: "Finance"
+    hook: "The present value of an annuity is a geometric series — every pension and mortgage calculation relies on it."
+    career_example: "Financial analyst pricing loan products"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "The total cost of a recursive algorithm is a geometric series — the basis of Big-O analysis."
+    career_example: "Software engineer analysing algorithm efficiency"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Taylor series represent functions as infinite polynomials — the basis of numerical computation."
+    career_example: "Physicist approximating solutions to equations with no closed form"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Fourier series decompose signals into sinusoidal components — the foundation of signal processing."
+    career_example: "Electrical engineer designing filters and audio systems"
+
+hook: |
+  You start a sponsored read-a-thon. On day 1 you read 10 pages. Each day
+  you read 3 more pages than the day before. After 30 days, how many pages
+  have you read in total? Adding them up one by one would take a while —
+  but there's a pattern.
+
+  To walk from here to a wall, you must first walk halfway. Then half of
+  the remaining distance. Then half again. You take infinitely many steps —
+  so how do you ever arrive? The answer is that the distances form a series
+  whose infinite sum is exactly the distance to the wall.
+
+  Both problems need the same tool. This chapter builds it.
+
+notation_introduced:
+  - symbol: "∑"
+    reads_as: "the sum of"
+    notation_weight: 3
+  - symbol: "Sₙ"
+    reads_as: "the sum of the first n terms"
+    notation_weight: 1
+  - symbol: "S∞"
+    reads_as: "the sum of infinitely many terms"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 11
+  strand: "Sequences and Series"
+  outcome: "RF1"
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You start a sponsored read-a-thon. On day 1 you read 10 pages. Each day
+you read 3 more pages than the day before. After 30 days, how many pages
+have you read in total? Adding them up one by one would take a while —
+but there's a pattern.
+
+To walk from here to a wall, you must first walk halfway. Then half of
+the remaining distance. Then half again. You take infinitely many steps —
+so how do you ever arrive? The answer is that the distances form a series
+whose infinite sum is exactly the distance to the wall.
+
+Both problems need the same tool. This chapter builds it.
+
+## What the notation is saying
+
+A **sequence** is a list of numbers following a rule. A **series** is
+the sum of those numbers, in order.
+
+Write the sequence $3, 7, 11, 15, 19$. The corresponding series is:
+
+$$3 + 7 + 11 + 15 + 19 = 45$$
+
+That works when you have a short list. For 300 terms, writing out every
+addition is unrealistic. Mathematicians use a shorthand — the **sigma
+notation** — named after the Greek letter $\Sigma$ (capital sigma).
+
+$$\sum_{i=1}^{n} a_i$$
+
+Read it as: *the sum of $a_i$, as $i$ runs from 1 to $n$.*
+
+The $i$ below the sigma is the **index** — it's a counter that starts
+at 1 and steps up by 1 until it reaches $n$. At each step, you
+substitute that value of $i$ into the expression $a_i$ and add the
+result to your running total.
+
+A concrete example before using sigma in formulas. Write the sum
+$1 + 4 + 9 + 16 + 25$ — the first five perfect squares — using sigma:
+
+$$\sum_{i=1}^{5} i^2 = 1^2 + 2^2 + 3^2 + 4^2 + 5^2 = 55$$
+
+The expression after $\Sigma$ is the rule. The limits below and above
+tell you where to start and stop. That is the whole notation.
+
+```{ojs}
+//| echo: false
+{
+  const div = document.createElement("div");
+  div.style.cssText = "font-family:inherit; padding:0.5rem 0;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; margin-bottom:0.75rem;";
+
+  // Type selector
+  const typeWrap = document.createElement("div");
+  const typeLbl = document.createElement("label");
+  typeLbl.style.cssText = "font-size:0.85rem; color:#374151; display:block; margin-bottom:0.2rem;";
+  typeLbl.textContent = "Type";
+  const typeSelect = document.createElement("select");
+  typeSelect.style.cssText = "padding:0.2rem 0.4rem; border:1px solid #d1d5db; border-radius:4px;";
+  ["arithmetic", "geometric"].forEach(t => {
+    const o = document.createElement("option"); o.value = t; o.textContent = t;
+    typeSelect.appendChild(o);
+  });
+  typeWrap.appendChild(typeLbl); typeWrap.appendChild(typeSelect);
+  controls.appendChild(typeWrap);
+
+  // makeSlider returns {wrap, input, span} so callers keep direct refs
+  function makeSlider(label, min, max, step, val) {
+    const wrap = document.createElement("div");
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "font-size:0.85rem; color:#374151; display:block; margin-bottom:0.2rem;";
+    const span = document.createElement("span"); span.textContent = val;
+    lbl.appendChild(document.createTextNode(label + " = ")); lbl.appendChild(span);
+    const input = document.createElement("input");
+    input.type = "range"; input.min = min; input.max = max; input.step = step; input.value = val;
+    input.style.width = "140px";
+    wrap.appendChild(lbl); wrap.appendChild(input);
+    return {wrap, input, span};
+  }
+
+  const a1S = makeSlider("a₁ (first term)", 1, 20, 1, 2);
+  controls.appendChild(a1S.wrap);
+  const dS = makeSlider("d (common diff)", -5, 10, 1, 3);
+  dS.wrap.style.display = "";
+  controls.appendChild(dS.wrap);
+  const rS = makeSlider("r (ratio)", -3, 3, 0.5, 2);
+  rS.wrap.style.display = "none";
+  controls.appendChild(rS.wrap);
+  const nS = makeSlider("n (terms)", 3, 12, 1, 6);
+  controls.appendChild(nS.wrap);
+
+  const displayEl = document.createElement("div");
+  displayEl.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px; padding:0.75rem 1rem; font-size:0.9rem; line-height:1.8;";
+
+  div.appendChild(controls); div.appendChild(displayEl);
+
+  function update() {
+    const type = typeSelect.value;
+    const a1 = parseFloat(a1S.input.value);
+    const d = parseFloat(dS.input.value);
+    const r = parseFloat(rS.input.value);
+    const n = parseInt(nS.input.value);
+    a1S.span.textContent = a1;
+    dS.span.textContent = d;
+    rS.span.textContent = r;
+    nS.span.textContent = n;
+    dS.wrap.style.display = type === "arithmetic" ? "" : "none";
+    rS.wrap.style.display = type === "geometric" ? "" : "none";
+
+    const terms = [];
+    let sum = 0;
+    for (let k = 1; k <= n; k++) {
+      const t = type === "arithmetic" ? a1 + (k-1)*d : a1 * Math.pow(r, k-1);
+      terms.push(t);
+      sum += t;
+    }
+
+    const sigmaLabel = type === "arithmetic"
+      ? "Σ(k=1 to "+n+") ["+a1+(d>=0?"+":"")+d+"(k−1)]"
+      : "Σ(k=1 to "+n+") "+a1+"·"+r+"^(k−1)";
+
+    let expanded;
+    if (n <= 6) expanded = terms.map(t => t.toFixed(1)).join(" + ");
+    else expanded = terms.slice(0,3).map(t=>t.toFixed(1)).join(" + ") + " + … + " + terms[n-1].toFixed(1);
+
+    displayEl.innerHTML =
+      "<b>Sigma notation:</b> " + sigmaLabel + "<br>" +
+      "<b>Expanded:</b> " + expanded + "<br>" +
+      "<b>Sum:</b> S<sub>" + n + "</sub> = " + sum.toFixed(2);
+  }
+
+  typeSelect.addEventListener("input", update);
+  [a1S, dS, rS, nS].forEach(s => s.input.addEventListener("input", update));
+  update();
+  return div;
+}
+```
+
+## The method
+
+### Arithmetic series
+
+An arithmetic sequence has a first term $a_1$ and a common difference
+$d$. The terms are:
+
+$$a_1,\quad a_1 + d,\quad a_1 + 2d,\quad \ldots,\quad a_1 + (n-1)d$$
+
+Adding all $n$ of them gives the **arithmetic series** $S_n$, read as
+*the sum of the first $n$ terms*.
+
+To see why the formula works, try a small example first. Take the
+arithmetic sequence $3, 6, 9, 12$ (four terms, $d = 3$). Write the sum
+forwards and backwards, then add column by column:
+
+$$\begin{array}{r} S_4 = \phantom{1}3 + \phantom{1}6 + \phantom{1}9 + 12 \\ S_4 = 12 + \phantom{1}9 + \phantom{1}6 + \phantom{1}3 \\ \hline 2S_4 = 15 + 15 + 15 + 15 = 4 \times 15 = 60 \end{array}$$
+
+$$S_4 = 30$$
+
+The same pairing trick works for any arithmetic series. Label the sum
+forwards and backwards:
+
+$$S_n = a_1 + (a_1 + d) + (a_1 + 2d) + \cdots + a_n$$
+
+$$S_n = a_n + (a_n - d) + (a_n - 2d) + \cdots + a_1$$
+
+Add the two lines together. Each column pairs a term from the top
+with a term from the bottom. Every pair sums to $a_1 + a_n$, and
+there are $n$ such pairs:
+
+$$2S_n = n(a_1 + a_n)$$
+
+$$\boxed{S_n = \frac{n}{2}(a_1 + a_n)}$$
+
+Since $a_n = a_1 + (n-1)d$, you can write this entirely in terms of
+the first term and the common difference:
+
+$$S_n = \frac{n}{2}\bigl(2a_1 + (n-1)d\bigr)$$
+
+Use whichever form is more convenient. If you know the first and last
+term, use the first. If you only know $a_1$ and $d$, use the second.
+
+::: {.callout-note appearance="simple"}
+**The Gauss pairing trick**
+
+Carl Friedrich Gauss was reportedly seven years old when his teacher
+set the class the task of summing all integers from 1 to 100, hoping
+for an hour of quiet. Gauss had the answer in seconds: 5050.
+
+His insight: pair the first term with the last, the second with the
+second-to-last, and so on. Each pair sums to 101. There are 50 pairs.
+So $50 \times 101 = 5050$.
+
+This is not a shortcut — it is the formula. $S_{100} = \frac{100}{2}(1 + 100) = 50 \times 101 = 5050$.
+
+The formula encodes the same pairing, for any arithmetic series.
+That is what elegant mathematical thinking looks like: notice a
+structure, use it, and get there in seconds instead of hours.
+:::
+
+### Geometric series
+
+A geometric sequence has a first term $a_1$ and a common ratio $r$.
+The terms are:
+
+$$a_1,\quad a_1 r,\quad a_1 r^2,\quad \ldots,\quad a_1 r^{n-1}$$
+
+Adding all $n$ terms:
+
+$$S_n = a_1 + a_1 r + a_1 r^2 + \cdots + a_1 r^{n-1}$$
+
+If you multiply the sum by $r$, each term shifts up by one power —
+almost matching the original sum. Subtracting cancels all but the
+first and last terms.
+
+The trick here is to multiply both sides by $r$:
+
+$$r S_n = a_1 r + a_1 r^2 + a_1 r^3 + \cdots + a_1 r^n$$
+
+Now subtract the first line from the second. Nearly everything cancels:
+
+$$r S_n - S_n = a_1 r^n - a_1$$
+
+$$S_n(r - 1) = a_1(r^n - 1)$$
+
+$$\boxed{S_n = \frac{a_1(1 - r^n)}{1 - r}} \qquad (r \neq 1)$$
+
+The form with $(1 - r^n)$ in the numerator is the convention — both
+forms are algebraically identical, but this one is easier to read
+when $|r| < 1$.
+
+When $r = 1$ all terms are equal to $a_1$, so $S_n = n \cdot a_1$.
+That case doesn't need the formula.
+
+### Infinite geometric series
+
+Here is something that sounds impossible: add infinitely many numbers
+and get a finite result.
+
+Look at the partial sums of the series $1 + \frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \cdots$
+
+$$S_1 = 1$$
+$$S_2 = 1.5$$
+$$S_3 = 1.75$$
+$$S_4 = 1.875$$
+$$S_5 = 1.9375$$
+
+The sums are getting closer to 2 — but never exceeding it, and never
+quite reaching it. The terms are shrinking. Each new term adds less
+than the last. The sum is converging toward a fixed value.
+
+Look at the formula $S_n = \frac{a_1(1 - r^n)}{1 - r}$ when $|r| < 1$.
+As $n$ grows, $r^n$ gets closer and closer to 0 — and when $|r| < 1$,
+eventually it is so small we treat it as 0:
+
+$$S_\infty = \frac{a_1(1 - 0)}{1 - r} = \frac{a_1}{1 - r}$$
+
+$$\boxed{S_\infty = \frac{a_1}{1 - r}} \qquad (|r| < 1)$$
+
+Read $S_\infty$ as *the sum of infinitely many terms*.
+
+For the series above: $a_1 = 1$, $r = \frac{1}{2}$. So
+$S_\infty = \frac{1}{1 - \frac{1}{2}} = \frac{1}{\frac{1}{2}} = 2$.
+Exactly 2.
+
+**What if $|r| \geq 1$?** Then $r^n$ does not approach 0 — it either
+stays at 1 (when $r = 1$) or grows without bound (when $|r| > 1$) or
+oscillates growing (when $r \leq -1$). The terms never shrink to
+nothing, so the sum never settles. It **diverges** — it has no finite
+value. You can add as many terms as you like and the sum will keep
+growing (or oscillating further and further from zero).
+
+This is worth sitting with for a moment. It's genuinely strange that
+you can add infinitely many things and get a finite answer. The reason
+it works is not that infinity is somehow small — it's that the terms
+shrink fast enough. Halving at every step is fast enough. Shrinking
+by one percent at every step is fast enough. Staying the same size is
+not.
+
+```{ojs}
+//| echo: false
+{
+  const div = document.createElement("div");
+  div.style.cssText = "font-family:inherit; padding:0.5rem 0;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.75rem;";
+
+  function makeSlider2(label, min, max, step, val) {
+    const wrap = document.createElement("div");
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "font-size:0.85rem; color:#374151; display:block; margin-bottom:0.2rem;";
+    const span = document.createElement("span"); span.textContent = val;
+    lbl.appendChild(document.createTextNode(label + " = ")); lbl.appendChild(span);
+    const input = document.createElement("input");
+    input.type = "range"; input.min = min; input.max = max; input.step = step; input.value = val;
+    input.style.width = "160px";
+    wrap.appendChild(lbl); wrap.appendChild(input);
+    return {wrap, input, span};
+  }
+
+  const rSlider = makeSlider2("r (ratio)", -99, 99, 1, 50);
+  const a1Slider = makeSlider2("a₁ (first term)", 1, 10, 1, 1);
+  controls.appendChild(rSlider.wrap);
+  controls.appendChild(a1Slider.wrap);
+
+  const infoEl = document.createElement("div");
+  infoEl.style.cssText = "font-size:0.88rem; color:#374151; margin-bottom:0.5rem;";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 500; canvas.height = 260;
+  canvas.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; display:block; max-width:500px;";
+
+  div.appendChild(controls); div.appendChild(infoEl); div.appendChild(canvas);
+
+  function draw() {
+    const rRaw = parseFloat(rSlider.input.value) / 100;
+    const a1 = parseFloat(a1Slider.input.value);
+    rSlider.span.textContent = rRaw.toFixed(2);
+    a1Slider.span.textContent = a1;
+
+    const N = 20;
+    const partials = [];
+    let sum = 0;
+    for (let k = 1; k <= N; k++) {
+      sum += a1 * Math.pow(rRaw, k-1);
+      partials.push(sum);
+    }
+
+    const sInf = Math.abs(rRaw) < 1 ? a1 / (1 - rRaw) : null;
+
+    if (sInf !== null) {
+      infoEl.textContent = "S∞ = " + a1 + " / (1 − " + rRaw.toFixed(2) + ") = " + sInf.toFixed(2) + "  (|r| = " + Math.abs(rRaw).toFixed(2) + " < 1, converges)";
+    } else {
+      infoEl.textContent = "|r| = " + Math.abs(rRaw).toFixed(2) + " ≥ 1 — series diverges";
+    }
+
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const marg = {l:55, r:20, t:15, b:35};
+    const pHeight = H - marg.t - marg.b;
+    const pWidth = W - marg.l - marg.r;
+
+    const allVals = sInf !== null ? [...partials, sInf] : partials;
+    const yMin = Math.min(...allVals) * (Math.min(...allVals) < 0 ? 1.2 : 0.8);
+    const yMax = Math.max(...allVals) * (Math.max(...allVals) > 0 ? 1.2 : 0.8);
+    const yRange = yMax - yMin || 1;
+
+    function px(k) { return marg.l + ((k-1) / (N-1)) * pWidth; }
+    function py(v) { return marg.t + (1 - (v - yMin)/yRange) * pHeight; }
+
+    // y-axis
+    ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(marg.l, marg.t); ctx.lineTo(marg.l, marg.t+pHeight); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(marg.l, marg.t+pHeight); ctx.lineTo(marg.l+pWidth, marg.t+pHeight); ctx.stroke();
+
+    // Dashed S∞ line
+    if (sInf !== null && sInf > yMin && sInf < yMax) {
+      ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]);
+      ctx.beginPath(); ctx.moveTo(marg.l, py(sInf)); ctx.lineTo(marg.l+pWidth, py(sInf)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#d97706"; ctx.font = "11px sans-serif";
+      ctx.fillText("S∞ = " + sInf.toFixed(2), marg.l+pWidth-60, py(sInf)-5);
+    }
+
+    // Partial sums dots + line
+    ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    partials.forEach((v, i) => {
+      if (i === 0) ctx.moveTo(px(i+1), py(v)); else ctx.lineTo(px(i+1), py(v));
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = "#2563eb";
+    partials.forEach((v, i) => {
+      ctx.beginPath(); ctx.arc(px(i+1), py(v), 3.5, 0, 2*Math.PI); ctx.fill();
+    });
+
+    // x-axis labels
+    ctx.fillStyle = "#6b7280"; ctx.font = "10px sans-serif";
+    [1,5,10,15,20].forEach(k => {
+      ctx.fillText(k, px(k)-4, marg.t+pHeight+14);
+    });
+    ctx.fillText("n", marg.l+pWidth+5, marg.t+pHeight+14);
+    ctx.fillText("Sₙ", marg.l-30, marg.t+pHeight/2);
+  }
+
+  [rSlider, a1Slider].forEach(s => s.input.addEventListener("input", draw));
+  draw();
+  return div;
+}
+```
+
+### Sigma notation: working with sums
+
+A few practical moves.
+
+**Evaluating a sum.** To evaluate $\displaystyle\sum_{i=1}^{4}(3i - 1)$,
+substitute $i = 1, 2, 3, 4$ and add:
+
+$$(3 \cdot 1 - 1) + (3 \cdot 2 - 1) + (3 \cdot 3 - 1) + (3 \cdot 4 - 1)$$
+$$= 2 + 5 + 8 + 11 = 26$$
+
+You can check this with the arithmetic series formula: $a_1 = 2$,
+$d = 3$, $n = 4$.
+$S_4 = \frac{4}{2}(2 + 11) = 2 \times 13 = 26$. Same answer.
+
+**Changing the index.** The index variable is a dummy — it doesn't
+matter what letter you use. $\displaystyle\sum_{i=1}^{n} a_i$ and
+$\displaystyle\sum_{k=1}^{n} a_k$ are the same sum.
+
+**Splitting a sum.** You can split a sum that has two parts:
+
+$$\sum_{i=1}^{n}(a_i + b_i) = \sum_{i=1}^{n} a_i + \sum_{i=1}^{n} b_i$$
+
+And pull a constant out:
+
+$$\sum_{i=1}^{n} c \cdot a_i = c \sum_{i=1}^{n} a_i$$
+
+## Worked examples
+
+**Example 1 (Finance).** A car loan of \$12 000 charges 0.5% interest
+per month. You plan to repay in a lump sum after exactly 24 months —
+no intermediate payments, interest compounds monthly. What is the
+total you owe at the end?
+
+Each month the balance is multiplied by $1.005$. After 24 months:
+
+$$A = 12000 \times (1.005)^{24}$$
+
+$(1.005)^{24} \approx 1.1272$, so $A \approx 12000 \times 1.1272 = \$13\,526.40$.
+
+Now ask: what is the total interest paid? That is $A - 12000 = \$1\,526.40$.
+
+The balance itself is a geometric sequence with first term $12000$
+and ratio $1.005$. The total interest is what the geometric growth
+added over 24 steps.
+
+---
+
+**Example 2 (Computing).** Merge sort splits an array of $n$ elements
+in half repeatedly, sorts each half, and merges. The merging step at
+each level does work proportional to $n$. The number of levels is
+$\log_2 n$. The total work can be written as:
+
+$$T = n + n + n + \cdots \quad (\log_2 n \text{ terms})$$
+
+This is an arithmetic series with all terms equal to $n$:
+
+$$T = n \cdot \log_2 n$$
+
+This is the source of the famous $O(n \log n)$ complexity of merge sort.
+Each level of the recursion tree contributes $n$ operations; summing
+$\log_2 n$ such levels gives the total.
+
+---
+
+**Example 3 (Science).** Zeno's paradox resolved. A runner is 8 metres
+from a wall. She runs to the halfway point (4 m), then halfway again
+(2 m), then halfway again (1 m), and so on. The distances form a
+geometric sequence:
+
+$$4,\quad 2,\quad 1,\quad \frac{1}{2},\quad \frac{1}{4},\quad \ldots$$
+
+Here $a_1 = 4$, $r = \frac{1}{2}$, and $|r| < 1$ so the infinite
+sum converges:
+
+$$S_\infty = \frac{4}{1 - \frac{1}{2}} = \frac{4}{\frac{1}{2}} = 8$$
+
+The infinite sum of all the halfway-steps is exactly 8 metres — the
+distance to the wall. The paradox dissolves: infinitely many steps
+do not require infinite time or distance. They require exactly the
+right amount of both.
+
+---
+
+**Example 4 (Engineering).** A simple periodic signal can be approximated
+by a partial sum of sine waves. Consider the first five odd harmonics
+of a square wave at frequency $f$:
+
+$$s(t) \approx \sum_{k=0}^{3} \frac{1}{2k+1}\sin\bigl((2k+1) \cdot 2\pi f t\bigr)$$
+
+Expanding the first four terms ($k = 0, 1, 2, 3$):
+
+$$s(t) \approx \sin(2\pi f t) + \frac{1}{3}\sin(6\pi f t) + \frac{1}{5}\sin(10\pi f t) + \frac{1}{7}\sin(14\pi f t)$$
+
+The coefficients $1, \frac{1}{3}, \frac{1}{5}, \frac{1}{7}$ form
+a series — the terms shrink, so the infinite sum converges. More terms
+give a closer approximation to the square wave. This is Fourier series:
+decomposing a complex signal as an infinite sum of simple ones. The
+tool you need to make sense of it is exactly the infinite series
+convergence you just learned.
+
+You might notice the coefficients $1, \frac{1}{3}, \frac{1}{5}, \ldots$
+shrink slowly — the series $1 + \frac{1}{3} + \frac{1}{5} + \cdots$
+does diverge on its own (like the harmonic series). But in the Fourier
+series each coefficient multiplies an oscillating sine function. Those
+sines partially cancel each other out, which is what allows the series
+to converge. The full explanation requires calculus.
+
+## Where this goes
+
+The phrase "approaches a finite value as $n \to \infty$" was used
+informally here. **Limits and continuity** (Vol 5, Ch 1) makes that
+precise: what does it mean, formally, for a sequence to converge to
+a number? The epsilon-delta definition is the rigorous version of
+the intuition you've been building. Every infinite series you have
+seen in this chapter is, underneath, a limit.
+
+**Integral calculus** (Vol 5, Ch 3) connects series to continuous
+accumulation. A Riemann sum — the standard way to define the integral —
+is a series: you divide an area into strips, compute the area of each
+strip, and sum. As the number of strips goes to infinity, the series
+converges to the exact area. The passage from "finite sum" to
+"integral" is the same passage from "series" to "infinite series"
+you made in this chapter. **Fourier series** (Vol 7) is the direct
+destination of example 4: a systematic way to represent any periodic
+function as an infinite sum of sines and cosines. Every result in
+Fourier analysis stands on the geometric series convergence you
+proved here.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A mortgage calculator computes the total repayment using the geometric
+  series formula for present value of an annuity — every bank does this
+  calculation thousands of times a day.
+- Merge sort, binary search, and most divide-and-conquer algorithms
+  have costs that are sums of a geometric series — this is why their
+  Big-O complexity involves logarithms.
+- Numerical methods for differential equations (Runge-Kutta, finite
+  differences) rely on Taylor series to approximate function values —
+  an infinite polynomial series truncated at a practical number of terms.
+- Audio compression (MP3, AAC) works by computing a Fourier series
+  decomposition, discarding components the ear cannot hear, and
+  reconstructing the signal from the remainder.
+:::
+
+## Exercises
+
+These are puzzles. Each has a clean numerical answer, but the
+interesting part is identifying the series type and setting up the
+formula before you calculate.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opEl = document.createElement("span");
+      opEl.style.cssText = "font-size:0.8rem; color:#6b7280; font-style:italic;";
+      opEl.textContent = s.op;
+      const eqEl = document.createElement("span");
+      eqEl.innerHTML = katex.renderToString(s.eq, {throwOnError: false, displayMode: false});
+      row.appendChild(opEl);
+      row.appendChild(eqEl);
+      container.appendChild(row);
+      if (s.note) {
+        const noteEl = document.createElement("p");
+        noteEl.style.cssText = "margin:0.2rem 0 0.5rem 200px; font-size:0.82rem; color:#374151;";
+        noteEl.textContent = s.note;
+        container.appendChild(noteEl);
+      }
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("p");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.85rem; color:#059669; font-weight:600;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; align-items:center; gap:0.75rem; margin-top:0.5rem;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.85rem; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.8rem; color:#6b7280;";
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); counter.textContent = current + " / " + totalSteps; if (current === totalSteps) nextBtn.disabled = true; } };
+  resetBtn.onclick = () => { current = 0; nextBtn.disabled = false; renderSteps(); counter.textContent = "0 / " + totalSteps; };
+  counter.textContent = "0 / " + totalSteps;
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  return container;
+}
+```
+
+**Exercise 1.** The first term of an arithmetic series is 5, the
+common difference is 4, and there are 20 terms. Find the sum.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(1, [
+    { op: "Identify the values", eq: "a_1 = 5,\\quad d = 4,\\quad n = 20", note: null },
+    { op: "Write the sum formula", eq: "S_n = \\frac{n}{2}\\bigl(2a_1 + (n-1)d\\bigr)", note: "Use this form when you know a₁ and d but not the last term." },
+    { op: "Substitute", eq: "S_{20} = \\frac{20}{2}\\bigl(2 \\times 5 + 19 \\times 4\\bigr) = 10\\bigl(10 + 76\\bigr)", note: null },
+    { op: "Simplify", eq: "S_{20} = 10 \\times 86 = 860", note: null },
+    { op: "Check", eq: "a_{20} = 5 + 19 \\times 4 = 81;\\quad S_{20} = \\frac{20}{2}(5 + 81) = 10 \\times 86 = 860 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 2.** A geometric series has first term 3 and common ratio 2.
+Find the sum of the first 8 terms.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(2, [
+    { op: "Identify the values", eq: "a_1 = 3,\\quad r = 2,\\quad n = 8", note: null },
+    { op: "Write the sum formula", eq: "S_n = \\frac{a_1(1 - r^n)}{1 - r}", note: null },
+    { op: "Substitute", eq: "S_8 = \\frac{3(1 - 2^8)}{1 - 2} = \\frac{3(1 - 256)}{-1}", note: null },
+    { op: "Simplify numerator", eq: "S_8 = \\frac{3 \\times (-255)}{-1} = \\frac{-765}{-1}", note: "Dividing a negative by a negative gives a positive." },
+    { op: "Compute", eq: "S_8 = 765", note: null },
+    { op: "Check", eq: "3 + 6 + 12 + 24 + 48 + 96 + 192 + 384 = 765 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 3.** A bouncing ball is dropped from 10 m. Each bounce
+reaches 60% of the previous height. Find the total distance travelled
+by the ball before it comes to rest.
+
+*(Hint: the ball travels down, up, down, up, … Be careful to count
+both the downward and upward legs of each bounce.)*
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(3, [
+    { op: "Set up the distances", eq: "\\text{Down: } 10 + 6 + 3.6 + \\cdots;\\quad \\text{Up: } 6 + 3.6 + 2.16 + \\cdots", note: "The first drop (10 m) has no matching upward leg, so split the sum." },
+    { op: "Sum the downward legs", eq: "S_{\\text{down}} = \\frac{10}{1 - 0.6} = \\frac{10}{0.4} = 25 \\text{ m}", note: "Infinite geometric series: a₁ = 10, r = 0.6." },
+    { op: "Sum the upward legs", eq: "S_{\\text{up}} = \\frac{6}{1 - 0.6} = \\frac{6}{0.4} = 15 \\text{ m}", note: "The ball first rises to 6 m after the first bounce." },
+    { op: "Total distance", eq: "S_{\\text{total}} = 25 + 15 = 40 \\text{ m}", note: null },
+    { op: "Check (alternative formula)", eq: "S_{\\text{total}} = 10 + 2 \\times \\frac{6}{1-0.6} = 10 + 30 = 40 \\text{ m} \\checkmark", note: "Adding the initial drop once and all bounce arcs (up + down) twice." },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 4.** Evaluate the sum $\displaystyle\sum_{i=1}^{6}(2i + 3)$.
+
+*(First expand and add term by term to check your answer, then verify
+using the arithmetic series formula.)*
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(4, [
+    { op: "Expand the sum", eq: "(2 \\cdot 1 + 3) + (2 \\cdot 2 + 3) + (2 \\cdot 3 + 3) + (2 \\cdot 4 + 3) + (2 \\cdot 5 + 3) + (2 \\cdot 6 + 3)", note: null },
+    { op: "Compute each term", eq: "5 + 7 + 9 + 11 + 13 + 15", note: null },
+    { op: "Add", eq: "\\sum_{i=1}^{6}(2i+3) = 60", note: null },
+    { op: "Verify using the formula", eq: "a_1 = 5,\\quad a_6 = 15,\\quad n = 6 \\implies S_6 = \\frac{6}{2}(5 + 15) = 3 \\times 20 = 60 \\checkmark", note: "The terms 5, 7, 9, 11, 13, 15 form an arithmetic sequence with d = 2." },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 5.** An apprentice electrician earns \$18 per hour in their
+first year and gets a \$1.50 per hour raise every year. They plan to
+work in this trade for 12 years. Their annual hours are 1820 each year.
+What are their total earnings over the 12 years?
+
+*(Note: compute total annual earnings for each year first, then sum
+the 12 annual totals.)*
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(5, [
+    { op: "Compute year 1 earnings", eq: "E_1 = 18 \\times 1820 = \\$32{,}760", note: null },
+    { op: "Identify the series", eq: "a_1 = 32760,\\quad d = 1.50 \\times 1820 = 2730,\\quad n = 12", note: "Each year's earnings increase by $1.50 × 1820 = $2730 over the previous year." },
+    { op: "Apply the arithmetic series formula", eq: "S_{12} = \\frac{12}{2}\\bigl(2 \\times 32760 + 11 \\times 2730\\bigr)", note: null },
+    { op: "Simplify", eq: "S_{12} = 6\\bigl(65520 + 30030\\bigr) = 6 \\times 95550", note: null },
+    { op: "Compute", eq: "S_{12} = \\$573{,}300", note: null },
+    { op: "Check", eq: "E_{12} = 18 + 11 \\times 1.50 = \\$34.50 \\text{ per hour};\\quad S_{12} = \\frac{12}{2}(32760 + 34.50 \\times 1820) = 6(32760 + 62790) = 6 \\times 95550 = \\$573{,}300 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 6.** Show that the infinite series
+$\displaystyle\sum_{k=1}^{\infty} \frac{1}{4^k}$
+converges, and find its sum.
+
+Then explain in one sentence why the harmonic series
+$1 + \frac{1}{2} + \frac{1}{3} + \frac{1}{4} + \cdots$
+does *not* have a finite sum. (Hint: think about how quickly the terms
+are shrinking compared to a geometric series.)
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(6, [
+    { op: "Write the first few terms", eq: "\\frac{1}{4} + \\frac{1}{16} + \\frac{1}{64} + \\cdots", note: null },
+    { op: "Identify a₁ and r", eq: "a_1 = \\frac{1}{4},\\quad r = \\frac{1}{4}", note: "Each term is one-quarter of the previous term." },
+    { op: "Check convergence condition", eq: "|r| = \\frac{1}{4} < 1 \\implies \\text{converges}", note: null },
+    { op: "Apply the infinite sum formula", eq: "S_{\\infty} = \\frac{a_1}{1 - r} = \\frac{\\frac{1}{4}}{1 - \\frac{1}{4}} = \\frac{\\frac{1}{4}}{\\frac{3}{4}} = \\frac{1}{3}", note: null },
+    { op: "Reasoning about the harmonic series", eq: "\\frac{a_{k+1}}{a_k} = \\frac{1/(k+1)}{1/k} = \\frac{k}{k+1} \\to 1 \\text{ as } k \\to \\infty", note: "The harmonic series is not geometric — there is no fixed ratio r. The ratio between consecutive terms is k/(k+1), which approaches 1 as k grows. The terms shrink, but more and more slowly — not fast enough to produce a finite sum, unlike a geometric series where |r| is fixed below 1." },
+    { op: "Check", eq: "\\frac{1}{4} + \\frac{1}{16} + \\frac{1}{64} + \\frac{1}{256} \\approx 0.332 \\approx \\frac{1}{3} \\checkmark", note: null },
+  ]);
+  return el;
+}
+```

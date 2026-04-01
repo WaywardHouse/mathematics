@@ -44,6 +44,9 @@ More formal but still direct. The reader is capable; they do not need hand-holdi
 **engineering (Volume 7):**
 Can be terse in the reference-manual sense. The reader is comfortable with notation. Definitions can be brief. Focus is on the structure and the application.
 
+**discipline (Volume 8):**
+Upper-year engineering and adjacent quantitative practice. The mathematics is now embedded in design, simulation, controls, inference, and operations. Write as if the reader has seen the core tools before, but needs help seeing how they become working methods inside real systems.
+
 ## Chapter structure
 
 Follow this structure every time:
@@ -64,6 +67,7 @@ Follow this structure every time:
 - Worked examples cover at least three different `destinations` fields
 - `status: "draft"` in the completed file
 - Do not use examples that assume knowledge from later chapters in the same volume
+- In Volume 8, include at least one optional viewpoint from outside the home engineering context when it clarifies transfer of the mathematics
 
 ## Interactivity placeholders
 
@@ -78,6 +82,39 @@ Where you identify a good interactive opportunity, insert a placeholder comment 
 The viz-artist agent will replace these with working OJS code. Do not write the OJS yourself — just flag the opportunity clearly.
 
 Common opportunities in pre-university chapters: number lines with draggable points, ratio bars that update live, compound growth curves with rate/period sliders, signed-arithmetic animations, fraction area models, live statistics (mean/median updating as data changes).
+
+## Exercise steppers
+
+Every exercise should have a stepwise solution reveal — a "Next step →" interactive that shows the solution one line at a time so learners can try each step themselves before seeing the answer.
+
+After each exercise, insert a `<!-- STEPPER -->` comment block:
+
+```
+<!-- STEPPER
+exercise: [number]
+steps:
+  - op: "[short label for the operation, e.g. 'Write as an equation']"
+    eq: "[the equation or expression at this stage, as plain LaTeX]"
+    note: "[optional: one sentence explaining WHY this step works — omit if obvious]"
+  - op: "[next operation]"
+    eq: "[resulting equation]"
+    note: ~
+  - op: "Check"
+    eq: "[verification calculation with result]"
+    note: ~
+-->
+```
+
+Rules for stepper content:
+- First step is always "Write as an equation" (or "Write the inequality" etc.) — show the setup
+- Last step is always "Check" — substitute the answer back and verify
+- `op` labels are imperative, present tense, plain English: "Subtract 7 from both sides", "Divide by 3", "Expand the bracket"
+- `eq` is plain LaTeX, no display math delimiters (the viz-artist will render it)
+- `note` is for steps that "look odd" or where the reason isn't obvious. Omit (use `~`) where the reason is self-evident
+- Keep `note` to one sentence maximum
+- For investigations and open-ended exercises, write the stepper for one exemplary solution path
+
+The viz-artist agent will replace these comments with working OJS steppers. Do not write OJS yourself.
 
 ## Process
 

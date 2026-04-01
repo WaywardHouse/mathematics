@@ -1,6 +1,984 @@
 ---
 title: "Matrices and linear systems"
-status: "seed"
+subtitle: "Organising equations so machines — and humans — can solve them"
+chapter: 1
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: "A system of linear equations is a geometric object: n equations in n unknowns is n hyperplanes in n-dimensional space. The solution is their intersection. Gaussian elimination is the systematic procedure that finds it — or reveals there is none."
+
+rewrite: "Writing Ax = b compresses any system of linear equations into a single symbolic object. Gaussian elimination row-reduces the augmented matrix to upper triangular form; back-substitution or further reduction to RREF extracts the solution. The rank of A tells you whether a unique solution exists, no solution exists, or infinitely many solutions exist — before you do any arithmetic."
+
+prerequisite_ids:
+  - systems
+
+opens_to:
+  - id: lin_alg_advanced
+    label: "Eigenvalues and eigenvectors"
+    volume: 7
+    relationship: enables
+  - id: vector_calc
+    label: "Vector differential calculus"
+    volume: 7
+    relationship: motivates
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Every finite element model, every circuit mesh analysis, and every structural truss calculation reduces to a linear system. Matrix methods are the language every engineering simulation software speaks internally."
+    career_example: "Structural engineer solving for member forces in a 200-node truss using FEA software"
+  - field: sci
+    label: Hard sciences
+    hook: "Fitting experimental data to a model, balancing chemical equations, and computing quantum mechanical eigenstates all require solving linear systems. The least-squares solution to an overdetermined system is the backbone of experimental data analysis."
+    career_example: "Experimental physicist fitting spectral line positions to a theoretical model using least-squares regression"
+  - field: comp
+    label: Computing and data
+    hook: "Linear algebra is the arithmetic of machine learning. Neural network forward passes, PCA dimensionality reduction, and least-squares regression are all matrix operations. NumPy and PyTorch implement what this chapter describes."
+    career_example: "Machine learning engineer implementing a recommendation system using matrix factorisation"
+
+notation_introduced:
+  - symbol: "\\mathbf{A}"
+    reads_as: "bold A"
+    meaning: "An m×n matrix — a rectangular array of numbers with m rows and n columns"
+  - symbol: "a_{ij}"
+    reads_as: "a sub i j"
+    meaning: "Element in row i, column j of matrix A"
+  - symbol: "\\mathbf{A}^T"
+    reads_as: "A transpose"
+    meaning: "Matrix with rows and columns of A swapped: (Aᵀ)ᵢⱼ = Aⱼᵢ"
+  - symbol: "\\mathbf{I}_n"
+    reads_as: "identity matrix of order n"
+    meaning: "Square matrix with 1s on the diagonal and 0s elsewhere"
+  - symbol: "\\mathbf{A}\\mathbf{x} = \\mathbf{b}"
+    reads_as: "A x equals b"
+    meaning: "A system of linear equations in matrix form"
+  - symbol: "[\\mathbf{A}|\\mathbf{b}]"
+    reads_as: "augmented matrix"
+    meaning: "A with the column b appended — the working object for Gaussian elimination"
+  - symbol: "\\text{rank}(\\mathbf{A})"
+    reads_as: "rank of A"
+    meaning: "Number of linearly independent rows (or columns) of A"
+  - symbol: "\\mathbf{L}\\mathbf{U}"
+    reads_as: "L U factorisation"
+    meaning: "Decomposition of A into a lower triangular matrix L and upper triangular matrix U"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  The Tacoma Narrows Bridge collapsed in 1940 not because engineers ignored
+  mathematics, but because the linear model they used — which had served well
+  for every bridge before it — failed to capture a resonance that the real
+  structure possessed. Every linear model of a physical system, however large
+  or small, ultimately reduces to a system of linear equations. Whether the
+  system is three mesh currents in a circuit or three million degrees of freedom
+  in a finite element model of a bridge, the machinery is the same: write
+  Ax = b and solve it. This chapter builds that machinery from the ground up.
+
+kreyszig_chapter: "Ch 7"
+stroud_programme: null
+uofa_course: "MATH 102"
 ---
 
-*Seed — front matter to be completed before content is written.*
+The structural analysis of the Tacoma Narrows Bridge involved linear systems of equations — the same fundamental form as any system of resistors, any truss, any set of chemical mass-balance equations. Thousands of numbers, hundreds of equations, but the same underlying question every time: does this system have a solution, is it unique, and what is it?
+
+For small systems — two or three equations — you can solve by substitution, the way you learned in school. For larger systems, that approach bogs down in bookkeeping errors. The method in this chapter, Gaussian elimination, is systematic substitution: a sequence of operations that any careful person (or machine) can apply without creativity, and that always terminates with a definitive answer.
+
+Before any of that, we need the language: matrices and the algebra of matrix operations. The notation is not decoration — it compresses a system of twenty equations into a single line, and makes the structure of the solution visible.
+
+---
+
+## Matrices and operations
+
+A **matrix** is a rectangular array of numbers. The matrix $\mathbf{A}$ with $m$ rows and $n$ columns is called an $m \times n$ matrix:
+
+$$\mathbf{A} = \begin{pmatrix} a_{11} & a_{12} & \cdots & a_{1n} \\ a_{21} & a_{22} & \cdots & a_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ a_{m1} & a_{m2} & \cdots & a_{mn} \end{pmatrix}$$
+
+The element in row $i$ and column $j$ is $a_{ij}$. The first subscript is always the row, the second is always the column. A matrix with one column ($n = 1$) is a **column vector**; one with one row ($m = 1$) is a **row vector**.
+
+### Special types
+
+**Square matrix.** $m = n$. The elements $a_{11}, a_{22}, \ldots, a_{nn}$ form the **main diagonal**.
+
+**Symmetric matrix.** $a_{ij} = a_{ji}$ for all $i, j$. Equivalently, $\mathbf{A} = \mathbf{A}^T$. Symmetric matrices arise naturally: the stiffness matrix of a structure is symmetric, as is any correlation matrix in statistics.
+
+**Diagonal matrix.** All off-diagonal entries are zero: $a_{ij} = 0$ whenever $i \neq j$. Multiplication by a diagonal matrix scales each component independently.
+
+**Identity matrix $\mathbf{I}_n$.** Diagonal with all diagonal entries equal to 1. It plays the role of 1 in matrix arithmetic: $\mathbf{A}\mathbf{I} = \mathbf{I}\mathbf{A} = \mathbf{A}$.
+
+**Triangular matrices.** A matrix is **upper triangular** if $a_{ij} = 0$ whenever $i > j$ — all entries below the main diagonal are zero. It is **lower triangular** if $a_{ij} = 0$ whenever $i < j$. Gaussian elimination produces an upper triangular matrix; this is why triangular forms matter.
+
+**Transpose.** The transpose $\mathbf{A}^T$ swaps rows and columns: $(\mathbf{A}^T)_{ij} = a_{ji}$. A $3 \times 2$ matrix transposes to a $2 \times 3$ matrix. Key identities: $(\mathbf{A}^T)^T = \mathbf{A}$; $(\mathbf{A}\mathbf{B})^T = \mathbf{B}^T \mathbf{A}^T$ (order reverses).
+
+### Matrix addition and scalar multiplication
+
+Two matrices of the same size can be added element by element:
+
+$$(\mathbf{A} + \mathbf{B})_{ij} = a_{ij} + b_{ij}$$
+
+Scalar multiplication scales every entry: $(\lambda \mathbf{A})_{ij} = \lambda a_{ij}$.
+
+These operations satisfy the expected algebraic properties — commutativity, associativity, distributivity. Nothing surprising here.
+
+### Matrix multiplication
+
+Multiplying two matrices is less obvious. The product $\mathbf{C} = \mathbf{A}\mathbf{B}$ requires that the number of columns of $\mathbf{A}$ equals the number of rows of $\mathbf{B}$. If $\mathbf{A}$ is $m \times n$ and $\mathbf{B}$ is $n \times p$, then $\mathbf{C}$ is $m \times p$.
+
+The $(i, j)$ entry of $\mathbf{C}$ is the dot product of row $i$ of $\mathbf{A}$ with column $j$ of $\mathbf{B}$:
+
+$$c_{ij} = \sum_{k=1}^{n} a_{ik}\,b_{kj}$$
+
+**Worked example.** Let
+
+$$\mathbf{A} = \begin{pmatrix} 2 & 1 \\ 0 & 3 \end{pmatrix}, \qquad \mathbf{B} = \begin{pmatrix} 1 & 4 \\ 2 & 1 \end{pmatrix}$$
+
+Then $c_{11} = 2 \cdot 1 + 1 \cdot 2 = 4$; $c_{12} = 2 \cdot 4 + 1 \cdot 1 = 9$; $c_{21} = 0 \cdot 1 + 3 \cdot 2 = 6$; $c_{22} = 0 \cdot 4 + 3 \cdot 1 = 3$.
+
+$$\mathbf{A}\mathbf{B} = \begin{pmatrix} 4 & 9 \\ 6 & 3 \end{pmatrix}$$
+
+**Important:** matrix multiplication is not commutative. $\mathbf{A}\mathbf{B} \neq \mathbf{B}\mathbf{A}$ in general — and sometimes $\mathbf{B}\mathbf{A}$ is not even defined when $\mathbf{A}\mathbf{B}$ is. This is a genuine departure from ordinary arithmetic, and it matters whenever you are rearranging matrix equations.
+
+**What multiplication means geometrically.** Each column of $\mathbf{A}\mathbf{B}$ is a linear combination of the columns of $\mathbf{A}$, with coefficients from the corresponding column of $\mathbf{B}$. This column-space interpretation is the key to understanding why the structure of $\mathbf{A}$ determines the solvability of $\mathbf{A}\mathbf{x} = \mathbf{b}$.
+
+---
+
+## Linear systems: Ax = b
+
+A **system of $m$ linear equations in $n$ unknowns** has the form
+
+$$\begin{aligned} a_{11}x_1 + a_{12}x_2 + \cdots + a_{1n}x_n &= b_1 \\ a_{21}x_1 + a_{22}x_2 + \cdots + a_{2n}x_n &= b_2 \\ &\vdots \\ a_{m1}x_1 + a_{m2}x_2 + \cdots + a_{mn}x_n &= b_m \end{aligned}$$
+
+In matrix notation this is $\mathbf{A}\mathbf{x} = \mathbf{b}$, where $\mathbf{A}$ is the $m \times n$ **coefficient matrix**, $\mathbf{x}$ is the $n \times 1$ vector of unknowns, and $\mathbf{b}$ is the $m \times 1$ right-hand side vector.
+
+The compactness of this notation is not cosmetic. Once you write a system as $\mathbf{A}\mathbf{x} = \mathbf{b}$, all the structure of the solution is encoded in $\mathbf{A}$ — its rank, its column space, its null space. You can reason about solvability without touching the specific values in $\mathbf{b}$.
+
+### The augmented matrix
+
+The working object for solving a linear system is the **augmented matrix** $[\mathbf{A}\,|\,\mathbf{b}]$: the coefficient matrix with $\mathbf{b}$ appended as an extra column, separated by a vertical bar.
+
+$$[\mathbf{A}\,|\,\mathbf{b}] = \left(\begin{array}{ccc|c} a_{11} & \cdots & a_{1n} & b_1 \\ \vdots & \ddots & \vdots & \vdots \\ a_{m1} & \cdots & a_{mn} & b_m \end{array}\right)$$
+
+Working on the augmented matrix instead of the equations directly keeps things compact and avoids rewriting variable names at every step.
+
+### What a solution means geometrically
+
+Each equation $a_{i1}x_1 + a_{i2}x_2 + \cdots + a_{in}x_n = b_i$ is a hyperplane in $\mathbb{R}^n$. Solving the system means finding the intersection of all $m$ hyperplanes.
+
+For $n = 2$ (two unknowns): each equation is a line in the plane. Two lines either intersect at one point (unique solution), are parallel (no solution), or are the same line (infinitely many solutions).
+
+For $n = 3$: each equation is a plane in three-dimensional space. Three planes can intersect at one point, at a line, at a plane, or not at all. Gaussian elimination finds which case applies and produces the solution in each case.
+
+---
+
+## Gaussian elimination
+
+**Row operations.** The three operations that can be applied to rows of an augmented matrix without changing the solution set are:
+
+1. **Swap** two rows: $R_i \leftrightarrow R_j$
+2. **Scale** a row by a nonzero constant: $R_i \leftarrow \lambda R_i$ ($\lambda \neq 0$)
+3. **Add a multiple of one row to another**: $R_i \leftarrow R_i + \mu R_j$
+
+These are called **elementary row operations**. They are reversible, so they transform the system into an equivalent one — same solution set, different representation.
+
+**The algorithm.** Gaussian elimination applies row operations to reduce $[\mathbf{A}\,|\,\mathbf{b}]$ to **upper triangular** (also called **row echelon**) form, where all entries below the main diagonal are zero. Back-substitution then extracts the unknowns from bottom to top.
+
+### Worked example: 3×3 system
+
+Solve:
+
+$$\begin{aligned} 2x_1 + 4x_2 - 2x_3 &= 2 \\ x_1 + 3x_2 + x_3 &= 10 \\ -x_1 + 2x_2 + 3x_3 &= 8 \end{aligned}$$
+
+**Step 1.** Write the augmented matrix:
+
+$$\left(\begin{array}{rrr|r} 2 & 4 & -2 & 2 \\ 1 & 3 & 1 & 10 \\ -1 & 2 & 3 & 8 \end{array}\right)$$
+
+**Step 2.** Use row 1 as the pivot row to eliminate $x_1$ from rows 2 and 3.
+
+$R_2 \leftarrow R_2 - \tfrac{1}{2}R_1$:
+
+$$\left(\begin{array}{rrr|r} 2 & 4 & -2 & 2 \\ 0 & 1 & 2 & 9 \\ -1 & 2 & 3 & 8 \end{array}\right)$$
+
+$R_3 \leftarrow R_3 + \tfrac{1}{2}R_1$:
+
+$$\left(\begin{array}{rrr|r} 2 & 4 & -2 & 2 \\ 0 & 1 & 2 & 9 \\ 0 & 4 & 2 & 9 \end{array}\right)$$
+
+**Step 3.** Use row 2 as the pivot row to eliminate $x_2$ from row 3.
+
+$R_3 \leftarrow R_3 - 4R_2$:
+
+$$\left(\begin{array}{rrr|r} 2 & 4 & -2 & 2 \\ 0 & 1 & 2 & 9 \\ 0 & 0 & -6 & -27 \end{array}\right)$$
+
+This is upper triangular form. The system now reads:
+
+$$\begin{aligned} 2x_1 + 4x_2 - 2x_3 &= 2 \\ x_2 + 2x_3 &= 9 \\ -6x_3 &= -27 \end{aligned}$$
+
+**Step 4. Back-substitution.**
+
+From row 3: $x_3 = \tfrac{-27}{-6} = \tfrac{9}{2}$.
+
+From row 2: $x_2 = 9 - 2 \cdot \tfrac{9}{2} = 9 - 9 = 0$.
+
+From row 1: $2x_1 = 2 - 4(0) + 2(\tfrac{9}{2}) = 2 + 9 = 11$, so $x_1 = \tfrac{11}{2}$.
+
+Solution: $x_1 = \tfrac{11}{2}$, $x_2 = 0$, $x_3 = \tfrac{9}{2}$.
+
+### The pivot
+
+At each elimination step, the diagonal element used to eliminate the column below it is called the **pivot**. The pivot must be nonzero. If it is zero, swap the current row with any row below it that has a nonzero entry in that column (**partial pivoting**). If no such row exists, the matrix is singular — the system either has no solution or infinitely many.
+
+In practice, numerical software always uses partial pivoting even when the pivot is technically nonzero, to avoid large round-off errors from dividing by very small numbers.
+
+*Step through the elimination — the amber cell is the active pivot.*
+
+```{ojs}
+//| echo: false
+{
+  const states = [
+    {
+      label: "Initial matrix — pivot x₁ = 2 (amber) will zero the column below it.",
+      op: null,
+      M: [[2,4,-2,2],[1,3,1,10],[-1,2,3,8]],
+      pr: 0, pc: 0
+    },
+    {
+      label: "x₁ cleared from row 2. Pivot still active — row 3 still needs clearing.",
+      op: "R₂  ←  R₂ − ½R₁    (m₂₁ = ½)",
+      M: [[2,4,-2,2],[0,1,2,9],[-1,2,3,8]],
+      pr: 0, pc: 0
+    },
+    {
+      label: "Column 1 fully cleared. Pivot shifts to x₂ = 1 in row 2.",
+      op: "R₃  ←  R₃ + ½R₁    (m₃₁ = −½)",
+      M: [[2,4,-2,2],[0,1,2,9],[0,4,2,9]],
+      pr: 1, pc: 1
+    },
+    {
+      label: "Upper triangular form reached. Back-substitution proceeds from the bottom.",
+      op: "R₃  ←  R₃ − 4R₂    (m₃₂ = 4)",
+      M: [[2,4,-2,2],[0,1,2,9],[0,0,-6,-27]],
+      pr: 2, pc: 2
+    }
+  ];
+
+  let step = 0;
+
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "border:1px solid #e5e7eb;border-radius:8px;padding:1rem 1.25rem;margin:0.5rem 0;max-width:480px;font-family:inherit;";
+
+  const opEl = document.createElement("div");
+  opEl.style.cssText = "font-size:0.9em;font-family:monospace;color:#374151;min-height:1.5em;margin-bottom:0.6rem;white-space:nowrap;";
+
+  const matWrap = document.createElement("div");
+  matWrap.style.cssText = "margin-bottom:0.5rem;";
+
+  const lblEl = document.createElement("div");
+  lblEl.style.cssText = "font-size:0.82em;color:#6b7280;min-height:1.4em;margin-bottom:0.75rem;";
+
+  function renderMatrix(M, pr, pc) {
+    const nc = M[0].length;
+    let html = '<div style="display:inline-flex;align-items:stretch;">';
+    html += '<div style="border-left:2px solid #374151;border-top:2px solid #374151;border-bottom:2px solid #374151;width:5px;border-radius:3px 0 0 3px;margin-right:2px;"></div>';
+    html += '<table style="border-collapse:collapse;font-size:1em;line-height:1.8;">';
+    for (let r = 0; r < M.length; r++) {
+      html += "<tr>";
+      for (let c = 0; c < nc; c++) {
+        const v = M[r][c];
+        const disp = v < 0 ? "−" + Math.abs(v) : String(v);
+        const augBorder = c === nc - 1 ? "border-left:2px solid #9ca3af;" : "";
+        const pivBg = r === pr && c === pc ? "background:#fef3c7;" : "";
+        const pivFw = r === pr && c === pc ? "font-weight:700;color:#92400e;" : "";
+        html += `<td style="padding:0.15rem 0.65rem;text-align:right;min-width:1.8em;${augBorder}${pivBg}${pivFw}">${disp}</td>`;
+      }
+      html += "</tr>";
+    }
+    html += "</table>";
+    html += '<div style="border-right:2px solid #374151;border-top:2px solid #374151;border-bottom:2px solid #374151;width:5px;border-radius:0 3px 3px 0;margin-left:2px;"></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function draw() {
+    const s = states[step];
+    opEl.textContent = s.op || "";
+    matWrap.innerHTML = renderMatrix(s.M, s.pr, s.pc);
+    lblEl.textContent = s.label;
+    nextBtn.disabled = step >= states.length - 1;
+    nextBtn.style.opacity = step >= states.length - 1 ? "0.4" : "1";
+    ctrEl.textContent = step === 0 ? "Click to begin" : `Step ${step} of ${states.length - 1}`;
+    doneEl.style.display = step === states.length - 1 ? "block" : "none";
+  }
+
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex;gap:0.5rem;align-items:center;";
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next operation →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:0.9em;";
+
+  const rstBtn = document.createElement("button");
+  rstBtn.textContent = "Reset";
+  rstBtn.style.cssText = "padding:0.35rem 0.75rem;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:0.9em;color:#6b7280;";
+
+  const ctrEl = document.createElement("span");
+  ctrEl.style.cssText = "font-size:0.82em;color:#9ca3af;margin-left:0.25rem;";
+
+  const doneEl = document.createElement("div");
+  doneEl.style.cssText = "margin-top:0.5rem;font-size:0.9em;color:#059669;font-weight:500;display:none;";
+  doneEl.textContent = "Upper triangular form reached. Back-substitution proceeds from row 3 upward.";
+
+  nextBtn.onclick = () => { if (step < states.length - 1) { step++; draw(); } };
+  rstBtn.onclick = () => { step = 0; draw(); };
+
+  ctrlRow.append(nextBtn, rstBtn, ctrEl);
+  wrap.append(opEl, matWrap, lblEl, ctrlRow, doneEl);
+  draw();
+  return wrap;
+}
+```
+
+### Gauss-Jordan elimination and RREF
+
+**Gauss-Jordan elimination** continues beyond upper triangular form: it also eliminates entries *above* each pivot, reducing the matrix to **reduced row echelon form (RREF)**. In RREF every pivot is 1, and every other entry in the pivot column is 0. The unknowns can be read off directly — no back-substitution needed.
+
+For large systems Gaussian elimination with back-substitution is more efficient than full Gauss-Jordan. For small systems, and especially for finding matrix inverses, RREF is convenient.
+
+**Continuing the worked example.** Starting from the upper triangular form and scaling:
+
+$R_3 \leftarrow -\tfrac{1}{6}R_3$, $R_2 \leftarrow R_2$, $R_1 \leftarrow \tfrac{1}{2}R_1$:
+
+$$\left(\begin{array}{rrr|r} 1 & 2 & -1 & 1 \\ 0 & 1 & 2 & 9 \\ 0 & 0 & 1 & 9/2 \end{array}\right)$$
+
+$R_2 \leftarrow R_2 - 2R_3$:
+
+$$\left(\begin{array}{rrr|r} 1 & 2 & -1 & 1 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 9/2 \end{array}\right)$$
+
+$R_1 \leftarrow R_1 + R_3$, then $R_1 \leftarrow R_1 - 2R_2$:
+
+$$\left(\begin{array}{rrr|r} 1 & 0 & 0 & 11/2 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 9/2 \end{array}\right)$$
+
+The solution $x_1 = \tfrac{11}{2}$, $x_2 = 0$, $x_3 = \tfrac{9}{2}$ is visible directly in the right-hand column. Same answer, different path.
+
+---
+
+## Solution types and rank
+
+Not every system $\mathbf{A}\mathbf{x} = \mathbf{b}$ has a unique solution. Three outcomes are possible, and the row-reduced form reveals which one applies.
+
+### The three cases
+
+**Case 1: unique solution.** Every column of $\mathbf{A}$ has a pivot. After row reduction there is one leading 1 per row and per column. The solution is determined completely.
+
+**Case 2: no solution (inconsistent).** After row reduction, at least one row has the form $[0 \; 0 \; \cdots \; 0 \;|\; c]$ with $c \neq 0$. This represents the equation $0 = c$, which is impossible. Geometrically: the hyperplanes do not share a common point.
+
+**Case 3: infinitely many solutions (underdetermined).** After row reduction, at least one column has no pivot — the corresponding variable is **free**, meaning it can take any value. Each free variable introduces one dimension of solutions. Geometrically: the hyperplanes intersect along a line, a plane, or a higher-dimensional subspace.
+
+*Move the sliders to see how the geometry changes. Try slope −0.50 for the parallel and coincident cases.*
+
+```{ojs}
+//| echo: false
+viewof geomSlope = Inputs.range([-1.5, 0.5], {
+  value: 0.3,
+  step: 0.05,
+  label: "Slope of line 2 (m₂)"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof geomIntercept = Inputs.range([-1, 5], {
+  value: 3.5,
+  step: 0.1,
+  label: "y-intercept of line 2 (b₂)"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  // Line 1 (fixed): x + 2y = 4  →  y = −0.5x + 2
+  const m1 = -0.5, b1 = 2;
+  const m2 = geomSlope, b2 = geomIntercept;
+
+  const EPS_S = 0.03;   // slope tolerance (slider step is 0.05)
+  const EPS_B = 0.06;   // intercept tolerance (slider step is 0.1)
+  const sameSlope  = Math.abs(m2 - m1) < EPS_S;
+  const coincident = sameSlope && Math.abs(b2 - b1) < EPS_B;
+  const parallel   = sameSlope && !coincident;
+
+  let caseLabel, caseColor;
+  if (coincident) {
+    caseLabel = "Infinitely many solutions — same line";
+    caseColor = "#059669";
+  } else if (parallel) {
+    caseLabel = "No solution — parallel lines (0 = c, impossible)";
+    caseColor = "#dc2626";
+  } else {
+    const xi = (b2 - b1) / (m1 - m2);
+    const yi = m1 * xi + b1;
+    caseLabel = `Unique solution — intersection at (${xi.toFixed(2)}, ${yi.toFixed(2)})`;
+    caseColor = "#2563eb";
+  }
+
+  const W = 340, H = 280, PAD = 44;
+  const xMin = -5, xMax = 5, yMin = -3, yMax = 6;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width", W);
+  svg.setAttribute("height", H);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.style.cssText = "display:block;font-family:inherit;border:1px solid #e5e7eb;border-radius:6px;";
+
+  const ns = "http://www.w3.org/2000/svg";
+  function mk(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    if (attrs) for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+  function mkT(tag, attrs, text) { const e = mk(tag, attrs); e.textContent = text; return e; }
+
+  function spx(x) { return PAD + (x - xMin) / (xMax - xMin) * (W - 2 * PAD); }
+  function spy(y) { return H - PAD - (y - yMin) / (yMax - yMin) * (H - 2 * PAD); }
+
+  const clipId = "geom-clip";
+  const defs = mk("defs");
+  const cp = mk("clipPath", { id: clipId });
+  cp.appendChild(mk("rect", { x: PAD, y: PAD, width: W - 2*PAD, height: H - 2*PAD }));
+  defs.appendChild(cp);
+  svg.appendChild(defs);
+
+  svg.appendChild(mk("rect", { x: 0, y: 0, width: W, height: H, fill: "#f9fafb", rx: 6 }));
+  svg.appendChild(mk("rect", { x: PAD, y: PAD, width: W-2*PAD, height: H-2*PAD, fill: "#fff", stroke: "#e5e7eb", "stroke-width": 1 }));
+
+  // Grid
+  const gridG = mk("g", { "clip-path": `url(#${clipId})` });
+  for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++)
+    gridG.appendChild(mk("line", { x1: spx(x), y1: PAD, x2: spx(x), y2: H-PAD, stroke: "#f3f4f6", "stroke-width": 1 }));
+  for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++)
+    gridG.appendChild(mk("line", { x1: PAD, y1: spy(y), x2: W-PAD, y2: spy(y), stroke: "#f3f4f6", "stroke-width": 1 }));
+  svg.appendChild(gridG);
+
+  // Axes
+  const clip = { "clip-path": `url(#${clipId})` };
+  svg.appendChild(mk("line", { x1: PAD, y1: spy(0), x2: W-PAD, y2: spy(0), stroke: "#d1d5db", "stroke-width": 1.5, ...clip }));
+  svg.appendChild(mk("line", { x1: spx(0), y1: PAD, x2: spx(0), y2: H-PAD, stroke: "#d1d5db", "stroke-width": 1.5, ...clip }));
+  svg.appendChild(mkT("text", { x: W-PAD+6, y: spy(0)+4, fill: "#9ca3af", "font-size": 12 }, "x"));
+  svg.appendChild(mkT("text", { x: spx(0)+5, y: PAD-4, fill: "#9ca3af", "font-size": 12 }, "y"));
+
+  function addLine(m, b, color, dash, width, opacity) {
+    svg.appendChild(mk("line", {
+      x1: spx(xMin), y1: spy(m*xMin+b),
+      x2: spx(xMax), y2: spy(m*xMax+b),
+      stroke: color, "stroke-width": width,
+      "stroke-dasharray": dash || "",
+      opacity: opacity || 1,
+      "clip-path": `url(#${clipId})`
+    }));
+  }
+
+  // Line 1 — fixed, solid blue
+  addLine(m1, b1, "#3b82f6", "", 2.5, 1);
+  const lx1 = 2.5;
+  svg.appendChild(mkT("text", { x: spx(lx1)+4, y: spy(m1*lx1+b1)-5, fill: "#3b82f6", "font-size": 11, "font-weight": "600" }, "x + 2y = 4"));
+
+  // Line 2 — controlled
+  if (coincident) {
+    addLine(m2, b2, "#059669", "8 4", 5, 0.55);
+  } else {
+    addLine(m2, b2, "#f59e0b", parallel ? "" : "7 4", 2.5, 1);
+    // Label line 2 near its left end
+    const lx2 = -3.5, ly2 = m2*lx2+b2;
+    if (ly2 >= yMin && ly2 <= yMax)
+      svg.appendChild(mkT("text", { x: spx(lx2), y: spy(ly2)-6, fill: "#f59e0b", "font-size": 11, "font-weight": "600" }, "line 2"));
+  }
+
+  // Intersection dot
+  if (!parallel && !coincident) {
+    const xi = (b2 - b1) / (m1 - m2);
+    const yi = m1 * xi + b1;
+    if (xi >= xMin && xi <= xMax && yi >= yMin && yi <= yMax)
+      svg.appendChild(mk("circle", { cx: spx(xi), cy: spy(yi), r: 5, fill: "#2563eb", stroke: "#fff", "stroke-width": 2 }));
+  }
+
+  const footer = document.createElement("div");
+  footer.style.cssText = `font-size:0.88em;font-weight:600;color:${caseColor};margin-top:0.4rem;`;
+  footer.textContent = caseLabel;
+
+  const container = document.createElement("div");
+  container.style.marginTop = "0.5rem";
+  container.append(svg, footer);
+  return container;
+}
+```
+
+### Rank
+
+The **rank** of a matrix $\mathbf{A}$, written $\text{rank}(\mathbf{A})$, is the number of pivots in its row-reduced form — equivalently, the number of linearly independent rows (or columns).
+
+For an $m \times n$ matrix: $\text{rank}(\mathbf{A}) \leq \min(m, n)$.
+
+**Solvability criterion.** The system $\mathbf{A}\mathbf{x} = \mathbf{b}$ has at least one solution if and only if $\text{rank}(\mathbf{A}) = \text{rank}([\mathbf{A}\,|\,\mathbf{b}])$. When this holds:
+
+- If $\text{rank}(\mathbf{A}) = n$ (all unknowns are pivot variables), the solution is unique.
+- If $\text{rank}(\mathbf{A}) < n$, there are $n - \text{rank}(\mathbf{A})$ free variables and infinitely many solutions.
+
+### Rank-nullity theorem
+
+For an $n$-column matrix $\mathbf{A}$:
+
+$$\text{rank}(\mathbf{A}) + \text{nullity}(\mathbf{A}) = n$$
+
+The **nullity** is the number of free variables — the dimension of the **null space** (the set of all solutions to $\mathbf{A}\mathbf{x} = \mathbf{0}$). This theorem says that the number of "determined" directions (rank) plus the number of "undetermined" directions (nullity) always adds up to the total number of unknowns. It is stated here for completeness; it becomes central in the chapter on eigenvalues.
+
+### What rank tells you before you compute
+
+If you have a $3 \times 3$ system and you can see by inspection that one equation is a linear combination of the other two (for example, equation 3 = equation 1 + equation 2), then $\text{rank}(\mathbf{A}) \leq 2 < 3$ regardless of $\mathbf{b}$. The system is either inconsistent or underdetermined. Checking rank first can save significant computation.
+
+---
+
+## LU factorisation
+
+Gaussian elimination solves one system $\mathbf{A}\mathbf{x} = \mathbf{b}$ at a time. In engineering, the same matrix $\mathbf{A}$ often appears with many different right-hand sides $\mathbf{b}_1, \mathbf{b}_2, \ldots, \mathbf{b}_k$ — for example, a structural stiffness matrix under different load patterns. Re-running Gaussian elimination from scratch each time wastes the work already done.
+
+**LU factorisation** stores the elimination steps. It factors $\mathbf{A}$ into:
+
+$$\mathbf{A} = \mathbf{L}\mathbf{U}$$
+
+where $\mathbf{L}$ is a lower triangular matrix (with 1s on the diagonal) and $\mathbf{U}$ is the upper triangular matrix produced by elimination. The elimination multipliers — the values $m_{ij} = a_{ij}/a_{jj}$ used to zero out entries below each pivot — become the off-diagonal entries of $\mathbf{L}$.
+
+### Solving with LU
+
+Given $\mathbf{A} = \mathbf{L}\mathbf{U}$, solving $\mathbf{A}\mathbf{x} = \mathbf{b}$ becomes two triangular solves:
+
+1. Solve $\mathbf{L}\mathbf{y} = \mathbf{b}$ for $\mathbf{y}$ by **forward substitution** (top to bottom, since $\mathbf{L}$ is lower triangular).
+2. Solve $\mathbf{U}\mathbf{x} = \mathbf{y}$ for $\mathbf{x}$ by **back-substitution** (bottom to top, since $\mathbf{U}$ is upper triangular).
+
+Each triangular solve costs $O(n^2)$ operations. The factorisation itself costs $O(n^3)$ — the same as Gaussian elimination — but it only needs to happen once per matrix. Subsequent solves for different $\mathbf{b}$ cost only $O(n^2)$ each.
+
+### Worked example: 3×3 LU factorisation
+
+Factorise:
+
+$$\mathbf{A} = \begin{pmatrix} 2 & 4 & -2 \\ 1 & 3 & 1 \\ -1 & 2 & 3 \end{pmatrix}$$
+
+**Step 1.** Column 1. Use $a_{11} = 2$ as pivot.
+
+Multipliers: $m_{21} = \tfrac{1}{2}$, $m_{31} = \tfrac{-1}{2}$.
+
+Apply $R_2 \leftarrow R_2 - \tfrac{1}{2}R_1$ and $R_3 \leftarrow R_3 - (-\tfrac{1}{2})R_1 = R_3 + \tfrac{1}{2}R_1$:
+
+$$\begin{pmatrix} 2 & 4 & -2 \\ 0 & 1 & 2 \\ 0 & 4 & 2 \end{pmatrix}$$
+
+**Step 2.** Column 2. Use $a_{22}^{(1)} = 1$ as pivot.
+
+Multiplier: $m_{32} = \tfrac{4}{1} = 4$.
+
+Apply $R_3 \leftarrow R_3 - 4R_2$:
+
+$$\mathbf{U} = \begin{pmatrix} 2 & 4 & -2 \\ 0 & 1 & 2 \\ 0 & 0 & -6 \end{pmatrix}$$
+
+**Assembling L.** The multipliers fill the lower triangle of $\mathbf{L}$, with 1s on the diagonal:
+
+$$\mathbf{L} = \begin{pmatrix} 1 & 0 & 0 \\ 1/2 & 1 & 0 \\ -1/2 & 4 & 1 \end{pmatrix}$$
+
+**Verification:** $\mathbf{L}\mathbf{U}$ should recover $\mathbf{A}$. Check the $(3,2)$ entry: $(-\tfrac{1}{2})(4) + (4)(1) + (1)(0) = -2 + 4 = 2$ ✓.
+
+### When LU fails
+
+LU factorisation in the form above requires that every pivot encountered during elimination is nonzero. When a zero pivot arises — even if the matrix is not singular — rows must be swapped before continuing. This leads to **PLU factorisation** ($\mathbf{P}\mathbf{A} = \mathbf{L}\mathbf{U}$ where $\mathbf{P}$ is a permutation matrix recording the row swaps), which is what production numerical libraries always compute. MATLAB's `lu()` and NumPy's `scipy.linalg.lu()` both return the PLU form.
+
+### Numerical perspective
+
+For $n > 4$ or 5, Gaussian elimination and LU factorisation are almost always done by software. Understanding the algorithm tells you:
+
+- **When it fails**: a zero pivot signals a singular or near-singular matrix — the system is ill-conditioned and the solution, if it exists, may be numerically unreliable.
+- **Why pivoting matters**: without partial pivoting, round-off errors compound in a predictable direction and can make the computed solution wildly wrong even when a true solution exists.
+- **What to trust**: if NumPy's `linalg.solve()` raises a `LinAlgError: Singular matrix`, the coefficient matrix is rank-deficient. The fix is not a different solver — it is a reconsideration of the physical model.
+
+---
+
+## Applications
+
+### Circuit mesh analysis: Kirchhoff's voltage law
+
+Consider a three-mesh resistive circuit. Applying Kirchhoff's voltage law (KVL) around each mesh — the sum of voltage drops around any closed loop is zero — yields one linear equation per mesh in the mesh currents $I_1, I_2, I_3$.
+
+For a specific circuit with resistances $R_1 = 2\,\Omega$, $R_2 = 4\,\Omega$, $R_3 = 3\,\Omega$, $R_4 = 6\,\Omega$, $R_5 = 1\,\Omega$ and voltage sources $V_1 = 12\,\text{V}$, $V_2 = 6\,\text{V}$, the KVL equations might take the form:
+
+$$\begin{aligned} (R_1 + R_2)I_1 - R_2 I_2 &= V_1 \\ -R_2 I_1 + (R_2 + R_3 + R_4)I_2 - R_4 I_3 &= 0 \\ -R_4 I_2 + (R_4 + R_5)I_3 &= -V_2 \end{aligned}$$
+
+Substituting values:
+
+$$\begin{aligned} 6I_1 - 4I_2 &= 12 \\ -4I_1 + 13I_2 - 6I_3 &= 0 \\ -6I_2 + 7I_3 &= -6 \end{aligned}$$
+
+In matrix form $\mathbf{A}\mathbf{x} = \mathbf{b}$:
+
+$$\begin{pmatrix} 6 & -4 & 0 \\ -4 & 13 & -6 \\ 0 & -6 & 7 \end{pmatrix} \begin{pmatrix} I_1 \\ I_2 \\ I_3 \end{pmatrix} = \begin{pmatrix} 12 \\ 0 \\ -6 \end{pmatrix}$$
+
+The coefficient matrix is symmetric — a consequence of reciprocity in passive resistive networks. This is always the case when you apply KVL systematically; it is not a coincidence to exploit, it is a theorem to rely on.
+
+Applying Gaussian elimination yields (after row reduction): $I_1 = 3.2\,\text{A}$, $I_2 = 1.8\,\text{A}$, $I_3 = 0.686\,\text{A}$ (to three significant figures). Once the mesh currents are known, every voltage and power in the circuit is computable — the linear system is the complete solution to the circuit analysis problem.
+
+**Scaling remark.** A practical circuit board may have 50 to 500 mesh loops. The matrix is still symmetric, but $50 \times 50$ by hand is not feasible. SPICE — the standard circuit simulator used by every electronics engineer — solves such systems using LU factorisation with partial pivoting, exactly the method in this chapter.
+
+### Structural force distribution
+
+A statically determinate truss consists of members (bars) and joints (nodes). At each joint, equilibrium requires that the sum of forces in the horizontal direction is zero, and the sum in the vertical direction is zero. Each equilibrium equation is linear in the member forces. For a truss with $n$ joints and $m$ members plus three reaction forces, static determinacy gives $m + 3 = 2n$, and the full set of equilibrium equations is a square linear system.
+
+For a simple three-member triangular truss with a vertical load $P$ at the apex:
+
+$$\begin{pmatrix} \cos\theta_1 & \cos\theta_2 & 0 \\ \sin\theta_1 & \sin\theta_2 & 0 \\ 0 & -1 & 1 \end{pmatrix} \begin{pmatrix} F_1 \\ F_2 \\ R \end{pmatrix} = \begin{pmatrix} 0 \\ P \\ 0 \end{pmatrix}$$
+
+where $F_1, F_2$ are member forces, $R$ is a reaction force, and $\theta_1, \theta_2$ are member angles. Solving this gives the force in each member — positive values indicate tension, negative indicate compression. A member under too much compression will buckle; too much tension and it will yield. The linear system does not just find numbers: it tells the structural engineer which members to upsize.
+
+---
+
+## Exercises
+
+These exercises use real engineering and science contexts. The interesting part is setting up the augmented matrix correctly and identifying which solution case applies.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+---
+
+### Exercise 1: Node admittance matrix multiplication
+
+A circuit has three nodes. The node admittance matrix $\mathbf{Y}$ and a voltage vector $\mathbf{V}$ are:
+
+$$\mathbf{Y} = \begin{pmatrix} 5 & -2 & -1 \\ -2 & 6 & -3 \\ -1 & -3 & 4 \end{pmatrix}, \qquad \mathbf{V} = \begin{pmatrix} 10 \\ 5 \\ 2 \end{pmatrix} \text{ V}$$
+
+Compute the current injection vector $\mathbf{I} = \mathbf{Y}\mathbf{V}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write the product definition",
+    eq: "\\mathbf{I} = \\mathbf{Y}\\mathbf{V} = \\begin{pmatrix} 5 & -2 & -1 \\\\ -2 & 6 & -3 \\\\ -1 & -3 & 4 \\end{pmatrix}\\begin{pmatrix} 10 \\\\ 5 \\\\ 2 \\end{pmatrix}",
+    note: "Each entry of I is the dot product of one row of Y with V."
+  },
+  {
+    op: "Compute I₁ (row 1 · V)",
+    eq: "I_1 = 5(10) + (-2)(5) + (-1)(2) = 50 - 10 - 2 = 38 \\text{ A}"
+  },
+  {
+    op: "Compute I₂ (row 2 · V)",
+    eq: "I_2 = (-2)(10) + 6(5) + (-3)(2) = -20 + 30 - 6 = 4 \\text{ A}"
+  },
+  {
+    op: "Compute I₃ (row 3 · V)",
+    eq: "I_3 = (-1)(10) + (-3)(5) + 4(2) = -10 - 15 + 8 = -17 \\text{ A}"
+  },
+  {
+    op: "Assemble the result",
+    eq: "\\mathbf{I} = \\begin{pmatrix} 38 \\\\ 4 \\\\ -17 \\end{pmatrix} \\text{ A}",
+    note: "Negative current injection means current is leaving that node."
+  }
+])
+```
+
+
+---
+
+### Exercise 2: Mesh current analysis by Gaussian elimination
+
+Three mesh currents $I_1, I_2, I_3$ (in amperes) in a resistive network satisfy:
+
+$$\begin{aligned} 8I_1 - 2I_2 - 0I_3 &= 16 \\ -2I_1 + 7I_2 - 3I_3 &= 0 \\ 0I_1 - 3I_2 + 5I_3 &= -6 \end{aligned}$$
+
+Find $I_1, I_2, I_3$ by Gaussian elimination.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write augmented matrix",
+    eq: "\\left(\\begin{array}{rrr|r} 8 & -2 & 0 & 16 \\\\ -2 & 7 & -3 & 0 \\\\ 0 & -3 & 5 & -6 \\end{array}\\right)"
+  },
+  {
+    op: "Eliminate column 1: R₂ ← R₂ + (1/4)R₁",
+    eq: "\\left(\\begin{array}{rrr|r} 8 & -2 & 0 & 16 \\\\ 0 & 6.5 & -3 & 4 \\\\ 0 & -3 & 5 & -6 \\end{array}\\right)",
+    note: "Multiplier m₂₁ = −2/8 = −1/4; add (1/4)R₁ to R₂."
+  },
+  {
+    op: "Eliminate column 2: R₃ ← R₃ + (3/6.5)R₂",
+    eq: "\\left(\\begin{array}{rrr|r} 8 & -2 & 0 & 16 \\\\ 0 & 6.5 & -3 & 4 \\\\ 0 & 0 & 3.615 & -4.154 \\end{array}\\right)",
+    note: "Multiplier m₃₂ = −3/6.5 = −6/13; subtracting that multiple zeros the (3,2) entry."
+  },
+  {
+    op: "Back-substitute: solve for I₃",
+    eq: "I_3 = \\frac{-4.154}{3.615} \\approx -1.149 \\text{ A}"
+  },
+  {
+    op: "Back-substitute: solve for I₂",
+    eq: "I_2 = \\frac{4 - (-3)(-1.149)}{6.5} = \\frac{4 - 3.447}{6.5} \\approx 0.085 \\text{ A}"
+  },
+  {
+    op: "Back-substitute: solve for I₁",
+    eq: "I_1 = \\frac{16 - (-2)(0.085)}{8} = \\frac{16.170}{8} \\approx 2.021 \\text{ A}",
+    note: "Exact fractions: I₁ = 1063/526 ≈ 2.021 A; I₂ = 9/106 ≈ 0.085 A; I₃ = −61/53 ≈ −1.151 A."
+  }
+])
+```
+
+
+---
+
+### Exercise 3: RREF and solution type (underdetermined structural system)
+
+A redundant structure gives three equilibrium equations in four unknown member forces $F_1, F_2, F_3, F_4$:
+
+$$\begin{aligned} F_1 + 2F_2 - F_3 + F_4 &= 10 \\ 2F_1 + 4F_2 + F_3 - F_4 &= 8 \\ F_1 + 2F_2 + 3F_3 - 3F_4 &= -2 \end{aligned}$$
+
+Row-reduce to RREF. Identify the free variable(s) and write the general solution.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write augmented matrix",
+    eq: "\\left(\\begin{array}{rrrr|r} 1 & 2 & -1 & 1 & 10 \\\\ 2 & 4 & 1 & -1 & 8 \\\\ 1 & 2 & 3 & -3 & -2 \\end{array}\\right)"
+  },
+  {
+    op: "Eliminate col 1: R₂ ← R₂ − 2R₁; R₃ ← R₃ − R₁",
+    eq: "\\left(\\begin{array}{rrrr|r} 1 & 2 & -1 & 1 & 10 \\\\ 0 & 0 & 3 & -3 & -12 \\\\ 0 & 0 & 4 & -4 & -12 \\end{array}\\right)"
+  },
+  {
+    op: "Scale R₂ by 1/3; eliminate col 3: R₃ ← R₃ − 4R₂",
+    eq: "\\left(\\begin{array}{rrrr|r} 1 & 2 & -1 & 1 & 10 \\\\ 0 & 0 & 1 & -1 & -4 \\\\ 0 & 0 & 0 & 0 & 0 \\end{array}\\right)",
+    note: "Row 3 becomes all zeros — a dependent equation."
+  },
+  {
+    op: "Back-eliminate col 3 from row 1: R₁ ← R₁ + R₂",
+    eq: "\\left(\\begin{array}{rrrr|r} 1 & 2 & 0 & 0 & 6 \\\\ 0 & 0 & 1 & -1 & -4 \\\\ 0 & 0 & 0 & 0 & 0 \\end{array}\\right)"
+  },
+  {
+    op: "Identify pivot and free variables",
+    eq: "\\text{Pivots in cols 1, 3} \\implies F_1,\\, F_3 \\text{ are pivot variables; } F_2,\\, F_4 \\text{ are free}",
+    note: "rank(A) = 2 < 4 unknowns, so nullity = 2: a two-parameter family of solutions."
+  },
+  {
+    op: "Write general solution (let F₂ = s, F₄ = t)",
+    eq: "F_1 = 6 - 2s,\\; F_2 = s,\\; F_3 = -4 + t,\\; F_4 = t \\quad (s,\\,t \\in \\mathbb{R})",
+    note: "Physical interpretation: the structure is statically indeterminate — you need material stiffness data to find a unique solution."
+  }
+])
+```
+
+
+---
+
+### Exercise 4: Rank of a sensor measurement matrix
+
+A sensor network takes four measurements of three physical quantities (temperature, pressure, flow rate). The measurement matrix is:
+
+$$\mathbf{M} = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 4 & 6 \\ 1 & 0 & 2 \\ 3 & 2 & 7 \end{pmatrix}$$
+
+Find $\text{rank}(\mathbf{M})$. What does this tell you about the sensor network?
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write the matrix and note its size",
+    eq: "\\mathbf{M} \\text{ is } 4 \\times 3, \\text{ so } \\text{rank}(\\mathbf{M}) \\leq 3"
+  },
+  {
+    op: "Eliminate col 1: R₂ ← R₂ − 2R₁; R₃ ← R₃ − R₁; R₄ ← R₄ − 3R₁",
+    eq: "\\begin{pmatrix} 1 & 2 & 3 \\\\ 0 & 0 & 0 \\\\ 0 & -2 & -1 \\\\ 0 & -4 & -2 \\end{pmatrix}",
+    note: "Row 2 is exactly 2 × Row 1 — it carries no new information."
+  },
+  {
+    op: "Swap R₂ and R₃ (bring nonzero pivot to position (2,2))",
+    eq: "\\begin{pmatrix} 1 & 2 & 3 \\\\ 0 & -2 & -1 \\\\ 0 & 0 & 0 \\\\ 0 & -4 & -2 \\end{pmatrix}"
+  },
+  {
+    op: "Eliminate col 2 from R₄: R₄ ← R₄ − 2R₂",
+    eq: "\\begin{pmatrix} 1 & 2 & 3 \\\\ 0 & -2 & -1 \\\\ 0 & 0 & 0 \\\\ 0 & 0 & 0 \\end{pmatrix}",
+    note: "Two zero rows — rank equals the number of nonzero rows after reduction."
+  },
+  {
+    op: "Count pivots",
+    eq: "\\text{rank}(\\mathbf{M}) = 2",
+    note: "Only 2 of the 4 sensors provide independent information. The other two are redundant — they measure combinations already captured. One redundant sensor is useful for fault detection; two is over-instrumented."
+  }
+])
+```
+
+
+---
+
+### Exercise 5: LU factorisation for repeated solves
+
+A heat-transfer network has conductance matrix:
+
+$$\mathbf{K} = \begin{pmatrix} 4 & -1 & 0 \\ -1 & 3 & -1 \\ 0 & -1 & 2 \end{pmatrix}$$
+
+Find the LU factorisation of $\mathbf{K}$, then use it to solve $\mathbf{K}\mathbf{T} = \mathbf{q}$ for two different heat-flux vectors:
+
+$$\mathbf{q}_1 = \begin{pmatrix} 8 \\ 4 \\ 2 \end{pmatrix}, \qquad \mathbf{q}_2 = \begin{pmatrix} 0 \\ 6 \\ 4 \end{pmatrix}$$
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Elimination step 1: R₂ ← R₂ − (−1/4)R₁",
+    eq: "m_{21} = \\tfrac{-1}{4} \\implies R_2 \\leftarrow R_2 - \\left(-\\tfrac{1}{4}\\right)R_1",
+    note: "Subtracting (−1/4)×R₁ is the same as adding (1/4)×R₁."
+  },
+  {
+    op: "Result after step 1",
+    eq: "\\mathbf{U}^{(1)} = \\begin{pmatrix} 4 & -1 & 0 \\\\ 0 & 11/4 & -1 \\\\ 0 & -1 & 2 \\end{pmatrix}"
+  },
+  {
+    op: "Elimination step 2: R₃ ← R₃ − (−1/(11/4))R₂ = R₃ + (4/11)R₂",
+    eq: "m_{32} = \\tfrac{-1}{11/4} = -\\tfrac{4}{11}"
+  },
+  {
+    op: "Upper triangular U",
+    eq: "\\mathbf{U} = \\begin{pmatrix} 4 & -1 & 0 \\\\ 0 & 11/4 & -1 \\\\ 0 & 0 & 18/11 \\end{pmatrix}"
+  },
+  {
+    op: "Assemble L from multipliers",
+    eq: "\\mathbf{L} = \\begin{pmatrix} 1 & 0 & 0 \\\\ -1/4 & 1 & 0 \\\\ 0 & -4/11 & 1 \\end{pmatrix}"
+  },
+  {
+    op: "Solve Ly = q₁ by forward substitution",
+    eq: "\\mathbf{y}_1: \\; y_1 = 8,\\; y_2 = 4 + \\tfrac{1}{4}(8) = 6,\\; y_3 = 2 + \\tfrac{4}{11}(6) = \\tfrac{46}{11}"
+  },
+  {
+    op: "Solve UT = y₁ by back-substitution",
+    eq: "T_3 = \\frac{46/11}{18/11} = \\frac{46}{18} = \\frac{23}{9} \\approx 2.56,\\; T_2 = \\frac{6 + T_3}{11/4} \\approx 3.11,\\; T_1 = \\frac{8 + T_2 - 0}{4} \\approx 2.78",
+    note: "Exact: T₁ = 167/60, T₂ = 56/18 = 28/9, T₃ = 23/9."
+  },
+  {
+    op: "For q₂: reuse L and U, only redo the two triangular solves",
+    eq: "\\mathbf{y}_2: \\; y_1 = 0,\\; y_2 = 6,\\; y_3 = 4 + \\tfrac{4}{11}(6) = \\tfrac{68}{11}",
+    note: "The LU factorisation cost is paid once. Each new right-hand side costs only O(n²)."
+  }
+])
+```
+
+
+---
+
+### Exercise 6: Write and solve the linear system for a 3-mesh circuit
+
+A three-mesh circuit has the following KVL equations after applying Kirchhoff's voltage law. The mesh currents $I_1, I_2, I_3$ (in mA) satisfy:
+
+- **Mesh 1:** A 10 Ω resistor carries $I_1$; a 5 Ω resistor is shared with mesh 2 carrying $I_1 - I_2$. Voltage source: 20 V.
+- **Mesh 2:** The shared 5 Ω resistor carries $I_2 - I_1$; a 10 Ω resistor carries $I_2$; a 4 Ω resistor is shared with mesh 3 carrying $I_2 - I_3$. No voltage source.
+- **Mesh 3:** The shared 4 Ω resistor carries $I_3 - I_2$; a 6 Ω resistor carries $I_3$. Voltage source: −8 V (opposing reference direction).
+
+Write $\mathbf{A}\mathbf{x} = \mathbf{b}$ explicitly, then solve using Gaussian elimination.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Apply KVL to mesh 1",
+    eq: "10I_1 + 5(I_1 - I_2) = 20 \\implies 15I_1 - 5I_2 = 20"
+  },
+  {
+    op: "Apply KVL to mesh 2",
+    eq: "5(I_2 - I_1) + 10I_2 + 4(I_2 - I_3) = 0 \\implies -5I_1 + 19I_2 - 4I_3 = 0"
+  },
+  {
+    op: "Apply KVL to mesh 3",
+    eq: "4(I_3 - I_2) + 6I_3 = -8 \\implies -4I_2 + 10I_3 = -8"
+  },
+  {
+    op: "Write in matrix form Ax = b",
+    eq: "\\begin{pmatrix} 15 & -5 & 0 \\\\ -5 & 19 & -4 \\\\ 0 & -4 & 10 \\end{pmatrix}\\begin{pmatrix} I_1 \\\\ I_2 \\\\ I_3 \\end{pmatrix} = \\begin{pmatrix} 20 \\\\ 0 \\\\ -8 \\end{pmatrix}",
+    note: "The coefficient matrix is symmetric — always the case for KVL mesh analysis with passive resistors."
+  },
+  {
+    op: "Eliminate col 1: R₂ ← R₂ + (1/3)R₁",
+    eq: "\\left(\\begin{array}{rrr|r} 15 & -5 & 0 & 20 \\\\ 0 & 52/3 & -4 & 20/3 \\\\ 0 & -4 & 10 & -8 \\end{array}\\right)",
+    note: "Multiplier: m₂₁ = −5/15 = −1/3; subtract (−1/3)R₁, i.e., add (1/3)R₁."
+  },
+  {
+    op: "Eliminate col 2: R₃ ← R₃ + (12/52)R₂",
+    eq: "\\left(\\begin{array}{rrr|r} 15 & -5 & 0 & 20 \\\\ 0 & 52/3 & -4 & 20/3 \\\\ 0 & 0 & 442/52 & -31/13 \\end{array}\\right)",
+    note: "Multiplier: m₃₂ = −4 / (52/3) = −12/52 = −3/13."
+  },
+  {
+    op: "Back-substitute",
+    eq: "I_3 = \\frac{-31/13}{442/52} \\approx -0.280 \\text{ mA}, \\quad I_2 \\approx 0.452 \\text{ mA}, \\quad I_1 \\approx 1.484 \\text{ mA}",
+    note: "Verify: 15(1.484) − 5(0.452) = 22.26 − 2.26 = 20 ✓. All three mesh currents are determined."
+  }
+])
+```

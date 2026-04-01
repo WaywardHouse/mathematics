@@ -1,6 +1,951 @@
 ---
 title: "Partial differential equations"
-status: "seed"
+subtitle: "Heat, waves, and equilibrium in space and time"
+chapter: 3
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: "An ordinary differential equation describes a quantity varying with one variable. But heat spreads through a solid in space AND time simultaneously. A guitar string deflects along its length AND vibrates in time. The gravitational potential varies in all three spatial directions. Each of these requires derivatives with respect to more than one independent variable."
+
+rewrite: "The three classical PDEs — heat equation u_t = α²u_xx, wave equation u_tt = c²u_xx, and Laplace equation u_xx + u_yy = 0 — model fundamentally different physics. Separation of variables assumes u(x,t) = X(x)T(t) and splits the PDE into two ODEs linked by a separation constant. The boundary conditions restrict the separation constant to a discrete set of eigenvalues. Each eigenvalue produces a solution mode, and the general solution is a Fourier series of those modes with coefficients set by the initial conditions."
+
+prerequisite_ids:
+  - fourier_series
+  - multivariable
+  - odes
+
+opens_to:
+  - id: numerics
+    label: "Numerical methods"
+    volume: 7
+    relationship: motivates
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Heat conduction in a turbine blade, stress waves in a structure, and electromagnetic field distributions are all governed by classical PDEs — numerical simulation of any physical system ultimately discretises and solves these equations."
+    career_example: "Mechanical engineer validating a finite-element model of thermal stresses in an engine component"
+  - field: sci
+    label: Hard sciences
+    hook: "The Schrödinger equation is a PDE; the diffusion of chemicals in a cell is a PDE; the propagation of seismic waves through the earth is a PDE — every time-dependent spatial phenomenon in the natural sciences is described by one."
+    career_example: "Geophysicist modelling seismic wave propagation through layered rock using the elastic wave equation"
+  - field: geo
+    label: Geography and environment
+    hook: "Groundwater flow, pollutant transport in rivers, heat exchange between the ocean and atmosphere — all are governed by parabolic or elliptic PDEs, making PDE literacy essential for quantitative environmental modelling."
+    career_example: "Hydrologist simulating contaminant diffusion in an aquifer using the advection-diffusion equation"
+
+notation_introduced:
+  - symbol: "u_t,\\; u_{xx}"
+    reads_as: "partial derivative of u with respect to t; second partial with respect to x"
+    meaning: "∂u/∂t and ∂²u/∂x² — notation for partial derivatives"
+  - symbol: "\\nabla^2 u"
+    reads_as: "Laplacian of u"
+    meaning: "∂²u/∂x² + ∂²u/∂y² (in 2D) — the sum of second spatial derivatives"
+  - symbol: "\\lambda"
+    reads_as: "lambda — separation constant"
+    meaning: "The eigenvalue linking the spatial ODE to the temporal ODE in separation of variables"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  In 1807 Joseph Fourier submitted a memoir to the Paris Academy of
+  Sciences on the mathematical theory of heat. The examiners — including
+  Lagrange — objected that his technique of expanding arbitrary functions
+  in trigonometric series lacked rigour. They were right about the rigour.
+  They were wrong to reject it: Fourier's method works, it produces
+  physically correct predictions, and it became one of the most important
+  tools in mathematical physics.
+
+  The memoir's central problem was simple: a metal bar, initially at some
+  non-uniform temperature, with its ends fixed at zero. How does the
+  temperature evolve in time? The answer is a PDE — the heat equation —
+  and its solution is a Fourier series whose terms decay exponentially,
+  each at a rate determined by its spatial frequency. The bar smooths out.
+  High spatial frequencies smooth out first. The fundamental mode is the
+  last to decay.
+
+  The same mathematical structure — separation of variables yielding a
+  Fourier series — describes every classical field in engineering: heat
+  flow, vibration, electrostatics, fluid potential, quantum mechanics.
+
+kreyszig_chapter: "Ch 12"
+stroud_programme: "Programme 21"
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A **partial differential equation (PDE)** involves an unknown function of two or more independent variables and its partial derivatives. The three classical PDEs of mathematical physics appear throughout engineering and science, and they are the focus of this chapter:
+
+| Equation | Name | Physics |
+|---|---|---|
+| $u_t = \alpha^2 u_{xx}$ | Heat equation (parabolic) | Heat conduction, diffusion |
+| $u_{tt} = c^2 u_{xx}$ | Wave equation (hyperbolic) | Vibration, acoustics, EM waves |
+| $u_{xx} + u_{yy} = 0$ | Laplace equation (elliptic) | Steady-state fields |
+
+Each represents a different physical situation. The heat equation describes irreversible processes that evolve toward equilibrium. The wave equation describes reversible oscillations that persist in time. The Laplace equation describes static equilibrium states with no time dependence at all.
+
+---
+
+## Classification of second-order PDEs
+
+A general linear second-order PDE in two variables has the form:
+
+$$A\,u_{xx} + B\,u_{xy} + C\,u_{yy} + D\,u_x + E\,u_y + F\,u = G$$
+
+The **discriminant** $\Delta = B^2 - 4AC$ classifies its type:
+
+| $\Delta < 0$ | Elliptic | Laplace, Poisson equations |
+| $\Delta = 0$ | Parabolic | Heat equation |
+| $\Delta > 0$ | Hyperbolic | Wave equation |
+
+<!-- STUDENT: The discriminant formula $\Delta = B^2 - 4AC$ will look familiar from the quadratic formula, but the connection is not made explicit and the variables $A$, $B$, $C$ here refer to coefficients of the PDE, not of a quadratic. A new reader needs to be reminded: these are the $A$, $B$, $C$ from the general form displayed just above. The math-prof review also notes that this formula applies only to two-variable PDEs, but the prose doesn't say this. When Exercise 5(c) presents a 3D PDE ($u_{xx}+u_{yy}+u_{zz}=\rho$), a student who has memorised "$\Delta = B^2-4AC$" will try to apply it and get confused. The caveat "for PDEs in two independent variables" needs to appear here, not just in the review comments. -->
+The classification determines which boundary and initial conditions are appropriate and which numerical methods apply. Elliptic equations need boundary conditions on a closed domain; parabolic and hyperbolic equations need initial conditions in time plus boundary conditions in space.
+
+```{ojs}
+//| echo: false
+{
+  // ── OPPORTUNITY 2: Three PDE behaviours side by side ─────────────────────
+  // Panel A: Heat equation (parabolic) — Gaussian bump spreads irreversibly
+  // Panel B: Wave equation (hyperbolic) — bump splits and propagates
+  // Panel C: Laplace equation (elliptic) — static steady state, contour lines
+  const d3 = await require("d3@7");
+
+  const AMBER = "#f59e0b";
+  const BLUE  = "#6b90c4";
+  const GREY  = "#9ca3af";
+  const GREY_F = "#e5e7eb";
+
+  const W = 580, H = 260;
+  const panelW = 170, panelH = 160, gap = 14;
+  const PL = 8, PT = 28;
+
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:640px;";
+
+  // Shared time slider
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex; gap:1rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;";
+  const tLbl = document.createElement("label");
+  tLbl.style.cssText = "font-size:0.88em; color:#374151; display:flex; align-items:center; gap:0.4rem;";
+  tLbl.textContent = "Time t = ";
+  const tDisp = document.createElement("strong");
+  tDisp.style.cssText = "color:" + AMBER + "; min-width:3ch;";
+  tDisp.textContent = "0.00";
+  const tSlider = document.createElement("input");
+  tSlider.type = "range"; tSlider.min = 0; tSlider.max = 200; tSlider.value = 0;
+  tSlider.style.cssText = "width:220px; accent-color:" + AMBER + ";";
+  tLbl.appendChild(tSlider); tLbl.appendChild(tDisp);
+  ctrlRow.appendChild(tLbl);
+  container.appendChild(ctrlRow);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width","100%").style("display","block");
+
+  const L = Math.PI;  // domain [0, π]
+  const N_x = 200;
+  const xs = d3.range(N_x).map(i => i/(N_x-1) * L);
+
+  // ── Panel helper ──────────────────────────────────────────────────────────
+  function makePanel(i, title, subtitle) {
+    const x0 = PL + i*(panelW+gap);
+    const g = svg.append("g").attr("transform", `translate(${x0},${PT})`);
+    g.append("rect").attr("x",0).attr("y",0).attr("width",panelW).attr("height",panelH)
+      .attr("fill","#fafafa").attr("stroke",GREY_F).attr("stroke-width",1).attr("rx",3);
+    g.append("text").attr("x",panelW/2).attr("y",-10).attr("text-anchor","middle")
+      .attr("font-size","10px").attr("fill","#374151").attr("font-weight","600").text(title);
+    g.append("text").attr("x",panelW/2).attr("y",panelH+14).attr("text-anchor","middle")
+      .attr("font-size","9px").attr("fill",GREY).attr("font-style","italic").text(subtitle);
+    return g;
+  }
+
+  const xP = d3.scaleLinear().domain([0, L]).range([6, panelW-6]);
+  const yP = d3.scaleLinear().domain([-0.1, 1.1]).range([panelH-6, 6]);
+
+  // ── Initial condition: Gaussian centred at π/2 ────────────────────────────
+  function gauss0(x) { return Math.exp(-20*(x-L/2)*(x-L/2)); }
+
+  // ── Panel A: Heat equation on [0,π], Dirichlet BCs ───────────────────────
+  // u(x,t) = Σ Bₙ sin(nx) e^{-n²t} ; Bₙ = (2/π) ∫₀^π f(x)sin(nx)dx
+  const gA = makePanel(0, "Heat equation", "spreads irreversibly");
+  // Precompute B_n coefficients of Gaussian (numerically)
+  const N_modes = 25;
+  const Bn_heat = d3.range(1, N_modes+1).map(n => {
+    let s = 0;
+    xs.forEach((x,i) => {
+      const dx = i===0||i===N_x-1 ? 0.5/(N_x-1) : 1/(N_x-1);
+      s += gauss0(x) * Math.sin(n*x) * dx * L;
+    });
+    return 2/L * s;
+  });
+
+  function heatSolution(x, t) {
+    let u = 0;
+    for (let n = 1; n <= N_modes; n++) {
+      u += Bn_heat[n-1] * Math.sin(n*x) * Math.exp(-n*n*t);
+    }
+    return u;
+  }
+
+  // Initial condition trace
+  gA.append("path").attr("fill","none").attr("stroke",GREY).attr("stroke-width",1)
+    .attr("stroke-dasharray","3,2")
+    .datum(xs.map(x=>[xP(x),yP(gauss0(x))])).attr("d",d3.line().x(d=>d[0]).y(d=>d[1]));
+  gA.append("line").attr("x1",6).attr("x2",panelW-6).attr("y1",yP(0)).attr("y2",yP(0))
+    .attr("stroke",GREY_F).attr("stroke-width",0.8);
+  [0,1].forEach(v=>{ gA.append("text").attr("x",2).attr("y",yP(v)).attr("font-size","7.5px").attr("fill",GREY).attr("text-anchor","end").text(v); });
+  const heatPath = gA.append("path").attr("fill","none").attr("stroke",AMBER).attr("stroke-width",2);
+
+  // ── Panel B: Wave equation d'Alembert (u(x,t) = ½[f(x+ct)+f(x-ct)]) ─────
+  // c = 1, f defined on ℝ by odd periodic extension of Gaussian
+  const gB = makePanel(1, "Wave equation", "propagates without decay");
+  gB.append("path").attr("fill","none").attr("stroke",GREY).attr("stroke-width",1)
+    .attr("stroke-dasharray","3,2")
+    .datum(xs.map(x=>[xP(x),yP(gauss0(x))])).attr("d",d3.line().x(d=>d[0]).y(d=>d[1]));
+  gB.append("line").attr("x1",6).attr("x2",panelW-6).attr("y1",yP(0)).attr("y2",yP(0))
+    .attr("stroke",GREY_F).attr("stroke-width",0.8);
+  [0,1].forEach(v=>{ gB.append("text").attr("x",2).attr("y",yP(v)).attr("font-size","7.5px").attr("fill",GREY).attr("text-anchor","end").text(v); });
+
+  // Odd periodic extension for D'Alembert
+  function periodicOdd(x) {
+    // Reduce to [-π, π] via odd periodic extension of [0,π]
+    let xn = ((x % (2*L)) + 2*L) % (2*L);  // in [0, 2L)
+    if (xn > L) { xn = 2*L - xn; return -gauss0(xn); }
+    return gauss0(xn);
+  }
+  function waveSolution(x, t) {
+    return 0.5 * (periodicOdd(x + t) + periodicOdd(x - t));
+  }
+  const wavePath = gB.append("path").attr("fill","none").attr("stroke",AMBER).attr("stroke-width",2);
+
+  // ── Panel C: Laplace equation (static) — contour lines of sin(πx/L)sinh(π(1-y)/L)/sinh(π/L)
+  const gC = makePanel(2, "Laplace equation", "steady state only");
+
+  // Render Laplace solution on a grid (x ∈ [0,π], y ∈ [0,1]) as filled contours
+  const xPc = d3.scaleLinear().domain([0,L]).range([6,panelW-6]);
+  const yPc = d3.scaleLinear().domain([0,1]).range([panelH-6,6]);
+
+  function laplace(x, y) {
+    // u = sum_n Cn sin(nπx/L) sinh(nπ(1-y)/L) / sinh(nπ/L)
+    // Use n=1 only (boundary: sin(x) on y=0)
+    return Math.sin(x) * Math.sinh(Math.PI*(1-y)/L) / Math.sinh(Math.PI/L);
+  }
+
+  // Draw coloured heatmap
+  const lN = 30, lM = 30;
+  for (let i = 0; i < lN; i++) {
+    for (let j = 0; j < lM; j++) {
+      const x0 = i/lN*L, x1 = (i+1)/lN*L;
+      const y0 = j/lM, y1 = (j+1)/lM;
+      const v = laplace((x0+x1)/2, (y0+y1)/2);
+      const t = Math.max(0, Math.min(1, v));
+      const r = Math.round(255 - t*180);
+      const g2 = Math.round(220 - t*100);
+      const b2 = Math.round(180 - t*120);
+      gC.append("rect")
+        .attr("x",xPc(x0)).attr("y",yPc(y1))
+        .attr("width",xPc(x1)-xPc(x0)+0.5).attr("height",yPc(y0)-yPc(y1)+0.5)
+        .attr("fill",`rgb(${r},${g2},${b2})`);
+    }
+  }
+
+  // Contour lines
+  const contourLevels = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7];
+  contourLevels.forEach(lv => {
+    // Draw iso-x line: y where u(π/2, y) = lv → sinh(π(1-y)/L) = lv*sinh(π/L)
+    const target = lv * Math.sinh(Math.PI/L);
+    const yIso = 1 - Math.log(target + Math.sqrt(target*target+1)) / (Math.PI/L);
+    if (yIso >= 0 && yIso <= 1) {
+      const pts2 = d3.range(20).map(i => {
+        const x_ = i/19*L;
+        const v_ = laplace(x_, yIso + 0.001);
+        // find y where u(x_,y) = lv by simple search
+        let yy = yIso;
+        for (let k = 0; k < 20; k++) {
+          const uu = laplace(x_, yy);
+          const duyy = -Math.sin(x_) * Math.PI/L * Math.cosh(Math.PI*(1-yy)/L) / Math.sinh(Math.PI/L);
+          if (Math.abs(duyy) > 1e-8) yy -= (uu - lv) / duyy;
+          yy = Math.max(0, Math.min(1, yy));
+        }
+        return [xPc(x_), yPc(yy)];
+      });
+      gC.append("path").attr("fill","none").attr("stroke","rgba(0,0,0,0.25)").attr("stroke-width",0.8)
+        .datum(pts2).attr("d",d3.line().x(d=>d[0]).y(d=>d[1]));
+    }
+  });
+
+  // Boundary labels
+  gC.append("text").attr("x",panelW/2).attr("y",panelH).attr("text-anchor","middle")
+    .attr("font-size","7.5px").attr("fill","#b45309").text("u = sin(x) (hot)");
+  gC.append("text").attr("x",panelW/2).attr("y",12).attr("text-anchor","middle")
+    .attr("font-size","7.5px").attr("fill",GREY).text("u = 0 (top/sides)");
+
+  // ── Time-slider update ────────────────────────────────────────────────────
+  function update3() {
+    const t = +tSlider.value / 200 * 2.0;
+    tDisp.textContent = t.toFixed(2);
+
+    heatPath.datum(xs.map(x=>[xP(x),yP(Math.max(0,heatSolution(x,t)))])).attr("d",d3.line().x(d=>d[0]).y(d=>d[1]));
+    wavePath.datum(xs.map(x=>[xP(x),yP(Math.max(-0.05,waveSolution(x,t)))])).attr("d",d3.line().x(d=>d[0]).y(d=>d[1]));
+  }
+
+  tSlider.oninput = update3;
+  update3();
+
+  // Note for Laplace
+  svg.append("text").attr("x",PL+2*(panelW+gap)+panelW/2).attr("y",PT+panelH+28)
+    .attr("text-anchor","middle").attr("font-size","8.5px").attr("fill",BLUE).attr("font-style","italic")
+    .text("(no time slider — equilibrium only)");
+
+  // Legend
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1.2rem; font-size:0.78em; margin-top:0.2rem; flex-wrap:wrap;";
+  [["─── Solution at time t", AMBER], ["--- Initial condition", GREY]]
+    .forEach(([lab, col]) => {
+      const s = document.createElement("span"); s.style.color = col; s.textContent = lab;
+      legend.appendChild(s);
+    });
+  container.appendChild(svg.node());
+  container.appendChild(legend);
+  return container;
+}
+```
+
+---
+
+## Separation of variables
+
+**Separation of variables** is the principal analytic method for solving PDEs on regular domains. The key assumption: the solution factors into a product of functions of each individual variable:
+
+$$u(x,t) = X(x)\,T(t)$$
+
+<!-- STUDENT: "Each side can be written as a function of only one variable. Since one side depends only on $x$ and the other only on $t$, both sides must equal the same constant." This is the logical core of separation of variables — that a function of $x$ alone can equal a function of $t$ alone only if both are constant — but it is stated as a consequence without the reasoning. A student who has not seen this argument before needs one sentence of logic: "A function of $x$ alone cannot change as $t$ changes, and a function of $t$ alone cannot change as $x$ changes, so the only way they can be equal for all $x$ and $t$ is if both are the same constant." This is the single most important conceptual step and it is easy to miss. -->
+Substituting into the PDE, each side can be written as a function of only one variable. A function of $x$ alone cannot change as $t$ changes, and a function of $t$ alone cannot change as $x$ changes; the only way two such quantities can be equal for every $x$ and every $t$ is if both are the same constant. Call it the **separation constant** $-\lambda$.
+
+This splits the PDE into two ODEs, one in $x$ (the **eigenvalue problem**) and one in $t$. The boundary conditions restrict $\lambda$ to a discrete set of **eigenvalues** $\lambda_n$, each associated with an **eigenfunction** $X_n(x)$. The general solution is a superposition of all eigenfunction solutions:
+
+$$u(x,t) = \sum_{n=1}^{\infty} X_n(x)\,T_n(t)$$
+
+with coefficients determined by the initial conditions via Fourier series.
+
+---
+
+## The heat equation
+
+### Derivation
+
+Consider a thin rod of length $L$, thermally insulated on its lateral surface so that heat flows only along its length. Let $u(x,t)$ be the temperature at position $x$ and time $t$.
+
+Fourier's law of heat conduction states that the heat flux $q$ (energy per unit area per unit time) is proportional to the temperature gradient: $q = -k\,u_x$, where $k > 0$ is the thermal conductivity.
+
+Conservation of energy in a small element $[x, x+\Delta x]$ gives:
+
+$$\rho c\,\Delta x\,u_t = -\Delta x\,q_x = k\,\Delta x\,u_{xx}$$
+
+Dividing by $\rho c\,\Delta x$ gives the **heat equation**:
+
+$$u_t = \alpha^2\,u_{xx}, \qquad \alpha^2 = \frac{k}{\rho c}$$
+
+where $\rho$ is density, $c$ is specific heat capacity, and $\alpha$ is the **thermal diffusivity**.
+
+### Boundary and initial conditions
+
+For the problem to be well-posed, we need:
+
+- **Initial condition (IC)**: $u(x, 0) = f(x)$ for $0 < x < L$ (the initial temperature profile)
+- **Boundary conditions (BCs)**: two conditions at the ends.
+
+Common boundary conditions:
+- **Dirichlet** (fixed temperature): $u(0,t) = u(L,t) = 0$
+- **Neumann** (insulated ends): $u_x(0,t) = u_x(L,t) = 0$
+
+### Solution by separation of variables
+
+Assume $u(x,t) = X(x)T(t)$. Substituting into $u_t = \alpha^2 u_{xx}$:
+
+$$X\,T' = \alpha^2\,X''\,T \implies \frac{T'}{\alpha^2 T} = \frac{X''}{X} = -\lambda$$
+
+The separation constant is written as $-\lambda$ (the negative sign is chosen so that $\lambda > 0$ gives physically decaying solutions).
+
+<!-- STUDENT: The sign convention for $\lambda$ — writing $-\lambda$ rather than $\lambda$ — is a choice that makes the resulting ODE come out as $X'' + \lambda X = 0$ with positive $\lambda$. This is standard but a student will wonder: what goes wrong if I call the constant $\lambda$ without the negative sign? A one-sentence note ("if we called it $+\lambda$, we would need $\lambda < 0$ for decaying solutions — the same physics, just a notational choice") would prevent the reader from feeling this is arbitrary or that they have to memorise a sign. -->
+
+**Spatial ODE** with Dirichlet BCs $X(0) = X(L) = 0$:
+
+$$X'' + \lambda X = 0, \quad X(0) = 0, \quad X(L) = 0$$
+
+<!-- STUDENT: The step from the ODE $X'' + \lambda X = 0$ to "the only nontrivial solutions occur when $\lambda = n^2\pi^2/L^2$" is the eigenvalue problem — but the reasoning is not shown. Why can't $\lambda \leq 0$? (Because $\lambda < 0$ gives exponentials that can't satisfy both $X(0) = X(L) = 0$ unless $X \equiv 0$; $\lambda = 0$ gives $X = cx$ which also forces $X \equiv 0$.) This case analysis is the kind of step that an ODE course would work through, but a student who hasn't recently done boundary-value problems may not remember it. A two-sentence summary of why $\lambda$ must be positive and of the form $n^2\pi^2/L^2$ — or a reference to the ODE chapter — would prevent a large "where did this come from?" stumble. -->
+The cases $\lambda \leq 0$ produce only the trivial solution: $\lambda = 0$ gives $X'' = 0$ so $X = cx$, which satisfies $X(0) = 0$ only if $c = 0$; $\lambda < 0$ gives real exponential solutions $e^{\pm\sqrt{-\lambda}\,x}$ that cannot satisfy both boundary conditions simultaneously unless $X \equiv 0$. Only $\lambda > 0$ gives oscillatory solutions $\sin(\sqrt{\lambda}\,x)$ that can vanish at both endpoints. Imposing $X(L) = \sin(\sqrt{\lambda}\,L) = 0$ then forces $\sqrt{\lambda}\,L = n\pi$, so $\lambda = \lambda_n = n^2\pi^2/L^2$ for $n = 1, 2, 3, \ldots$, giving:
+
+$$X_n(x) = \sin\!\left(\frac{n\pi x}{L}\right)$$
+
+**Temporal ODE** for each $\lambda_n$:
+
+$$T_n' = -\alpha^2\lambda_n\,T_n \implies T_n(t) = e^{-\alpha^2 n^2\pi^2 t/L^2}$$
+
+**General solution:**
+
+$$u(x,t) = \sum_{n=1}^{\infty} B_n\,\sin\!\left(\frac{n\pi x}{L}\right)\,e^{-\alpha^2 n^2\pi^2 t/L^2}$$
+
+**Applying the initial condition** $u(x,0) = f(x)$:
+
+$$f(x) = \sum_{n=1}^{\infty} B_n\,\sin\!\left(\frac{n\pi x}{L}\right)$$
+
+This is the Fourier sine series of $f$ on $[0, L]$. Therefore:
+
+$$B_n = \frac{2}{L}\int_0^L f(x)\,\sin\!\left(\frac{n\pi x}{L}\right)dx$$
+
+**Physical interpretation.** Each term $B_n \sin(n\pi x/L) e^{-\alpha^2 n^2\pi^2 t/L^2}$ is a **heat mode**: a spatial pattern (the $n$-th Fourier sine mode) that decays exponentially at rate $\alpha^2 n^2\pi^2/L^2$. Higher modes (larger $n$, more oscillations in space) decay faster — by a factor of $n^2$. Sharp spatial features smooth out quickly; broad features persist.
+
+<!-- VIZ: Heat equation evolution — a rod of length π with initial temperature f(x) = sin(x) + 0.5sin(3x). Slider for time t from 0 to 2 (thermal diffusivity α = 1). SVG shows the temperature profile at the current time in orange, the initial profile in grey. As t increases, the n=3 mode decays 9× faster than the n=1 mode — the profile becomes increasingly sinusoidal. Label the two contributions on a small legend. -->
+
+---
+
+## The wave equation
+
+### Setup
+
+A flexible string stretched between $x = 0$ and $x = L$ is displaced and released. Let $u(x,t)$ be the transverse displacement. Newton's second law applied to a small element yields the **wave equation**:
+
+$$u_{tt} = c^2\,u_{xx}, \qquad c = \sqrt{\frac{T}{\mu}}$$
+
+where $T$ is the string tension and $\mu$ is the linear mass density (mass per unit length, kg/m). The constant $c$ is the wave speed.
+
+Unlike the heat equation, the wave equation is second-order in time and requires **two** initial conditions:
+- $u(x, 0) = f(x)$ (initial displacement)
+- $u_t(x, 0) = g(x)$ (initial velocity)
+
+### Solution by separation of variables
+
+Assume $u(x,t) = X(x)T(t)$ with fixed-end BCs $u(0,t) = u(L,t) = 0$. The spatial problem is identical to the heat equation:
+
+$$\lambda_n = \frac{n^2\pi^2}{L^2}, \qquad X_n(x) = \sin\!\left(\frac{n\pi x}{L}\right)$$
+
+The temporal ODE is now:
+
+$$T_n'' = -c^2\lambda_n\,T_n \implies T_n(t) = A_n\cos\!\left(\frac{n\pi c\,t}{L}\right) + B_n\sin\!\left(\frac{n\pi c\,t}{L}\right)$$
+
+**General solution:**
+
+$$u(x,t) = \sum_{n=1}^{\infty}\sin\!\left(\frac{n\pi x}{L}\right)\left[A_n\cos\!\left(\frac{n\pi c\,t}{L}\right) + B_n\sin\!\left(\frac{n\pi c\,t}{L}\right)\right]$$
+
+**Applying initial conditions:**
+
+At $t = 0$: $u(x,0) = \sum A_n\sin(n\pi x/L) = f(x)$ → Fourier sine coefficients of $f$.
+
+Differentiating: $u_t(x,0) = \sum B_n(n\pi c/L)\sin(n\pi x/L) = g(x)$ → Fourier sine coefficients of $g$, divided by $n\pi c/L$.
+
+### Standing waves and natural frequencies
+
+Each term $\sin(n\pi x/L)\cos(n\pi ct/L)$ is a **standing wave**: a spatial pattern that oscillates in time at a fixed frequency. The $n$-th mode oscillates at angular frequency $\omega_n = n\pi c/L$ (frequency $f_n = nc/(2L)$).
+
+These are the **natural frequencies** (harmonics) of the string. A guitar string of length $L$, tension $T$, and linear density $\mu$ (so $c = \sqrt{T/\mu}$) produces:
+- Fundamental: $f_1 = c/(2L)$
+- First overtone: $f_2 = c/L = 2f_1$
+- $n$-th harmonic: $f_n = nf_1$
+
+The ratio of overtones is always integer multiples of the fundamental — this is why stringed instruments produce musical notes rather than noise.
+
+<!-- VIZ: Standing wave modes — dropdown for mode number n (1 to 5). SVG shows the nth standing wave sin(nπx/L)cos(nπct/L) animated at its natural frequency. A static plot below shows the spatial shape sin(nπx/L). Label the frequency fₙ = nc/(2L) with c = 1, L = π. -->
+
+### D'Alembert's solution
+
+There is an elegant alternative form of the wave equation solution. D'Alembert's solution:
+
+$$u(x,t) = \frac{1}{2}\left[f(x+ct) + f(x-ct)\right] + \frac{1}{2c}\int_{x-ct}^{x+ct} g(s)\,ds$$
+
+<!-- STUDENT: D'Alembert's solution is presented without any indication of how it was obtained — it just appears. Even a one-sentence framing ("this can be derived by changing variables to $\xi = x-ct$, $\eta = x+ct$, which converts the wave equation to $\partial^2 u / \partial\xi\partial\eta = 0$") would tell the reader this isn't magic. As presented, it reads like a second formula for the same answer that the student must simply accept. The travelling-wave interpretation ("two pulses moving in opposite directions") is excellent and concrete — but the origin of the formula needs a one-sentence anchor. -->
+This expresses the solution as two travelling waves — $f(x-ct)$ moving right at speed $c$, and $f(x+ct)$ moving left at speed $c$. For the initial velocity zero ($g = 0$), the initial displacement simply splits in two and propagates in opposite directions.
+
+---
+
+## The Laplace equation
+
+### Setup
+
+The **Laplace equation** $\nabla^2 u = u_{xx} + u_{yy} = 0$ describes **steady-state** distributions: temperature in a solid after all transients have died away, electrostatic potential in a charge-free region, fluid velocity potential for irrotational flow.
+
+A function satisfying the Laplace equation is **harmonic**. Key property: a harmonic function attains its maximum and minimum values on the boundary, never in the interior. This means the steady-state temperature inside a region is always between the extreme boundary temperatures — physically obvious, mathematically provable.
+
+### Dirichlet problem in a rectangle
+
+Find $u(x,y)$ in $0 < x < a$, $0 < y < b$, satisfying:
+
+$$u_{xx} + u_{yy} = 0$$
+
+with boundary conditions $u(0,y) = u(a,y) = u(x,b) = 0$ and $u(x,0) = f(x)$.
+
+Assume $u(x,y) = X(x)Y(y)$:
+
+$$\frac{X''}{X} = -\frac{Y''}{Y} = -\lambda$$
+
+With $X(0) = X(a) = 0$: eigenvalues $\lambda_n = n^2\pi^2/a^2$, eigenfunctions $X_n = \sin(n\pi x/a)$.
+
+The $Y$ equation becomes $Y'' - \lambda_n Y = 0$ with $Y(b) = 0$. Solutions:
+
+$$Y_n(y) = \sinh\!\left(\frac{n\pi(b-y)}{a}\right)$$
+
+(sinh chosen to satisfy $Y_n(b) = 0$; $Y_n(0) = \sinh(n\pi b/a) \neq 0$).
+
+<!-- STUDENT: The switch to hyperbolic sinh here — as opposed to the sine and cosine of the heat and wave equations — happens without explanation. An engineering student new to PDEs will wonder: why does the Laplace equation produce sinh where the other equations produced sin? A one-sentence explanation of why the $Y$ equation has the opposite sign ($Y'' - \lambda_n Y = 0$ rather than $Y'' + \lambda_n Y = 0$) and therefore produces real exponential/hyperbolic solutions rather than oscillatory ones would make this feel like insight rather than a surprising formula to memorise. -->
+
+**General solution:**
+
+$$u(x,y) = \sum_{n=1}^{\infty} C_n\,\sin\!\left(\frac{n\pi x}{a}\right)\sinh\!\left(\frac{n\pi(b-y)}{a}\right)$$
+
+Applying $u(x,0) = f(x)$:
+
+$$C_n = \frac{2}{a\,\sinh(n\pi b/a)}\int_0^a f(x)\,\sin\!\left(\frac{n\pi x}{a}\right)dx$$
+
+---
+
+## Summary: the method in four steps
+
+Regardless of which classical PDE applies, the separation-of-variables procedure follows the same steps:
+
+1. **Assume** $u = X(x)T(t)$ (or $X(x)Y(y)$ for the Laplace equation). Substitute and separate.
+2. **Solve the spatial eigenvalue problem** with the given boundary conditions. This determines the eigenvalues $\lambda_n$ and eigenfunctions $X_n$.
+3. **Solve the temporal (or second spatial) ODE** for each $\lambda_n$, giving $T_n(t)$.
+4. **Apply initial conditions**: express $f(x)$ as a Fourier series in the eigenfunctions $\{X_n\}$ to determine the coefficients.
+
+The Fourier series computation in step 4 is identical to what was developed in the previous two chapters. PDEs give the Fourier series its deepest physical motivation.
+
+---
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+---
+
+### Exercise 1: Heat equation — single-mode initial condition
+
+Solve $u_t = 4u_{xx}$ on $0 < x < \pi$, $t > 0$, with $u(0,t) = u(\pi,t) = 0$ and $u(x,0) = 3\sin(2x)$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Identify parameters",
+    eq: "L = \\pi, \\quad \\alpha^2 = 4, \\quad f(x) = 3\\sin(2x)",
+    note: "The initial condition is already a single Fourier sine mode."
+  },
+  {
+    op: "Write the general solution",
+    eq: "u(x,t) = \\sum_{n=1}^{\\infty} B_n\\,\\sin(nx)\\,e^{-4n^2 t}"
+  },
+  {
+    op: "Match n = 2 mode: B₂ = 3, all other Bₙ = 0",
+    eq: "u(x,0) = B_2\\sin(2x) = 3\\sin(2x) \\implies B_2 = 3"
+  },
+  {
+    op: "Write the solution",
+    eq: "u(x,t) = 3\\sin(2x)\\,e^{-16t}"
+  },
+  {
+    op: "Verify: check u_t = 4u_xx",
+    eq: "u_t = -48\\sin(2x)\\,e^{-16t}, \\quad 4u_{xx} = 4\\cdot(-4)\\cdot 3\\sin(2x)\\,e^{-16t} = -48\\sin(2x)\\,e^{-16t} \\checkmark",
+    note: "The spatial mode sin(2x) stays fixed in shape; it only decays in amplitude."
+  }
+])
+```
+
+---
+
+### Exercise 2: Heat equation — arbitrary initial condition
+
+Solve $u_t = u_{xx}$ on $0 < x < \pi$, $t > 0$, with $u(0,t) = u(\pi,t) = 0$ and $u(x,0) = x(\pi - x)$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write the solution form and coefficient formula",
+    eq: "u(x,t) = \\sum_{n=1}^{\\infty} B_n\\sin(nx)\\,e^{-n^2 t}, \\quad B_n = \\frac{2}{\\pi}\\int_0^\\pi x(\\pi-x)\\sin(nx)\\,dx"
+  },
+  {
+    op: "Integrate by parts twice",
+    eq: "\\int_0^\\pi x(\\pi-x)\\sin(nx)\\,dx = \\frac{2}{n^3}\\bigl[1-(-1)^n\\bigr]",
+    note: "Integrating x(π−x)sin(nx) by parts: each differentiation of x(π−x) reduces the polynomial degree."
+  },
+  {
+    op: "Compute Bₙ",
+    eq: "B_n = \\frac{2}{\\pi}\\cdot\\frac{2}{n^3}\\bigl[1-(-1)^n\\bigr] = \\frac{4}{\\pi n^3}\\bigl[1-(-1)^n\\bigr]",
+    note: "Bₙ = 8/(πn³) for odd n; Bₙ = 0 for even n."
+  },
+  {
+    op: "Write the solution",
+    eq: "u(x,t) = \\frac{8}{\\pi}\\sum_{k=0}^{\\infty}\\frac{\\sin((2k+1)x)}{(2k+1)^3}\\,e^{-(2k+1)^2 t}"
+  },
+  {
+    op: "Interpret: check which mode dominates at large t",
+    eq: "\\text{As } t\\to\\infty: \\quad u \\approx \\frac{8}{\\pi}\\sin(x)\\,e^{-t}",
+    note: "The n=1 mode decays slowest (rate 1). At t = 2, the n=3 term has decayed to e^{−9}/e^{−1} ≈ 0.03 of its relative magnitude — essentially gone."
+  }
+])
+```
+
+---
+
+### Exercise 3: Wave equation — plucked string
+
+A string of length $L = \pi$ and wave speed $c = 2$ is plucked to a triangular initial shape $f(x) = \frac{2}{\pi}\min(x, \pi-x)$ and released from rest ($g(x) = 0$). Write the solution.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write the general solution (g = 0 means all Bₙ = 0)",
+    eq: "u(x,t) = \\sum_{n=1}^{\\infty} A_n\\sin(nx)\\cos(2nt)",
+    note: "With g(x) = 0, the Bₙ sin terms vanish."
+  },
+  {
+    op: "Compute Aₙ = Fourier sine coefficients of f(x) = (2/π)min(x, π−x)",
+    eq: "A_n = \\frac{2}{\\pi}\\int_0^\\pi f(x)\\sin(nx)\\,dx = \\frac{4}{\\pi}\\int_0^{\\pi/2}\\frac{2x}{\\pi}\\sin(nx)\\,dx + \\cdots"
+  },
+  {
+    op: "By symmetry of the triangle, only odd n survive",
+    eq: "A_n = \\frac{8}{n^2\\pi^2}\\sin\\!\\left(\\frac{n\\pi}{2}\\right) = \\begin{cases} (-1)^k\\dfrac{8}{(2k+1)^2\\pi^2} & n = 2k+1 \\\\ 0 & n \\text{ even} \\end{cases}",
+    note: "The even modes are absent because the triangle is symmetric about x = π/2 — only odd sine modes are non-zero."
+  },
+  {
+    op: "Write the first three terms",
+    eq: "u(x,t) \\approx \\frac{8}{\\pi^2}\\left[\\sin x\\cos 2t - \\frac{\\sin 3x\\cos 6t}{9} + \\frac{\\sin 5x\\cos 10t}{25} - \\cdots\\right]"
+  },
+  {
+    op: "Interpret: D'Alembert form",
+    eq: "u(x,t) = \\tfrac{1}{2}\\bigl[f(x+2t) + f(x-2t)\\bigr]",
+    note: "The triangular initial displacement splits into two half-height triangles travelling in opposite directions — visible as two pulses bouncing back and forth."
+  }
+])
+```
+
+---
+
+### Exercise 4: Laplace equation — steady-state temperature
+
+Find the steady-state temperature $u(x,y)$ in the rectangle $0 < x < \pi$, $0 < y < 1$, with $u = 0$ on three sides and $u(x,0) = \sin(x) + \frac{1}{3}\sin(3x)$ on the bottom.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write the general solution with Y(1) = 0",
+    eq: "u(x,y) = \\sum_{n=1}^{\\infty} C_n\\sin(nx)\\sinh(n(1-y))",
+    note: "sinh(n(1−y)) satisfies the top BC: sinh(n(1−1)) = sinh(0) = 0."
+  },
+  {
+    op: "Apply bottom BC u(x,0) = sin(x) + (1/3)sin(3x)",
+    eq: "\\sum_{n=1}^{\\infty} C_n\\sinh(n)\\sin(nx) = \\sin(x) + \\tfrac{1}{3}\\sin(3x)"
+  },
+  {
+    op: "Match terms: n = 1 and n = 3 only",
+    eq: "C_1\\sinh(1) = 1 \\implies C_1 = \\frac{1}{\\sinh 1} \\approx 0.851"
+  },
+  {
+    op: "Match n = 3 term",
+    eq: "C_3\\sinh(3) = \\frac{1}{3} \\implies C_3 = \\frac{1}{3\\sinh 3} \\approx 0.033",
+    note: "sinh(3) ≈ 10.02, so the n=3 term contributes much less near y = 0 and decays faster in y."
+  },
+  {
+    op: "Write the exact solution",
+    eq: "u(x,y) = \\frac{\\sin x\\,\\sinh(1-y)}{\\sinh 1} + \\frac{\\sin 3x\\,\\sinh(3(1-y))}{3\\sinh 3}"
+  },
+  {
+    op: "Verify boundary conditions",
+    eq: "u(x,0) = \\frac{\\sin x}{1} + \\frac{\\sin 3x}{3} \\checkmark \\qquad u(x,1) = 0 \\checkmark \\qquad u(0,y) = u(\\pi,y) = 0 \\checkmark"
+  }
+])
+```
+
+---
+
+### Exercise 5: Classify these PDEs
+
+Classify each of the following equations as elliptic, parabolic, or hyperbolic. Identify a physical situation each could model.
+
+**(a)** $u_{xx} + 4u_{xy} + 4u_{yy} = 0$ **(b)** $3u_{xx} - u_{yy} + u_x = 0$ **(c)** $u_{xx} + u_{yy} + u_{zz} = \rho$
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Recall: discriminant Δ = B² − 4AC",
+    eq: "\\Delta < 0 \\Rightarrow \\text{elliptic}, \\quad \\Delta = 0 \\Rightarrow \\text{parabolic}, \\quad \\Delta > 0 \\Rightarrow \\text{hyperbolic}"
+  },
+  {
+    op: "(a): A=1, B=4, C=4 → Δ = 16 − 16 = 0",
+    eq: "\\text{Parabolic.}",
+    note: "Could model heat diffusion or a diffusion process in a coordinate-rotated frame."
+  },
+  {
+    op: "(b): A=3, B=0, C=−1 → Δ = 0 − 4(3)(−1) = 12 > 0",
+    eq: "\\text{Hyperbolic.}",
+    note: "Resembles the wave equation; could model wave propagation with a drift term."
+  },
+  {
+    op: "(c): 3D Poisson equation u_xx + u_yy + u_zz = ρ",
+    eq: "\\text{Elliptic (all eigenvalues of the coefficient matrix are positive and same sign).}",
+    note: "The 2D discriminant Δ = B²−4AC does not apply to 3D PDEs. Classification in 3D uses the eigenvalues of the leading-coefficient matrix; for the Laplacian all three are +1, so the equation is elliptic. Models electrostatics, gravitational potential, or steady-state heat in 3D."
+  }
+])
+```
+
+---
+
+### Exercise 6: Non-homogeneous boundary conditions
+
+When the boundary conditions are non-zero — as when one end of a rod is held at a fixed nonzero temperature — separation of variables cannot be applied directly because the eigenfunctions $\sin(n\pi x/L)$ all vanish at the boundaries. The fix is to subtract a **steady-state solution** $v(x)$ that satisfies the boundary conditions and $v_{xx} = 0$, so that the remainder $w = u - v$ has homogeneous boundary conditions and the standard series method applies. The final answer is $u = v + w$: steady state plus decaying transient.
+
+Solve $u_t = u_{xx}$ on $0 < x < 1$, $t > 0$, with $u(0,t) = 0$, $u(1,t) = 1$, and $u(x,0) = 0$.
+
+*(Steady-state plus transient method.)*
+
+<!-- STUDENT: Exercise 6 introduces a method — "steady-state plus transient" — that has not been named or explained in the chapter body. The method (subtract the steady-state solution to get homogeneous BCs) is demonstrated step-by-step in the stepper, but a student trying to decide whether to attempt this exercise will not know what "steady-state plus transient" means before they click "Next step." A single sentence before the exercise prompt ("when the boundary conditions are non-zero, subtract a steady-state solution $v(x)$ satisfying the BCs and $v_{xx} = 0$; the remainder $w = u - v$ has homogeneous BCs") would let the reader understand the structure before being walked through it. -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Find the steady-state solution v(x)",
+    eq: "v_{xx} = 0, \\quad v(0) = 0, \\quad v(1) = 1 \\implies v(x) = x"
+  },
+  {
+    op: "Let w(x,t) = u(x,t) − v(x) = u(x,t) − x",
+    eq: "w_t = u_t = u_{xx} = (w+x)_{xx} = w_{xx}",
+    note: "w satisfies the same heat equation, but now with homogeneous BCs."
+  },
+  {
+    op: "Boundary and initial conditions for w",
+    eq: "w(0,t) = 0, \\quad w(1,t) = 0, \\quad w(x,0) = u(x,0) - x = -x"
+  },
+  {
+    op: "General solution for w with Fourier sine coefficients of −x",
+    eq: "B_n = 2\\int_0^1 (-x)\\sin(n\\pi x)\\,dx = \\frac{2(-1)^n}{n\\pi}",
+    note: "Using the standard result ∫₀¹ x sin(nπx) dx = (−1)^{n+1}/(nπ)."
+  },
+  {
+    op: "Assemble the full solution u = v + w",
+    eq: "u(x,t) = x + \\frac{2}{\\pi}\\sum_{n=1}^{\\infty}\\frac{(-1)^n}{n}\\sin(n\\pi x)\\,e^{-n^2\\pi^2 t}",
+    note: "At large t, the transient (w) decays and u approaches the steady state x — a rod uniformly heated from one end."
+  }
+])
+```
+
+<!-- STUDENT REVIEW
+Reviewed: 2026-04-01
+Layer: engineering
+
+OVERALL VERDICT: READABLE WITH FIXES
+
+ISSUES FOUND
+
+1. PDE classification table: $\Delta = B^2-4AC$ stated without the caveat that this formula is
+   for two-variable PDEs only. Exercise 5(c) is a 3D PDE — a student who applies the formula
+   there will get confused. The math-prof and engineer-prof reviews both flag this; it needs
+   to be fixed in the prose, not just noted in a review comment.
+
+2. Separation of variables — the fundamental logical step ("a function of $x$ alone cannot
+   equal a function of $t$ alone unless both are constant") is stated as a fact but the
+   reasoning is not given. This is the single most important conceptual step and the most
+   common source of confusion in this topic at this layer. One sentence of logical unpacking is
+   needed.
+
+3. Sign convention for $\lambda$ ($-\lambda$ chosen so $\lambda>0$ gives decaying solutions):
+   the reader will wonder what breaks if they call the constant something else. One sentence of
+   explanation ("this is a notational choice, not a constraint") would prevent a blind memorisation
+   of the sign.
+
+4. Spatial eigenvalue problem: the jump from $X''+\lambda X = 0, X(0)=X(L)=0$ to
+   $\lambda_n = n^2\pi^2/L^2$ is not explained. The case analysis ruling out $\lambda \leq 0$
+   is not shown. This will stop a careful student dead.
+
+5. Laplace equation / sinh: the switch from sin/cos (heat, wave) to sinh (Laplace) is unexplained.
+   The reason — the $Y$ equation has a sign flip producing real-exponential rather than oscillatory
+   solutions — is one sentence and would make the difference between insight and memorisation.
+
+6. D'Alembert's solution presented without any derivation hint or origin story. Reads like a
+   second formula appearing from nowhere. One sentence on the change-of-variables idea would
+   anchor it.
+
+7. Exercise 6: "steady-state plus transient method" is not introduced in the chapter body. A reader
+   encountering this exercise cannot know the strategy before opening the stepper. A brief setup
+   sentence before the exercise prompt is needed.
+
+EXERCISE CALIBRATION
+   Exercise 1 (single-mode IC): well-matched — tests pattern recognition, not integration. Good.
+   Exercise 2 (arbitrary IC, x(π−x)): appropriately harder; the IBP is non-trivial but the
+   stepper's "integrate by parts twice" note is thin — what are the two steps? Adequate but tight.
+   Exercise 3 (plucked string): good physical context; the symmetry argument for odd modes is
+   the interesting bit and the stepper covers it.
+   Exercise 4 (Laplace, two-mode BC): well-calibrated; clean finite answer, good use of sinh.
+   Exercise 5 (classification): tests the discriminant formula; part (c) is correctly flagged as
+   3D — but the stepper explanation for (c) uses "eigenvalues of the coefficient matrix" without
+   any prior introduction. This feels significantly harder than parts (a) and (b).
+   Exercise 6 (non-homogeneous BCs): introduces a new method not in the body text. Should be
+   set up more explicitly as a worked example or the method should appear in the body.
+   Context variety: heat (2 exercises), wave, Laplace, classification, non-homogeneous — good range.
+
+WAYFINDING
+   The opens_to field is empty (topology has no outgoing edges from pdes currently). There is
+   no forward-pointer prose in the chapter. The summary section ("the method in four steps") is
+   an effective recap but closes without any "where next." A sentence noting that the numerical
+   methods chapter picks up where analytic methods leave off would complete the arc.
+-->
+
+<!-- MATH-PROF REVIEW
+Reviewed: 2026-04-01
+
+FIXES MADE
+1. Front matter: `stroud_programme` changed from `null` to `"Programme 21"` to match topology.yml entry for
+   the `pdes` node (kreyszig: "Ch 12", stroud: "Programme 21").
+2. Exercise 5(c): Replaced incorrect application of the 2D discriminant formula Δ = B²−4AC to a 3D PDE
+   with the correct statement: classification in 3D uses eigenvalues of the leading-coefficient matrix.
+   The conclusion (elliptic) was always correct; only the justification was wrong.
+
+VERIFIED CORRECT
+- Heat equation derivation: Fourier's law + energy conservation → u_t = (k/ρc)u_xx = α²u_xx. ✓
+- Spatial eigenvalue problem (Dirichlet BCs): λₙ = n²π²/L², Xₙ = sin(nπx/L). ✓
+- Temporal ODE for heat equation: Tₙ = e^{−α²n²π²t/L²}. ✓
+- Fourier sine coefficient formula: Bₙ = (2/L)∫₀^L f(x)sin(nπx/L)dx. ✓
+- Wave equation temporal ODE: Tₙ'' = −c²λₙTₙ → Tₙ = Aₙcos(nπct/L) + Bₙsin(nπct/L). ✓
+  Natural frequencies fₙ = nc/(2L). ✓
+- D'Alembert solution form correct. ✓
+- Laplace equation in rectangle: separation gives Y'' − λₙY = 0 → Yₙ = sinh(nπ(b−y)/a)
+  (satisfies Y(b) = 0). ✓
+  Coefficient formula: Cₙ = (2/(a·sinh(nπb/a)))∫₀^a f(x)sin(nπx/a)dx. ✓
+- Exercise 1 (heat, single mode): α²=4, n=2 → decay rate = 4·4 = 16. u = 3sin(2x)e^{−16t}. ✓
+  Verification: u_t = −48sin(2x)e^{−16t}; 4u_xx = 4·(−4)·3sin(2x)e^{−16t} = −48sin(2x)e^{−16t}. ✓
+- Exercise 2 (heat, x(π−x)): ∫₀^π x(π−x)sin(nx)dx = 2(1−(−1)ⁿ)/n³ verified by double IBP.
+  Bₙ = 8/(πn³) for odd n, 0 for even n. ✓
+- Exercise 3 (wave, plucked string): Aₙ = (8/n²π²)sin(nπ/2); only odd n survive (symmetry of triangle). ✓
+  First three terms match. D'Alembert form u = ½[f(x+2t)+f(x−2t)] for g=0. ✓
+- Exercise 4 (Laplace, two-mode BC): C₁ = 1/sinh(1), C₃ = 1/(3sinh(3)); boundary checks pass. ✓
+- Exercise 5(a): A=1, B=4, C=4 → Δ = 16−16 = 0, parabolic. ✓
+  Exercise 5(b): A=3, B=0, C=−1 → Δ = 12 > 0, hyperbolic. ✓
+  Exercise 5(c): elliptic (3D Laplacian). ✓ (discriminant formula fixed — see FIXES MADE above)
+- Exercise 6 (non-homogeneous BCs): steady state v(x) = x; Bₙ = 2(−1)ⁿ/(nπ) verified. ✓
+
+OPEN ISSUES
+- [NOTE] The PDE classification table in the prose lists the discriminant condition without noting that
+  the formula Δ = B²−4AC is for two-variable PDEs only. A one-line caveat ("for PDEs in two independent
+  variables") would prevent misapplication to 3D problems like Exercise 5(c).
+- [NOTE] `opens_to: []` — topology.yml has no outgoing edges from the `pdes` node, so this is correct.
+  However, numerics enriches pdes ([numerics, pdes, enriches]) and the author may eventually want a
+  forward pointer here once the numerics chapter exists.
+
+VERDICT: PASS WITH NOTES
+-->
+
+<!-- ENGINEER-PROF REVIEW
+Reviewed: 2026-04-01
+
+ISSUES FOUND
+
+[BLOCKER — fixed inline] Notation collision: ρ used for volumetric mass density [kg/m³] in the heat equation derivation (α² = k/(ρc)) and again for linear mass density [kg/m] in the wave equation (c = √(T/ρ)). These are physically different quantities with different dimensions. In acoustics and structural mechanics texts, linear mass density is conventionally written μ (mu) or m′ to distinguish it from volumetric density. Fixed inline: changed wave equation to use μ throughout (wave equation formula and guitar string paragraph).
+
+[NOTE] The PDE classification table uses the discriminant Δ = B²−4AC without stating that this formula applies only to PDEs in two independent variables. The table appears just before exercises where 3D problems appear (Exercise 5c). Math-prof already flagged this; from an engineering standpoint it matters because FEA practitioners classify PDEs to select solver types (elliptic → direct solver, hyperbolic → time-stepping). Add "for PDEs in two independent variables" in parentheses to the table header or a footnote.
+
+[NOTE] The `destinations.eng` hook mentions "numerical simulation of any physical system ultimately discretises and solves these equations." This is accurate and good. It would be strengthened by a cross-reference to the numerics chapter (once written) since that is precisely where FEA/FDM discretisation of these PDEs is covered. The `opens_to: []` correctly reflects the current state of the topology.
+
+DIRECT FIXES MADE
+- Wave equation: ρ → μ (linear mass density) in formula and guitar string paragraph. Dimensional consistency now maintained throughout the chapter (ρ = volumetric density in heat equation, μ = linear density in wave equation).
+
+ENGINEERING ACCURACY CHECKS
+
+- Fourier's law of heat conduction q = −k·u_x: correct attribution, correct sign convention (heat flows from hot to cold, opposite to the temperature gradient). ✓
+- Thermal diffusivity α² = k/(ρc): dimensions [W/(m·K)] / ([kg/m³]·[J/(kg·K)]) = m²/s. ✓
+- Wave speed c = √(T/μ) after fix: dimensions √([N]/[kg/m]) = √(m²/s²) = m/s. ✓
+- Natural frequencies fₙ = nc/(2L): correct formula for a string with fixed endpoints. A guitar A-string (L ≈ 0.65 m, typical c ≈ 110 m/s for standard tuning) gives f₁ = 110/1.3 ≈ 85 Hz — close to open A at 110 Hz, reasonable order of magnitude for a student check. ✓
+- D'Alembert solution: u(x,t) = ½[f(x+ct)+f(x−ct)] + (1/2c)∫g for g=0 → ½[f(x+ct)+f(x−ct)]. Correct. ✓
+- Laplace equation applications (electrostatic potential, irrotational fluid flow, steady-state temperature): all accurate PDE applications. The maximum principle (harmonic function attains extrema on boundary) is stated correctly. ✓
+- Exercise 6 (non-homogeneous BCs, steady-state plus transient): correct engineering method. This is exactly how thermal boundary value problems with non-zero wall temperatures are handled. ✓
+- Mechanical engineer / FEA thermal stress career example: accurate. Thermal stress analysis in turbine components is a core FEA application (ANSYS, Abaqus); the engineer sets up the heat equation, solves for temperature distribution, then feeds it into a structural model. ✓
+- Hydrologist / advection-diffusion career example: accurate. The advection-diffusion equation ∂C/∂t + v·∇C = D∇²C is the governing equation for contaminant transport in groundwater. ✓
+- Kreyszig Ch 12 / Stroud Programme 21: Kreyszig 10th ed Ch 12 covers PDEs; Stroud "Further Engineering Mathematics" Programme 21 covers PDEs. References verified. ✓
+
+VERDICT: PASS WITH NOTES (one blocker fixed inline)
+-->
+
+<!-- EDIT LOG
+Editor review: 2026-04-01
+
+- [Separation of variables, constant-equals-constant argument] Replaced the conclusion-only statement ("both sides must equal the same constant") with a sentence that gives the logical reason: a function of x alone cannot change as t changes, a function of t alone cannot change as x changes, and the only way they can be equal for all x and t is if both are the same constant. This is the conceptual hinge of the whole method and was previously stated without justification.
+
+- [Spatial eigenvalue problem, before the nontrivial-solutions claim] Added three sentences ruling out λ ≤ 0: λ = 0 gives X = cx which vanishes at x = 0 only if c = 0; λ < 0 gives real exponentials that cannot satisfy both Dirichlet boundary conditions; only λ > 0 gives oscillatory solutions that can vanish at both endpoints, and imposing X(L) = 0 then forces λ = n²π²/L². The previous draft jumped directly to the answer without showing why the other cases fail.
+
+- [Before Exercise 6] Added a three-sentence paragraph introducing the steady-state plus transient method in the chapter body, before the exercise prompt uses the term. Explains the obstacle (eigenfunctions vanish at the boundary, so nonzero BCs prevent direct application), the fix (subtract a steady-state v(x) satisfying the BCs and v_xx = 0), and the structure of the answer (u = v + w). A reader can now decide whether to attempt the exercise with understanding of the strategy rather than discovering it only inside the stepper.
+-->

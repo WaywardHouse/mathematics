@@ -1,6 +1,996 @@
 ---
 title: "Vector integral calculus"
-status: "seed"
+subtitle: "Green's, Stokes', and the Divergence theorem"
+chapter: 4
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: |
+  You can differentiate vector fields — you know gradient, divergence, and
+  curl. Integration does the reverse: it accumulates a field's effect over a
+  curve, surface, or volume. What you do not yet have is the toolkit that
+  connects integrals over boundaries to integrals over interiors.
+
+rewrite: |
+  Every major theorem in this chapter is the same idea at different
+  dimensions: the integral of a derivative over a region equals the
+  integral of the original quantity over the boundary of that region.
+  Green's, Stokes', and the Divergence theorem are all instances of this
+  single bookkeeping principle.
+
+prerequisite_ids:
+  - int_calc
+  - vector_calc
+
+opens_to:
+  - id: fourier_pdes
+    label: "Fourier series and PDEs"
+    volume: 7
+    relationship: enables
+  - id: complex_analysis
+    label: "Complex analysis"
+    volume: 7
+    relationship: motivates
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Maxwell's integral form of Gauss's law is the Divergence theorem applied to electric fields."
+    career_example: "Electrical engineer computing flux through antenna housings and shielding geometries"
+  - field: sci
+    label: Hard sciences
+    hook: "Fluid mass conservation across a control volume is exactly the Divergence theorem."
+    career_example: "Aerodynamicist computing net mass flow through a computational domain boundary"
+  - field: geo
+    label: Geography and geoscience
+    hook: "Stokes' theorem relates the circulation of ocean currents around a region to the vorticity inside it."
+    career_example: "Physical oceanographer computing tidal circulation from satellite-derived velocity fields"
+
+notation_introduced:
+  - symbol: "\\int_C \\mathbf{F} \\cdot d\\mathbf{r}"
+    reads_as: "line integral of F along C"
+    meaning: "Work done by field F along curve C"
+  - symbol: "\\oint_C \\mathbf{F} \\cdot d\\mathbf{r}"
+    reads_as: "line integral of F around closed curve C"
+    meaning: "Work done by field F around a closed loop"
+  - symbol: "\\iint_S \\mathbf{F} \\cdot d\\mathbf{S}"
+    reads_as: "surface integral of F over S"
+    meaning: "Flux of field F through surface S"
+  - symbol: "\\oiint_{\\partial V} \\mathbf{F} \\cdot d\\mathbf{S}"
+    reads_as: "closed surface integral over boundary of V"
+    meaning: "Total outward flux of F through a closed surface"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  A turbine blade sits in a flow of hot gas. You need to know the total
+  heat flux through the blade's surface — but integrating over every point
+  on that complicated curved surface is brutal. The Divergence theorem
+  says you only need to know the divergence of the heat flux field
+  throughout the interior volume, which is often far simpler to compute.
+
+  This is the deepest efficiency in classical calculus: boundary integrals
+  and interior integrals are two faces of the same coin. Green's theorem,
+  Stokes' theorem, and the Divergence theorem are the exchange rate.
+
+kreyszig_chapter: "Ch 10"
+stroud_programme: null
+uofa_course: "MATH 209"
 ---
 
-*Seed — front matter to be completed before content is written.*
+A turbine blade sits in a flow of hot gas. You need to know the total
+heat flux through the blade's surface — but integrating over every point
+on that complicated curved surface is brutal. The Divergence theorem
+says you only need to know the divergence of the heat flux field
+throughout the interior volume, which is often far simpler to compute.
+
+This is the deepest efficiency in classical calculus: boundary integrals
+and interior integrals are two faces of the same coin. Green's theorem,
+Stokes' theorem, and the Divergence theorem are the exchange rate.
+
+## Line integrals
+
+A line integral accumulates the effect of a field along a curve. There
+are two kinds: integrals of scalar fields and integrals of vector fields.
+The vector case is the one that matters physically — it measures work.
+
+### Scalar line integrals
+
+If $f$ is a scalar field and $C$ is a curve, the scalar line integral is:
+
+$$\int_C f \, ds$$
+
+where $ds$ is arc length. This answers questions like "what is the total
+mass of a wire with variable density $f$?" or "what is the average
+temperature along a path?"
+
+To evaluate it, parametrise the curve: let $\mathbf{r}(t) = (x(t), y(t), z(t))$
+for $t \in [a, b]$. Then $ds = |\mathbf{r}'(t)| \, dt$, so:
+
+$$\int_C f \, ds = \int_a^b f(\mathbf{r}(t)) \, |\mathbf{r}'(t)| \, dt$$
+
+The integral is independent of how you parametrise the curve — only the
+geometry of $C$ matters, not the speed at which you traverse it.
+
+### Vector line integrals (work)
+
+If $\mathbf{F}$ is a vector field and $C$ is an oriented curve, the
+vector line integral is:
+
+$$\int_C \mathbf{F} \cdot d\mathbf{r}$$
+
+This measures the **work** done by the field $\mathbf{F}$ on a particle
+moving along $C$. The dot product $\mathbf{F} \cdot d\mathbf{r}$ picks
+out the component of $\mathbf{F}$ that is parallel to the direction of
+travel — only that component does work.
+
+To evaluate, parametrise $C$ as $\mathbf{r}(t)$, so
+$d\mathbf{r} = \mathbf{r}'(t) \, dt$:
+
+$$\int_C \mathbf{F} \cdot d\mathbf{r} = \int_a^b \mathbf{F}(\mathbf{r}(t)) \cdot \mathbf{r}'(t) \, dt$$
+
+Writing out in components with $\mathbf{F} = (P, Q, R)$ and
+$d\mathbf{r} = (dx, dy, dz)$:
+
+$$\int_C \mathbf{F} \cdot d\mathbf{r} = \int_C P \, dx + Q \, dy + R \, dz$$
+
+**Sign convention:** reversing the orientation of $C$ changes the sign
+of the integral. For a closed curve traversed anti-clockwise
+(positive orientation), the notation is $\oint_C \mathbf{F} \cdot d\mathbf{r}$.
+
+**Worked example.** Compute $\int_C \mathbf{F} \cdot d\mathbf{r}$ where
+$\mathbf{F} = (y, -x)$ and $C$ is the upper semicircle of the unit circle
+from $(1, 0)$ to $(-1, 0)$.
+
+Parametrise: $\mathbf{r}(t) = (\cos t, \sin t)$, $t \in [0, \pi]$, so
+$\mathbf{r}'(t) = (-\sin t, \cos t)$.
+
+Along $C$: $\mathbf{F}(\mathbf{r}(t)) = (\sin t, -\cos t)$.
+
+$$\int_C \mathbf{F} \cdot d\mathbf{r} = \int_0^\pi (\sin t, -\cos t) \cdot (-\sin t, \cos t) \, dt$$
+
+$$= \int_0^\pi (-\sin^2 t - \cos^2 t) \, dt = \int_0^\pi -1 \, dt = -\pi$$
+
+The field does $-\pi$ units of work on the particle — it opposes the motion.
+
+---
+
+<!-- VIZ: Line integral visualisation — 2D vector field with a drawn curve C; slider moves a point along the curve; running total of the dot product F·dr is plotted below; toggle between different curves (straight line, semicircle, spiral) connecting the same endpoints to see how the integral changes when the field is not conservative -->
+
+---
+
+## Path independence and conservative fields
+
+For many fields, the line integral between two points is the same
+regardless of which path you take. Such fields are called **conservative**.
+
+A vector field $\mathbf{F}$ is conservative on a simply connected domain if
+and only if any (equivalently all) of the following hold:
+
+1. $\oint_C \mathbf{F} \cdot d\mathbf{r} = 0$ for every closed curve $C$.
+2. $\mathbf{F} = \nabla f$ for some scalar **potential function** $f$.
+3. In 3D: $\nabla \times \mathbf{F} = \mathbf{0}$ (the field is irrotational; curl is zero).
+
+The equivalence of (2) and (3) was established in Chapter 3. The
+equivalence of (1) and (2) follows from the Fundamental Theorem for
+line integrals.
+
+### Fundamental Theorem for line integrals
+
+If $\mathbf{F} = \nabla f$, then:
+
+$$\int_C \mathbf{F} \cdot d\mathbf{r} = f(\mathbf{r}(b)) - f(\mathbf{r}(a))$$
+
+where $\mathbf{r}(a)$ and $\mathbf{r}(b)$ are the start and end points
+of $C$. The integral depends only on the endpoints — not on the path.
+
+This is the vector analogue of the Fundamental Theorem of Calculus: the
+integral of a derivative (here, $\nabla f$) over a domain (here, the
+curve) equals the value of the original function at the boundary (here,
+the two endpoints, with sign).
+
+**Finding the potential function.** Given $\mathbf{F} = (P, Q, R)$ with
+$\nabla \times \mathbf{F} = \mathbf{0}$, find $f$ such that
+$\nabla f = \mathbf{F}$. Integrate component by component:
+
+$$f(x, y, z) = \int P \, dx + g(y, z)$$
+
+then differentiate with respect to $y$ and match against $Q$ to determine
+$g$, and so on.
+
+**Example.** Is $\mathbf{F} = (2xy + z^2,\; x^2,\; 2xz)$ conservative?
+
+Check $\nabla \times \mathbf{F}$: compute each component.
+
+$(\nabla \times \mathbf{F})_x = \partial_y(2xz) - \partial_z(x^2) = 0 - 0 = 0$
+
+$(\nabla \times \mathbf{F})_y = \partial_z(2xy + z^2) - \partial_x(2xz) = 2z - 2z = 0$
+
+$(\nabla \times \mathbf{F})_z = \partial_x(x^2) - \partial_y(2xy + z^2) = 2x - 2x = 0$
+
+All zero, so $\mathbf{F}$ is conservative. Find $f$:
+
+From $\partial f / \partial x = 2xy + z^2$, integrate in $x$:
+$f = x^2 y + xz^2 + g(y, z)$.
+
+From $\partial f / \partial y = x^2$: matches $Q = x^2$, so $\partial g / \partial y = 0$.
+
+From $\partial f / \partial z = 2xz$: matches $R = 2xz$, so $\partial g / \partial z = 0$.
+
+Therefore $f(x, y, z) = x^2 y + xz^2$ (plus an arbitrary constant).
+
+::: {.callout-note appearance="simple"}
+**Why conservative fields matter in physics**
+
+Gravity is conservative. Electric fields (in electrostatics) are
+conservative. This means the work done lifting an object or moving a
+charge depends only on where it starts and where it ends — not on the
+path. This is why potential energy is a well-defined concept: the number
+$f(\mathbf{r})$ at any point is the energy stored.
+
+Friction is not conservative: a longer path dissipates more energy.
+The difference is that $\nabla \times \mathbf{F} \neq \mathbf{0}$ for
+non-conservative forces.
+:::
+
+## Green's theorem
+
+Green's theorem connects a line integral around a closed curve in the
+plane to a double integral over the enclosed region.
+
+**Statement.** Let $C$ be a positively oriented (anti-clockwise),
+piecewise smooth, simple closed curve in the $xy$-plane, and let $D$
+be the region it encloses. If $P(x, y)$ and $Q(x, y)$ have continuous
+partial derivatives on an open set containing $D$, then:
+
+$$\oint_C P \, dx + Q \, dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right) dA$$
+
+### Where it comes from: cellular decomposition
+
+Divide $D$ into tiny rectangles. For each rectangle, compute the line
+integral around its boundary (traversed anti-clockwise). When you sum
+all these contributions, every interior edge is traversed twice —
+once in each direction by adjacent rectangles — so those contributions
+cancel exactly. What survives is only the contribution from the outer
+boundary of $D$, which is $C$.
+
+For each tiny rectangle with width $\Delta x$ and height $\Delta y$,
+the line integral around its boundary approximates:
+
+$$\left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right) \Delta x \, \Delta y$$
+
+Summing over all rectangles and taking the limit gives the double
+integral on the right of Green's theorem.
+
+---
+
+<!-- VIZ: Green's theorem interactive — 2D region with a closed boundary drawn in the plane; a slider labelled "decomposition level" subdivides the interior into finer grids; arrows show the line integral direction on each cell boundary; interior edges light up as "cancelling pairs" and fade out; the surviving outer boundary glows; a panel below shows the running sums: left-hand side line integral value and right-hand side double integral value converging to the same number -->
+
+---
+
+**Using Green's theorem.** The theorem converts between two kinds of
+integrals. Use it when:
+
+- The line integral $\oint_C P \, dx + Q \, dy$ is complicated but the
+  integrand $\partial Q / \partial x - \partial P / \partial y$ is simple.
+- The double integral over $D$ is complicated but the boundary $C$ is simple.
+
+**Example.** Compute $\oint_C (-y \, dx + x \, dy)$ where $C$ is the
+circle $x^2 + y^2 = 4$ traversed anti-clockwise.
+
+Here $P = -y$, $Q = x$, so
+$\partial Q / \partial x - \partial P / \partial y = 1 - (-1) = 2$.
+
+By Green's theorem:
+
+$$\oint_C (-y \, dx + x \, dy) = \iint_D 2 \, dA = 2 \cdot \text{Area}(D) = 2 \cdot \pi(2)^2 = 8\pi$$
+
+The boundary integral reduced to computing an area. Notice that
+$\frac{1}{2} \oint_C (-y \, dx + x \, dy) = \text{Area}(D)$ — this is
+a general formula for area from a line integral, directly from Green's
+theorem.
+
+::: {.callout-note appearance="simple"}
+**Planimeters: Green's theorem in hardware**
+
+A planimeter is a mechanical device for measuring area. You trace the
+boundary of a region with the pointer; the rotating wheel integrates
+$-y \, dx + x \, dy$ mechanically as you go, reading off the area
+directly. Engineers used planimeters to measure irregular cross-sections
+in structural calculations before digital tools. The device is a physical
+implementation of Green's theorem.
+:::
+
+## Surface integrals
+
+Surface integrals extend integration from curves to surfaces in 3D.
+As with line integrals, there are scalar and vector versions.
+
+### Parametric surfaces
+
+A surface $S$ can be parametrised by $\mathbf{r}(u, v) = (x(u,v), y(u,v), z(u,v))$
+for $(u, v)$ in some region $D$ of the parameter plane. The surface
+element $d\mathbf{S}$ is the vector area of an infinitesimal patch:
+
+$$d\mathbf{S} = \frac{\partial \mathbf{r}}{\partial u} \times \frac{\partial \mathbf{r}}{\partial v} \, du \, dv$$
+
+Its direction is normal to the surface; its magnitude
+$\left|\frac{\partial \mathbf{r}}{\partial u} \times \frac{\partial \mathbf{r}}{\partial v}\right|$
+is the scalar surface area element $dS$.
+
+For a surface $z = g(x, y)$ over a region $D$ in the $xy$-plane:
+
+$$dS = \sqrt{1 + \left(\frac{\partial g}{\partial x}\right)^2 + \left(\frac{\partial g}{\partial y}\right)^2} \, dA$$
+
+### Flux integrals
+
+The **flux** of a vector field $\mathbf{F}$ through a surface $S$ is:
+
+$$\iint_S \mathbf{F} \cdot d\mathbf{S} = \iint_S \mathbf{F} \cdot \hat{\mathbf{n}} \, dS$$
+
+where $\hat{\mathbf{n}}$ is the outward unit normal. Physically, this
+is the rate at which field lines cross the surface — the volume of
+fluid per unit time crossing $S$ if $\mathbf{F}$ is a velocity field.
+
+**Example.** Compute the upward flux of $\mathbf{F} = (0, 0, z)$ through
+the surface $z = 1 - x^2 - y^2$ for $z \geq 0$ (a paraboloid cap).
+
+On this surface, parametrise by $(x, y)$ in the disk
+$D: x^2 + y^2 \leq 1$.
+
+The normal vector pointing upward:
+
+$$d\mathbf{S} = \left(-\frac{\partial z}{\partial x}, -\frac{\partial z}{\partial y}, 1\right) dA = (2x, 2y, 1) \, dA$$
+
+So $\mathbf{F} \cdot d\mathbf{S} = (0)(2x) + (0)(2y) + z \cdot 1 = z = 1 - x^2 - y^2$.
+
+$$\iint_S \mathbf{F} \cdot d\mathbf{S} = \iint_D (1 - x^2 - y^2) \, dA$$
+
+In polar coordinates ($x = r\cos\theta$, $y = r\sin\theta$):
+
+$$= \int_0^{2\pi} \int_0^1 (1 - r^2) \, r \, dr \, d\theta = 2\pi \int_0^1 (r - r^3) \, dr = 2\pi \left[\frac{1}{2} - \frac{1}{4}\right] = \frac{\pi}{2}$$
+
+## The Divergence theorem
+
+The Divergence theorem (Gauss's theorem) extends Green's theorem to
+three dimensions, relating the flux through a closed surface to the
+divergence integrated over the enclosed volume.
+
+**Statement.** Let $V$ be a bounded region in $\mathbb{R}^3$ with
+piecewise smooth boundary $\partial V$ (oriented with outward normal).
+If $\mathbf{F}$ has continuous partial derivatives on an open set
+containing $V$, then:
+
+$$\oiint_{\partial V} \mathbf{F} \cdot d\mathbf{S} = \iiint_V (\nabla \cdot \mathbf{F}) \, dV$$
+
+### Physical interpretation
+
+$\nabla \cdot \mathbf{F}$ at a point measures the net outward flow
+**per unit volume** — how much the field is "spreading out" there. The
+Divergence theorem says: sum up all that local spreading (the volume
+integral), and you get the total outward flow through the boundary (the
+surface integral). There is no other way out. Any flow created in the
+interior must eventually cross the boundary.
+
+This is the mathematical statement of conservation laws. In fluid
+dynamics: if a fluid has no sources or sinks (incompressible,
+$\nabla \cdot \mathbf{F} = 0$), then the net flux through any closed
+surface is zero — what flows in must flow out.
+
+### Cellular decomposition in 3D
+
+The argument is identical to Green's theorem but in 3D. Subdivide $V$
+into tiny cubes. For each cube, compute the outward flux through its
+six faces. On each interior face, two adjacent cubes share that face —
+one uses it as an outward face, the other as an inward face. Their
+contributions cancel. What remains is the flux through the outer faces
+of $V$ only.
+
+For a cube of volume $\Delta V$, the net outward flux through its faces
+approximates $(\nabla \cdot \mathbf{F}) \, \Delta V$ (this is precisely
+the definition of divergence). Summing over all cubes gives the Divergence
+theorem.
+
+---
+
+<!-- VIZ: Flux through a closed surface — interactive 3D box; sliders control the components of a uniform vector field F = (a, b, c); the six faces of the box are coloured by their individual flux contribution (positive = warm, negative = cool); a readout shows each face's flux, the total surface integral, and ∇·F × Volume; verify they always agree; a second tab shows a sphere with a point source at the centre, animating radial field lines and the flux through concentric spheres (constant by Gauss's law) -->
+
+---
+
+**Example.** Compute the flux of $\mathbf{F} = (x, y, z)$ outward
+through the sphere $x^2 + y^2 + z^2 = a^2$.
+
+Direct computation is possible but requires parametrising the sphere.
+The Divergence theorem is far faster:
+
+$\nabla \cdot \mathbf{F} = 1 + 1 + 1 = 3$.
+
+Volume of the sphere: $V = \frac{4}{3}\pi a^3$.
+
+$$\oiint_{\partial V} \mathbf{F} \cdot d\mathbf{S} = \iiint_V 3 \, dV = 3 \cdot \frac{4}{3}\pi a^3 = 4\pi a^3$$
+
+No surface integral needed — just multiplication.
+
+**Gauss's law (Maxwell's equations).** The electric field $\mathbf{E}$
+due to a charge distribution $\rho$ satisfies:
+
+$$\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}$$
+
+This is the differential form. Applying the Divergence theorem over a
+closed surface $\partial V$ enclosing volume $V$:
+
+$$\oiint_{\partial V} \mathbf{E} \cdot d\mathbf{S} = \iiint_V \frac{\rho}{\varepsilon_0} \, dV = \frac{Q_{\text{enc}}}{\varepsilon_0}$$
+
+where $Q_{\text{enc}}$ is the total enclosed charge. This is Gauss's
+law in integral form — the total electric flux through any closed surface
+equals the enclosed charge divided by $\varepsilon_0$. It is the
+Divergence theorem with $\mathbf{F} = \mathbf{E}$.
+
+## Stokes' theorem
+
+Stokes' theorem is the 3D analogue of Green's theorem. It relates the
+line integral around a closed curve to the flux of the curl through any
+surface bounded by that curve.
+
+**Statement.** Let $S$ be an oriented, piecewise smooth surface with
+boundary $\partial S$ — a closed curve. Let $\mathbf{F}$ have continuous
+partial derivatives on an open set containing $S$. Then:
+
+$$\oint_{\partial S} \mathbf{F} \cdot d\mathbf{r} = \iint_S (\nabla \times \mathbf{F}) \cdot d\mathbf{S}$$
+
+The orientation of $\partial S$ is determined by the right-hand rule:
+curl your right hand's fingers in the direction you traverse the boundary,
+and your thumb points in the direction of the surface normal.
+
+### Connection to Green's theorem
+
+Green's theorem is the special case where $S$ is a flat region in the
+$xy$-plane. For $S \subset \{z = 0\}$ with normal $\hat{\mathbf{k}}$:
+
+$$(\nabla \times \mathbf{F}) \cdot \hat{\mathbf{k}} = \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}$$
+
+Substituting into Stokes' theorem recovers Green's theorem exactly.
+Stokes' theorem can be understood as "un-flattening" Green's theorem —
+lifting it from a 2D region to a curved surface in 3D.
+
+### The cellular argument for Stokes
+
+Subdivide $S$ into small surface patches. The line integral around each
+patch's boundary traverses interior edges twice in opposite directions —
+those cancel. The sum over all patches reduces to the line integral
+around the outer boundary $\partial S$. For each patch, the boundary
+integral approximates $(\nabla \times \mathbf{F}) \cdot d\mathbf{S}$
+(this is the definition of curl). Summing gives Stokes' theorem.
+
+**Key insight:** the surface $S$ does not need to be flat, and it is not
+unique. Any two surfaces spanning the same boundary curve give the same
+flux integral of $\nabla \times \mathbf{F}$ — provided $\mathbf{F}$ is
+smooth throughout. Engineers exploit this: choose whichever surface
+makes the integral easiest.
+
+**Example.** Verify Stokes' theorem for $\mathbf{F} = (-y^2, x, z^2)$
+where $S$ is the upper hemisphere $x^2 + y^2 + z^2 = 1$, $z \geq 0$,
+and $\partial S$ is the unit circle in the $xy$-plane.
+
+*Boundary integral:* on $\partial S$, parametrise $\mathbf{r}(t) = (\cos t, \sin t, 0)$:
+
+$$\oint_{\partial S} \mathbf{F} \cdot d\mathbf{r} = \int_0^{2\pi} (-\sin^2 t, \cos t, 0) \cdot (-\sin t, \cos t, 0) \, dt$$
+
+$$= \int_0^{2\pi} (\sin^3 t + \cos^2 t) \, dt = 0 + \pi = \pi$$
+
+*Surface integral:* compute $\nabla \times \mathbf{F}$:
+
+$$\nabla \times \mathbf{F} = \left(\frac{\partial z^2}{\partial y} - \frac{\partial x}{\partial z},\; \frac{\partial(-y^2)}{\partial z} - \frac{\partial z^2}{\partial x},\; \frac{\partial x}{\partial x} - \frac{\partial(-y^2)}{\partial y}\right) = (0, 0, 1 + 2y)$$
+
+Applying Stokes' theorem is easier via the flat disk $D: x^2 + y^2 \leq 1$, $z = 0$
+(same boundary, much simpler surface):
+
+$$\iint_D (0, 0, 1 + 2y) \cdot (0, 0, 1) \, dA = \iint_D (1 + 2y) \, dA = \pi \cdot 1^2 + 2 \iint_D y \, dA = \pi + 0 = \pi$$
+
+Both sides give $\pi$. $\checkmark$
+
+**Ampère's law in integral form.** The magnetic field $\mathbf{B}$
+satisfies $\nabla \times \mathbf{B} = \mu_0 \mathbf{J}$ (Ampère's law,
+differential form). Stokes' theorem converts this to:
+
+$$\oint_{\partial S} \mathbf{B} \cdot d\mathbf{r} = \iint_S (\nabla \times \mathbf{B}) \cdot d\mathbf{S} = \mu_0 \iint_S \mathbf{J} \cdot d\mathbf{S} = \mu_0 I_{\text{enc}}$$
+
+The circulation of the magnetic field around a closed loop equals $\mu_0$
+times the current threading through any surface bounded by that loop.
+This is the statement every electrical engineering student uses when
+computing fields around wires.
+
+## The unified picture
+
+Green's, the Divergence theorem, and Stokes' are all instances of one
+principle, which can be stated abstractly as:
+
+$$\int_{\partial \Omega} \omega = \int_\Omega d\omega$$
+
+where $\omega$ is a differential form and $d\omega$ is its exterior
+derivative. The left side integrates over the boundary; the right side
+integrates the derivative over the interior. The Fundamental Theorem of
+Calculus, $\int_a^b f'(x) \, dx = f(b) - f(a)$, is also an instance —
+here the "boundary" of $[a, b]$ is just the two endpoints.
+
+| Theorem | Domain | Boundary | Integrand (interior) |
+|---------|--------|----------|----------------------|
+| FTC | Interval $[a, b]$ | Two endpoints | $f'(x)$ |
+| Green's | 2D region $D$ | Closed curve $\partial D$ | $\partial Q / \partial x - \partial P / \partial y$ |
+| Stokes' | Surface $S$ | Closed curve $\partial S$ | $\nabla \times \mathbf{F}$ |
+| Divergence | Volume $V$ | Closed surface $\partial V$ | $\nabla \cdot \mathbf{F}$ |
+
+The pattern is inescapable. All of calculus, in one row of a table.
+
+::: {.callout-note appearance="simple"}
+**Strategy: which way to go**
+
+Given a problem, decide which direction the theorem should run:
+
+- If the **boundary** integral looks hard but the **interior** is simple:
+  Green's / Stokes' / Divergence converts boundary → interior.
+- If the **interior** integral looks hard but the **boundary** is simple:
+  run it the other way.
+- If $\nabla \cdot \mathbf{F} = 0$ (solenoidal): the flux through any
+  closed surface is zero. No computation needed.
+- If $\nabla \times \mathbf{F} = \mathbf{0}$ (irrotational): the line
+  integral around any closed curve is zero. Use the potential function.
+
+The theorems are not formulas to plug into — they are a choice of which
+representation of the problem is simpler.
+:::
+
+## Applications
+
+### Electric flux and Gauss's law
+
+An isolated point charge $q$ sits at the origin. Compute the electric
+flux through a sphere of radius $r$.
+
+The electric field is $\mathbf{E} = \frac{q}{4\pi\varepsilon_0 r^2} \hat{\mathbf{r}}$.
+On the sphere of radius $r$, the field is radial with constant magnitude
+$E = q / (4\pi\varepsilon_0 r^2)$, and the outward normal $\hat{\mathbf{n}} = \hat{\mathbf{r}}$,
+so $\mathbf{E} \cdot \hat{\mathbf{n}} = E$ everywhere.
+
+$$\oiint_S \mathbf{E} \cdot d\mathbf{S} = E \cdot 4\pi r^2 = \frac{q}{4\pi\varepsilon_0 r^2} \cdot 4\pi r^2 = \frac{q}{\varepsilon_0}$$
+
+This equals the enclosed charge divided by $\varepsilon_0$, confirming
+Gauss's law. Notice the $r$ cancelled — the flux is the same through any
+sphere centred on the charge. This is a consequence of the Divergence
+theorem and the fact that $\nabla \cdot \mathbf{E} = 0$ everywhere except
+at the charge itself.
+
+### Mass flow through a surface (fluid mechanics)
+
+A velocity field $\mathbf{v} = (2x, -y, z)$ describes fluid flow in a
+region. Is mass accumulating inside the unit cube $[0,1]^3$?
+
+$\nabla \cdot \mathbf{v} = 2 - 1 + 1 = 2 > 0$.
+
+By the Divergence theorem, the net outward mass flux is:
+
+$$\oiint_{\partial V} \mathbf{v} \cdot d\mathbf{S} = \iiint_V 2 \, dV = 2$$
+
+Two units of mass per unit time are flowing out of the cube. The divergence
+is positive throughout, so the fluid is expanding — it acts like a source
+term. In an incompressible flow (water, to a first approximation), this
+is impossible: $\nabla \cdot \mathbf{v}$ must be zero everywhere.
+
+### Work done against gravity (conservative field)
+
+Gravity is $\mathbf{g} = (0, 0, -g)$ with potential
+$\phi = gz$ (so $\mathbf{g} = -\nabla\phi$). A mass $m$ is moved along
+a complicated path from the ground level $(0, 0, 0)$ to a height
+$(x_1, y_1, h)$.
+
+Since $\mathbf{F}_{\text{grav}} = m\mathbf{g} = -m\nabla(gz)$, it is
+conservative. Work done by gravity:
+
+$$W = \int_C \mathbf{F}_{\text{grav}} \cdot d\mathbf{r} = -m g z \Big|_{z=0}^{z=h} = -mgh$$
+
+The negative sign indicates gravity does negative work (you are lifting
+against it). Work done *against* gravity is $+mgh$ — the familiar
+result from introductory physics, now derived precisely from path
+independence.
+
+### Stokes' theorem and Faraday's law
+
+Faraday's law of electromagnetic induction states
+$\nabla \times \mathbf{E} = -\partial \mathbf{B} / \partial t$.
+Apply Stokes' theorem to a surface $S$ bounded by a circuit loop $C$:
+
+$$\oint_C \mathbf{E} \cdot d\mathbf{r} = \iint_S (\nabla \times \mathbf{E}) \cdot d\mathbf{S} = -\frac{d}{dt} \iint_S \mathbf{B} \cdot d\mathbf{S} = -\frac{d\Phi_B}{dt}$$
+
+The EMF (voltage) around the circuit equals the negative rate of change
+of magnetic flux through it. This is the principle behind every
+transformer and generator ever built.
+
+## Exercises
+
+These exercises build from evaluation to application. The first two
+establish mechanical fluency; the later ones require choosing which
+theorem to apply and why.
+
+```{ojs}
+//| echo: false
+{
+  const katex = await require("katex@0.16");
+  const css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css";
+  document.head.appendChild(css);
+
+  function makeStepperHTML(steps) {
+    let current = 0;
+    const totalSteps = steps.length;
+    const container = document.createElement("div");
+    container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+
+    const stepsDiv = document.createElement("div");
+    stepsDiv.style.marginBottom = "0.75rem";
+
+    function renderSteps() {
+      stepsDiv.innerHTML = "";
+      for (let i = 0; i < current; i++) {
+        const s = steps[i];
+        const row = document.createElement("div");
+        row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+        const opCell = document.createElement("span");
+        opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+        opCell.textContent = s.op;
+        const eqCell = document.createElement("span");
+        eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+        row.appendChild(opCell);
+        row.appendChild(eqCell);
+        if (s.note) {
+          const noteRow = document.createElement("div");
+          noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+          noteRow.textContent = s.note;
+          row.appendChild(noteRow);
+        }
+        stepsDiv.appendChild(row);
+      }
+      if (current === totalSteps) {
+        const done = document.createElement("div");
+        done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+        done.textContent = "✓ Solution complete";
+        stepsDiv.appendChild(done);
+      }
+    }
+
+    const controls = document.createElement("div");
+    controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next step →";
+    nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+
+    const resetBtn = document.createElement("button");
+    resetBtn.textContent = "Reset";
+    resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+
+    const counter = document.createElement("span");
+    counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+    function updateButtons() {
+      nextBtn.disabled = current === totalSteps;
+      nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+      counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+    }
+
+    nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+    resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+
+    controls.appendChild(nextBtn);
+    controls.appendChild(resetBtn);
+    controls.appendChild(counter);
+    container.appendChild(stepsDiv);
+    container.appendChild(controls);
+    renderSteps();
+    updateButtons();
+    return container;
+  }
+
+  // Attach to window so subsequent blocks can call it
+  window._makeStepperHTML = makeStepperHTML;
+  return html`<span></span>`;
+}
+```
+
+**1. Line integral along a parametric curve.**
+A particle moves along the helix $\mathbf{r}(t) = (\cos t, \sin t, t)$
+for $t \in [0, 2\pi]$ in the force field $\mathbf{F} = (-y, x, z)$.
+Compute the work done $W = \int_C \mathbf{F} \cdot d\mathbf{r}$.
+
+```{ojs}
+//| echo: false
+window._makeStepperHTML([
+  {
+    op: "Parametrise and compute r'(t)",
+    eq: "\\mathbf{r}(t) = (\\cos t,\\, \\sin t,\\, t), \\quad \\mathbf{r}'(t) = (-\\sin t,\\, \\cos t,\\, 1)",
+    note: "The derivative gives the tangent direction at each point on the helix."
+  },
+  {
+    op: "Evaluate F along the curve",
+    eq: "\\mathbf{F}(\\mathbf{r}(t)) = (-\\sin t,\\, \\cos t,\\, t)",
+    note: "Substitute x = cos t, y = sin t, z = t into F = (-y, x, z)."
+  },
+  {
+    op: "Form the dot product",
+    eq: "\\mathbf{F} \\cdot \\mathbf{r}'(t) = (-\\sin t)(-\\sin t) + (\\cos t)(\\cos t) + t \\cdot 1 = \\sin^2 t + \\cos^2 t + t = 1 + t",
+    note: "sin²t + cos²t = 1 simplifies the first two terms immediately."
+  },
+  {
+    op: "Integrate over t ∈ [0, 2π]",
+    eq: "W = \\int_0^{2\\pi} (1 + t)\\, dt = \\left[t + \\frac{t^2}{2}\\right]_0^{2\\pi} = 2\\pi + \\frac{(2\\pi)^2}{2} = 2\\pi + 2\\pi^2",
+    note: "A standard definite integral — no special technique needed."
+  },
+  {
+    op: "Final answer",
+    eq: "W = 2\\pi(1 + \\pi) \\approx 26.0 \\text{ (in consistent units)}",
+    note: "The field does positive work on the particle throughout the helix."
+  }
+])
+```
+
+---
+
+**2. Conservative field — find the potential, evaluate by endpoints.**
+Show that $\mathbf{F} = (2xy + z,\; x^2,\; x + 2z)$ is conservative,
+find its potential function $f$, and evaluate
+$\int_C \mathbf{F} \cdot d\mathbf{r}$ from $(0, 0, 0)$ to $(1, 2, 3)$
+along any path.
+
+```{ojs}
+//| echo: false
+window._makeStepperHTML([
+  {
+    op: "Check curl F = 0",
+    eq: "(\\nabla \\times \\mathbf{F})_x = \\partial_y(x + 2z) - \\partial_z(x^2) = 0 - 0 = 0",
+    note: "Check all three components of the curl."
+  },
+  {
+    op: "Check remaining curl components",
+    eq: "(\\nabla \\times \\mathbf{F})_y = \\partial_z(2xy + z) - \\partial_x(x + 2z) = 1 - 1 = 0, \\quad (\\nabla \\times \\mathbf{F})_z = \\partial_x(x^2) - \\partial_y(2xy + z) = 2x - 2x = 0",
+    note: "All components are zero, so F is conservative."
+  },
+  {
+    op: "Integrate P = 2xy + z with respect to x",
+    eq: "f = \\int (2xy + z)\\, dx = x^2 y + xz + g(y, z)",
+    note: "The 'constant' g can depend on y and z — treat them as constants when integrating in x."
+  },
+  {
+    op: "Match ∂f/∂y = Q = x²",
+    eq: "\\frac{\\partial f}{\\partial y} = x^2 + \\frac{\\partial g}{\\partial y} = x^2 \\implies \\frac{\\partial g}{\\partial y} = 0",
+    note: "g does not depend on y."
+  },
+  {
+    op: "Match ∂f/∂z = R = x + 2z",
+    eq: "\\frac{\\partial f}{\\partial z} = x + \\frac{\\partial g}{\\partial z} = x + 2z \\implies \\frac{\\partial g}{\\partial z} = 2z \\implies g(z) = z^2",
+    note: "g depends only on z."
+  },
+  {
+    op: "Potential function",
+    eq: "f(x, y, z) = x^2 y + xz + z^2",
+    note: "Verify: ∇f = (2xy + z, x², x + 2z) = F. ✓"
+  },
+  {
+    op: "Evaluate by Fundamental Theorem",
+    eq: "\\int_C \\mathbf{F} \\cdot d\\mathbf{r} = f(1, 2, 3) - f(0, 0, 0) = (1 \\cdot 2 + 1 \\cdot 3 + 9) - 0 = 14",
+    note: "The path is irrelevant — only the endpoints matter for a conservative field."
+  }
+])
+```
+
+---
+
+**3. Green's theorem — line integral to double integral.**
+Compute $\oint_C (x^2 - y) \, dx + (x + y^2) \, dy$ where $C$ is the
+boundary of the triangle with vertices $(0,0)$, $(2,0)$, $(0,2)$,
+traversed anti-clockwise.
+
+```{ojs}
+//| echo: false
+window._makeStepperHTML([
+  {
+    op: "Identify P, Q and compute the integrand for Green's theorem",
+    eq: "P = x^2 - y, \\quad Q = x + y^2, \\quad \\frac{\\partial Q}{\\partial x} - \\frac{\\partial P}{\\partial y} = 1 - (-1) = 2",
+    note: "Green's theorem converts the line integral to ∬_D 2 dA."
+  },
+  {
+    op: "Describe the triangular region D",
+    eq: "D: \\quad 0 \\leq x \\leq 2, \\quad 0 \\leq y \\leq 2 - x",
+    note: "The hypotenuse has equation x + y = 2, so y goes from 0 to 2 − x."
+  },
+  {
+    op: "Apply Green's theorem",
+    eq: "\\oint_C (x^2 - y)\\, dx + (x + y^2)\\, dy = \\iint_D 2 \\, dA = 2 \\cdot \\text{Area}(D)",
+    note: "The integrand is constant (2), so the double integral is just 2 times the area."
+  },
+  {
+    op: "Compute the area of the triangle",
+    eq: "\\text{Area}(D) = \\frac{1}{2} \\cdot \\text{base} \\cdot \\text{height} = \\frac{1}{2} \\cdot 2 \\cdot 2 = 2",
+    note: "Or integrate: ∫₀² (2−x) dx = [2x − x²/2]₀² = 4 − 2 = 2."
+  },
+  {
+    op: "Final answer",
+    eq: "\\oint_C (x^2 - y)\\, dx + (x + y^2)\\, dy = 2 \\cdot 2 = 4",
+    note: "Evaluating the line integral directly over the three edges would require three separate parametrisations — Green's theorem saved all of that."
+  }
+])
+```
+
+---
+
+**4. Electric flux through a hemisphere.**
+Compute the upward flux of $\mathbf{E} = (x, y, 2z)$ through the upper
+hemisphere $S: x^2 + y^2 + z^2 = 9$, $z \geq 0$ (with outward normal
+pointing away from the origin).
+
+```{ojs}
+//| echo: false
+window._makeStepperHTML([
+  {
+    op: "Plan: close the surface and use the Divergence theorem",
+    eq: "\\text{Let } V = \\{x^2 + y^2 + z^2 \\leq 9,\\; z \\geq 0\\} \\text{ (upper hemisphere + disk at } z = 0\\text{)}",
+    note: "The closed surface ∂V = S (hemisphere) ∪ D (disk). We compute the total and subtract the disk."
+  },
+  {
+    op: "Compute the divergence",
+    eq: "\\nabla \\cdot \\mathbf{E} = \\frac{\\partial x}{\\partial x} + \\frac{\\partial y}{\\partial y} + \\frac{\\partial 2z}{\\partial z} = 1 + 1 + 2 = 4",
+    note: "The divergence is constant, so the volume integral is just 4 times the volume."
+  },
+  {
+    op: "Volume of the upper hemisphere",
+    eq: "V = \\frac{1}{2} \\cdot \\frac{4}{3}\\pi (3)^3 = \\frac{2}{3}\\pi \\cdot 27 = 18\\pi",
+    note: "Half the volume of a sphere of radius 3."
+  },
+  {
+    op: "Total flux through ∂V by Divergence theorem",
+    eq: "\\oiint_{\\partial V} \\mathbf{E} \\cdot d\\mathbf{S} = \\iiint_V 4 \\, dV = 4 \\cdot 18\\pi = 72\\pi",
+    note: "This is the combined flux through the hemisphere and the disk."
+  },
+  {
+    op: "Flux through the disk at z = 0 (downward normal n̂ = −k̂)",
+    eq: "\\iint_D \\mathbf{E} \\cdot (-\\hat{\\mathbf{k}})\\, dA = \\iint_D -2z\\, dA = \\iint_D 0\\, dA = 0",
+    note: "On the disk z = 0, so the component 2z = 0. The disk contributes nothing."
+  },
+  {
+    op: "Flux through the hemisphere",
+    eq: "\\iint_S \\mathbf{E} \\cdot d\\mathbf{S} = 72\\pi - 0 = 72\\pi",
+    note: "The total equals the hemisphere's contribution alone."
+  }
+])
+```
+
+---
+
+**5. Divergence theorem — convert surface integral to volume integral.**
+Let $\mathbf{F} = (x^3, y^3, z^3)$. Compute the outward flux of
+$\mathbf{F}$ through the closed surface of the cylinder
+$x^2 + y^2 \leq 4$, $0 \leq z \leq 3$.
+
+```{ojs}
+//| echo: false
+window._makeStepperHTML([
+  {
+    op: "Compute the divergence",
+    eq: "\\nabla \\cdot \\mathbf{F} = 3x^2 + 3y^2 + 3z^2",
+    note: "The closed surface consists of the curved side plus two disks — direct integration would be messy."
+  },
+  {
+    op: "Set up the volume integral in cylindrical coordinates",
+    eq: "\\iiint_V (3x^2 + 3y^2 + 3z^2)\\, dV = \\int_0^{2\\pi} \\int_0^2 \\int_0^3 (3r^2 + 3z^2)\\, r\\, dz\\, dr\\, d\\theta",
+    note: "In cylindrical coords: x² + y² = r², dV = r dr dθ dz."
+  },
+  {
+    op: "Integrate over z first",
+    eq: "\\int_0^3 (3r^2 + 3z^2)\\, dz = \\left[3r^2 z + z^3\\right]_0^3 = 9r^2 + 27",
+    note: "Treat r as a constant when integrating in z."
+  },
+  {
+    op: "Integrate over r",
+    eq: "\\int_0^2 (9r^2 + 27)\\, r\\, dr = \\int_0^2 (9r^3 + 27r)\\, dr = \\left[\\frac{9r^4}{4} + \\frac{27r^2}{2}\\right]_0^2 = 36 + 54 = 90",
+    note: ""
+  },
+  {
+    op: "Integrate over θ",
+    eq: "\\int_0^{2\\pi} 90\\, d\\theta = 180\\pi",
+    note: "The integrand is independent of θ, so the angular integral just multiplies by 2π."
+  },
+  {
+    op: "Final answer",
+    eq: "\\oiint_{\\partial V} \\mathbf{F} \\cdot d\\mathbf{S} = 180\\pi \\approx 565.5",
+    note: "The Divergence theorem reduced a three-part surface integral to one cylindrical volume integral."
+  }
+])
+```
+
+---
+
+**6. Stokes' theorem — Ampère's law application.**
+A long straight wire carries current $I$ along the $z$-axis. The
+magnetic field is $\mathbf{B} = \frac{\mu_0 I}{2\pi(x^2 + y^2)}(-y, x, 0)$.
+Use Stokes' theorem to compute $\oint_C \mathbf{B} \cdot d\mathbf{r}$
+where $C$ is the circle $x^2 + y^2 = R^2$ in the $xy$-plane.
+
+```{ojs}
+//| echo: false
+window._makeStepperHTML([
+  {
+    op: "Parametrise the circle C",
+    eq: "\\mathbf{r}(t) = (R\\cos t,\\, R\\sin t,\\, 0), \\quad d\\mathbf{r} = (-R\\sin t,\\, R\\cos t,\\, 0)\\, dt, \\quad t \\in [0, 2\\pi]",
+    note: "We evaluate directly first, then verify via Stokes' theorem."
+  },
+  {
+    op: "Evaluate B on C (where x² + y² = R²)",
+    eq: "\\mathbf{B} = \\frac{\\mu_0 I}{2\\pi R^2}(-R\\sin t,\\, R\\cos t,\\, 0)",
+    note: "Substitute x = R cos t, y = R sin t into B."
+  },
+  {
+    op: "Compute the dot product B · dr",
+    eq: "\\mathbf{B} \\cdot d\\mathbf{r} = \\frac{\\mu_0 I}{2\\pi R^2}\\left(R^2\\sin^2 t + R^2\\cos^2 t\\right)dt = \\frac{\\mu_0 I}{2\\pi}\\, dt",
+    note: "The R² factors cancel; sin²t + cos²t = 1."
+  },
+  {
+    op: "Integrate over t ∈ [0, 2π]",
+    eq: "\\oint_C \\mathbf{B} \\cdot d\\mathbf{r} = \\int_0^{2\\pi} \\frac{\\mu_0 I}{2\\pi}\\, dt = \\mu_0 I",
+    note: "The result is independent of R — the circulation is the same around any circle enclosing the wire."
+  },
+  {
+    op: "Interpret via Stokes' theorem (Ampère's law)",
+    eq: "\\oint_C \\mathbf{B} \\cdot d\\mathbf{r} = \\iint_S (\\nabla \\times \\mathbf{B}) \\cdot d\\mathbf{S} = \\mu_0 \\iint_S \\mathbf{J} \\cdot d\\mathbf{S} = \\mu_0 I_{\\text{enc}}",
+    note: "Stokes' theorem links the circulation of B to the current threading through any surface bounded by C. Here I_enc = I (the full wire current)."
+  },
+  {
+    op: "Conclusion",
+    eq: "\\oint_C \\mathbf{B} \\cdot d\\mathbf{r} = \\mu_0 I",
+    note: "This is Ampère's law in integral form. The radius R cancelled because the current is entirely enclosed — the result holds for any loop that encircles the wire once."
+  }
+])
+```
+
+## Where this goes
+
+The three theorems in this chapter are the operational heart of classical
+field theory. The next chapter, Fourier series and PDEs, puts them to
+work in a new setting: instead of integrating over a domain once, you
+decompose a function into sinusoidal modes and work with each mode
+independently. The Divergence theorem reappears immediately in the
+derivation of the heat equation and the wave equation — those PDEs arise
+precisely from applying it to a tiny control volume and letting the
+volume shrink to a point.
+
+Complex analysis (the chapter after that) makes this picture even
+stranger and more powerful: in the complex plane, the Cauchy integral
+theorem is Green's theorem in disguise, and the residue theorem for
+computing integrals is a direct consequence of Stokes' theorem applied
+to a deformed contour.
+
+The unifying thread is the generalised Stokes' theorem
+$\int_{\partial \Omega} \omega = \int_\Omega d\omega$. Once you have seen
+that formulation, you cannot unsee it — every integration theorem you
+encounter from here on is a special case.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A mechanical engineer computing the torque on a rotating shaft uses the
+  surface integral of the stress tensor — a generalisation of flux.
+- A geophysicist inverting gravity survey data uses Gauss's theorem to
+  relate surface measurements to subsurface mass distribution.
+- A climate scientist computing net CO₂ flux into the ocean integrates
+  the divergence of a diffusion field over a volume — the Divergence
+  theorem makes global estimates tractable.
+- An electrical engineer designing an antenna housing uses Gauss's law
+  (Divergence theorem) to verify shielding effectiveness from bulk
+  material properties rather than surface-by-surface calculation.
+
+The theorems do not just simplify calculation. In each case, they are the
+reason the physical law can be stated locally (as a PDE or a differential
+form) *and* globally (as a conservation statement). That equivalence is
+not obvious — it is exactly what Green, Stokes, and Gauss proved.
+:::

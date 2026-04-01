@@ -1,0 +1,414 @@
+---
+title: "Nonlinear optimisation for design and operations"
+subtitle: "Tradeoffs, constraints, and the shape of a best solution"
+chapter: 7
+volume: 8
+layer: "discipline"
+status: "draft"
+
+axiom: |
+  Real design problems are rarely linear, and the best answer depends on what
+  counts as acceptable tradeoff.
+
+rewrite: |
+  Gradient-based and constrained nonlinear optimisation generalise the linear
+  programming mindset to realistic engineering design spaces.
+
+opens_to: []
+
+prerequisite_ids:
+  - optimisation
+  - reliability
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Upper-year design becomes a problem of choosing parameters under nonlinear physics and hard constraints."
+    career_example: "Design engineer balancing performance, safety, weight, and cost in a constrained search space"
+  - field: biz
+    label: Finance and quant
+    hook: "Portfolio, scheduling, and operations models become nonlinear once realistic penalties and dynamics are included."
+    career_example: "Quantitative analyst tuning a constrained optimisation model under nonlinear risk penalties"
+  - field: comp
+    label: Computing and data
+    hook: "Training and tuning modern models is an optimisation problem long before it is an implementation problem."
+    career_example: "ML engineer choosing objectives, constraints, and solvers for a real training pipeline"
+
+hook: |
+  Make the structure lighter without making it fail. Increase throughput without
+  violating a pressure limit. Improve prediction quality without blowing the
+  compute budget. Once the world stops being linear, "the best answer" is no
+  longer a corner point on a clean polygon. It is a shape in a curved space,
+  and getting there becomes part geometry, part computation, part judgment.
+
+notation_introduced:
+  - symbol: "f(\\mathbf{x})"
+    reads_as: "f of x bold — the objective function"
+    notation_weight: 2
+  - symbol: "g_i(\\mathbf{x}) \\leq 0"
+    reads_as: "g sub i of x less than or equal to zero — a constraint"
+    notation_weight: 2
+  - symbol: "\\nabla f"
+    reads_as: "grad f — the direction of steepest local increase"
+    notation_weight: 3
+  - symbol: "\\alpha"
+    reads_as: "alpha — a step size"
+    notation_weight: 1
+  - symbol: "\\lambda_i"
+    reads_as: "lambda sub i — a Lagrange multiplier"
+    notation_weight: 3
+  - symbol: "\\mathcal{L}(\\mathbf{x},\\lambda)"
+    reads_as: "the Lagrangian"
+    notation_weight: 3
+
+exercises:
+  type: "project"
+  real_world_context: true
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+Make the structure lighter without making it fail. Increase throughput without
+violating a pressure limit. Improve prediction quality without blowing the
+compute budget. Once the world stops being linear, "the best answer" is no
+longer a corner point on a clean polygon. It is a shape in a curved space,
+and getting there becomes part geometry, part computation, part judgment.
+
+This chapter closes Volume 8 because it gathers together the themes that the
+earlier chapters developed separately. Simulation creates a model of system
+behaviour. Estimation tells you what is known and uncertain. Reliability tells
+you what risk costs you. Optimisation turns all of that into a decision rule.
+
+The mathematics changes here because the objective and constraints are no longer
+linear in the design variables. That means the geometry changes, the algorithms
+change, and the meaning of "best" becomes more local and more conditional.
+
+---
+
+## From linear to nonlinear thinking
+
+In linear programming, the feasible set is a polytope and the optimum sits at a
+vertex. In nonlinear optimisation, neither statement is generally true.
+
+You now have:
+
+- a nonlinear objective $f(\mathbf{x})$
+- nonlinear constraints $g_i(\mathbf{x}) \leq 0$
+- possibly many local optima instead of one clean global answer
+
+The design variable vector $\mathbf{x}$ may represent dimensions, control
+settings, schedule variables, material choices, or hyperparameters. The
+mathematics does not care what professional name the variables carry. It cares
+how objective and constraints bend the space.
+
+The simplest unconstrained update rule is gradient descent:
+
+$$\mathbf{x}_{k+1} = \mathbf{x}_k - \alpha \nabla f(\mathbf{x}_k)$$
+
+The negative gradient points in the direction of steepest local decrease.
+Choose a step size $\alpha$, move, and repeat.
+
+This sounds easy. In practice the difficulties are exactly the ones you would
+expect in a curved space: the descent direction is only locally good, the step
+size can be too large or too small, and constraints can make the locally best
+direction infeasible.
+
+::: {.callout-note appearance="simple"}
+## Computing note: batch versus stochastic gradient descent
+
+The rule above evaluates the full gradient over all data at each step — this is
+**batch gradient descent**. In machine learning, where $f$ is a loss summed over
+millions of examples, evaluating the full gradient per step is computationally
+prohibitive. **Stochastic gradient descent** (SGD) substitutes an estimate of
+the gradient computed on a randomly chosen mini-batch of examples. The update
+direction is noisy but cheap. Modern ML training uses variants of mini-batch
+SGD — Adam, AdaGrad, RMSProp — that also adapt the step size per parameter.
+
+The mathematics of convergence guarantees and step-size schedules for SGD is
+different from the deterministic case, but the core geometry is the same: move
+opposite to an estimate of the gradient, iterate, and check for convergence.
+:::
+
+
+<!-- VIZ: Nonlinear tradeoff surface explorer. Show a 2D contour map of a nonlinear objective with a feasible region overlay. Let the reader move a point, display the gradient vector, and step along a simple descent rule. Include a toggle for constrained versus unconstrained motion so the geometry of "best feasible direction" becomes visible. -->
+
+## Constrained optimisation and the Lagrangian idea
+
+Suppose you want to minimise $f(\mathbf{x})$ subject to an equality constraint
+
+$$h(\mathbf{x}) = 0$$
+
+At an optimum, you usually cannot move in an arbitrary direction because many
+directions leave the feasible surface. The Lagrangian is
+
+$$\mathcal{L}(\mathbf{x}, \lambda) = f(\mathbf{x}) + \lambda h(\mathbf{x})$$
+
+The stationary conditions are
+
+$$\nabla_{\mathbf{x}} \mathcal{L} = 0, \qquad h(\mathbf{x}) = 0$$
+
+Geometrically, this means the gradient of the objective lines up with the
+gradient of the constraint. You cannot improve the objective without leaving
+feasibility.
+
+For inequality constraints the full Karush-Kuhn-Tucker (KKT) conditions are
+needed in general — these extend the Lagrangian stationarity conditions to
+handle inequalities by requiring that each active constraint contributes a
+non-negative multiplier and that inactive constraints exert no force on the
+optimum. The intuition is similar to the equality case: active constraints
+shape which directions are allowed at the optimum.
+
+## Tradeoffs are the real subject
+
+Nonlinear optimisation is often introduced as an algorithm chapter. In upper
+year engineering, it is better understood as a tradeoff chapter.
+
+If you minimise mass, stress may rise. If you maximise throughput, queueing
+risk may rise. If you improve prediction accuracy, compute cost may rise. The
+objective function is therefore not neutral. It encodes what you are willing to
+care about and what you are willing to pay.
+
+That is why sensitivity analysis matters. A computed optimum is only useful if
+you can explain how it shifts when assumptions, weights, or constraints change.
+
+::: {.callout-note appearance="simple"}
+## Why This Works
+
+Optimisation turns design or operational judgment into geometry. The objective
+describes which direction counts as improvement. The constraints describe where
+you are allowed to move. A solution is optimal only relative to both.
+
+In nonlinear settings, there may be many locally good choices. The mathematics
+helps you navigate them, but it does not remove the need to interpret what the
+objective and constraints mean physically.
+:::
+
+## The core method
+
+A first pass through a nonlinear optimisation problem usually goes like this:
+
+1. Choose the design variables.
+2. Write the objective in a way that matches the actual decision.
+3. Write the constraints in physically meaningful form.
+4. Inspect the geometry qualitatively before trusting an algorithm.
+5. Use a numerical method appropriate to smoothness and constraint structure.
+6. Check whether the result is feasible, local or global, and sensitive to
+   modelling assumptions.
+
+This is where all the earlier Volume 8 chapters return. If the model, estimate,
+or risk terms are poor, the optimisation result will be polished nonsense.
+
+## Worked example 1: unconstrained quadratic design objective
+
+Minimise
+
+$$f(x) = x^2 - 4x + 7$$
+
+The derivative is
+
+$$f'(x) = 2x - 4$$
+
+Set it to zero:
+
+$$2x - 4 = 0 \qquad \Rightarrow \qquad x = 2$$
+
+The second derivative is
+
+$$f''(x) = 2 > 0$$
+
+so $x=2$ is a local minimum. The minimum value is
+
+$$f(2) = 4 - 8 + 7 = 3$$
+
+This is a simple example, but it already shows the core logic: stationary point
+plus curvature check.
+
+## Worked example 2: equality-constrained optimisation
+
+Minimise
+
+$$f(x,y) = x^2 + y^2$$
+
+subject to
+
+$$x + y - 1 = 0$$
+
+Form the Lagrangian:
+
+$$\mathcal{L}(x,y,\lambda) = x^2 + y^2 + \lambda(x+y-1)$$
+
+Take derivatives:
+
+$$\frac{\partial \mathcal{L}}{\partial x} = 2x + \lambda = 0$$
+$$\frac{\partial \mathcal{L}}{\partial y} = 2y + \lambda = 0$$
+$$x+y-1 = 0$$
+
+The first two equations imply
+
+$$x = y$$
+
+Then the constraint gives
+
+$$2x = 1 \qquad \Rightarrow \qquad x = y = \frac{1}{2}$$
+
+So the feasible point closest to the origin is
+
+$$\left(\frac{1}{2}, \frac{1}{2}\right)$$
+
+This is the simplest geometric picture of constrained optimisation: the
+objective's level sets touch the feasible set at the best allowable point.
+
+## Worked example 3: design under a penalty tradeoff
+
+Suppose an engineer uses the toy objective
+
+$$J(x) = (x-3)^2 + 0.5x^4$$
+
+Here one term rewards staying near a target value $x=3$, while the quartic term
+penalises large magnitude. This is not exotic. Real design objectives often mix
+performance and regularisation in exactly this way.
+
+Different penalty weights produce different optima. That means the "best"
+design is partly a statement about priorities, not just about calculus.
+
+The same logic appears in many settings. In machine learning, **ridge
+regression** (L2 regularisation) adds a penalty $\lambda\|\mathbf{w}\|^2$ to the
+loss function, trading fit quality for smaller parameter magnitudes. The penalty
+weight $\lambda$ plays the same role as the 0.5 here: it encodes how strongly
+the solver is pushed away from large solutions, and changing it shifts the
+optimum. **Lasso** (L1 regularisation) uses $\lambda\|\mathbf{w}\|_1$ and
+produces sparse solutions for geometric reasons that the Lagrangian framework
+makes precise. Portfolio risk penalties and operations scheduling with nonlinear
+costs follow the same two-term structure.
+
+## Where this goes
+
+This is the terminal chapter of the current volume, so `opens_to` is empty on
+purpose. The continuation is not a single next topic. It is the practice of
+using the whole Volume 8 stack together: models, estimates, risks, and
+objectives inside one decision loop.
+
+By this point, mathematics in the engineering curriculum no longer appears as a
+supporting subject. It is the working medium of design judgment.
+
+::: {.callout-tip appearance="simple"}
+## Applications
+
+- shape and parameter optimisation in engineering design
+- calibration and tuning of controllers
+- operations and scheduling under nonlinear costs
+- portfolio and risk optimisation
+- hyperparameter and training-objective tuning in ML systems
+- multi-objective design under uncertainty
+:::
+
+## Exercises
+
+These are project-style exercises. Always explain what "better" means in the
+problem, not only where the derivative vanishes.
+
+### Exercise 1
+
+Minimise
+
+$$f(x) = x^2 - 6x + 10$$
+
+Find the minimiser and the minimum value.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Differentiate"
+    eq: "f'(x) = 2x - 6"
+    note: ~
+  - op: "Set the derivative to zero"
+    eq: "2x - 6 = 0 \\Rightarrow x = 3"
+    note: ~
+  - op: "Check curvature"
+    eq: "f''(x) = 2 > 0"
+    note: "Positive second derivative means the stationary point is a minimum."
+  - op: "Evaluate the objective"
+    eq: "f(3) = 9 - 18 + 10 = 1"
+    note: ~
+  - op: "Check"
+    eq: "\\text{minimum occurs at } x=3 \\text{ with value } 1"
+    note: ~
+-->
+
+### Exercise 2
+
+Use Lagrange multipliers to minimise
+
+$$f(x,y) = x^2 + 4y^2$$
+
+subject to
+
+$$x + y = 3$$
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the Lagrangian"
+    eq: "\\mathcal{L}(x,y,\\lambda) = x^2 + 4y^2 + \\lambda(x+y-3)"
+    note: ~
+  - op: "Take derivatives"
+    eq: "2x+\\lambda=0, \\qquad 8y+\\lambda=0, \\qquad x+y-3=0"
+    note: ~
+  - op: "Relate x and y"
+    eq: "2x = 8y \\Rightarrow x = 4y"
+    note: "Both equal -\\lambda."
+  - op: "Use the constraint"
+    eq: "4y + y = 3 \\Rightarrow y = \\frac{3}{5}, \\qquad x = \\frac{12}{5}"
+    note: ~
+  - op: "Check"
+    eq: "\\left(\\frac{12}{5}, \\frac{3}{5}\\right) \\text{ satisfies the constraint and the stationarity conditions}"
+    note: ~
+-->
+
+### Exercise 3
+
+An engineering team is choosing a design variable $x$ to minimise
+
+$$J(x) = (x-2)^2 + 0.2x^4$$
+
+Write a short interpretation note answering:
+
+1. what each term in the objective is doing
+2. why this is not a linear optimisation problem
+3. why changing the penalty weight 0.2 would change the preferred design
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Interpret the first term"
+    eq: "(x-2)^2 \\text{ penalises moving away from a target value } x=2"
+    note: ~
+  - op: "Interpret the second term"
+    eq: "0.2x^4 \\text{ penalises large-magnitude designs more strongly as } |x| \\text{ grows}"
+    note: ~
+  - op: "Explain nonlinearity"
+    eq: "x^4 \\text{ makes the objective nonlinear}"
+    note: "The geometry is curved, so linear-programming logic does not apply."
+  - op: "Explain the penalty weight"
+    eq: "\\text{changing 0.2 changes the tradeoff between target matching and size penalty}"
+    note: "Different weights imply different design priorities."
+  - op: "Check"
+    eq: "\\text{the optimum depends on modelling judgment as well as calculus}"
+    note: ~
+-->
+
+### Exercise 4
+
+Choose one optimisation problem from your own field and prepare a one-page
+design brief naming:
+
+1. the design variables
+2. the objective
+3. the constraints
+4. one source of nonlinearity
+5. one uncertainty or reliability issue that should influence the formulation
+6. one reason a computed optimum might still be a bad decision
+
+<!-- VIZ: Feasible-region and tradeoff explorer. Show a nonlinear objective with one or two curved constraints. Let the reader drag weights in a two-term objective and watch the optimum move along the feasible set. Include labels for objective value, active constraints, and local gradient direction. -->

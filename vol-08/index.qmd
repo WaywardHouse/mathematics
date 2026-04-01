@@ -1,0 +1,75 @@
+---
+title: "Volume 8 — Upper-year engineering mathematics"
+status: "draft"
+---
+
+Volume 8 is where the mathematics stops appearing as a course title and
+starts appearing as the working language of upper-year engineering.
+
+By this point the reader should already have the Vol 7 toolkit: ODEs,
+linear algebra, vector calculus, transforms, PDEs, numerical methods,
+optimisation, and probability. The job now is different. Not "learn the
+next theorem" in isolation, but learn how mathematical structures reappear
+inside controls, signals, transport, simulation, estimation, reliability,
+and design.
+
+This volume is anchored to the kinds of mathematics that show up across
+years 3 and 4 of University of Alberta engineering programmes: feedback
+loops, sampled systems, continuum laws, discretised models, noisy data,
+uncertain failure, and constrained nonlinear tradeoffs.
+
+Optional viewpoints from other domains are built in on purpose. The same
+tools matter in atmospheric science, quantitative finance, machine learning,
+geophysics, remote sensing, and operations research. Those side doors are
+not distractions; they help the reader see the mathematics as a transferable
+way of thinking instead of a discipline-specific dialect.
+
+The pipeline for this volume is different too. The authoring job is not
+simply to continue adding topics. It is to test each chapter from several
+angles at once:
+
+- mathematical dependence: does this genuinely grow out of Volume 7?
+- engineering honesty: does this match how upper-year students meet the tool?
+- student readability: does the embedded context obscure the mathematics?
+- visual design: can the system be seen moving, not just described?
+- cross-domain transfer: does the optional viewpoint reveal the same structure?
+
+## Chapters
+
+| Chapter | Title | Core move |
+|---------|-------|-----------|
+| 1 | Control, feedback, and stability | Turn dynamics into decisions about response and robustness |
+| 2 | Discrete-time systems and signal processing | Move from continuous models to sampled systems and filters |
+| 3 | Continuum mechanics and transport | Express materials, fluids, heat, and diffusion as field laws |
+| 4 | Computational methods for engineering models | Turn governing equations into mesh-based computations |
+| 5 | Estimation, inverse problems, and filtering | Recover hidden states and parameters from noisy observations |
+| 6 | Reliability, stochastic systems, and quality | Model failure, queues, variability, and risk over time |
+| 7 | Nonlinear optimisation for design and operations | Choose the best feasible design when tradeoffs are real |
+
+## U of A anchors
+
+This volume is not a copy of any one programme calendar, but it is anchored
+to the kinds of mathematical work that appear in current upper-year UAlberta
+engineering courses: control systems, signals and systems, process dynamics,
+engineering statistics, process data analytics, and simulation-heavy design.
+
+## Pipeline notes
+
+The first pipeline pass on Volume 8 produced three main decisions:
+
+1. Keep the centre of gravity on engineering practice, not on a second pass
+through generic advanced mathematics.
+2. Make every chapter carry at least one optional viewpoint from another
+domain, but only where the structure is truly parallel.
+3. Treat visualisation as mandatory, because upper-year mathematics is now
+about systems, flows, feedback loops, noisy measurements, and tradeoff
+surfaces.
+
+## Optional viewpoints
+
+| Viewpoint | What it adds |
+|-----------|--------------|
+| Hard sciences | Stability, waves, transport, and inverse problems in physical systems |
+| Computing and data | Signal processing, state estimation, control software, and learned models |
+| Finance and quant | Filtering, stochastic evolution, optimisation under uncertainty |
+| Geography and environment | Flow, dispersion, remote sensing inversion, and spatial risk |

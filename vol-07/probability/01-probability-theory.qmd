@@ -1,6 +1,2208 @@
 ---
 title: "Probability theory"
-status: "seed"
+subtitle: "Quantifying uncertainty"
+chapter: 1
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: |
+  You have a process whose outcome you cannot predict exactly.
+  You want to say something precise about the long run.
+
+rewrite: |
+  A probability distribution is a complete description of all possible
+  outcomes and their likelihoods. Expectation, variance, and the CLT
+  let you reason about sums, means, and rare events.
+
+opens_to:
+  - id: vol7-probability-02
+    label: "Mathematical statistics"
+    volume: 7
+    relationship: enables
+
+prerequisite_ids:
+  - int_calc
+  - stat_advanced
+
+destinations:
+  - field: sci
+    label: Hard sciences
+    hook: "A particle detector records counts per second — modelling that as Poisson tells you when a reading is anomalous and when it's noise."
+    career_example: "Physicist calibrating detector thresholds"
+  - field: biz
+    label: Finance and quant
+    hook: "Option pricing requires a probability distribution over future asset prices — the normal distribution and its parameters are the inputs to Black–Scholes."
+    career_example: "Quantitative analyst pricing derivatives"
+  - field: comp
+    label: Computing and data
+    hook: "A machine learning model outputs a probability distribution — understanding expectation, variance, and the CLT is required to interpret its predictions."
+    career_example: "Data scientist evaluating model calibration"
+  - field: geo
+    label: Geography and environment
+    hook: "Flood frequency analysis fits extreme-value distributions (Gumbel, log-Pearson III) to annual peak flows — the same probability machinery used throughout this chapter gives you the '100-year flood' threshold from 30 years of records."
+    career_example: "Hydrologist estimating flood risk"
+
+hook: |
+  A component comes off a production line. You don't know whether it's
+  defective. You test 1000 and 23 fail. What can you say about the next
+  one? About the next batch of 500?
+
+  A medical test has a 99% accuracy rate. It comes back positive. What
+  is the probability you actually have the condition?
+
+  You run a server that receives requests at random. In the last hour it
+  handled 240 requests. What's the probability that in the next minute
+  it receives more than 6?
+
+  These questions have precise answers. Getting them requires a framework
+  for describing uncertainty with numbers — assigning likelihoods to
+  outcomes, combining them consistently, and extracting the quantities
+  (mean, spread, tail probability) that are actually useful.
+
+notation_introduced:
+  - symbol: "Ω"
+    reads_as: "omega — the sample space, the set of all possible outcomes"
+    notation_weight: 2
+  - symbol: "P(A)"
+    reads_as: "the probability of event A — a number between 0 and 1"
+    notation_weight: 1
+  - symbol: "P(A | B)"
+    reads_as: "the probability of A given that B has occurred"
+    notation_weight: 2
+  - symbol: "f(x)"
+    reads_as: "the probability density function — how likely values near x are"
+    notation_weight: 2
+  - symbol: "F(x)"
+    reads_as: "the cumulative distribution function — P(X ≤ x)"
+    notation_weight: 2
+  - symbol: "E[X]"
+    reads_as: "the expected value of X — the long-run average"
+    notation_weight: 2
+  - symbol: "Var(X)"
+    reads_as: "the variance of X — the average squared deviation from the mean"
+    notation_weight: 2
+  - symbol: "σ"
+    reads_as: "sigma — the standard deviation, the square root of variance"
+    notation_weight: 1
+  - symbol: "μ"
+    reads_as: "mu — the mean (expected value) of a distribution"
+    notation_weight: 1
+  - symbol: "Φ(z)"
+    reads_as: "capital phi — the CDF of the standard normal distribution N(0,1)"
+    notation_weight: 2
+  - symbol: "Cov(X,Y)"
+    reads_as: "the covariance of X and Y — how much they move together"
+    notation_weight: 2
+  - symbol: "ρ(X,Y)"
+    reads_as: "rho — the correlation coefficient, covariance normalised to [−1, 1]"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+kreyszig_chapter: 24
+stroud_programme: null
+uofa_course: "STAT 151"
 ---
 
-*Seed — front matter to be completed before content is written.*
+<!-- ENGINEER-PROF: uofa_course maps to STAT 151, which is a non-specialist introductory statistics course. Vol 7 targets engineering-mathematics level (Kreyszig). The U of A equivalent for engineering probability is STAT 265 (Probability and Statistics for Engineers) or ECE 340. Consider updating to STAT 265 or removing the mapping if no direct course match exists. -->
+
+A component comes off a production line. You don't know whether it's
+defective. You test 1000 and 23 fail. What can you say about the next
+one? About the next batch of 500?
+
+These questions have precise answers. Getting them requires a framework
+for describing uncertainty — assigning likelihoods to outcomes, combining
+them consistently, and extracting the quantities that are actually useful.
+
+
+## Probability axioms
+
+### Sample space and events
+
+The **sample space** $\Omega$ (read: "omega") is the complete set of possible
+outcomes of an experiment. For a coin flip, $\Omega = \{\text{heads}, \text{tails}\}$.
+For rolling a six-sided die, $\Omega = \{1, 2, 3, 4, 5, 6\}$. For the lifetime
+of a component in hours, $\Omega = [0, \infty)$.
+
+An **event** $A$ is any subset of $\Omega$ — a collection of outcomes you care
+about. The event "roll an even number" is the subset $\{2, 4, 6\} \subset \Omega$.
+
+### Kolmogorov axioms
+
+A **probability measure** $P$ assigns a number to each event. Three axioms
+define what that assignment must satisfy:
+
+1. **Non-negativity:** $P(A) \geq 0$ for every event $A$.
+2. **Normalisation:** $P(\Omega) = 1$ — something must happen.
+3. **Additivity:** For mutually exclusive events $A$ and $B$ (events that
+   cannot both occur), $P(A \cup B) = P(A) + P(B)$.
+
+These axioms are the whole foundation. Everything else is a consequence.
+
+From them you can show:
+
+- $P(\emptyset) = 0$ (the impossible event has probability zero)
+- $P(A^c) = 1 - P(A)$, where $A^c$ is the complement of $A$ (everything not in $A$)
+- If $A \subset B$ then $P(A) \leq P(B)$
+- The inclusion-exclusion rule: $P(A \cup B) = P(A) + P(B) - P(A \cap B)$
+
+The third axiom extends to any countable collection of mutually exclusive events:
+$P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots$
+
+<!-- STUDENT: The word "countable" is introduced here without explanation. At the engineering layer a reader knows finite sets, but "countably infinite" versus "uncountably infinite" is likely new. A single parenthetical — "(finitely many or an infinite but listable sequence)" — would remove the confusion without adding bulk. -->
+
+### Conditional probability
+
+The **conditional probability** of $A$ given $B$ — written $P(A \mid B)$, read
+"probability of $A$ given $B$" — is defined as:
+
+$$P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad P(B) > 0$$
+
+This is the fraction of $B$'s probability that overlaps with $A$. If you know $B$
+has occurred, you're restricting attention to the outcomes in $B$ and asking
+what fraction of those are also in $A$.
+
+<!-- VIZ: Conditional probability — area model
+Unit square representing Ω. Two draggable oval regions A and B. Conditioning on B means zooming in to B.
+-->
+
+```{ojs}
+//| echo: false
+{
+  // ── Conditional probability area model (OPPORTUNITY 1) ───────────────────
+  const W=520, H=320, PAD={top:20,right:180,bottom:20,left:20};
+  const BLUE="rgba(59,130,246,0.55)", ORANGE="rgba(249,115,22,0.55)";
+  const BLUE_STROKE="#3b82f6", ORANGE_STROKE="#f97316";
+  const BLEND="rgba(139,92,246,0.55)";
+
+  // A: ellipse centred at (ax,ay) with radii (arx,ary)
+  // B: ellipse centred at (bx,by) with radii (brx,bry)
+  let state={ax:0.3,ay:0.5,arx:0.22,ary:0.30,bx:0.62,by:0.5,brx:0.24,bry:0.30};
+  let condOnB=false;
+  let dragging=null, dragStart=null;
+  let svgRect=null;
+
+  function ellipseArea(rx,ry) { return Math.PI*rx*ry; } // in unit-square coords
+  function intersectionArea(state) {
+    // Monte Carlo estimate
+    const {ax,ay,arx,ary,bx,by,brx,bry}=state;
+    let inA=0,inB=0,inBoth=0;
+    const M=3000;
+    let s=42;
+    function lcg(){s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff;}
+    for(let i=0;i<M;i++){
+      const x=lcg(),y=lcg();
+      const a=((x-ax)/arx)**2+((y-ay)/ary)**2<=1;
+      const b=((x-bx)/brx)**2+((y-by)/bry)**2<=1;
+      if(a)inA++;if(b)inB++;if(a&&b)inBoth++;
+    }
+    return {pA:inA/M, pB:inB/M, pAB:inBoth/M};
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="font-family:inherit; max-width:560px; margin:1rem 0;";
+
+  const svgEl=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svgEl.setAttribute("width",W); svgEl.setAttribute("height",H);
+  svgEl.style.cssText="border:1px solid #e5e7eb; border-radius:6px; background:#fff; display:block; cursor:move;";
+  container.appendChild(svgEl);
+
+  // controls
+  const ctrlRow=document.createElement("div");
+  ctrlRow.style.cssText="display:flex; gap:0.5rem; align-items:center; margin-top:0.5rem; flex-wrap:wrap;";
+  const condBtn=document.createElement("button");
+  condBtn.textContent="Condition on B";
+  condBtn.style.cssText="padding:0.3rem 0.8rem; border:1px solid #d1d5db; border-radius:4px; cursor:pointer; font-size:0.85em; background:#f9fafb;";
+  condBtn.onclick=()=>{condOnB=!condOnB; condBtn.style.background=condOnB?ORANGE_STROKE:"#f9fafb"; condBtn.style.color=condOnB?"#fff":"#374151"; draw();};
+  const resetBtn=document.createElement("button");
+  resetBtn.textContent="Reset";
+  resetBtn.style.cssText="padding:0.3rem 0.7rem; border:1px solid #e5e7eb; border-radius:4px; cursor:pointer; font-size:0.85em; background:#f8fafc; color:#6b7280;";
+  resetBtn.onclick=()=>{state={ax:0.3,ay:0.5,arx:0.22,ary:0.30,bx:0.62,by:0.5,brx:0.24,bry:0.30};condOnB=false;condBtn.style.background="#f9fafb";condBtn.style.color="#374151";draw();};
+  ctrlRow.appendChild(condBtn); ctrlRow.appendChild(resetBtn);
+  const hint=document.createElement("span");
+  hint.style.cssText="font-size:0.78em; color:#6b7280;"; hint.textContent="Drag A or B to reposition";
+  ctrlRow.appendChild(hint);
+  container.appendChild(ctrlRow);
+
+  const labelDiv=document.createElement("div");
+  labelDiv.style.cssText="margin-top:0.35rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  labelDiv.textContent='Conditioning on B means zooming in to B. P(A|B) is the fraction of B that overlaps A.';
+  container.appendChild(labelDiv);
+
+  function toSVG(ux,uy) {
+    const sqW=W-PAD.left-PAD.right, sqH=H-PAD.top-PAD.bottom;
+    return [PAD.left+ux*sqW, PAD.top+uy*sqH];
+  }
+  function fromSVG(sx,sy) {
+    const sqW=W-PAD.left-PAD.right, sqH=H-PAD.top-PAD.bottom;
+    return [(sx-PAD.left)/sqW, (sy-PAD.top)/sqH];
+  }
+
+  function draw() {
+    while(svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+    const sqW=W-PAD.left-PAD.right, sqH=H-PAD.top-PAD.bottom;
+    const {ax,ay,arx,ary,bx,by,brx,bry}=state;
+
+    // background rect (Ω)
+    const omegaRect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+    omegaRect.setAttribute("x",PAD.left); omegaRect.setAttribute("y",PAD.top);
+    omegaRect.setAttribute("width",sqW); omegaRect.setAttribute("height",sqH);
+    omegaRect.setAttribute("fill", condOnB?"#f3f4f6":"#f9fafb");
+    omegaRect.setAttribute("stroke","#d1d5db"); omegaRect.setAttribute("rx","4");
+    svgEl.appendChild(omegaRect);
+    const omLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    omLbl.setAttribute("x",PAD.left+6); omLbl.setAttribute("y",PAD.top+16);
+    omLbl.setAttribute("font-size","13"); omLbl.setAttribute("fill","#9ca3af");
+    omLbl.textContent="Ω"; svgEl.appendChild(omLbl);
+
+    const [axSVG,aySVG]=toSVG(ax,ay);
+    const [bxSVG,bySVG]=toSVG(bx,by);
+    const arxSVG=arx*sqW, arySVG=ary*sqH;
+    const brxSVG=brx*sqW, brySVG=bry*sqH;
+
+    function makeEllipse(cx,cy,rx,ry,fill,stroke,opacity=1) {
+      const el=document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+      el.setAttribute("cx",cx); el.setAttribute("cy",cy);
+      el.setAttribute("rx",rx); el.setAttribute("ry",ry);
+      el.setAttribute("fill",fill); el.setAttribute("stroke",stroke);
+      el.setAttribute("stroke-width","2"); el.setAttribute("opacity",opacity);
+      return el;
+    }
+
+    if(!condOnB) {
+      svgEl.appendChild(makeEllipse(axSVG,aySVG,arxSVG,arySVG,BLUE,BLUE_STROKE));
+      svgEl.appendChild(makeEllipse(bxSVG,bySVG,brxSVG,brySVG,ORANGE,ORANGE_STROKE));
+    } else {
+      // grey out everything, show B clearly, show A∩B
+      svgEl.appendChild(makeEllipse(axSVG,aySVG,arxSVG,arySVG,BLUE,BLUE_STROKE,0.18));
+      svgEl.appendChild(makeEllipse(bxSVG,bySVG,brxSVG,brySVG,ORANGE,ORANGE_STROKE,0.55));
+      // A∩B region approximated visually as darkened intersection
+      const overEl=document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+      // Draw a smaller "intersection" ellipse centred at the midpoint, scaled
+      const ixc=(axSVG+bxSVG)/2, iyc=(aySVG+bySVG)/2;
+      const irx=Math.max(2,Math.min(arxSVG,brxSVG)*0.65);
+      const iry=Math.max(2,Math.min(arySVG,brySVG)*0.65);
+      const dist=Math.sqrt((axSVG-bxSVG)**2+(aySVG-bySVG)**2);
+      if(dist<(arxSVG+brxSVG)*0.85) {
+        const intEl=makeEllipse(ixc,iyc,irx,iry,BLEND,BLUE_STROKE,0.7);
+        svgEl.appendChild(intEl);
+      }
+    }
+
+    // Labels A and B
+    const aLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    aLbl.setAttribute("x",axSVG); aLbl.setAttribute("y",aySVG+4);
+    aLbl.setAttribute("text-anchor","middle"); aLbl.setAttribute("font-size","16");
+    aLbl.setAttribute("font-weight","700"); aLbl.setAttribute("fill","#1d4ed8"); aLbl.textContent="A";
+    svgEl.appendChild(aLbl);
+    const bLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    bLbl.setAttribute("x",bxSVG); bLbl.setAttribute("y",bySVG+4);
+    bLbl.setAttribute("text-anchor","middle"); bLbl.setAttribute("font-size","16");
+    bLbl.setAttribute("font-weight","700"); bLbl.setAttribute("fill","#c2410c"); bLbl.textContent="B";
+    svgEl.appendChild(bLbl);
+
+    // Readout panel (right side)
+    const panelX=W-PAD.right+14, panelY=PAD.top;
+    const {pA,pB,pAB}=intersectionArea(state);
+    const pAgivenB=pB>0.001?pAB/pB:0;
+    const indep=Math.abs(pAB-pA*pB)<0.02;
+    const lines=[
+      {label:"P(A):",val:pA.toFixed(2),color:"#3b82f6"},
+      {label:"P(B):",val:pB.toFixed(2),color:"#f97316"},
+      {label:"P(A∩B):",val:pAB.toFixed(2),color:"#7c3aed"},
+      {label:"P(A|B):",val:pAgivenB.toFixed(2),color:"#374151",big:true},
+    ];
+    lines.forEach(({label,val,color,big},i)=>{
+      const lbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+      lbl.setAttribute("x",panelX); lbl.setAttribute("y",panelY+25+i*26);
+      lbl.setAttribute("font-size",big?"13":"12"); lbl.setAttribute("fill",color);
+      lbl.setAttribute("font-weight",big?"700":"400");
+      lbl.textContent=`${label} ${val}`;
+      svgEl.appendChild(lbl);
+    });
+    if(indep) {
+      const indLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+      indLbl.setAttribute("x",panelX); indLbl.setAttribute("y",panelY+135);
+      indLbl.setAttribute("font-size","10"); indLbl.setAttribute("fill","#059669");
+      indLbl.textContent="✓ ≈ Independent";
+      svgEl.appendChild(indLbl);
+    }
+    if(condOnB) {
+      const condNote=document.createElementNS("http://www.w3.org/2000/svg","text");
+      condNote.setAttribute("x",panelX); condNote.setAttribute("y",panelY+160);
+      condNote.setAttribute("font-size","9"); condNote.setAttribute("fill","#6b7280");
+      condNote.textContent="Inside B only.";
+      svgEl.appendChild(condNote);
+    }
+  }
+
+  // drag handling
+  function getPos(e) {
+    svgRect=svgEl.getBoundingClientRect();
+    const cx=e.clientX-svgRect.left, cy=e.clientY-svgRect.top;
+    return fromSVG(cx,cy);
+  }
+  svgEl.addEventListener("mousedown",e=>{
+    const [ux,uy]=getPos(e);
+    const {ax,ay,arx,ary,bx,by,brx,bry}=state;
+    const inA=((ux-ax)/arx)**2+((uy-ay)/ary)**2<=1;
+    const inB=((ux-bx)/brx)**2+((uy-by)/bry)**2<=1;
+    if(inB) dragging="B"; else if(inA) dragging="A";
+    dragStart=[ux,uy];
+  });
+  window.addEventListener("mousemove",e=>{
+    if(!dragging) return;
+    const [ux,uy]=getPos(e);
+    const [dx,dy]=[ux-dragStart[0],uy-dragStart[1]];
+    dragStart=[ux,uy];
+    if(dragging==="A") { state.ax=Math.max(0.1,Math.min(0.9,state.ax+dx)); state.ay=Math.max(0.1,Math.min(0.9,state.ay+dy)); }
+    if(dragging==="B") { state.bx=Math.max(0.1,Math.min(0.9,state.bx+dx)); state.by=Math.max(0.1,Math.min(0.9,state.by+dy)); }
+    draw();
+  });
+  window.addEventListener("mouseup",()=>{ dragging=null; });
+
+  draw();
+  return container;
+}
+```
+
+Two events $A$ and $B$ are **independent** if knowing $B$ occurred tells you
+nothing about $A$:
+
+$$P(A \mid B) = P(A) \iff P(A \cap B) = P(A) \cdot P(B)$$
+
+<!-- STUDENT: The biconditional "⟺" is presented without proof. A reader new to formal probability will accept it but won't see why the two forms are equivalent. The left-to-right direction is a one-line substitution from the definition of conditional probability directly above; spelling it out briefly would close this gap. -->
+
+### Bayes' theorem
+
+Rearranging the definition of conditional probability:
+
+$$P(A \cap B) = P(A \mid B) \cdot P(B) = P(B \mid A) \cdot P(A)$$
+
+Solving for $P(A \mid B)$:
+
+$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
+
+This is **Bayes' theorem**. It lets you reverse the conditioning: if you know
+$P(B \mid A)$, you can compute $P(A \mid B)$.
+
+The denominator $P(B)$ is expanded using the **total probability rule**. If
+$A_1, A_2, \ldots, A_n$ partition $\Omega$ (exhaustive, mutually exclusive), then:
+
+$$P(B) = \sum_{i=1}^{n} P(B \mid A_i) \cdot P(A_i)$$
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+Bayes' theorem doesn't involve any new mathematics — it's just two ways
+of writing the same joint probability $P(A \cap B)$, set equal. What
+makes it powerful is the direction: you have the likelihood $P(B \mid A)$
+(how probable is the evidence given the hypothesis?) and you want
+$P(A \mid B)$ (how probable is the hypothesis given the evidence?). Bayes
+is the bridge between them.
+:::
+
+**Worked example: Medical test.** A disease affects 1% of the population.
+A test for it has sensitivity 99% (correctly identifies 99% of sick patients)
+and specificity 95% (correctly clears 95% of healthy patients).
+A randomly selected person tests positive. What is the probability they
+actually have the disease?
+
+Define:
+- $D$: the person has the disease
+- $T^+$: the test is positive
+
+Given: $P(D) = 0.01$, $P(T^+ \mid D) = 0.99$ (sensitivity), $P(T^+ \mid D^c) = 0.05$
+
+Note also that $P(D^c) = 1 - P(D) = 1 - 0.01 = 0.99$ — the complement
+of the prevalence, which happens to equal the sensitivity by coincidence.
+
+First compute the total probability of a positive test, using the two
+ways a positive result can occur:
+
+$$P(T^+) = P(T^+ \mid D) \cdot P(D) + P(T^+ \mid D^c) \cdot P(D^c)$$
+$$= \underbrace{0.99}_{\text{sensitivity}} \times 0.01
+  + 0.05 \times \underbrace{0.99}_{P(D^c) = 1 - 0.01}
+  = 0.0099 + 0.0495 = 0.0594$$
+
+<!-- MATH-PROF: The second factor 0.99 is P(D^c) = 1 - 0.01 = 0.99, which coincidentally equals the sensitivity P(T+|D) = 0.99. Consider substituting 1 - 0.01 = 0.99 or labelling which 0.99 is which, to prevent reader confusion. The arithmetic is correct. -->
+
+Now apply Bayes:
+
+$$P(D \mid T^+) = \frac{P(T^+ \mid D) \cdot P(D)}{P(T^+)} = \frac{0.99 \times 0.01}{0.0594} \approx 0.167$$
+
+<!-- STUDENT: The number 0.99 appears three times in the calculation with two different meanings: once as the sensitivity P(T+|D) = 0.99 and once as P(D^c) = 1 − 0.01 = 0.99. The math-prof flag notes the arithmetic is correct, but to the reader the two 0.99s look like the same thing copied. Without a label, it is not obvious that the second 0.99 comes from P(D^c), not from the sensitivity. -->
+
+Even with a positive result from a 99%-sensitive test, the probability of
+actually having the disease is only about 17%. This is not a failure of
+the test — it's a consequence of the disease being rare. Most of the
+positive tests come from the large healthy population, not the small
+sick one. The prior probability $P(D)$ matters enormously.
+
+
+## Random variables
+
+A **random variable** $X$ is a function from the sample space $\Omega$ to
+the real numbers — it assigns a numerical value to each outcome. The
+randomness is in the outcome; the function is deterministic.
+
+**Discrete random variables** take values in a countable set
+$\{x_1, x_2, \ldots\}$. The distribution is completely described by the
+**probability mass function** (PMF):
+
+$$p(x_i) = P(X = x_i), \quad \sum_i p(x_i) = 1$$
+
+**Continuous random variables** take values in an interval (or union of
+intervals). The distribution is described by the **probability density
+function** (PDF) $f(x)$, where:
+
+$$P(a \leq X \leq b) = \int_a^b f(x)\, dx, \quad \int_{-\infty}^{\infty} f(x)\, dx = 1$$
+
+Note that $f(x)$ is *not* a probability — it can exceed 1. It's a density:
+the probability of $X$ falling in a small interval $[x, x + dx]$ is
+approximately $f(x)\, dx$.
+
+A concrete example: if $X \sim \text{Uniform}(0,\, 0.5)$, then $f(x) = 2$
+everywhere on $[0, 0.5]$. The density is 2, yet $P(0 \leq X \leq 0.5) = \int_0^{0.5} 2\, dx = 1$. The density can exceed 1; the integral over any interval is still between 0 and 1.
+
+<!-- STUDENT: This is one of the genuinely confusing conceptual barriers for new learners. The explanation that "f(x) can exceed 1" will stop many readers cold — they just learned that probabilities are between 0 and 1. A concrete example would help, e.g. "Uniform(0, 0.5) has f(x) = 2 everywhere on [0, 0.5]." The prose explanation using dx is correct but relies on infinitesimal reasoning that may not be second nature. -->
+
+The **cumulative distribution function** (CDF) is defined for both types:
+
+$$F(x) = P(X \leq x)$$
+
+For continuous $X$: $F(x) = \int_{-\infty}^{x} f(t)\, dt$, and $f(x) = F'(x)$.
+
+### Expectation
+
+The **expected value** $E[X]$ — also written $\mu$ (mu) — is the long-run
+average of $X$ over many repetitions:
+
+**Discrete:** $\displaystyle E[X] = \sum_i x_i \, p(x_i)$
+
+**Continuous:** $\displaystyle E[X] = \int_{-\infty}^{\infty} x \, f(x)\, dx$
+
+Expectation is linear: $E[aX + b] = a\,E[X] + b$ for constants $a$, $b$.
+
+For a function $g(X)$:
+
+$$E[g(X)] = \sum_i g(x_i)\, p(x_i) \quad \text{(discrete)}$$
+
+$$E[g(X)] = \int_{-\infty}^{\infty} g(x)\, f(x)\, dx \quad \text{(continuous)}$$
+
+### Variance
+
+The **variance** $\text{Var}(X)$ — also written $\sigma^2$ (sigma squared) —
+measures the average squared deviation from the mean:
+
+$$\text{Var}(X) = E\!\left[(X - \mu)^2\right] = E[X^2] - (E[X])^2$$
+
+The second form is usually easier to compute. The derivation:
+
+$$E\!\left[(X - \mu)^2\right] = E[X^2 - 2\mu X + \mu^2]
+= E[X^2] - 2\mu\,E[X] + \mu^2$$
+
+Since $E[X] = \mu$, the last two terms combine: $-2\mu \cdot \mu + \mu^2 = -2\mu^2 + \mu^2 = -\mu^2$. So:
+
+$$= E[X^2] - \mu^2$$
+
+<!-- STUDENT: The last equality collapses E[X²] − 2μ·E[X] + μ² to E[X²] − μ² without stating that E[X] = μ makes −2μ·μ + μ² = −μ². This is only one line of algebra, but the step is invisible. A reader who doesn't see it will not know whether they missed something. -->
+
+The **standard deviation** $\sigma = \sqrt{\text{Var}(X)}$ is in the same
+units as $X$, which makes it interpretable.
+
+Variance scales with the square: $\text{Var}(aX + b) = a^2\,\text{Var}(X)$.
+
+For independent random variables $X$ and $Y$:
+$\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)$.
+
+
+## Key discrete distributions
+
+### Bernoulli
+
+A single trial with probability $p$ of success, $1-p$ of failure.
+
+$$P(X = 1) = p, \quad P(X = 0) = 1 - p$$
+
+$$E[X] = p, \quad \text{Var}(X) = p(1-p)$$
+
+The Bernoulli is the building block for everything that follows.
+
+### Binomial
+
+$n$ independent Bernoulli trials, each with success probability $p$.
+$X$ counts the total number of successes.
+
+$$P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}, \quad k = 0, 1, \ldots, n$$
+
+The binomial coefficient $\binom{n}{k}$ — read "n choose k" — counts the
+number of ways to arrange $k$ successes among $n$ trials:
+
+$$\binom{n}{k} = \frac{n!}{k!(n-k)!}$$
+
+**Mean and variance.** Since $X$ is the sum of $n$ independent Bernoulli
+trials, linearity of expectation and variance additivity give:
+
+$$E[X] = np, \quad \text{Var}(X) = np(1-p)$$
+
+**Normal approximation.** When $np \geq 5$ and $n(1-p) \geq 5$, the
+binomial is well approximated by a normal distribution with the same
+mean and variance. This is one preview of the CLT.
+
+<!-- STUDENT: "This is one preview of the CLT" is a wayfinding hint, but the reader doesn't yet know what the CLT is. The phrase will be understood in retrospect (after reading the CLT section), but on first encounter it reads as a forward reference that explains nothing. A brief pointer — "see the CLT section later in this chapter" — would let the reader know to come back to this, rather than wondering what they missed. -->
+
+### Poisson
+
+Models the number of events occurring in a fixed interval of time or
+space, when events occur independently at a constant average rate.
+
+$$P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}, \quad k = 0, 1, 2, \ldots$$
+
+The parameter $\lambda > 0$ — read "lambda" — is both the mean and
+the variance:
+
+$$E[X] = \lambda, \quad \text{Var}(X) = \lambda$$
+
+**As a limit of Binomial.** Set $\lambda = np$ and let $n \to \infty$,
+$p \to 0$. The binomial PMF converges to the Poisson. This is why the
+Poisson appears when events are rare but trials are many: the number
+of typing errors per page, radioactive decays per second, server requests
+per minute.
+
+**Derivation of the mean.** Using the Poisson PMF:
+
+$$E[X] = \sum_{k=0}^{\infty} k \cdot \frac{\lambda^k e^{-\lambda}}{k!}
+= e^{-\lambda} \sum_{k=1}^{\infty} \frac{\lambda^k}{(k-1)!}
+= e^{-\lambda} \cdot \lambda \sum_{j=0}^{\infty} \frac{\lambda^j}{j!}
+= e^{-\lambda} \cdot \lambda \cdot e^{\lambda} = \lambda$$
+
+<!-- VIZ: Distribution landscape explorer
+Two-panel layout. Left: the shape. Right: three live readouts.
+
+LEFT PANEL — the distribution shape.
+- Toggle between: Bernoulli(p) | Binomial(n,p) | Poisson(λ) | Exponential(λ) | Normal(μ,σ).
+- Discrete distributions drawn as lollipop (stem-and-dot) charts, probability on y-axis, k on x-axis.
+- Continuous distributions drawn as filled area curves, density on y-axis.
+- A vertical dashed line at the mean μ, labelled "μ = [value]".
+- A horizontal double-headed arrow spanning [μ−σ, μ+σ], labelled "±1σ".
+- The area under the curve in the interval [μ−σ, μ+σ] shaded in a lighter tint of the series accent colour (for continuous distributions only).
+
+RIGHT PANEL — live readouts updating with sliders.
+- "Mean: [value]" — plain number.
+- "Variance: [value]" — plain number.
+- "P(X ≤ median) ≈ 0.5" — shows whether the distribution is symmetric (for skewed distributions, label updates: "Skewed: median ≠ mean").
+
+LABEL: "Every distribution is a landscape: a shape, a centre, and a spread."
+-->
+
+```{ojs}
+//| echo: false
+{
+  // ── Distribution landscape explorer ──────────────────────────────────────
+  const W = 500, H = 280, PAD = { top: 24, right: 20, bottom: 40, left: 48 };
+  const ACCENT = "#3b82f6";
+  const ACCENT_MUTED = "rgba(59,130,246,0.18)";
+
+  // ── state ─────────────────────────────────────────────────────────────────
+  const distNames = ["Bernoulli", "Binomial", "Poisson", "Exponential", "Normal"];
+  let distIdx = 4;     // default: Normal
+  let params = { p: 0.5, n: 10, lam: 2, mu: 0, sigma: 1 };
+
+  // ── helpers ──────────────────────────────────────────────────────────────
+  function factorial(k) { let r=1; for(let i=2;i<=k;i++) r*=i; return r; }
+  function normalPDF(x,mu,sig) { return Math.exp(-0.5*((x-mu)/sig)**2)/(sig*Math.sqrt(2*Math.PI)); }
+  function normalCDF(x,mu,sig) {
+    const z=(x-mu)/(sig*Math.SQRT2);
+    return 0.5*(1+erf(z));
+  }
+  function erf(x) {
+    const sign = x<0?-1:1; x=Math.abs(x);
+    const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    const t=1/(1+p*x);
+    const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+    return sign*y;
+  }
+  function poissonPMF(k,lam) { return Math.pow(lam,k)*Math.exp(-lam)/factorial(k); }
+  function binomPMF(k,n,p) {
+    if(k<0||k>n) return 0;
+    const logC = logBinom(n,k);
+    return Math.exp(logC + k*Math.log(p) + (n-k)*Math.log(1-p));
+  }
+  function logBinom(n,k) {
+    let r=0; for(let i=0;i<k;i++) r+=Math.log(n-i)-Math.log(i+1); return r;
+  }
+
+  function getDistInfo() {
+    const d = distNames[distIdx];
+    if(d==="Bernoulli") {
+      const p=params.p; const mu=p; const variance=p*(1-p); const sigma=Math.sqrt(variance);
+      const xs=[0,1]; const ys=[1-p,p];
+      return { discrete:true, xs, ys, mu, variance, sigma, label:`Bernoulli(p=${p.toFixed(2)})` };
+    }
+    if(d==="Binomial") {
+      const {n,p}=params; const mu=n*p; const variance=n*p*(1-p); const sigma=Math.sqrt(variance);
+      const xs=[...Array(n+1).keys()]; const ys=xs.map(k=>binomPMF(k,n,p));
+      return { discrete:true, xs, ys, mu, variance, sigma, label:`Binomial(n=${n}, p=${p.toFixed(2)})` };
+    }
+    if(d==="Poisson") {
+      const lam=params.lam; const mu=lam; const variance=lam; const sigma=Math.sqrt(lam);
+      const maxK=Math.ceil(lam+4*sigma+5);
+      const xs=[...Array(maxK+1).keys()]; const ys=xs.map(k=>poissonPMF(k,lam));
+      return { discrete:true, xs, ys, mu, variance, sigma, label:`Poisson(λ=${lam.toFixed(1)})` };
+    }
+    if(d==="Exponential") {
+      const lam=params.lam; const mu=1/lam; const variance=1/(lam*lam); const sigma=1/lam;
+      const xmax=mu+5*sigma; const nPts=200;
+      const xs=Array.from({length:nPts},(_,i)=>i*xmax/(nPts-1));
+      const ys=xs.map(x=>x>=0?lam*Math.exp(-lam*x):0);
+      return { discrete:false, xs, ys, mu, variance, sigma, label:`Exponential(λ=${lam.toFixed(2)})`, xmax };
+    }
+    // Normal
+    const {mu,sigma}=params; const variance=sigma*sigma;
+    const xmin=mu-4*sigma, xmax=mu+4*sigma; const nPts=200;
+    const xs=Array.from({length:nPts},(_,i)=>xmin+i*(xmax-xmin)/(nPts-1));
+    const ys=xs.map(x=>normalPDF(x,mu,sigma));
+    return { discrete:false, xs, ys, mu, variance, sigma, label:`Normal(μ=${mu.toFixed(1)}, σ=${sigma.toFixed(1)})`, xmin, xmax };
+  }
+
+  // ── build UI ───────────────────────────────────────────────────────────────
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:680px; margin:1rem 0;";
+
+  // dist selector
+  const selectorRow = document.createElement("div");
+  selectorRow.style.cssText = "display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.75rem;";
+  const btns = distNames.map((name,i)=>{
+    const b=document.createElement("button");
+    b.textContent=name; b.dataset.idx=i;
+    b.style.cssText = "padding:0.3rem 0.7rem; border-radius:4px; border:1px solid #d1d5db; cursor:pointer; font-size:0.85em; background:#f9fafb;";
+    b.onclick=()=>{ distIdx=i; update(); };
+    selectorRow.appendChild(b);
+    return b;
+  });
+  container.appendChild(selectorRow);
+
+  // main layout: left (canvas) + right (readouts)
+  const mainRow = document.createElement("div");
+  mainRow.style.cssText = "display:flex; gap:1rem; align-items:flex-start;";
+
+  // svg
+  const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; background:#fff; flex-shrink:0;";
+  mainRow.appendChild(svg);
+
+  // readout panel
+  const readouts = document.createElement("div");
+  readouts.style.cssText = "min-width:170px; padding:0.75rem; background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px; font-size:0.88em;";
+  mainRow.appendChild(readouts);
+  container.appendChild(mainRow);
+
+  // sliders area
+  const slidersDiv = document.createElement("div");
+  slidersDiv.style.cssText = "margin-top:0.75rem; padding:0.75rem; background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px;";
+  container.appendChild(slidersDiv);
+
+  // label
+  const labelDiv = document.createElement("div");
+  labelDiv.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  labelDiv.textContent = "Every distribution is a landscape: a shape, a centre, and a spread.";
+  container.appendChild(labelDiv);
+
+  function makeSlider(labelText, key, min, max, step, getValue, setValue) {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;";
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "font-size:0.85em; min-width:80px;";
+    lbl.textContent = labelText;
+    const inp = document.createElement("input");
+    inp.type="range"; inp.min=min; inp.max=max; inp.step=step; inp.value=getValue();
+    inp.style.cssText = "flex:1;";
+    const val = document.createElement("span");
+    val.style.cssText = "font-size:0.85em; min-width:35px; text-align:right;";
+    val.textContent = Number(getValue()).toFixed(step<0.1?2:step<1?1:0);
+    inp.oninput = ()=>{ setValue(parseFloat(inp.value)); val.textContent=Number(inp.value).toFixed(step<0.1?2:step<1?1:0); update(); };
+    row.appendChild(lbl); row.appendChild(inp); row.appendChild(val);
+    return {row, inp, val};
+  }
+
+  // ── draw ──────────────────────────────────────────────────────────────────
+  function draw(info) {
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const cw = W - PAD.left - PAD.right;
+    const ch = H - PAD.top - PAD.bottom;
+
+    const xMin = info.discrete ? Math.min(...info.xs)-0.5 : (info.xmin !== undefined ? info.xmin : Math.min(...info.xs));
+    const xMax = info.discrete ? Math.max(...info.xs)+0.5 : (info.xmax !== undefined ? info.xmax : Math.max(...info.xs));
+    const yMax = Math.max(...info.ys)*1.15;
+
+    const sx = x => PAD.left + (x-xMin)/(xMax-xMin)*cw;
+    const sy = y => PAD.top + ch - y/yMax*ch;
+
+    // grid lines (light)
+    for(let i=0;i<=4;i++) {
+      const y = i*yMax/4;
+      const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+      line.setAttribute("x1",PAD.left); line.setAttribute("x2",PAD.left+cw);
+      line.setAttribute("y1",sy(y)); line.setAttribute("y2",sy(y));
+      line.setAttribute("stroke","#f0f0f0"); line.setAttribute("stroke-width","1");
+      svg.appendChild(line);
+    }
+
+    // ±1σ band shading (continuous only)
+    if(!info.discrete) {
+      const {mu,sigma,xs,ys}=info;
+      const x1c=Math.max(xMin,mu-sigma), x2c=Math.min(xMax,mu+sigma);
+      // build polygon
+      const bandXs=xs.filter(x=>x>=x1c&&x<=x2c);
+      if(bandXs.length>1) {
+        const pts=[`${sx(x1c)},${sy(0)}`,...bandXs.map((x,j)=>{
+          const y=ys[xs.indexOf(x)]; return `${sx(x)},${sy(y)}`;
+        }),`${sx(x2c)},${sy(0)}`].join(" ");
+        const poly=document.createElementNS("http://www.w3.org/2000/svg","polygon");
+        poly.setAttribute("points",pts); poly.setAttribute("fill",ACCENT_MUTED);
+        svg.appendChild(poly);
+      }
+    }
+
+    // distribution shape
+    if(info.discrete) {
+      info.xs.forEach((x,i)=>{
+        const y=info.ys[i];
+        const line=document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("x1",sx(x)); line.setAttribute("x2",sx(x));
+        line.setAttribute("y1",sy(0)); line.setAttribute("y2",sy(y));
+        line.setAttribute("stroke",ACCENT); line.setAttribute("stroke-width","2");
+        svg.appendChild(line);
+        const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
+        dot.setAttribute("cx",sx(x)); dot.setAttribute("cy",sy(y)); dot.setAttribute("r","4");
+        dot.setAttribute("fill",ACCENT);
+        svg.appendChild(dot);
+      });
+    } else {
+      const pts=info.xs.map((x,i)=>`${sx(x)},${sy(info.ys[i])}`).join(" ");
+      const area=document.createElementNS("http://www.w3.org/2000/svg","polygon");
+      area.setAttribute("points",`${sx(info.xs[0])},${sy(0)} ${pts} ${sx(info.xs[info.xs.length-1])},${sy(0)}`);
+      area.setAttribute("fill",ACCENT); area.setAttribute("fill-opacity","0.35");
+      svg.appendChild(area);
+      const path=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+      path.setAttribute("points",pts); path.setAttribute("fill","none");
+      path.setAttribute("stroke",ACCENT); path.setAttribute("stroke-width","2");
+      svg.appendChild(path);
+    }
+
+    // mean line
+    const muX=sx(info.mu);
+    const muLine=document.createElementNS("http://www.w3.org/2000/svg","line");
+    muLine.setAttribute("x1",muX); muLine.setAttribute("x2",muX);
+    muLine.setAttribute("y1",PAD.top); muLine.setAttribute("y2",PAD.top+ch);
+    muLine.setAttribute("stroke","#374151"); muLine.setAttribute("stroke-width","1.5");
+    muLine.setAttribute("stroke-dasharray","5,3");
+    svg.appendChild(muLine);
+    const muLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    muLbl.setAttribute("x",muX+4); muLbl.setAttribute("y",PAD.top+10);
+    muLbl.setAttribute("font-size","11"); muLbl.setAttribute("fill","#374151");
+    muLbl.textContent=`μ=${info.mu.toFixed(2)}`;
+    svg.appendChild(muLbl);
+
+    // ±1σ bracket
+    const s1x1=sx(info.mu-info.sigma), s1x2=sx(info.mu+info.sigma);
+    const bracketY=PAD.top+ch+14;
+    const bline=document.createElementNS("http://www.w3.org/2000/svg","line");
+    bline.setAttribute("x1",Math.max(PAD.left,s1x1)); bline.setAttribute("x2",Math.min(PAD.left+cw,s1x2));
+    bline.setAttribute("y1",bracketY); bline.setAttribute("y2",bracketY);
+    bline.setAttribute("stroke",ACCENT); bline.setAttribute("stroke-width","2");
+    svg.appendChild(bline);
+    const blbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    blbl.setAttribute("x",(Math.max(PAD.left,s1x1)+Math.min(PAD.left+cw,s1x2))/2);
+    blbl.setAttribute("y",bracketY+12); blbl.setAttribute("text-anchor","middle");
+    blbl.setAttribute("font-size","10"); blbl.setAttribute("fill",ACCENT);
+    blbl.textContent="±1σ";
+    svg.appendChild(blbl);
+
+    // axes
+    const xAxis=document.createElementNS("http://www.w3.org/2000/svg","line");
+    xAxis.setAttribute("x1",PAD.left); xAxis.setAttribute("x2",PAD.left+cw);
+    xAxis.setAttribute("y1",sy(0)); xAxis.setAttribute("y2",sy(0));
+    xAxis.setAttribute("stroke","#374151"); xAxis.setAttribute("stroke-width","1");
+    svg.appendChild(xAxis);
+    const yAxis=document.createElementNS("http://www.w3.org/2000/svg","line");
+    yAxis.setAttribute("x1",PAD.left); yAxis.setAttribute("x2",PAD.left);
+    yAxis.setAttribute("y1",PAD.top); yAxis.setAttribute("y2",sy(0));
+    yAxis.setAttribute("stroke","#374151"); yAxis.setAttribute("stroke-width","1");
+    svg.appendChild(yAxis);
+
+    // y-axis label
+    const yLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    yLbl.setAttribute("x",10); yLbl.setAttribute("y",PAD.top+ch/2);
+    yLbl.setAttribute("font-size","11"); yLbl.setAttribute("fill","#6b7280");
+    yLbl.setAttribute("text-anchor","middle");
+    yLbl.setAttribute("transform",`rotate(-90,10,${PAD.top+ch/2})`);
+    yLbl.textContent = info.discrete ? "Probability" : "Density";
+    svg.appendChild(yLbl);
+
+    // x-axis ticks
+    const nTicks=5;
+    for(let i=0;i<=nTicks;i++) {
+      const xv=xMin+i*(xMax-xMin)/nTicks;
+      const tick=document.createElementNS("http://www.w3.org/2000/svg","line");
+      tick.setAttribute("x1",sx(xv)); tick.setAttribute("x2",sx(xv));
+      tick.setAttribute("y1",sy(0)); tick.setAttribute("y2",sy(0)+5);
+      tick.setAttribute("stroke","#374151"); tick.setAttribute("stroke-width","1");
+      svg.appendChild(tick);
+      const lbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+      lbl.setAttribute("x",sx(xv)); lbl.setAttribute("y",sy(0)+18);
+      lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("font-size","10");
+      lbl.setAttribute("fill","#6b7280");
+      lbl.textContent = info.discrete ? Math.round(xv) : xv.toFixed(1);
+      svg.appendChild(lbl);
+    }
+
+    // distribution label top-left
+    const titleLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    titleLbl.setAttribute("x",PAD.left+4); titleLbl.setAttribute("y",PAD.top-6);
+    titleLbl.setAttribute("font-size","11"); titleLbl.setAttribute("fill","#374151");
+    titleLbl.setAttribute("font-weight","500");
+    titleLbl.textContent=info.label;
+    svg.appendChild(titleLbl);
+  }
+
+  function buildSliders() {
+    slidersDiv.innerHTML="";
+    const d=distNames[distIdx];
+    const title=document.createElement("div");
+    title.style.cssText="font-size:0.82em; font-weight:600; color:#374151; margin-bottom:0.4rem;";
+    title.textContent="Parameters";
+    slidersDiv.appendChild(title);
+    if(d==="Bernoulli") {
+      const {row}=makeSlider("p",null,0.01,0.99,0.01,()=>params.p,v=>params.p=v);
+      slidersDiv.appendChild(row);
+    }
+    if(d==="Binomial") {
+      const {row:r1}=makeSlider("n",null,1,50,1,()=>params.n,v=>params.n=v);
+      const {row:r2}=makeSlider("p",null,0.01,0.99,0.01,()=>params.p,v=>params.p=v);
+      slidersDiv.appendChild(r1); slidersDiv.appendChild(r2);
+    }
+    if(d==="Poisson") {
+      const {row}=makeSlider("λ",null,0.1,20,0.1,()=>params.lam,v=>params.lam=v);
+      slidersDiv.appendChild(row);
+    }
+    if(d==="Exponential") {
+      const {row}=makeSlider("λ (rate)",null,0.1,5,0.05,()=>params.lam,v=>params.lam=v);
+      slidersDiv.appendChild(row);
+      const note=document.createElement("div");
+      note.style.cssText="font-size:0.78em; color:#6b7280; margin-top:0.2rem;";
+      note.textContent="Mean = 1/λ (rate ≠ mean)";
+      slidersDiv.appendChild(note);
+    }
+    if(d==="Normal") {
+      const {row:r1}=makeSlider("μ",null,-5,5,0.1,()=>params.mu,v=>params.mu=v);
+      const {row:r2}=makeSlider("σ",null,0.1,5,0.1,()=>params.sigma,v=>params.sigma=v);
+      slidersDiv.appendChild(r1); slidersDiv.appendChild(r2);
+    }
+  }
+
+  function updateReadouts(info) {
+    const isSymmetric = ["Bernoulli","Normal"].includes(distNames[distIdx]) ||
+      (distNames[distIdx]==="Binomial" && Math.abs(params.p-0.5)<0.01);
+    const medianNote = isSymmetric ? "Symmetric: median = mean" : "Skewed: median ≠ mean";
+    readouts.innerHTML = `
+      <div style="font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.9em;">Statistics</div>
+      <div style="margin-bottom:0.35rem;"><span style="color:#6b7280;">Mean:</span> <strong>${info.mu.toFixed(3)}</strong></div>
+      <div style="margin-bottom:0.35rem;"><span style="color:#6b7280;">Variance:</span> <strong>${info.variance.toFixed(3)}</strong></div>
+      <div style="margin-bottom:0.35rem;"><span style="color:#6b7280;">Std dev (σ):</span> <strong>${info.sigma.toFixed(3)}</strong></div>
+      <div style="margin-top:0.6rem; font-size:0.82em; color:#6b7280; font-style:italic;">${medianNote}</div>
+    `;
+  }
+
+  function update() {
+    // highlight active button
+    btns.forEach((b,i)=>{
+      b.style.background = i===distIdx ? ACCENT : "#f9fafb";
+      b.style.color = i===distIdx ? "#fff" : "#374151";
+      b.style.borderColor = i===distIdx ? ACCENT : "#d1d5db";
+    });
+    const info=getDistInfo();
+    draw(info);
+    buildSliders();
+    updateReadouts(info);
+  }
+
+  update();
+  return container;
+}
+```
+
+
+## Key continuous distributions
+
+### Uniform
+
+$X \sim \text{Uniform}(a, b)$ — every value in $[a,b]$ is equally likely.
+
+$$f(x) = \frac{1}{b-a}, \quad a \leq x \leq b$$
+
+$$E[X] = \frac{a+b}{2}, \quad \text{Var}(X) = \frac{(b-a)^2}{12}$$
+
+The CDF is: $F(x) = (x-a)/(b-a)$ for $a \leq x \leq b$.
+
+### Exponential
+
+Models the time until the first event in a Poisson process — waiting
+times, component lifetimes, time between arrivals.
+
+$$f(x) = \lambda e^{-\lambda x}, \quad x \geq 0$$
+
+$$F(x) = 1 - e^{-\lambda x}$$
+
+**Derivation of mean.** Integrate by parts:
+
+$$E[X] = \int_0^{\infty} x \cdot \lambda e^{-\lambda x}\, dx$$
+
+Let $u = x$, $dv = \lambda e^{-\lambda x}\, dx$. Then $du = dx$,
+$v = -e^{-\lambda x}$.
+
+$$E[X] = \left[-x e^{-\lambda x}\right]_0^{\infty} + \int_0^{\infty} e^{-\lambda x}\, dx
+= 0 + \left[-\frac{1}{\lambda} e^{-\lambda x}\right]_0^{\infty} = \frac{1}{\lambda}$$
+
+**Derivation of variance.** First compute $E[X^2]$:
+
+$$E[X^2] = \int_0^{\infty} x^2 \cdot \lambda e^{-\lambda x}\, dx = \frac{2}{\lambda^2}$$
+
+The integration follows the same pattern as the derivation of $E[X]$ above — integration by parts applied twice, or equivalently by recognising the integral as a gamma function. Either route gives $2/\lambda^2$.
+
+<!-- STUDENT: The result E[X²] = 2/λ² is stated without showing the integration, with only a parenthetical hint. An engineering reader comfortable with calculus can verify this, but the asymmetry is noticeable: E[X] just had a fully worked integration by parts, while E[X²] gets a one-line assertion. This will leave some readers uncertain whether the pattern is routine or whether they are expected to trust without verifying. -->
+
+$$\text{Var}(X) = E[X^2] - (E[X])^2 = \frac{2}{\lambda^2} - \frac{1}{\lambda^2} = \frac{1}{\lambda^2}$$
+
+**Memoryless property.** The exponential is the only continuous distribution
+with no memory:
+
+$$P(X > s + t \mid X > s) = P(X > t) \quad \text{for all } s, t \geq 0$$
+
+If the component has already survived $s$ hours, the probability it
+survives another $t$ hours is the same as if it were brand new. The
+past waiting time gives no information about the future.
+
+**Proof.** Using the survival function $P(X > x) = e^{-\lambda x}$:
+
+$$P(X > s+t \mid X > s) = \frac{P(X > s+t)}{P(X > s)} = \frac{e^{-\lambda(s+t)}}{e^{-\lambda s}} = e^{-\lambda t} = P(X > t) \quad \checkmark$$
+
+### Normal
+
+$X \sim N(\mu, \sigma^2)$ — the most important distribution in applied
+probability, for reasons the CLT will make clear.
+
+$$f(x) = \frac{1}{\sigma\sqrt{2\pi}} \exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$$
+
+Parameters: $\mu$ is the mean, $\sigma^2$ is the variance.
+
+$$E[X] = \mu, \quad \text{Var}(X) = \sigma^2$$
+
+There is no closed form for the CDF — it's evaluated numerically and
+tabulated as the **standard normal CDF** $\Phi(z)$, where $\Phi$ (capital phi)
+is the CDF of $Z \sim N(0,1)$.
+
+**Standardisation.** Any normal $X \sim N(\mu, \sigma^2)$ can be
+converted to the standard normal by:
+
+$$Z = \frac{X - \mu}{\sigma}$$
+
+Then $P(X \leq x) = P\!\left(Z \leq \frac{x-\mu}{\sigma}\right) = \Phi\!\left(\frac{x-\mu}{\sigma}\right)$.
+
+The transformation $Z = (X - \mu)/\sigma$ — "subtract the mean, divide
+by the standard deviation" — centres the distribution at zero and scales
+it to unit variance. Every probability question about $X \sim N(\mu, \sigma^2)$
+reduces to looking up a value in the standard normal table.
+
+<!-- VIZ: Normal distribution — shape, width, and sigma bands
+μ sets the centre. σ sets the width. The shaded areas — 68%, 95%, 99.7% — are always the same.
+Three shaded regions: ±1σ (dark), ±2σ (medium), ±3σ (light). CDF toggle with draggable cursor.
+-->
+
+```{ojs}
+//| echo: false
+{
+  // ── Normal distribution — sigma bands (Priority 1) ──────────────────────
+  const W = 560, H = 300, PAD = { top: 30, right: 30, bottom: 50, left: 50 };
+  const ACCENT = "#3b82f6";
+  const BANDS = [
+    { mult: 3, fill: "rgba(59,130,246,0.10)", pct: "99.7%", yFrac: 0.18 },
+    { mult: 2, fill: "rgba(59,130,246,0.20)", pct: "95.4%", yFrac: 0.40 },
+    { mult: 1, fill: "rgba(59,130,246,0.38)", pct: "68.3%", yFrac: 0.68 },
+  ];
+  const GREY = "#9ca3af";
+
+  function erf(x) {
+    const sign=x<0?-1:1; x=Math.abs(x);
+    const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    const t=1/(1+p*x);
+    return sign*(1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x));
+  }
+  function normalPDF(x,mu,sig) { return Math.exp(-0.5*((x-mu)/sig)**2)/(sig*Math.sqrt(2*Math.PI)); }
+  function normalCDF(x,mu,sig) { return 0.5*(1+erf((x-mu)/(sig*Math.SQRT2))); }
+
+  let mu=0, sigma=1, showCDF=false, cursorX=0;
+
+  const container=document.createElement("div");
+  container.style.cssText="font-family:inherit; max-width:600px; margin:1rem 0;";
+
+  // sliders row
+  const sliderRow=document.createElement("div");
+  sliderRow.style.cssText="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.75rem; align-items:center;";
+
+  function makeSlider2(label,min,max,step,def,cb) {
+    const wrap=document.createElement("div");
+    wrap.style.cssText="display:flex; align-items:center; gap:0.4rem;";
+    const lbl=document.createElement("label");
+    lbl.style.cssText="font-size:0.85em; min-width:20px;";
+    lbl.textContent=label;
+    const inp=document.createElement("input");
+    inp.type="range"; inp.min=min; inp.max=max; inp.step=step; inp.value=def;
+    inp.style.cssText="width:120px;";
+    const val=document.createElement("span");
+    val.style.cssText="font-size:0.85em; min-width:30px;";
+    val.textContent=Number(def).toFixed(step<0.1?1:step<1?1:0);
+    inp.oninput=()=>{ val.textContent=Number(inp.value).toFixed(step<0.1?1:step<1?1:0); cb(parseFloat(inp.value)); };
+    wrap.appendChild(lbl); wrap.appendChild(inp); wrap.appendChild(val);
+    return wrap;
+  }
+  sliderRow.appendChild(makeSlider2("μ",-5,5,0.1,0,v=>{mu=v;draw();}));
+  sliderRow.appendChild(makeSlider2("σ",0.2,4,0.1,1,v=>{sigma=v;draw();}));
+
+  // CDF toggle
+  const cdfBtn=document.createElement("button");
+  cdfBtn.textContent="Show CDF";
+  cdfBtn.style.cssText="padding:0.3rem 0.7rem; border-radius:4px; border:1px solid #d1d5db; cursor:pointer; font-size:0.85em; background:#f9fafb;";
+  cdfBtn.onclick=()=>{showCDF=!showCDF; cdfBtn.textContent=showCDF?"Hide CDF":"Show CDF"; cdfBtn.style.background=showCDF?ACCENT:"#f9fafb"; cdfBtn.style.color=showCDF?"#fff":"#374151"; draw();};
+  sliderRow.appendChild(cdfBtn);
+  container.appendChild(sliderRow);
+
+  const svgEl=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svgEl.setAttribute("width",W); svgEl.setAttribute("height",H);
+  svgEl.style.cssText="border:1px solid #e5e7eb; border-radius:6px; background:#fff; display:block;";
+  container.appendChild(svgEl);
+
+  // cursor live readout
+  const cursorReadout=document.createElement("div");
+  cursorReadout.style.cssText="font-size:0.82em; color:#6b7280; margin-top:0.35rem; min-height:1.2em;";
+  container.appendChild(cursorReadout);
+
+  const labelDiv=document.createElement("div");
+  labelDiv.style.cssText="margin-top:0.3rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  labelDiv.textContent="μ sets the centre. σ sets the width. The shaded areas — 68%, 95%, 99.7% — are always the same.";
+  container.appendChild(labelDiv);
+
+  // draggable cursor state
+  let dragging=false;
+  let svgRect=null;
+
+  function xToData(px) {
+    const cw=W-PAD.left-PAD.right;
+    const xmin=mu-4.5*sigma, xmax=mu+4.5*sigma;
+    return xmin+(px-PAD.left)/cw*(xmax-xmin);
+  }
+
+  svgEl.addEventListener("mousedown",e=>{
+    if(!showCDF) return;
+    dragging=true; svgRect=svgEl.getBoundingClientRect();
+    cursorX=xToData(e.clientX-svgRect.left); draw();
+  });
+  window.addEventListener("mousemove",e=>{
+    if(!dragging||!showCDF) return;
+    cursorX=xToData(e.clientX-svgRect.left); draw();
+  });
+  window.addEventListener("mouseup",()=>{ dragging=false; });
+
+  function draw() {
+    while(svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+    const cw=W-PAD.left-PAD.right;
+    const ch=H-PAD.top-PAD.bottom;
+    const xmin=mu-4.5*sigma, xmax=mu+4.5*sigma;
+    const N=250;
+    const xs=Array.from({length:N},(_,i)=>xmin+i*(xmax-xmin)/(N-1));
+    const ys=xs.map(x=>normalPDF(x,mu,sigma));
+    const yMax=normalPDF(mu,mu,sigma)*1.18;
+    const sx=x=>PAD.left+(x-xmin)/(xmax-xmin)*cw;
+    const sy=y=>PAD.top+ch-y/yMax*ch;
+
+    // second axis for CDF
+    const syCDF = y => PAD.top+ch - y*ch;
+
+    // draw shaded sigma bands
+    BANDS.forEach(({mult,fill,pct,yFrac})=>{
+      const xl=mu-mult*sigma, xr=mu+mult*sigma;
+      const bandXs=xs.filter(x=>x>=xl&&x<=xr);
+      const pts=[
+        `${sx(xl)},${sy(0)}`,
+        ...bandXs.map(x=>`${sx(x)},${sy(normalPDF(x,mu,sigma))}`),
+        `${sx(xr)},${sy(0)}`
+      ].join(" ");
+      const poly=document.createElementNS("http://www.w3.org/2000/svg","polygon");
+      poly.setAttribute("points",pts); poly.setAttribute("fill",fill);
+      svgEl.appendChild(poly);
+
+      // band percentage label
+      const lbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+      lbl.setAttribute("x",sx(mu)); lbl.setAttribute("y",PAD.top+ch*(1-yFrac));
+      lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("font-size","11");
+      lbl.setAttribute("fill","#1e40af"); lbl.setAttribute("font-weight","500");
+      lbl.textContent=pct;
+      svgEl.appendChild(lbl);
+    });
+
+    // PDF curve
+    const pdfPts=xs.map((x,i)=>`${sx(x)},${sy(ys[i])}`).join(" ");
+    const pdfLine=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    pdfLine.setAttribute("points",pdfPts); pdfLine.setAttribute("fill","none");
+    pdfLine.setAttribute("stroke",ACCENT); pdfLine.setAttribute("stroke-width","2.5");
+    svgEl.appendChild(pdfLine);
+
+    // σ bracket below x-axis
+    const bY=PAD.top+ch+20;
+    const bLine=document.createElementNS("http://www.w3.org/2000/svg","line");
+    bLine.setAttribute("x1",sx(mu-sigma)); bLine.setAttribute("x2",sx(mu+sigma));
+    bLine.setAttribute("y1",bY); bLine.setAttribute("y2",bY);
+    bLine.setAttribute("stroke",ACCENT); bLine.setAttribute("stroke-width","2");
+    svgEl.appendChild(bLine);
+    // ticks at bracket ends
+    [-1,1].forEach(s=>{
+      const t=document.createElementNS("http://www.w3.org/2000/svg","line");
+      t.setAttribute("x1",sx(mu+s*sigma)); t.setAttribute("x2",sx(mu+s*sigma));
+      t.setAttribute("y1",bY-4); t.setAttribute("y2",bY+4);
+      t.setAttribute("stroke",ACCENT); t.setAttribute("stroke-width","2");
+      svgEl.appendChild(t);
+    });
+    const bLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    bLbl.setAttribute("x",sx(mu)); bLbl.setAttribute("y",bY+13);
+    bLbl.setAttribute("text-anchor","middle"); bLbl.setAttribute("font-size","10");
+    bLbl.setAttribute("fill",ACCENT);
+    bLbl.textContent=`σ = ${sigma.toFixed(1)}`;
+    svgEl.appendChild(bLbl);
+
+    // CDF curve
+    if(showCDF) {
+      const cdfPts=xs.map(x=>`${sx(x)},${syCDF(normalCDF(x,mu,sigma))}`).join(" ");
+      const cdfLine=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+      cdfLine.setAttribute("points",cdfPts); cdfLine.setAttribute("fill","none");
+      cdfLine.setAttribute("stroke","#f59e0b"); cdfLine.setAttribute("stroke-width","2");
+      cdfLine.setAttribute("stroke-dasharray","4,2");
+      svgEl.appendChild(cdfLine);
+      // right y-axis
+      const ryLine=document.createElementNS("http://www.w3.org/2000/svg","line");
+      ryLine.setAttribute("x1",PAD.left+cw); ryLine.setAttribute("x2",PAD.left+cw);
+      ryLine.setAttribute("y1",PAD.top); ryLine.setAttribute("y2",PAD.top+ch);
+      ryLine.setAttribute("stroke","#f59e0b"); ryLine.setAttribute("stroke-width","1");
+      svgEl.appendChild(ryLine);
+      const ryLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+      ryLbl.setAttribute("x",PAD.left+cw+10); ryLbl.setAttribute("y",PAD.top+ch/2);
+      ryLbl.setAttribute("font-size","10"); ryLbl.setAttribute("fill","#f59e0b");
+      ryLbl.setAttribute("text-anchor","middle");
+      ryLbl.setAttribute("transform",`rotate(90,${PAD.left+cw+10},${PAD.top+ch/2})`);
+      ryLbl.textContent="Φ(x)";
+      svgEl.appendChild(ryLbl);
+      // cursor
+      const cxp=Math.max(xmin,Math.min(xmax,cursorX));
+      const cxv=sx(cxp);
+      const cursorLine=document.createElementNS("http://www.w3.org/2000/svg","line");
+      cursorLine.setAttribute("x1",cxv); cursorLine.setAttribute("x2",cxv);
+      cursorLine.setAttribute("y1",PAD.top); cursorLine.setAttribute("y2",PAD.top+ch);
+      cursorLine.setAttribute("stroke","#6b7280"); cursorLine.setAttribute("stroke-width","1.5");
+      cursorLine.setAttribute("stroke-dasharray","3,2");
+      svgEl.appendChild(cursorLine);
+      const pval=normalCDF(cxp,mu,sigma);
+      const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
+      dot.setAttribute("cx",cxv); dot.setAttribute("cy",syCDF(pval)); dot.setAttribute("r","5");
+      dot.setAttribute("fill","#f59e0b"); dot.setAttribute("stroke","#fff"); dot.setAttribute("stroke-width","1.5");
+      svgEl.appendChild(dot);
+      cursorReadout.textContent=`x = ${cxp.toFixed(2)}  →  P(X ≤ x) = Φ(${((cxp-mu)/sigma).toFixed(2)}) = ${pval.toFixed(4)}`;
+      svgEl.style.cursor="col-resize";
+    } else {
+      cursorReadout.textContent="Toggle 'Show CDF' and drag to read off P(X ≤ x).";
+      svgEl.style.cursor="default";
+    }
+
+    // mean dashed line
+    const muLine=document.createElementNS("http://www.w3.org/2000/svg","line");
+    muLine.setAttribute("x1",sx(mu)); muLine.setAttribute("x2",sx(mu));
+    muLine.setAttribute("y1",PAD.top); muLine.setAttribute("y2",PAD.top+ch);
+    muLine.setAttribute("stroke","#374151"); muLine.setAttribute("stroke-width","1.5");
+    muLine.setAttribute("stroke-dasharray","5,3");
+    svgEl.appendChild(muLine);
+    const muLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    muLbl.setAttribute("x",sx(mu)+4); muLbl.setAttribute("y",PAD.top+13);
+    muLbl.setAttribute("font-size","11"); muLbl.setAttribute("fill","#374151");
+    muLbl.textContent=`μ=${mu.toFixed(1)}`;
+    svgEl.appendChild(muLbl);
+
+    // x-axis
+    const xAxisEl=document.createElementNS("http://www.w3.org/2000/svg","line");
+    xAxisEl.setAttribute("x1",PAD.left); xAxisEl.setAttribute("x2",PAD.left+cw);
+    xAxisEl.setAttribute("y1",sy(0)); xAxisEl.setAttribute("y2",sy(0));
+    xAxisEl.setAttribute("stroke","#374151"); xAxisEl.setAttribute("stroke-width","1");
+    svgEl.appendChild(xAxisEl);
+
+    // x-axis ticks
+    const ticks=[-4,-3,-2,-1,0,1,2,3,4].map(z=>mu+z*sigma).filter(v=>v>=xmin&&v<=xmax);
+    ticks.forEach(v=>{
+      const tick=document.createElementNS("http://www.w3.org/2000/svg","line");
+      tick.setAttribute("x1",sx(v)); tick.setAttribute("x2",sx(v));
+      tick.setAttribute("y1",sy(0)); tick.setAttribute("y2",sy(0)+5);
+      tick.setAttribute("stroke","#374151"); tick.setAttribute("stroke-width","1");
+      svgEl.appendChild(tick);
+      const lbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+      lbl.setAttribute("x",sx(v)); lbl.setAttribute("y",sy(0)+16);
+      lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("font-size","10");
+      lbl.setAttribute("fill","#6b7280");
+      lbl.textContent=v.toFixed(1);
+      svgEl.appendChild(lbl);
+    });
+
+    // y-axis
+    const yAxisEl=document.createElementNS("http://www.w3.org/2000/svg","line");
+    yAxisEl.setAttribute("x1",PAD.left); yAxisEl.setAttribute("x2",PAD.left);
+    yAxisEl.setAttribute("y1",PAD.top); yAxisEl.setAttribute("y2",sy(0));
+    yAxisEl.setAttribute("stroke","#374151"); yAxisEl.setAttribute("stroke-width","1");
+    svgEl.appendChild(yAxisEl);
+    const yLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    yLbl.setAttribute("x",12); yLbl.setAttribute("y",PAD.top+H/3);
+    yLbl.setAttribute("text-anchor","middle"); yLbl.setAttribute("font-size","11");
+    yLbl.setAttribute("fill","#6b7280");
+    yLbl.setAttribute("transform",`rotate(-90,12,${PAD.top+H/3})`);
+    yLbl.textContent="Density";
+    svgEl.appendChild(yLbl);
+  }
+
+  draw();
+  return container;
+}
+```
+
+
+## Joint distributions
+
+For two random variables $X$ and $Y$, the **joint distribution** describes
+their behaviour together. The key concept for most applications is
+independence.
+
+$X$ and $Y$ are **independent** if knowing the value of one gives no
+information about the other:
+
+$$f_{X,Y}(x,y) = f_X(x) \cdot f_Y(y)$$
+
+That is, the joint density factors into the product of the marginals.
+
+**Covariance.** A measure of how $X$ and $Y$ move together:
+
+$$\text{Cov}(X, Y) = E[(X - \mu_X)(Y - \mu_Y)] = E[XY] - E[X]\,E[Y]$$
+
+If $X$ and $Y$ are independent, $E[XY] = E[X]\,E[Y]$, so $\text{Cov}(X,Y) = 0$.
+(The converse is not generally true: zero covariance does not imply independence.)
+
+**Correlation coefficient.** Covariance is scale-dependent — multiplying
+$X$ by 2 doubles the covariance. The correlation normalises this:
+
+$$\rho(X,Y) = \frac{\text{Cov}(X,Y)}{\sigma_X \sigma_Y}, \quad -1 \leq \rho \leq 1$$
+
+$\rho = 1$ means perfect positive linear relationship; $\rho = -1$ means
+perfect negative; $\rho = 0$ means no linear relationship.
+
+<!-- VIZ: Correlation — the scatter cloud
+ρ is the shape of the data cloud: circular, elliptical, or linear.
+Scatter of 200 bivariate-normal points with adjustable ρ. The ellipse rotates as ρ changes.
+-->
+
+```{ojs}
+//| echo: false
+{
+  // ── Correlation scatter cloud (OPPORTUNITY 4) ────────────────────────────
+  const W=420, H=380, PAD={top:30,right:30,bottom:50,left:50};
+  const ACCENT="#3b82f6";
+  const N_PTS=200;
+
+  let rho=0;
+  let seed=99;
+  function lcg() { seed=(seed*1664525+1013904223)&0xffffffff; return (seed>>>0)/0xffffffff; }
+  function boxMuller() {
+    const u1=lcg()||1e-10, u2=lcg();
+    return [Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2),
+            Math.sqrt(-2*Math.log(u1))*Math.sin(2*Math.PI*u2)];
+  }
+  function genPoints(r) {
+    seed=99;
+    const pts=[];
+    for(let i=0;i<N_PTS;i++) {
+      const [z1,z2]=boxMuller();
+      // Cholesky: x=z1, y=r*z1+sqrt(1-r^2)*z2
+      pts.push([z1, r*z1+Math.sqrt(Math.max(0,1-r*r))*z2]);
+    }
+    return pts;
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="font-family:inherit; max-width:460px; margin:1rem 0;";
+
+  const sliderRow=document.createElement("div");
+  sliderRow.style.cssText="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;";
+  const slLbl=document.createElement("label");
+  slLbl.style.cssText="font-size:0.85em;"; slLbl.textContent="ρ:";
+  const slInp=document.createElement("input");
+  slInp.type="range"; slInp.min=-1; slInp.max=1; slInp.step=0.01; slInp.value=0;
+  slInp.style.cssText="width:200px;";
+  const slVal=document.createElement("span");
+  slVal.style.cssText="font-size:0.9em; font-weight:600; min-width:40px;";
+  slVal.textContent="0.00";
+  slInp.oninput=()=>{ rho=parseFloat(slInp.value); slVal.textContent=rho.toFixed(2); draw(); };
+  sliderRow.appendChild(slLbl); sliderRow.appendChild(slInp); sliderRow.appendChild(slVal);
+  container.appendChild(sliderRow);
+
+  const svgEl=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svgEl.setAttribute("width",W); svgEl.setAttribute("height",H);
+  svgEl.style.cssText="border:1px solid #e5e7eb; border-radius:6px; background:#fff; display:block;";
+  container.appendChild(svgEl);
+
+  const readoutDiv=document.createElement("div");
+  readoutDiv.style.cssText="font-size:0.82em; color:#374151; margin-top:0.4rem;";
+  container.appendChild(readoutDiv);
+
+  const labelDiv=document.createElement("div");
+  labelDiv.style.cssText="margin-top:0.3rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  labelDiv.textContent="ρ is the shape of the data cloud: circular, elliptical, or linear.";
+  container.appendChild(labelDiv);
+
+  function draw() {
+    while(svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+    const cw=W-PAD.left-PAD.right;
+    const ch=H-PAD.top-PAD.bottom;
+    const r=Math.max(-0.999,Math.min(0.999,rho));
+    const pts=genPoints(r);
+    const range=3.5;
+    const sx=x=>PAD.left+(x+range)/(2*range)*cw;
+    const sy=y=>PAD.top+(range-y)/(2*range)*ch;
+
+    // grid
+    for(let v=-3;v<=3;v++) {
+      const gx=document.createElementNS("http://www.w3.org/2000/svg","line");
+      gx.setAttribute("x1",sx(v)); gx.setAttribute("x2",sx(v));
+      gx.setAttribute("y1",PAD.top); gx.setAttribute("y2",PAD.top+ch);
+      gx.setAttribute("stroke","#f3f4f6"); gx.setAttribute("stroke-width","1");
+      svgEl.appendChild(gx);
+      const gy=document.createElementNS("http://www.w3.org/2000/svg","line");
+      gy.setAttribute("x1",PAD.left); gy.setAttribute("x2",PAD.left+cw);
+      gy.setAttribute("y1",sy(v)); gy.setAttribute("y2",sy(v));
+      gy.setAttribute("stroke","#f3f4f6"); gy.setAttribute("stroke-width","1");
+      svgEl.appendChild(gy);
+    }
+
+    // axes
+    ["x","y"].forEach(axis=>{
+      const l=document.createElementNS("http://www.w3.org/2000/svg","line");
+      if(axis==="x") { l.setAttribute("x1",PAD.left); l.setAttribute("x2",PAD.left+cw); l.setAttribute("y1",sy(0)); l.setAttribute("y2",sy(0)); }
+      else { l.setAttribute("x1",sx(0)); l.setAttribute("x2",sx(0)); l.setAttribute("y1",PAD.top); l.setAttribute("y2",PAD.top+ch); }
+      l.setAttribute("stroke","#9ca3af"); l.setAttribute("stroke-width","1");
+      svgEl.appendChild(l);
+    });
+
+    // scatter points
+    pts.forEach(([x,y])=>{
+      const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
+      dot.setAttribute("cx",sx(x)); dot.setAttribute("cy",sy(y)); dot.setAttribute("r","3");
+      dot.setAttribute("fill",ACCENT); dot.setAttribute("fill-opacity","0.5");
+      svgEl.appendChild(dot);
+    });
+
+    // 1-sigma ellipse of bivariate normal
+    const ellN=80;
+    const ellPts=Array.from({length:ellN+1},(_,i)=>{
+      const t=2*Math.PI*i/ellN;
+      const ex=Math.cos(t);
+      const ey=r*Math.cos(t)+Math.sqrt(Math.max(0,1-r*r))*Math.sin(t);
+      return `${sx(ex)},${sy(ey)}`;
+    }).join(" ");
+    const ellipse=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    ellipse.setAttribute("points",ellPts); ellipse.setAttribute("fill","none");
+    ellipse.setAttribute("stroke","#374151"); ellipse.setAttribute("stroke-width","2");
+    ellipse.setAttribute("stroke-dasharray","4,2");
+    svgEl.appendChild(ellipse);
+
+    // axis labels
+    const xLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    xLbl.setAttribute("x",PAD.left+cw/2); xLbl.setAttribute("y",PAD.top+ch+38);
+    xLbl.setAttribute("text-anchor","middle"); xLbl.setAttribute("font-size","12");
+    xLbl.setAttribute("fill","#374151"); xLbl.textContent="X";
+    svgEl.appendChild(xLbl);
+    const yLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    yLbl.setAttribute("x",14); yLbl.setAttribute("y",PAD.top+ch/2);
+    yLbl.setAttribute("text-anchor","middle"); yLbl.setAttribute("font-size","12");
+    yLbl.setAttribute("fill","#374151");
+    yLbl.setAttribute("transform",`rotate(-90,14,${PAD.top+ch/2})`);
+    yLbl.textContent="Y";
+    svgEl.appendChild(yLbl);
+
+    // rho annotation
+    const rAnn=document.createElementNS("http://www.w3.org/2000/svg","text");
+    rAnn.setAttribute("x",PAD.left+8); rAnn.setAttribute("y",PAD.top+16);
+    rAnn.setAttribute("font-size","12"); rAnn.setAttribute("fill","#374151");
+    rAnn.setAttribute("font-weight","500");
+    rAnn.textContent=`ρ = ${r.toFixed(2)}`;
+    svgEl.appendChild(rAnn);
+
+    // interpretive note
+    const absR=Math.abs(r);
+    let strength = absR < 0.3 ? "Weak" : absR < 0.7 ? "Moderate" : "Strong";
+    let direction = r>0.02 ? "Positive: Y tends to increase with X" : r<-0.02 ? "Negative: Y tends to decrease with X" : "No linear relationship";
+    if(absR<0.05) direction="Knowing X tells you nothing about Y";
+    if(absR>0.97) direction=r>0?"Perfect positive linear relationship":"Perfect negative linear relationship";
+    const angleRad=Math.atan(r); const angleDeg=(angleRad*180/Math.PI).toFixed(0);
+    readoutDiv.textContent=`ρ = ${r.toFixed(2)} | ${strength} relationship | ${direction}`;
+  }
+
+  draw();
+  return container;
+}
+```
+
+**Variance of a sum.** For any $X$ and $Y$ (not necessarily independent):
+
+$$\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\,\text{Cov}(X,Y)$$
+
+If they are independent, the covariance term vanishes.
+
+
+## Central Limit Theorem
+
+Let $X_1, X_2, \ldots, X_n$ be independent, identically distributed
+random variables with mean $\mu$ and variance $\sigma^2 < \infty$.
+Define the sample mean:
+
+$$\bar{X}_n = \frac{1}{n}\sum_{i=1}^{n} X_i$$
+
+**Central Limit Theorem (CLT):** As $n \to \infty$,
+
+$$\frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} \xrightarrow{d} N(0,1)$$
+
+Read $\xrightarrow{d}$ as "converges in distribution to" — as $n$ grows,
+the distribution of the standardised mean gets closer and closer to the
+standard normal.
+
+<!-- STUDENT: The arrow notation $\xrightarrow{d}$ means "converges in distribution" but is not explained in the notation_introduced list and is not glossed in the prose. A reader who has not seen this notation before will not know whether the $d$ is a typo or a technical term. Adding "read as 'converges in distribution'" either inline or in notation_introduced would close this. -->
+
+In practice: for large $n$, the distribution of $\bar{X}_n$ is approximately
+$N(\mu,\, \sigma^2/n)$.
+
+**Three things the CLT is saying:**
+
+1. The sample mean converges to the true mean $\mu$ — not just as a hope,
+   but with a rate: the spread is $\sigma/\sqrt{n}$, shrinking like $1/\sqrt{n}$.
+
+2. The limiting distribution is always normal, regardless of the
+   distribution of the individual $X_i$. You do not need $X_i$ to be
+   normal — exponential, uniform, Bernoulli, anything — the average
+   becomes normal.
+
+3. The only requirements are: independent, identically distributed
+   (abbreviated i.i.d.), finite variance. No further conditions.
+
+<!-- STUDENT: The abbreviation "i.i.d." appears in Exercise 6 but is introduced here only as the phrase "independent, identically distributed." The two forms are never explicitly linked. If a reader meets i.i.d. in Exercise 6 having read the CLT section, they may not recognise it as the same concept. A single parenthetical "(abbreviated i.i.d.)" at first use here would connect them. -->
+
+**Conditions for practical use.** The approximation is usually adequate
+when $n \geq 30$, and excellent for $n \geq 50$. For distributions that
+are already close to normal, smaller $n$ suffices. For very skewed
+distributions (e.g. heavy-tailed), larger $n$ may be needed.
+
+**Worked example: Sample mean from an exponential population.**
+
+Components have lifetimes $X_i \sim \text{Exp}(\lambda = 0.5)$, so
+$\mu = 1/\lambda = 2$ hours and $\sigma^2 = 1/\lambda^2 = 4$.
+
+Take a sample of $n = 50$ components. By the CLT, the sample mean is
+approximately:
+
+$$\bar{X}_{50} \approx N\!\left(2,\, \frac{4}{50}\right) = N(2,\, 0.08)$$
+
+Standard deviation of the mean: $\sigma/\sqrt{n} = 2/\sqrt{50} \approx 0.283$.
+
+Find $P(\bar{X}_{50} > 2.4)$:
+
+$$P(\bar{X}_{50} > 2.4) = P\!\left(Z > \frac{2.4 - 2}{0.283}\right) = P(Z > 1.414) = 1 - \Phi(1.414) \approx 0.079$$
+
+There is about an 8% chance the sample mean exceeds 2.4 hours. The
+individual lifetimes are exponential and highly right-skewed — but the
+average over 50 of them behaves almost exactly like a normal random variable.
+
+<!-- VIZ: CLT demonstration
+Slider for n ∈ [1, 200]. Histogram of 2000 sample means from Exp(0.5), with N(μ,σ²/n) overlay.
+Inset shows source Exp(0.5) distribution for comparison.
+-->
+
+```{ojs}
+//| echo: false
+{
+  // ── CLT demonstration (VIZ 2, extended) ─────────────────────────────────
+  const W=540, H=300, PAD={top:30,right:20,bottom:50,left:48};
+  const ACCENT="#3b82f6", GREY="#d1d5db";
+  const LAMBDA=0.5, MU=1/LAMBDA, SIGMA2=1/(LAMBDA*LAMBDA), SIGMA=1/LAMBDA;
+  const N_SAMPLES=2000;
+
+  let nSlider=5;
+
+  // LCG-based deterministic "random" for reproducibility
+  let seed=42;
+  function lcgNext() { seed=(seed*1664525+1013904223)&0xffffffff; return (seed>>>0)/0xffffffff; }
+  function resetSeed(s=42) { seed=s; }
+  function expSample() { return -Math.log(1-lcgNext())/LAMBDA; }
+  function normalPDF(x,mu,sig) { return Math.exp(-0.5*((x-mu)/sig)**2)/(sig*Math.sqrt(2*Math.PI)); }
+  function erf(x) {
+    const sign=x<0?-1:1; x=Math.abs(x);
+    const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    const t=1/(1+p*x);
+    return sign*(1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x));
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="font-family:inherit; max-width:580px; margin:1rem 0;";
+
+  // slider row
+  const sliderRow=document.createElement("div");
+  sliderRow.style.cssText="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem; flex-wrap:wrap;";
+  const slLbl=document.createElement("label");
+  slLbl.style.cssText="font-size:0.85em;";
+  slLbl.textContent="Sample size n:";
+  const slInp=document.createElement("input");
+  slInp.type="range"; slInp.min=1; slInp.max=200; slInp.step=1; slInp.value=nSlider;
+  slInp.style.cssText="width:200px;";
+  const slVal=document.createElement("span");
+  slVal.style.cssText="font-size:0.88em; font-weight:600; min-width:30px;";
+  slVal.textContent=nSlider;
+  slInp.oninput=()=>{ nSlider=parseInt(slInp.value); slVal.textContent=nSlider; draw(); };
+  // snap buttons
+  const snaps=[1,5,30,100];
+  const snapBtns=snaps.map(v=>{
+    const b=document.createElement("button");
+    b.textContent=`n=${v}`;
+    b.style.cssText="padding:0.2rem 0.5rem; border:1px solid #d1d5db; border-radius:3px; cursor:pointer; font-size:0.78em; background:#f9fafb;";
+    b.onclick=()=>{ nSlider=v; slInp.value=v; slVal.textContent=v; draw(); };
+    return b;
+  });
+  sliderRow.appendChild(slLbl); sliderRow.appendChild(slInp); sliderRow.appendChild(slVal);
+  snaps.forEach((v,i)=>sliderRow.appendChild(snapBtns[i]));
+  container.appendChild(sliderRow);
+
+  const mainSvg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  mainSvg.setAttribute("width",W); mainSvg.setAttribute("height",H);
+  mainSvg.style.cssText="border:1px solid #e5e7eb; border-radius:6px; background:#fff; display:block;";
+  container.appendChild(mainSvg);
+
+  const infoDiv=document.createElement("div");
+  infoDiv.style.cssText="font-size:0.82em; color:#374151; margin-top:0.4rem;";
+  container.appendChild(infoDiv);
+
+  const captionDiv=document.createElement("div");
+  captionDiv.style.cssText="margin-top:0.3rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  captionDiv.textContent="The source distribution (upper right) is strongly right-skewed. Watch what happens to the histogram of means as n increases.";
+  container.appendChild(captionDiv);
+
+  function getSampleMeans(n) {
+    resetSeed(123);
+    const means=[];
+    for(let s=0;s<N_SAMPLES;s++) {
+      let sum=0;
+      for(let i=0;i<n;i++) sum+=expSample();
+      means.push(sum/n);
+    }
+    return means;
+  }
+
+  function draw() {
+    while(mainSvg.firstChild) mainSvg.removeChild(mainSvg.firstChild);
+    const n=nSlider;
+    const cw=W-PAD.left-PAD.right;
+    const ch=H-PAD.top-PAD.bottom;
+
+    const means=getSampleMeans(n);
+    const theoSE=SIGMA/Math.sqrt(n);
+
+    // histogram
+    const xMin=Math.max(0, MU-5*theoSE);
+    const xMax=MU+5*theoSE;
+    const nBins=Math.max(15,Math.min(50,Math.round(Math.sqrt(N_SAMPLES))));
+    const binWidth=(xMax-xMin)/nBins;
+    const bins=Array(nBins).fill(0);
+    means.forEach(v=>{
+      const b=Math.floor((v-xMin)/binWidth);
+      if(b>=0&&b<nBins) bins[b]++;
+    });
+    const maxCount=Math.max(...bins);
+    // convert to density
+    const densities=bins.map(c=>c/(N_SAMPLES*binWidth));
+    const yMax=Math.max(...densities)*1.25;
+
+    const sx=x=>PAD.left+(x-xMin)/(xMax-xMin)*cw;
+    const sy=y=>PAD.top+ch-y/yMax*ch;
+
+    // draw bars
+    bins.forEach((c,i)=>{
+      const x0=xMin+i*binWidth;
+      const d=c/(N_SAMPLES*binWidth);
+      const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+      rect.setAttribute("x",sx(x0)+0.5); rect.setAttribute("y",sy(d));
+      rect.setAttribute("width",Math.max(1,sx(x0+binWidth)-sx(x0)-1));
+      rect.setAttribute("height",Math.max(0,sy(0)-sy(d)));
+      rect.setAttribute("fill",GREY); rect.setAttribute("stroke","#fff"); rect.setAttribute("stroke-width","0.5");
+      mainSvg.appendChild(rect);
+    });
+
+    // theoretical normal overlay
+    const nPts=200;
+    const overlayXs=Array.from({length:nPts},(_,i)=>xMin+i*(xMax-xMin)/(nPts-1));
+    const overlayYs=overlayXs.map(x=>normalPDF(x,MU,theoSE));
+    const overlayPts=overlayXs.map((x,i)=>`${sx(x)},${sy(overlayYs[i])}`).join(" ");
+    const overlayLine=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    overlayLine.setAttribute("points",overlayPts); overlayLine.setAttribute("fill","none");
+    overlayLine.setAttribute("stroke",ACCENT); overlayLine.setAttribute("stroke-width","2.5");
+    mainSvg.appendChild(overlayLine);
+
+    // mean marker
+    const muLine=document.createElementNS("http://www.w3.org/2000/svg","line");
+    muLine.setAttribute("x1",sx(MU)); muLine.setAttribute("x2",sx(MU));
+    muLine.setAttribute("y1",PAD.top); muLine.setAttribute("y2",PAD.top+ch);
+    muLine.setAttribute("stroke","#374151"); muLine.setAttribute("stroke-width","1.5");
+    muLine.setAttribute("stroke-dasharray","5,3");
+    mainSvg.appendChild(muLine);
+
+    // axes
+    const xAx=document.createElementNS("http://www.w3.org/2000/svg","line");
+    xAx.setAttribute("x1",PAD.left); xAx.setAttribute("x2",PAD.left+cw);
+    xAx.setAttribute("y1",sy(0)); xAx.setAttribute("y2",sy(0));
+    xAx.setAttribute("stroke","#374151"); xAx.setAttribute("stroke-width","1");
+    mainSvg.appendChild(xAx);
+    const yAx=document.createElementNS("http://www.w3.org/2000/svg","line");
+    yAx.setAttribute("x1",PAD.left); yAx.setAttribute("x2",PAD.left);
+    yAx.setAttribute("y1",PAD.top); yAx.setAttribute("y2",sy(0));
+    yAx.setAttribute("stroke","#374151"); yAx.setAttribute("stroke-width","1");
+    mainSvg.appendChild(yAx);
+
+    // x ticks
+    const nTicks=5;
+    for(let i=0;i<=nTicks;i++) {
+      const xv=xMin+i*(xMax-xMin)/nTicks;
+      const tk=document.createElementNS("http://www.w3.org/2000/svg","line");
+      tk.setAttribute("x1",sx(xv)); tk.setAttribute("x2",sx(xv));
+      tk.setAttribute("y1",sy(0)); tk.setAttribute("y2",sy(0)+5);
+      tk.setAttribute("stroke","#374151"); tk.setAttribute("stroke-width","1");
+      mainSvg.appendChild(tk);
+      const lbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+      lbl.setAttribute("x",sx(xv)); lbl.setAttribute("y",sy(0)+18);
+      lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("font-size","10");
+      lbl.setAttribute("fill","#6b7280");
+      lbl.textContent=xv.toFixed(2);
+      mainSvg.appendChild(lbl);
+    }
+
+    // x-axis label
+    const xLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    xLbl.setAttribute("x",PAD.left+cw/2); xLbl.setAttribute("y",PAD.top+ch+38);
+    xLbl.setAttribute("text-anchor","middle"); xLbl.setAttribute("font-size","11");
+    xLbl.setAttribute("fill","#374151"); xLbl.textContent="Sample mean x̄ₙ";
+    mainSvg.appendChild(xLbl);
+
+    // y-axis label
+    const yLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    yLbl.setAttribute("x",12); yLbl.setAttribute("y",PAD.top+ch/2);
+    yLbl.setAttribute("text-anchor","middle"); yLbl.setAttribute("font-size","11");
+    yLbl.setAttribute("fill","#6b7280");
+    yLbl.setAttribute("transform",`rotate(-90,12,${PAD.top+ch/2})`);
+    yLbl.textContent="Density";
+    mainSvg.appendChild(yLbl);
+
+    // inset: source Exp(0.5) distribution
+    const iW=90, iH=60, iX=W-PAD.right-iW-5, iY=PAD.top+2;
+    const iBg=document.createElementNS("http://www.w3.org/2000/svg","rect");
+    iBg.setAttribute("x",iX-5); iBg.setAttribute("y",iY-5);
+    iBg.setAttribute("width",iW+10); iBg.setAttribute("height",iH+10);
+    iBg.setAttribute("fill","#f8fafc"); iBg.setAttribute("stroke","#e5e7eb");
+    iBg.setAttribute("rx","3");
+    mainSvg.appendChild(iBg);
+    // inset curve
+    const iXs=Array.from({length:80},(_,i)=>i*8/79);
+    const iYs=iXs.map(x=>LAMBDA*Math.exp(-LAMBDA*x));
+    const iYMax=LAMBDA*1.1;
+    const isX=x=>iX+x/8*iW;
+    const isY=y=>iY+iH-y/iYMax*iH;
+    const iPts=iXs.map((x,i)=>`${isX(x)},${isY(iYs[i])}`).join(" ");
+    const iArea=document.createElementNS("http://www.w3.org/2000/svg","polygon");
+    iArea.setAttribute("points",`${isX(0)},${isY(0)} ${iPts} ${isX(8)},${isY(0)}`);
+    iArea.setAttribute("fill","rgba(156,163,175,0.3)"); mainSvg.appendChild(iArea);
+    const iLine=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    iLine.setAttribute("points",iPts); iLine.setAttribute("fill","none");
+    iLine.setAttribute("stroke","#9ca3af"); iLine.setAttribute("stroke-width","1.5");
+    mainSvg.appendChild(iLine);
+    const iLbl=document.createElementNS("http://www.w3.org/2000/svg","text");
+    iLbl.setAttribute("x",iX+iW/2); iLbl.setAttribute("y",iY+iH+10);
+    iLbl.setAttribute("text-anchor","middle"); iLbl.setAttribute("font-size","9");
+    iLbl.setAttribute("fill","#6b7280"); iLbl.textContent="Source: Exp(0.5)";
+    mainSvg.appendChild(iLbl);
+
+    // info readout
+    infoDiv.textContent=`n = ${n} | Theoretical mean: ${MU.toFixed(1)} | Theoretical SE: ${theoSE.toFixed(3)}`;
+  }
+
+  draw();
+  return container;
+}
+```
+
+
+## Where this goes
+
+This chapter provides the foundation for **Chapter 2: Mathematical statistics**
+(this volume). Everything in that chapter — maximum likelihood estimation,
+confidence intervals, hypothesis tests — takes the distributions developed
+here and uses them to make inferences about unknown parameters from data.
+The CLT is the engine: it justifies using normal-distribution machinery on
+sample means regardless of the underlying population distribution, which is
+why $z$-tests and $t$-tests work in practice.
+
+The connections extend further into other sections of Vol 7. The Poisson
+distribution arises in **queuing theory** (a special case of stochastic
+processes). The normal distribution underlies error analysis in **numerical
+methods**: when you propagate measurement uncertainties through a computation,
+the CLT explains why the output errors are approximately normal. In
+**engineering statistics**, the same distributions appear in reliability
+theory, quality control (Six Sigma thresholds are expressed in $\sigma$
+units), and signal detection.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A reliability engineer models component lifetimes as exponential and
+  uses the memoryless property to compute replacement schedules.
+- An actuary prices insurance using the Poisson distribution to model
+  the number of claims per period.
+- A machine learning engineer interprets model output probabilities using
+  the Bayes framework — the model's output is $P(Y \mid X)$, not $P(X \mid Y)$.
+- A signal processing engineer applies the CLT to justify that thermal
+  noise in electronic circuits is modelled as Gaussian.
+- A quality control engineer uses the binomial distribution to decide
+  whether a batch rejection threshold is appropriate for a given defect rate.
+:::
+
+
+## Exercises
+
+These are puzzles. Each has a clean numerical answer. The interesting
+part is identifying which distribution applies and setting up the
+probability correctly.
+
+---
+
+**Exercise 1.** A factory has two machines. Machine A produces 60% of output
+and has a 4% defect rate. Machine B produces the remaining 40% and has
+a 1% defect rate. An inspector picks a component at random and finds it
+defective. What is the probability it came from Machine A?
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Define events"
+    eq: "A: \\text{from machine A},\\quad B: \\text{from machine B},\\quad D: \\text{defective}"
+    note: "Label the events clearly before applying any formula."
+  - op: "Write the given probabilities"
+    eq: "P(A) = 0.60,\\quad P(B) = 0.40,\\quad P(D|A) = 0.04,\\quad P(D|B) = 0.01"
+    note: ~
+  - op: "Compute total probability of a defect"
+    eq: "P(D) = P(D|A)\\,P(A) + P(D|B)\\,P(B) = 0.04 \\times 0.60 + 0.01 \\times 0.40 = 0.024 + 0.004 = 0.028"
+    note: "The total probability rule partitions over the two machines."
+  - op: "Apply Bayes' theorem"
+    eq: "P(A|D) = \\frac{P(D|A)\\,P(A)}{P(D)} = \\frac{0.04 \\times 0.60}{0.028} = \\frac{0.024}{0.028}"
+    note: ~
+  - op: "Simplify"
+    eq: "P(A|D) = \\frac{0.024}{0.028} = \\frac{6}{7} \\approx 0.857"
+    note: ~
+  - op: "Check"
+    eq: "P(A|D) + P(B|D) = \\frac{6}{7} + \\frac{1}{7} = 1 \\checkmark"
+    note: "The two conditional probabilities must sum to 1 since every defect came from one machine."
+-->
+
+---
+
+**Exercise 2.** A quality control test checks batches of 8 components. Each
+component, independently, has a failure probability of 0.1. Find the probability
+that at least 3 components in a batch fail.
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Identify the distribution"
+    eq: "X \\sim \\text{Binomial}(n=8,\\, p=0.1)"
+    note: "Independent trials, fixed n, constant p — this is binomial."
+  - op: "Write the target probability using the complement"
+    eq: "P(X \\geq 3) = 1 - P(X \\leq 2) = 1 - [P(X=0) + P(X=1) + P(X=2)]"
+    note: "The complement is easier to compute than summing from 3 to 8."
+  - op: "Compute P(X = 0)"
+    eq: "P(X=0) = \\binom{8}{0}(0.1)^0(0.9)^8 = 0.9^8 \\approx 0.4305"
+    note: ~
+  - op: "Compute P(X = 1)"
+    eq: "P(X=1) = \\binom{8}{1}(0.1)^1(0.9)^7 = 8 \\times 0.1 \\times 0.9^7 \\approx 8 \\times 0.1 \\times 0.4783 = 0.3826"
+    note: ~
+  - op: "Compute P(X = 2)"
+    eq: "P(X=2) = \\binom{8}{2}(0.1)^2(0.9)^6 = 28 \\times 0.01 \\times 0.5314 \\approx 0.1488"
+    note: ~
+  - op: "Sum and subtract from 1"
+    eq: "P(X \\geq 3) = 1 - (0.4305 + 0.3826 + 0.1488) = 1 - 0.9619 = 0.0381"
+    note: ~
+  - op: "Check"
+    eq: "E[X] = np = 0.8,\\quad \\text{Var}(X) = np(1-p) = 0.72;\\quad P(X \\geq 3) \\approx 3.8\\% \\text{ is plausible for } \\mu = 0.8 \\checkmark"
+    note: ~
+-->
+
+---
+
+**Exercise 3.** A call centre receives calls at an average rate of 4 per minute.
+In a 30-second window, what is the probability of receiving 3 or more calls?
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Identify the distribution and rescale the rate"
+    eq: "X \\sim \\text{Poisson}(\\lambda),\\quad \\lambda = 4 \\times \\tfrac{1}{2} = 2 \\text{ calls per 30 seconds}"
+    note: "The Poisson parameter must match the window of interest — halve the rate for a 30-second window."
+  - op: "Write the target probability using the complement"
+    eq: "P(X \\geq 3) = 1 - P(X \\leq 2) = 1 - [P(X=0) + P(X=1) + P(X=2)]"
+    note: ~
+  - op: "Compute P(X = 0)"
+    eq: "P(X=0) = \\frac{2^0 e^{-2}}{0!} = e^{-2} \\approx 0.1353"
+    note: ~
+  - op: "Compute P(X = 1)"
+    eq: "P(X=1) = \\frac{2^1 e^{-2}}{1!} = 2e^{-2} \\approx 0.2707"
+    note: ~
+  - op: "Compute P(X = 2)"
+    eq: "P(X=2) = \\frac{2^2 e^{-2}}{2!} = 2e^{-2} \\approx 0.2707"
+    note: ~
+  - op: "Sum and subtract"
+    eq: "P(X \\geq 3) = 1 - (0.1353 + 0.2707 + 0.2707) = 1 - 0.6767 = 0.3233"
+    note: ~
+  - op: "Check"
+    eq: "E[X] = \\lambda = 2;\\quad \\text{just under a third of 30-second windows see } \\geq 3 \\text{ calls — consistent with mean 2} \\checkmark"
+    note: ~
+-->
+
+---
+
+**Exercise 4.** The time to failure of a device follows an exponential
+distribution with rate $\lambda = 0.02$ per hour. Find: (a) $P(T > 100)$,
+(b) $E[T]$, (c) $\text{Var}(T)$.
+
+<!-- STEPPER
+exercise: 4
+steps:
+  - op: "Identify the distribution"
+    eq: "T \\sim \\text{Exp}(\\lambda = 0.02)"
+    note: ~
+  - op: "Compute P(T > 100) using the survival function"
+    eq: "P(T > 100) = e^{-\\lambda \\cdot 100} = e^{-0.02 \\times 100} = e^{-2} \\approx 0.1353"
+    note: "The survival function for the exponential is P(T > t) = e^{-\\lambda t}."
+  - op: "Compute E[T]"
+    eq: "E[T] = \\frac{1}{\\lambda} = \\frac{1}{0.02} = 50 \\text{ hours}"
+    note: ~
+  - op: "Compute Var(T)"
+    eq: "\\text{Var}(T) = \\frac{1}{\\lambda^2} = \\frac{1}{(0.02)^2} = \\frac{1}{0.0004} = 2500 \\text{ hours}^2"
+    note: ~
+  - op: "Check"
+    eq: "\\sigma = \\sqrt{2500} = 50 \\text{ hours} = E[T];\\quad \\text{for any exponential, } \\sigma = \\mu \\checkmark"
+    note: "The standard deviation equals the mean for every exponential distribution — a useful sanity check."
+-->
+
+---
+
+**Exercise 5.** A manufacturing process produces items whose length
+$X \sim N(75, 100)$ mm (mean 75 mm, variance 100 mm²). The specification
+requires length greater than 85 mm. Find $P(X > 85)$.
+
+<!-- STEPPER
+exercise: 5
+steps:
+  - op: "Identify parameters"
+    eq: "X \\sim N(\\mu = 75,\\, \\sigma^2 = 100),\\quad \\sigma = 10"
+    note: ~
+  - op: "Standardise to Z"
+    eq: "P(X > 85) = P\\!\\left(Z > \\frac{85 - 75}{10}\\right) = P(Z > 1)"
+    note: "Z = (X - \\mu)/\\sigma transforms any normal question into a standard normal question."
+  - op: "Look up the standard normal CDF"
+    eq: "P(Z > 1) = 1 - \\Phi(1) = 1 - 0.8413 = 0.1587"
+    note: "\\Phi(1) \\approx 0.8413 is a standard table value."
+  - op: "Check"
+    eq: "z = 1 \\text{ is one standard deviation above the mean; about 16\\% of a normal distribution lies above } +1\\sigma \\checkmark"
+    note: ~
+-->
+
+---
+
+**Exercise 6.** Let $X_1, X_2, \ldots, X_{50}$ be i.i.d. $\text{Exp}(1)$ random
+variables. Their mean is $\mu = 1$ and variance is $\sigma^2 = 1$.
+Use the CLT to approximate $P(\bar{X}_{50} > 1.2)$.
+
+<!-- STEPPER
+exercise: 6
+steps:
+  - op: "Identify the distribution of the sample mean via CLT"
+    eq: "\\bar{X}_{50} \\approx N\\!\\left(\\mu,\\, \\frac{\\sigma^2}{n}\\right) = N\\!\\left(1,\\, \\frac{1}{50}\\right)"
+    note: "n = 50 is large enough for the CLT approximation to be reliable."
+  - op: "Compute the standard deviation of the mean"
+    eq: "\\frac{\\sigma}{\\sqrt{n}} = \\frac{1}{\\sqrt{50}} \\approx 0.1414"
+    note: ~
+  - op: "Standardise"
+    eq: "P(\\bar{X}_{50} > 1.2) = P\\!\\left(Z > \\frac{1.2 - 1}{0.1414}\\right) = P(Z > 1.414)"
+    note: ~
+  - op: "Look up the standard normal tail"
+    eq: "P(Z > 1.414) = 1 - \\Phi(1.414) \\approx 1 - 0.9214 = 0.0786"
+    note: "\\Phi(1.414) \\approx 0.9214; interpolate or use software."
+  - op: "Check"
+    eq: "1.2 = \\mu + 1.414\\,\\sigma_{\\bar{X}};\\quad \\text{about 8\\% of sample means exceed } \\mu + 1.4\\,\\sigma_{\\bar{X}};\\quad \\text{plausible} \\checkmark"
+    note: "The exact probability (by simulation) is approximately 0.074 — close to the CLT approximation."
+-->
+
+<!--
+MATH-PROF REVIEW
+Reviewed: 2026-04-01
+Reviewer: math-prof agent
+
+FIXED (directly edited):
+  - [NOTE] notation_introduced was missing four symbols used in the chapter body:
+    μ (introduced in the Expectation section), Φ(z) (introduced for the standard
+    normal CDF), Cov(X,Y) (Joint distributions section), ρ(X,Y) (Correlation
+    section). All four added to the front matter.
+
+COMMENTS INSERTED:
+  - [WARN] Bayes worked example, line ~203: the second factor 0.99 in
+    "0.05 × 0.99" is P(D^c), which coincidentally equals the sensitivity
+    P(T+|D) = 0.99. The arithmetic is correct (0.05 × 0.99 = 0.0495) but
+    the repeated value is a likely source of reader confusion. Recommend
+    writing P(D^c) = 1 - 0.01 = 0.99 explicitly or labelling the terms.
+    MATH-PROF comment inserted at the location.
+
+VERIFIED CORRECT:
+  - Bayes' theorem derivation and formula ✓
+  - Bayes worked example: P(T+) = 0.0594, P(D|T+) ≈ 0.167 ✓
+  - Poisson mean derivation (index shift, series = e^λ) ✓
+  - Exponential E[X] via integration by parts (u=x, dv=λe^{-λx}dx) ✓
+  - Exponential E[X²] = 2/λ², Var(X) = 1/λ² ✓
+  - Memoryless property proof (survival function ratio) ✓
+  - CLT worked example Exp(λ=0.5), n=50: σ/√50 = 2/√50 ≈ 0.283,
+    z = 1.414, P(Z>1.414) ≈ 0.079 ✓
+  - Exercise 1: P(D)=0.028, P(A|D)=6/7≈0.857 ✓
+  - Exercise 2: P(X=0)≈0.4305, P(X=1)≈0.3826, P(X=2)≈0.1488,
+    P(X≥3)≈0.0381 ✓
+  - Exercise 3: Poisson(λ=2) rescaling correct; P(X≥3)≈0.3233 ✓
+  - Exercise 4: e^{-2}≈0.1353, E[T]=50, Var(T)=2500 ✓
+  - Exercise 5: z=1, P(X>85)=0.1587 ✓
+  - Exercise 6: σ/√50≈0.1414, z≈1.414, P(X̄>1.2)≈0.0786 ✓
+
+TOPOLOGY:
+  - opens_to: prob_stats (enables) — consistent with topology.yml edge
+    [stat_advanced, prob_stats, enables]; this chapter is the intra-volume
+    prob theory chapter that enables the statistics chapter ✓
+  - prerequisite_ids: [int_calc, stat_advanced] — int_calc required for
+    all continuous distribution derivations; stat_advanced is the layer-1
+    prereq. Both are valid entries in topology.yml ✓
+
+NOTES (author's discretion):
+  - [NOTE] destinations.geo hook uses "inverse-exponential probabilities"
+    to describe flood return periods. The distribution is exponential, not
+    inverse-exponential. The survival function e^{-λt} is what gives return
+    period probabilities — the word "inverse" is non-standard here.
+  - [NOTE] kreyszig_chapter: 24 — Kreyszig Ch 24 covers data analysis and
+    regression; the probability theory in this chapter (distributions, CLT)
+    maps more squarely to Ch 25. Consider kreyszig_chapter: 25 or "24–25".
+
+VERDICT: PASS WITH NOTES
+-->
+
+<!--
+ENGINEER-PROF REVIEW
+====================
+
+FIXED DIRECTLY
+--------------
+1. [BLOCKER — fixed] destinations.geo hook stated: "Flood return periods are
+   inverse-exponential probabilities." This is factually wrong on two counts:
+   (a) Flood frequency analysis uses extreme-value distributions — Gumbel (GEV Type I),
+       log-Pearson Type III, or GEV Type II (Fréchet) for annual peak flows. The
+       exponential distribution is used for inter-arrival times (time between events),
+       not for the magnitude of extreme events.
+   (b) "Inverse-exponential" is not a standard term. The survival function of the
+       exponential is e^{-λt}, but this is not called "inverse-exponential."
+   Fixed: hook now correctly references extreme-value distributions (Gumbel,
+   log-Pearson III) and framing is accurate for flood frequency analysis as practised
+   by Environment Canada and the US Army Corps of Engineers.
+
+FLAGGED WITH INLINE COMMENT
+----------------------------
+2. [WARN — inline comment inserted] uofa_course: "STAT 151" maps to a non-specialist
+   introductory statistics course. The content of this chapter (Kolmogorov axioms,
+   Bayes' theorem, all major distributions, CLT with proof sketch) is engineering-
+   probability level, corresponding to U of A STAT 265 (Probability and Statistics
+   for Engineers) or ECE 340 level. STAT 151 students would not cover Poisson
+   processes, exponential distribution derivations, or the CLT statement in this form.
+
+ENGINEERING FRAMING — PASSED
+------------------------------
+3. [PASS] Reliability engineering hook: "models component lifetimes as exponential
+   and uses the memoryless property to compute replacement schedules." The memoryless
+   property is fundamental to constant-hazard-rate reliability models (exponential
+   distribution = constant failure rate, which is appropriate for the useful-life
+   phase of the bathtub curve). Accurate.
+
+4. [PASS] Signal processing: "CLT to justify that thermal noise in electronic
+   circuits is modelled as Gaussian." Correct. Johnson-Nyquist noise arises from
+   the superposition of a large number of independent electron collisions; CLT
+   applies. This is standard in RF and communication system engineering.
+
+5. [PASS] Quality control: "uses the binomial distribution to decide whether a
+   batch rejection threshold is appropriate for a given defect rate." Accurate.
+   Acceptance sampling (MIL-STD-1916, ISO 2859) is based on the binomial/hypergeometric
+   distribution.
+
+6. [PASS] Medical test (Bayes' theorem worked example): sensitivity 99%, specificity
+   95%, prevalence 1%. P(D | T+) ≈ 16.7%. Arithmetic verified. The interpretation
+   ("most positive tests come from the large healthy population, not the small sick one")
+   is the correct base-rate reasoning.
+
+7. [PASS] Poisson parameter for server requests: stated as 4/minute → λ = 2 for
+   30-second window in Exercise 3. Correct rescaling.
+
+8. [NOTE] The Poisson derivation of E[X] = λ is worked out explicitly. Correct.
+
+9. [NOTE] Normal approximation to Binomial rule: "np ≥ 5 and n(1-p) ≥ 5." Some
+   sources use np ≥ 10; the 5-rule is the more lenient but commonly cited threshold.
+   Acceptable at engineering layer; could add "(some sources use 10)" if desired.
+
+VERDICT: PASS WITH NOTES — one blocker (exponential/flood return period) fixed
+directly. STAT 151 mapping flagged with inline comment. All other engineering
+content accurate.
+-->
+
+<!--
+STUDENT REVIEW
+Reviewer: student agent
+Layer: engineering
+Date: 2026-04-01
+
+VERDICT: READABLE WITH FIXES
+
+SUMMARY
+The chapter is well-structured for an engineering-layer reader and follows a
+logical arc: axioms → random variables → named distributions → CLT. The
+worked examples are concrete and the steppers are well-calibrated. However,
+nine specific friction points exist where the prose drops a step, introduces
+notation without explanation, or makes a conceptual jump that will stop a new
+reader.
+
+ISSUES (in order of appearance)
+
+1. "countable collection" — Additivity axiom extension paragraph
+   "Countable" is a set-theory term. An engineering student knows finite
+   arithmetic but may not have encountered the countable/uncountable
+   distinction. A brief parenthetical resolves this without adding length.
+   FLAGGED inline.
+
+2. Independence biconditional P(A|B) = P(A) ⟺ P(A∩B) = P(A)P(B)
+   The equivalence is asserted without proof. The forward direction is a
+   one-substitution consequence of the definition directly above. Without it,
+   readers cannot verify which form to use in a calculation.
+   FLAGGED inline.
+
+3. Bayes worked example: the repeated value 0.99
+   P(T+|D) = 0.99 (sensitivity) and P(D^c) = 0.99 (prevalence complement)
+   produce the same number by coincidence. Both 0.99s look identical on first
+   reading. A label on the second one prevents the reader from thinking it
+   was copied in error.
+   FLAGGED inline.
+
+4. PDF density explanation: f(x) > 1 is possible
+   This is a genuine conceptual surprise. The statement appears without a
+   concrete example. An engineering student who just learned that probabilities
+   live in [0,1] will find this disorienting. The dx explanation is correct
+   but relies on infinitesimal reasoning that may not be fluent.
+   FLAGGED inline.
+
+5. Variance derivation: collapsed step
+   The algebra E[X²] − 2μ·E[X] + μ² = E[X²] − μ² skips the substitution
+   E[X] = μ. One invisible algebraic move that readers who are following
+   carefully will pause over.
+   FLAGGED inline.
+
+6. Binomial: "one preview of the CLT"
+   The CLT has not been introduced yet when this sentence appears. The phrase
+   signals a connection but gives the reader nothing to hold onto now. A
+   forward pointer to the CLT section would help.
+   FLAGGED inline.
+
+7. Exponential variance: E[X²] stated without derivation
+   The chapter derives E[X] in full; E[X²] = 2/λ² is asserted with a hint.
+   The asymmetry is noticeable to readers who worked through the E[X] steps.
+   FLAGGED inline.
+
+8. CLT arrow notation $\xrightarrow{d}$
+   "Converges in distribution" is not in notation_introduced and not glossed
+   in the prose. Readers who have seen calculus convergence may not know that
+   distributional convergence is a distinct technical concept.
+   FLAGGED inline.
+
+9. "i.i.d." abbreviation
+   Introduced in full in the CLT section but the abbreviation first appears
+   in Exercise 6 without being linked back. A parenthetical at first use in
+   the CLT section would connect them.
+   FLAGGED inline.
+
+EXERCISE CALIBRATION
+All six exercises are appropriately calibrated. They span Bayes (Ex 1),
+Binomial (Ex 2), Poisson (Ex 3), Exponential (Ex 4), Normal (Ex 5), and
+CLT (Ex 6). Good distribution coverage — each exercise targets one distribution
+from the chapter rather than combining multiple ideas. The steppers are clear
+and the check steps are genuinely useful.
+
+WAYFINDING
+"Where this goes" names the next chapter explicitly and explains why the CLT
+matters for what follows. The Vol 7 cross-references (queuing theory, numerical
+methods, reliability) are concrete. Readers will know where they are headed.
+-->
+
+<!--
+EDIT LOG
+Reviewer: editor agent
+Date: 2026-04-01
+
+- [Bayes example, ~line 214] The two values of 0.99 had different meanings
+  (sensitivity vs. complement of prevalence). Added a sentence before the
+  calculation identifying P(D^c) = 1 - 0.01 = 0.99 as the complement, and
+  added underbrace labels to the displayed equation to distinguish the two
+  occurrences. Addresses MATH-PROF and STUDENT flags.
+
+- [PDF density, ~line 255] Added a concrete example after the f(x) > 1 warning:
+  Uniform(0, 0.5) has f(x) = 2, with the integral shown equal to 1. Makes the
+  conceptual point immediate rather than relying on infinitesimal dx reasoning.
+  Addresses STUDENT flag.
+
+- [Variance derivation, ~line 293] The step collapsing -2μ·E[X] + μ² to -μ²
+  was invisible. Added one sentence explicitly substituting E[X] = μ and showing
+  -2μ² + μ² = -μ² before the final form. Addresses STUDENT flag.
+
+- [Exponential E[X²], ~line 404] The one-line assertion after a fully worked E[X]
+  derivation left an asymmetry. Added a sentence explaining that the same
+  integration-by-parts pattern applies (twice), or equivalently the gamma function
+  result. No derivation added; the gap is acknowledged clearly. Addresses STUDENT
+  flag.
+
+- [CLT notation, ~line 497] The arrow notation →d was not glossed. Added a
+  sentence reading it aloud as "converges in distribution to" and explaining what
+  that means in context. Addresses STUDENT flag.
+
+- [CLT conditions, ~line 514] "independent, identically distributed" was not
+  linked to its abbreviation. Added "(abbreviated i.i.d.)" inline. Addresses
+  STUDENT flag.
+-->

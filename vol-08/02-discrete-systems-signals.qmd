@@ -1,0 +1,444 @@
+---
+title: "Discrete-time systems and signal processing"
+subtitle: "Sampling, filtering, and recurrence"
+chapter: 2
+volume: 8
+layer: "discipline"
+status: "draft"
+
+axiom: |
+  Real sensors, controllers, and computers do not live in continuous time.
+
+rewrite: |
+  Sampling turns continuous mathematics into sequences, recurrences, spectra,
+  and filters with their own stability and aliasing laws.
+
+opens_to:
+  - id: estimation_inverse
+    label: "Estimation, inverse problems, and filtering"
+    volume: 8
+    relationship: enriches
+
+prerequisite_ids:
+  - fourier_transform
+  - numerics
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Upper-year electrical, computer, and mechatronics courses depend on sampled signals, frequency response, and filter design."
+    career_example: "Embedded systems engineer designing a digital filter for a noisy sensor stream"
+  - field: sci
+    label: Hard sciences
+    hook: "Spectral analysis and sampled instrumentation are standard tools in experimental science."
+    career_example: "Geophysicist analysing sampled seismic traces in the frequency domain"
+  - field: comp
+    label: Computing and data
+    hook: "Streaming data pipelines and DSP both rely on recurrence, convolution, and filtering."
+    career_example: "Machine learning engineer preprocessing time-series sensor data before inference"
+
+hook: |
+  A sensor does not hand you a continuous function. It hands you numbers at
+  intervals. A microphone gives a stream of samples. A controller updates once
+  per cycle. Once time is sampled, the mathematics changes shape: derivatives
+  become recurrences, spectra pick up aliasing, and filters become algorithms.
+
+notation_introduced:
+  - symbol: "x[n]"
+    reads_as: "x of n — the sample of the signal at discrete index n"
+    notation_weight: 1
+  - symbol: "y[n]"
+    reads_as: "y of n — the output sequence"
+    notation_weight: 1
+  - symbol: "T_s"
+    reads_as: "T sub s — the sampling period"
+    notation_weight: 2
+  - symbol: "f_s = 1/T_s"
+    reads_as: "f sub s equals one over T sub s — the sampling frequency"
+    notation_weight: 2
+  - symbol: "\\omega"
+    reads_as: "omega — continuous angular frequency, in radians per second"
+    notation_weight: 2
+  - symbol: "y[n] = \\sum_{k=0}^{M} b_k x[n-k]"
+    reads_as: "y of n equals the weighted sum of present and past input samples"
+    notation_weight: 3
+  - symbol: "H(z)"
+    reads_as: "H of z — the discrete-time transfer function"
+    notation_weight: 3
+  - symbol: "z = e^{j\\omega_d}"
+    reads_as: "z equals e to the j omega-sub-d — points on the unit circle in the z-plane, where omega-sub-d is the normalised discrete angular frequency in radians per sample"
+    notation_weight: 3
+
+exercises:
+  type: "project"
+  real_world_context: true
+
+uofa_course: "ECE 240"
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+A sensor does not hand you a continuous function. It hands you numbers at
+intervals. A microphone gives a stream of samples. A controller updates once
+per cycle. Once time is sampled, the mathematics changes shape: derivatives
+become recurrences, spectra pick up aliasing, and filters become algorithms.
+
+That shift matters because upper-year engineering is full of systems that are
+modelled in continuous time but built in discrete time. A motor may obey a
+differential equation. The controller that stabilises it still runs on a clock.
+A seismic wave may be continuous in the ground. The data still arrives as a
+sampled trace.
+
+This chapter is about that translation. The goal is not to memorise signal
+processing vocabulary. It is to see the structural move: sampling turns a
+continuous object into a sequence, and once you have a sequence, the natural
+questions become delay, recurrence, convolution, spectrum, and stability.
+
+---
+
+## The discrete-time view
+
+A continuous-time signal is written $x(t)$. A discrete-time signal is written
+$x[n]$, read "x of n." The variable $n$ is not time itself. It is an index.
+The physical time attached to sample $n$ is
+
+$$t_n = nT_s$$
+
+where $T_s$ is the **sampling period**. The sampling frequency is
+
+$$f_s = \frac{1}{T_s}$$
+
+The same physical system can therefore be described in two ways:
+
+- continuous-time: what the signal is doing between samples
+- discrete-time: what the sampled sequence records at the clock instants
+
+This sounds like a harmless change of notation. It is not. Once the signal is a
+sequence, operations that looked infinitesimal in continuous time become
+difference equations and delay operators.
+
+If a discrete-time system takes an input sequence $x[n]$ and produces an output
+sequence $y[n]$, the simplest and most important class is the **linear
+time-invariant** discrete system. For those systems, present output depends on
+present and past samples in a fixed way.
+
+One common form is a **finite impulse response** (FIR) filter:
+
+$$y[n] = \sum_{k=0}^{M} b_k x[n-k]$$
+
+"Finite" here means the output depends on only a bounded window of $M+1$ past
+inputs, so the filter's memory is bounded. This is a weighted moving combination
+of current and previous input samples. In plain language: the output at time
+step $n$ is built from a short memory of the input. Filters that also feed back
+past outputs are called infinite impulse response (IIR) and have unbounded
+memory; they arise in the z-transform and state-space frameworks later in the
+chapter.
+
+<!-- VIZ: Sampling and aliasing explorer. Show a continuous sine wave with adjustable frequency f and a sampling comb with adjustable sampling frequency f_s. Simultaneously display the sampled points, the reconstructed lower-frequency apparent wave, and a readout comparing true frequency to aliased frequency. Let the reader drag f past the Nyquist limit and watch the apparent discrete-time behaviour change. -->
+
+## Why sampling can lie to you
+
+Suppose the continuous signal is
+
+$$x(t) = \sin(2\pi f t)$$
+
+and you sample it every $T_s$ seconds. Then the discrete sequence is
+
+$$x[n] = \sin(2\pi f nT_s) = \sin\left(2\pi \frac{f}{f_s} n\right)$$
+
+The discrete sequence only sees the ratio $f/f_s$. This is the beginning of
+the aliasing problem.
+
+If the sampling frequency is too low, two different continuous frequencies can
+produce sampled sequences that are indistinguishable. The samples no longer
+carry enough information to tell you which continuous oscillation was actually
+present.
+
+The safe rule is the **Nyquist idea**:
+
+- to represent frequency content up to $f_{\max}$, sample faster than
+  $2f_{\max}$
+
+That does not solve every practical problem, but it tells you where obvious
+failure begins. Sampling below that rate invites aliasing: high-frequency
+content reappears as a false lower-frequency pattern in the data.
+
+This is one of the reasons discrete-time systems need their own mathematics.
+The sampled sequence is not a transparent window into the continuous signal.
+It is a transformed object with its own constraints.
+
+## Difference equations and recurrence
+
+Continuous-time linear systems are often described by differential equations.
+Discrete-time linear systems are naturally described by **difference equations**.
+
+A first-order example is
+
+$$y[n+1] = ay[n] + bu[n]$$
+
+This says: the next output is built from the current output and the current
+input. The constant $a$ carries memory. The constant $b$ tells you how strongly
+the input influences the update.
+
+The stability rule for the homogeneous system
+
+$$y[n+1] = ay[n]$$
+
+is very simple:
+
+- if $|a| < 1$, the sequence decays to zero
+- if $|a| > 1$, the sequence grows in magnitude
+- if $|a| = 1$, the sequence neither decays nor grows and small modelling
+  changes can matter a great deal
+
+This is the discrete-time analogue of looking at pole location in continuous
+time. In one case you care about left-half-plane location. In the other you
+care about whether the relevant quantity sits inside the unit circle.
+
+::: {.callout-note appearance="simple"}
+## Why This Works
+
+In continuous time, a mode behaves like $e^{st}$, so the sign of
+$\Re(s)$ decides whether it decays or grows. In discrete time, a mode behaves
+like $a^n$, so the magnitude of $a$ decides whether repeated updates shrink or
+blow up.
+
+That is the structural translation. Exponentials become powers. Left-half-plane
+stability becomes unit-circle stability.
+:::
+
+## The core method
+
+A first pass through a discrete-time systems problem usually goes like this:
+
+1. Identify the sampling period $T_s$ and therefore the sampling frequency
+   $f_s$.
+2. Decide whether the data is a sampled version of a continuous signal, a
+   genuinely discrete process, or a digital controller state.
+3. Write the update rule or filter equation.
+4. Interpret every term as memory, delay, or input contribution.
+5. Check the relevant stability test: pole inside the unit circle, or
+   coefficient magnitude less than 1 in the simple first-order case.
+6. Connect the algebra back to behaviour: smoothing, lag, oscillation, alias,
+   or amplification.
+
+The habit to build is the same one from the control chapter: do not leave the
+recurrence as pure symbol manipulation. Ask what it means for the sequence the
+machine is actually computing.
+
+## Worked example 1: a moving-average sensor filter
+
+A noisy sensor signal $x[n]$ is filtered by
+
+$$y[n] = \frac{1}{3}\bigl(x[n] + x[n-1] + x[n-2]\bigr)$$
+
+This is a three-point moving average.
+
+What does it do? It smooths out rapid sample-to-sample variation by replacing
+the present sample with the average of the present and previous two samples.
+If one sample spikes upward because of noise, the output spike is diluted by
+the neighbouring samples.
+
+The price is delay. A filter that averages over time cannot react instantly to
+a real rapid change. This is the first recurring engineering tradeoff in
+discrete-time signal processing:
+
+- more smoothing usually means more lag
+- less lag usually means less smoothing
+
+In embedded control, that tradeoff matters because a laggy filter can make an
+otherwise good controller feel slow or even unstable.
+
+## Worked example 2: discrete-time stability of a sampled update
+
+Consider the update rule
+
+$$y[n+1] = 0.6\,y[n] + u[n]$$
+
+If the input is zero, then
+
+$$y[n+1] = 0.6\,y[n]$$
+
+Starting from $y[0]$, repeated substitution gives
+
+$$y[n] = 0.6^n y[0]$$
+
+Because $|0.6| < 1$, the homogeneous response decays to zero. So the system's
+memory fades over time.
+
+Now compare with
+
+$$y[n+1] = 1.1\,y[n] + u[n]$$
+
+With zero input, the response is
+
+$$y[n] = 1.1^n y[0]$$
+
+and because $|1.1| > 1$, the sequence grows. A digital implementation with
+this update law is unstable.
+
+That is a cleaner rule than many students expect. In first-order discrete-time
+systems, the entire stability story is often carried by one number.
+
+## Worked example 3: aliasing in a seismic record
+
+A geophysicist samples ground motion at $f_s = 100$ Hz. A strong sinusoidal
+component is present at $f = 70$ Hz.
+
+This is above the Nyquist limit of
+
+$$\frac{f_s}{2} = 50 \text{ Hz}$$
+
+so the signal will alias. The discrete record cannot faithfully represent a
+70 Hz oscillation at that sampling rate. It will appear as a false lower
+frequency in the sampled data.
+
+The engineering lesson is not "compute a formula and move on." It is that data
+collection itself is part of the mathematics. Sampling choices determine what
+questions the later analysis can answer honestly.
+
+This is why signal processing belongs naturally beside estimation and inverse
+problems in Volume 8. If the measurement process already lost information, no
+later inference method can magically restore it.
+
+## Where this goes
+
+The most direct continuation is
+[Estimation, inverse problems, and filtering](05-estimation-inverse.qmd).
+Once a system is sampled, state estimation, filtering, and inference are
+usually carried out in discrete time. Kalman filtering, recursive estimation,
+and streaming data assimilation all inherit the language of recurrences,
+sampling, and noise that this chapter sets up.
+
+This chapter also sits beside control rather than after it by accident.
+Upper-year engineers constantly move between the continuous-time model of the
+plant and the discrete-time implementation of the controller. If Chapter 1 was
+about shaping behaviour, this chapter is about what happens when that shaping
+must be done on a clock.
+
+::: {.callout-tip appearance="simple"}
+## Applications
+
+- digital filters for noisy sensors
+- sampled-data control in motors and robotics
+- audio and vibration signal analysis
+- seismic and geophysical trace processing
+- preprocessing streaming time-series data
+- telemetry, embedded systems, and real-time monitoring
+:::
+
+## Exercises
+
+These are project-style exercises. Explain the behaviour as well as the
+calculation.
+
+### Exercise 1
+
+A sensor is sampled every $0.01$ s.
+
+1. Find the sampling frequency.
+2. Find the Nyquist frequency.
+3. Decide whether a 30 Hz sinusoid can be represented without aliasing.
+4. Decide whether a 70 Hz sinusoid can be represented without aliasing.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Write the sampling frequency"
+    eq: "f_s = \\dfrac{1}{T_s} = \\dfrac{1}{0.01} = 100\\text{ Hz}"
+    note: "Sampling frequency is the reciprocal of the sampling period."
+  - op: "Compute the Nyquist frequency"
+    eq: "f_N = \\dfrac{f_s}{2} = 50\\text{ Hz}"
+    note: "This is the highest frequency that can be represented without aliasing in the basic sampling rule."
+  - op: "Check the 30 Hz signal"
+    eq: "30 < 50 \\quad \\Rightarrow \\quad \\text{30 Hz is representable without aliasing}"
+    note: ~
+  - op: "Check the 70 Hz signal"
+    eq: "70 > 50 \\quad \\Rightarrow \\quad \\text{70 Hz will alias}"
+    note: "It lies above the Nyquist limit."
+  - op: "Check"
+    eq: "\\text{Safe frequency range: } 0 \\leq f < 50\\text{ Hz}"
+    note: "Anything above that range risks appearing as a false lower frequency."
+-->
+
+### Exercise 2
+
+Consider the discrete-time system
+
+$$y[n+1] = 0.8\,y[n] + 2u[n]$$
+
+1. Determine whether the homogeneous system is stable.
+2. Starting from $y[0] = 5$ with $u[n] = 0$, compute $y[1]$, $y[2]$, and
+   $y[3]$.
+3. Explain what the sequence is doing physically.
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the homogeneous update"
+    eq: "y[n+1] = 0.8\\,y[n]"
+    note: "Set the input to zero to inspect the system's own memory."
+  - op: "Check the stability coefficient"
+    eq: "|0.8| < 1"
+    note: "A first-order discrete-time mode is stable when its magnitude is less than 1."
+  - op: "Compute the first update"
+    eq: "y[1] = 0.8(5) = 4"
+    note: ~
+  - op: "Compute the next two updates"
+    eq: "y[2] = 0.8(4) = 3.2, \\qquad y[3] = 0.8(3.2) = 2.56"
+    note: ~
+  - op: "State the behaviour"
+    eq: "\\text{the sequence decays geometrically toward zero}"
+    note: "Each step keeps 80% of the previous value."
+  - op: "Check"
+    eq: "y[n] = 0.8^n y[0]"
+    note: "The explicit formula confirms the repeated shrinkage."
+-->
+
+### Exercise 3
+
+A noisy accelerometer is filtered using
+
+$$y[n] = \frac{1}{4}\bigl(x[n] + x[n-1] + x[n-2] + x[n-3]\bigr)$$
+
+Write a short engineering memo answering:
+
+1. What kind of behaviour this filter is trying to suppress
+2. Why it introduces lag
+3. Why that lag could matter in a feedback controller
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Identify the filter type"
+    eq: "\\text{This is a 4-point moving-average filter}"
+    note: "The output is the average of the current and previous three samples."
+  - op: "State what it suppresses"
+    eq: "\\text{rapid sample-to-sample noise is reduced by averaging}"
+    note: "Short spikes contribute only one quarter of the output."
+  - op: "State why lag appears"
+    eq: "\\text{the filter uses past samples, so the output responds after the input changes}"
+    note: "Memory smooths, but memory also delays."
+  - op: "Connect to control"
+    eq: "\\text{extra lag can slow a feedback loop and reduce stability margin}"
+    note: "A clean signal is not automatically a good control signal."
+  - op: "Check"
+    eq: "\\text{smoothing and delay are the paired tradeoff}"
+    note: "That tradeoff is the main point the memo should communicate."
+-->
+
+### Exercise 4
+
+Choose one sampled-data setting from your field: a microphone, IMU, stock-price
+stream, satellite time series, or power-system sensor.
+
+Prepare a one-page systems sketch naming:
+
+1. the physical quantity being sampled
+2. a plausible sampling frequency
+3. one source of aliasing or information loss
+4. one filter or recurrence you might apply
+5. one reason filtering helps
+6. one reason filtering can distort what you care about
+
+<!-- VIZ: Discrete-time filter sandbox. Let the reader switch between raw and filtered sequences for a synthetic noisy signal, choose a 3-point or 5-point moving average, and see three coordinated views: sample values as points, the filtered sequence, and a simple lag/error readout. Make the smoothing-versus-delay tradeoff visually unavoidable. -->

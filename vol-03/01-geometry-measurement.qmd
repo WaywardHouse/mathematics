@@ -1,6 +1,818 @@
 ---
 title: "Geometry and measurement"
-status: "seed"
+subtitle: "Reading the shape of the world"
+
+volume: 3
+chapter: 1
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know that the world has shape and size.
+  You've measured things — rooms, screens, distances — even if
+  informally. Numbers attach to shapes.
+
+rewrite: |
+  Every shape has a set of measurements that fully describe it.
+  Formulas are shorthand for the relationships between those
+  measurements. Once you know the formula, you can find any
+  measurement from the others.
+
+opens_to:
+  - id: "v3c2-trigonometry"
+    label: "Trigonometry"
+    volume: 3
+    relationship: "enables"
+  - id: "v2c4-graphing"
+    label: "Graphing relations"
+    volume: 2
+    relationship: "enriches"
+  - id: "v3c4-functions"
+    label: "Functions and relations"
+    volume: 3
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "num"
+  - "ratio"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "A structural drawing specifies every dimension — length, angle, area, volume. Nothing can be built without them."
+    career_example: "Structural engineer calculating material quantities for a frame"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Every physics measurement — force, pressure, energy — involves a geometric quantity."
+    career_example: "Physicist calculating the cross-sectional area of a beam under load"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "Maps use scale, area, and angle. GIS is applied geometry."
+    career_example: "GIS analyst comparing land areas at different map scales"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Collision detection, rendering, and spatial indexing all require distance and area calculations."
+    career_example: "Game developer calculating bounding boxes for sprite collision"
+
+hook: |
+  Your bedroom floor has a certain area. You know this even without
+  measuring it — you can picture whether a rug would fit, whether the
+  furniture leaves enough space, whether it's bigger or smaller than
+  a friend's room.
+
+  Your phone screen is described by a diagonal measurement in inches.
+  But the area that matters — the bit you actually look at — is the
+  width times the height, not the diagonal. The diagonal is a shortcut
+  that hides the real shape.
+
+  The skateboard ramp at the park is a triangle in cross-section. If
+  you built one, you'd need to know the length of the slope, the height
+  it reaches, and the distance it runs along the ground — and how those
+  three numbers relate to each other.
+
+  These are all geometry. This chapter gives you the tools to read
+  the shape of any object you encounter — and to find the measurement
+  you need from the ones you have.
+
+notation_introduced:
+  - symbol: "A"
+    reads_as: "area — the amount of flat space a shape covers"
+    notation_weight: 1
+  - symbol: "P"
+    reads_as: "perimeter — the total distance around the edge of a shape"
+    notation_weight: 1
+  - symbol: "r"
+    reads_as: "radius — the distance from the centre of a circle to its edge"
+    notation_weight: 1
+  - symbol: "\\pi"
+    reads_as: "pi — approximately 3.14159; the ratio of a circle's circumference to its diameter"
+    notation_weight: 2
+  - symbol: "V"
+    reads_as: "volume — the amount of three-dimensional space a solid object occupies"
+    notation_weight: 1
+  - symbol: "h"
+    reads_as: "height — the perpendicular distance through a solid"
+    notation_weight: 1
+  - symbol: "a^2 + b^2 = c^2"
+    reads_as: "the sum of the squares of the two shorter sides of a right triangle equals the square of the longest side"
+    notation_weight: 3
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 9
+  strand: "Shape and Space"
+  outcome: "1.1"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+Your bedroom floor has a certain area. You know this even without
+measuring it — you can picture whether a rug would fit, whether the
+furniture leaves enough space, whether it's bigger or smaller than
+a friend's room.
+
+Your phone screen is described by a diagonal measurement in inches.
+But the area that matters — the bit you actually look at — is the
+width times the height, not the diagonal. The diagonal is a shortcut
+that hides the real shape.
+
+The skateboard ramp at the park is a triangle in cross-section. If
+you built one, you'd need to know the length of the slope, the height
+it reaches, and the distance it runs along the ground — and how those
+three numbers relate to each other.
+
+These are all geometry. This chapter gives you the tools to read
+the shape of any object you encounter — and to find the measurement
+you need from the ones you have.
+
+## What the notation is saying
+
+Every formula in this chapter is shorthand for a relationship between
+measurements. Before using any of them, here is what each symbol means.
+
+**$A$** — area. The amount of flat space a shape covers. Measured in
+square units: square centimetres (cm²), square metres (m²), square
+kilometres (km²). If a length is in centimetres, the area will be in
+square centimetres.
+
+**$P$** — perimeter. The total distance around the outside edge of a
+flat shape. Measured in the same units as the lengths themselves — not
+squared.
+
+**$r$** — radius. The distance from the centre of a circle to any
+point on its edge. The diameter $d$ is twice the radius: $d = 2r$.
+
+**$\pi$** — pi. Read it as "pie". It's approximately $3.14159$, but
+it never terminates or repeats — it's an irrational number. It appears
+in every circle formula because it captures the relationship between a
+circle's diameter and the distance around it. Your calculator has a
+$\pi$ button; use it rather than the approximation unless you're told
+otherwise.
+
+**$V$** — volume. The amount of three-dimensional space a solid
+object fills. Measured in cubic units: cm³, m³, litres (1 litre =
+1000 cm³).
+
+**$h$** — height. In a prism or cylinder, this is the perpendicular
+distance between the two bases — how tall the solid is, measured
+straight through, at a right angle to the base.
+
+**$a^2 + b^2 = c^2$** — the Pythagorean theorem. Read it as: the
+square of $a$ plus the square of $b$ equals the square of $c$. Here
+$a$ and $b$ are the two shorter sides of a right-angled triangle and
+$c$ is the longest side — the one opposite the right angle, called
+the **hypotenuse**. This only works for right triangles. The right
+angle is marked with a small square in diagrams.
+
+## The method
+
+### Rectangles
+
+A rectangle has two pairs of equal sides. Call the longer side the
+length $l$ and the shorter side the width $w$.
+
+**Area** — multiply length by width:
+
+$$A = l \times w$$
+
+A bedroom that is 4 metres long and 3 metres wide has area
+$4 \times 3 = 12$ m².
+
+**Perimeter** — add up all four sides. Since opposite sides are
+equal, that's two lengths plus two widths:
+
+$$P = 2l + 2w$$
+
+The same bedroom has perimeter $2(4) + 2(3) = 8 + 6 = 14$ m.
+
+### Triangles
+
+A triangle has three sides and three angles. For area, you need a
+**base** and a **height**. The base is any side you choose. The height
+is the perpendicular distance from that base to the opposite corner —
+straight up, at a right angle to the base.
+
+**Area:**
+
+$$A = \frac{1}{2} \times b \times h$$
+
+Read it as: half of base times height. The halving is there because
+a triangle is half a rectangle — if you put two identical triangles
+together, they make a parallelogram with the same base and height.
+
+A triangle with base 6 cm and height 4 cm has area
+$\frac{1}{2} \times 6 \times 4 = 12$ cm².
+
+**Perimeter** — just add all three sides. There's no shortcut unless
+the triangle has special properties.
+
+### Circles
+
+**Circumference** — the distance around the edge of a circle:
+
+$$C = 2\pi r$$
+
+Read it as: two times pi times radius. Since $d = 2r$, this is the
+same as $\pi d$ — pi times diameter. That's actually where $\pi$
+comes from: the ratio of any circle's circumference to its diameter.
+Every circle, everywhere, has $C = \pi d$.
+
+**Area** — the amount of flat space a circle covers:
+
+$$A = \pi r^2$$
+
+Read it as: pi times radius squared. A circle with radius 5 cm has
+area $\pi \times 5^2 = 25\pi \approx 78.5$ cm².
+
+Note: leave the answer as $25\pi$ when exact form is needed. Use the
+decimal approximation when you need a number to compare or measure with.
+
+```{ojs}
+//| echo: false
+viewof circleRadius = Inputs.range([1, 10], {
+  value: 5,
+  step: 0.5,
+  label: "Radius r (units)"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const r = circleRadius;
+  const scale = 20;
+  const svgW = 480, svgH = 260;
+  const cx = 140, cy = svgH / 2;
+
+  const area = Math.PI * r * r;
+  const circ = 2 * Math.PI * r;
+
+  const svg = d3.create("svg")
+    .attr("width", svgW)
+    .attr("height", svgH)
+    .style("font-family", "inherit");
+
+  // Circle
+  svg.append("circle")
+    .attr("cx", cx)
+    .attr("cy", cy)
+    .attr("r", r * scale)
+    .attr("fill", "#dbeafe")
+    .attr("stroke", "#3b82f6")
+    .attr("stroke-width", 2);
+
+  // Radius line
+  svg.append("line")
+    .attr("x1", cx).attr("y1", cy)
+    .attr("x2", cx + r * scale).attr("y2", cy)
+    .attr("stroke", "#1d4ed8")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "4,3");
+
+  // Radius label
+  svg.append("text")
+    .attr("x", cx + (r * scale) / 2)
+    .attr("y", cy - 6)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "13px")
+    .attr("fill", "#1d4ed8")
+    .text(`r = ${r}`);
+
+  // Stats panel
+  const px = 310, py = 60;
+  svg.append("rect")
+    .attr("x", px - 10).attr("y", py - 24)
+    .attr("width", 170).attr("height", 110)
+    .attr("fill", "#f8fafc")
+    .attr("stroke", "#e2e8f0")
+    .attr("rx", 6);
+
+  svg.append("text").attr("x", px).attr("y", py)
+    .attr("font-size", "13px").attr("font-weight", "600").attr("fill", "#374151")
+    .text("Measurements");
+
+  svg.append("text").attr("x", px).attr("y", py + 26)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`Area = πr²`);
+
+  svg.append("text").attr("x", px).attr("y", py + 44)
+    .attr("font-size", "13px").attr("fill", "#2563eb")
+    .text(`= ${area.toFixed(2)} sq units`);
+
+  svg.append("text").attr("x", px).attr("y", py + 68)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`Circumference = 2πr`);
+
+  svg.append("text").attr("x", px).attr("y", py + 86)
+    .attr("font-size", "13px").attr("fill", "#059669")
+    .text(`= ${circ.toFixed(2)} units`);
+
+  return svg.node();
+}
+```
+
+### The Pythagorean theorem
+
+For any right-angled triangle with legs $a$ and $b$ and hypotenuse $c$:
+
+$$a^2 + b^2 = c^2$$
+
+**Finding the hypotenuse** when you know the two legs:
+
+$$c = \sqrt{a^2 + b^2}$$
+
+A right triangle with legs 3 cm and 4 cm:
+
+$$c = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5 \text{ cm}$$
+
+**Finding a leg** when you know the hypotenuse and the other leg:
+
+$$a = \sqrt{c^2 - b^2}$$
+
+A right triangle with hypotenuse 13 cm and one leg 5 cm:
+
+$$a = \sqrt{13^2 - 5^2} = \sqrt{169 - 25} = \sqrt{144} = 12 \text{ cm}$$
+
+The next step looks slightly mechanical. Square both known values,
+add (or subtract), then take the square root. In that order, every time.
+
+```{ojs}
+//| echo: false
+viewof legA = Inputs.range([1, 8], { value: 3, step: 1, label: "Leg a" })
+```
+
+```{ojs}
+//| echo: false
+viewof legB = Inputs.range([1, 8], { value: 4, step: 1, label: "Leg b" })
+```
+
+```{ojs}
+//| echo: false
+{
+  const a = legA, b = legB;
+  const c = Math.sqrt(a * a + b * b);
+  const scale = 28;
+  const margin = 60;
+  const svgW = 520, svgH = 340;
+
+  // Triangle vertices: right angle at bottom-left
+  const ox = margin + 20, oy = svgH - margin - 20;
+  const ax = ox + b * scale, ay = oy;       // bottom-right
+  const bx = ox, by = oy - a * scale;       // top-left
+
+  const svg = d3.create("svg")
+    .attr("width", svgW)
+    .attr("height", svgH)
+    .style("font-family", "inherit");
+
+  // Square on side b (bottom, along x-axis)
+  svg.append("rect")
+    .attr("x", ox).attr("y", oy)
+    .attr("width", b * scale).attr("height", b * scale)
+    .attr("fill", "#fef9c3").attr("stroke", "#ca8a04").attr("stroke-width", 1.5);
+  svg.append("text")
+    .attr("x", ox + b * scale / 2).attr("y", oy + b * scale / 2 + 5)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#92400e")
+    .text(`b² = ${b*b}`);
+
+  // Square on side a (left, along y-axis) — goes to the left
+  svg.append("rect")
+    .attr("x", ox - a * scale).attr("y", by)
+    .attr("width", a * scale).attr("height", a * scale)
+    .attr("fill", "#dcfce7").attr("stroke", "#16a34a").attr("stroke-width", 1.5);
+  svg.append("text")
+    .attr("x", ox - a * scale / 2).attr("y", by + a * scale / 2 + 5)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#166534")
+    .text(`a² = ${a*a}`);
+
+  // Square on hypotenuse c — rotated square drawn as polygon
+  // hypotenuse goes from (ax,ay) to (bx,by)
+  // perpendicular direction (outward): normalise then rotate 90°
+  const dx = bx - ax, dy = by - ay;
+  const len = Math.sqrt(dx*dx + dy*dy);
+  const nx = -dy / len, ny = dx / len; // outward normal
+  const p1 = {x: ax, y: ay};
+  const p2 = {x: bx, y: by};
+  const p3 = {x: bx + nx * len, y: by + ny * len};
+  const p4 = {x: ax + nx * len, y: ay + ny * len};
+  const pts = [p1,p2,p3,p4].map(p => `${p.x},${p.y}`).join(" ");
+
+  svg.append("polygon")
+    .attr("points", pts)
+    .attr("fill", "#dbeafe").attr("stroke", "#2563eb").attr("stroke-width", 1.5);
+
+  const midCx = (p1.x + p2.x + p3.x + p4.x) / 4;
+  const midCy = (p1.y + p2.y + p3.y + p4.y) / 4;
+  svg.append("text")
+    .attr("x", midCx).attr("y", midCy + 5)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#1e3a8a")
+    .text(`c² = ${(c*c).toFixed(2)}`);
+
+  // Triangle fill
+  svg.append("polygon")
+    .attr("points", `${ox},${oy} ${ax},${ay} ${bx},${by}`)
+    .attr("fill", "#f1f5f9").attr("stroke", "#475569").attr("stroke-width", 2);
+
+  // Right-angle marker
+  const sq = 8;
+  svg.append("rect")
+    .attr("x", ox).attr("y", oy - sq)
+    .attr("width", sq).attr("height", sq)
+    .attr("fill", "none").attr("stroke", "#475569").attr("stroke-width", 1.5);
+
+  // Side labels
+  svg.append("text")
+    .attr("x", ox + b * scale / 2).attr("y", oy - 8)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#374151")
+    .text(`b = ${b}`);
+
+  svg.append("text")
+    .attr("x", ox - 14).attr("y", oy - a * scale / 2)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#374151")
+    .text(`a = ${a}`);
+
+  // Equation below
+  svg.append("text")
+    .attr("x", svgW / 2).attr("y", svgH - 16)
+    .attr("text-anchor", "middle").attr("font-size", "14px").attr("fill", "#111827")
+    .text(`${a}² + ${b}² = ${a*a} + ${b*b} = ${(a*a+b*b).toFixed(2)}   →   c = ${c.toFixed(3)}`);
+
+  return svg.node();
+}
+```
+
+::: {.callout-note appearance="simple"}
+**Why the Pythagorean theorem works**
+
+Draw a right triangle. Now draw a square on each side — one square on
+leg $a$, one on leg $b$, one on the hypotenuse $c$. The theorem says
+the area of the big square exactly equals the total area of the two
+smaller squares: $a^2 + b^2 = c^2$.
+
+You can show this is true by cutting up the two smaller squares and
+rearranging the pieces to exactly fill the big one — no gaps, no
+overlaps. That's the core of most visual proofs of this result. The
+algebra follows from the geometry.
+
+This only holds when the angle between sides $a$ and $b$ is exactly
+90°. Change that angle and the relationship changes — that's what
+trigonometry (the next chapter) is about.
+:::
+
+### Volume of a rectangular prism
+
+A rectangular prism (a box shape) has length $l$, width $w$, and
+height $h$.
+
+$$V = l \times w \times h$$
+
+Read it as: length times width times height. A box 10 cm long, 5 cm
+wide, and 3 cm tall has volume $10 \times 5 \times 3 = 150$ cm³.
+
+A useful way to think about it: the base area is $l \times w$, and
+you're stacking that base up through height $h$. Volume is always
+base area times height for any prism.
+
+### Volume of a cylinder
+
+A cylinder is a circle stacked up through a height. The base is a
+circle of radius $r$, and the height is $h$.
+
+$$V = \pi r^2 h$$
+
+Read it as: pi times radius squared times height. The $\pi r^2$ part
+is just the area of the circular base; multiplying by $h$ stacks it up.
+
+A can of drink is a cylinder. A standard 330 ml can has a radius of
+about 3.3 cm and a height of about 9.6 cm:
+
+$$V = \pi \times 3.3^2 \times 9.6 = \pi \times 10.89 \times 9.6 \approx 328 \text{ cm}^3$$
+
+Close to 330 ml (330 cm³). The small difference is rounding on the
+actual dimensions.
+
+### Units and unit conversion
+
+Measurements only make sense with their units attached. $15$ is not an
+area — $15 \text{ m}^2$ is.
+
+When you multiply lengths, the units multiply too:
+
+$$3 \text{ m} \times 4 \text{ m} = 12 \text{ m}^2$$
+
+$$2 \text{ cm} \times 5 \text{ cm} \times 3 \text{ cm} = 30 \text{ cm}^3$$
+
+**Converting between units:** multiply by a conversion factor equal
+to 1. For example, $1 \text{ m} = 100 \text{ cm}$, so
+$\frac{100 \text{ cm}}{1 \text{ m}} = 1$.
+
+$$5 \text{ m} = 5 \times 100 \text{ cm} = 500 \text{ cm}$$
+
+For areas, the conversion factor gets squared:
+
+$$1 \text{ m}^2 = (100 \text{ cm})^2 = 10{,}000 \text{ cm}^2$$
+
+So $3 \text{ m}^2 = 3 \times 10{,}000 = 30{,}000 \text{ cm}^2$.
+
+Why squared? A square metre is a square that is 100 cm wide and 100 cm
+tall — that's $100 \times 100 = 10{,}000$ square centimetres. The
+conversion factor gets multiplied by itself once for each dimension
+you're measuring.
+
+For volumes, it gets cubed:
+
+$$1 \text{ m}^3 = (100)^3 \text{ cm}^3 = 1{,}000{,}000 \text{ cm}^3$$
+
+A cubic metre is a cube 100 cm × 100 cm × 100 cm, so the conversion
+factor multiplies by itself three times. This trips people up. One
+square metre is not a hundred square centimetres — it's ten thousand.
+The number gets big fast because you're covering a two-dimensional
+(or three-dimensional) space.
+
+## Worked examples
+
+**Example 1 (sci) — Area of a circular clock face.**
+
+A clock has a circular face with a diameter of 20 cm. What is the
+area of the face?
+
+Diameter = 20 cm, so radius = 10 cm.
+
+$$A = \pi r^2 = \pi \times 10^2 = 100\pi \approx 314 \text{ cm}^2$$
+
+The clock face covers approximately 314 cm² — about the same as a
+standard sheet of A4 paper turned on its side. Doubling the diameter
+would quadruple the area, because radius is squared in the formula.
+
+---
+
+**Example 2 (eng) — Length of a ramp.**
+
+A skateboard ramp rises 1.2 m vertically and runs 1.6 m horizontally
+along the ground. The ramp surface is the hypotenuse of a right
+triangle. How long is the ramp surface?
+
+$$c = \sqrt{a^2 + b^2} = \sqrt{1.2^2 + 1.6^2} = \sqrt{1.44 + 2.56} = \sqrt{4.00} = 2.0 \text{ m}$$
+
+The ramp surface is exactly 2 m long.
+
+*Note: 1.2, 1.6, 2.0 is a scaled version of the 3-4-5 right triangle
+(multiply each by 0.4). When you see a clean answer, check whether
+it's a Pythagorean triple.*
+
+---
+
+**Example 3 (comp) — Screen area from diagonal and aspect ratio.**
+
+A phone screen has a 6.1-inch diagonal. The screen is 16:9 aspect
+ratio (16 units wide for every 9 units tall). What is the actual
+screen area?
+
+One approach: call the width $16k$ and height $9k$, where $k$ is a
+scaling factor that sets the actual size. The Pythagorean theorem then
+gives an equation in $k$:
+
+$$(16k)^2 + (9k)^2 = 6.1^2$$
+
+$$256k^2 + 81k^2 = 37.21$$
+
+$$337k^2 = 37.21$$
+
+$$k^2 = \frac{37.21}{337} \approx 0.11041$$
+
+$$k \approx 0.3323 \text{ inches}$$
+
+Width $= 16 \times 0.3323 \approx 5.32$ inches.
+Height $= 9 \times 0.3323 \approx 2.99$ inches.
+
+Area $= 5.32 \times 2.99 \approx 15.9$ square inches.
+
+The 6.1-inch measurement is the diagonal — the actual viewing area is
+about 15.9 square inches, which is roughly the size of a playing card.
+
+---
+
+**Example 4 (geo) — Comparing two screen sizes.**
+
+You're deciding between a phone screen and a tablet screen. The phone
+screen measures 6 cm by 12 cm on the poster. The tablet screen is
+shown on a second poster at double the linear scale — so every
+centimetre on the first poster represents 2 cm on the second. How
+does the tablet screen area compare to the phone screen area, and
+what is each real area on the posters?
+
+**Phone screen area:** $6 \times 12 = 72$ cm² on the poster.
+
+**Tablet screen on the second poster:** doubling the linear scale
+means each dimension doubles.
+
+Width $= 2 \times 6 = 12$ cm. Height $= 2 \times 12 = 24$ cm.
+
+Tablet screen area $= 12 \times 24 = 288$ cm² on the second poster.
+
+$288 \div 72 = 4$ — the tablet poster area is four times the phone
+poster area, even though only the scale doubled. That's because area
+scales as the square of the linear scale: $2^2 = 4$.
+
+## Where this goes
+
+The next chapter in this volume is **trigonometry** (Vol 3, Ch 2).
+Trigonometry extends the geometry here by handling triangles where
+you don't know the right angle — or where you need to find angles as
+well as lengths. The Pythagorean theorem handles one specific case
+(right triangles, lengths only); trigonometry handles the general
+case using the sine, cosine, and tangent ratios. Every oscillating
+system — sound, light, signals, tides — is described using
+trigonometry.
+
+Further out, the measurement ideas here feed directly into
+**functions and relations** (Vol 3, Ch 4). Area and volume formulas
+are functions: plug in the radius, get out the area. Once you're
+working with functions, you can ask questions like "how fast does the
+area change as the radius grows?" — and that question leads to
+calculus.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A structural engineer calculating how much steel plate is needed
+  for a bridge deck is computing surface area.
+- A physicist calculating fluid pressure on a pipe cross-section is
+  computing circular area.
+- A GIS analyst measuring a protected forest region from a satellite
+  image is computing polygon areas at scale.
+- A game developer checking whether two sprites have collided is
+  comparing rectangular bounding boxes — area and distance calculations
+  happening thousands of times per second.
+- A packaging designer minimising the amount of cardboard in a cereal
+  box is minimising surface area for a fixed volume.
+
+The formulas are always the same. What changes is what you're measuring
+and why it matters.
+:::
+
+## Exercises
+
+These are puzzles. Each one has a clean answer, but the interesting
+part is deciding which formula to use and what counts as the base,
+height, radius, or leg.
+
+1. A rectangular phone screen is 13.8 cm wide and 7.0 cm tall. What
+   is its area? What is its diagonal length (to one decimal place)?
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Find the area", eq: "A = l \\times w = 13.8 \\times 7.0 = 96.6 \\text{ cm}^2", note: null },
+  { op: "Write the Pythagorean theorem for the diagonal", eq: "d = \\sqrt{l^2 + w^2}", note: "The diagonal of a rectangle is the hypotenuse of a right triangle whose legs are the width and height." },
+  { op: "Substitute values", eq: "d = \\sqrt{13.8^2 + 7.0^2} = \\sqrt{190.44 + 49.00} = \\sqrt{239.44}", note: null },
+  { op: "Calculate", eq: "d = 15.5 \\text{ cm}", note: null },
+  { op: "Check units", eq: "\\text{Area: } 96.6 \\text{ cm}^2 \\quad \\text{Diagonal: } 15.5 \\text{ cm}", note: null }
+])
+```
+
+2. A circular pizza has a diameter of 30 cm. What is its area (leave
+   your answer in terms of $\pi$, then give a decimal approximation
+   to the nearest whole number)?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Find the radius from the diameter", eq: "r = \\frac{d}{2} = \\frac{30}{2} = 15 \\text{ cm}", note: null },
+  { op: "Write the area formula", eq: "A = \\pi r^2", note: null },
+  { op: "Substitute", eq: "A = \\pi \\times 15^2 = 225\\pi \\text{ cm}^2", note: null },
+  { op: "Decimal approximation", eq: "A \\approx 225 \\times 3.14159 \\approx 707 \\text{ cm}^2", note: null },
+  { op: "Check units", eq: "A = 225\\pi \\approx 707 \\text{ cm}^2", note: null }
+])
+```
+
+3. A ramp rises 0.9 m vertically over a horizontal distance of 1.2 m.
+   How long is the sloped surface? (Give your answer to one decimal
+   place.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Identify the right triangle: legs are the vertical rise and horizontal run, hypotenuse is the slope", eq: "c = \\sqrt{a^2 + b^2}", note: null },
+  { op: "Substitute values", eq: "c = \\sqrt{0.9^2 + 1.2^2} = \\sqrt{0.81 + 1.44} = \\sqrt{2.25}", note: null },
+  { op: "Calculate", eq: "c = 1.5 \\text{ m}", note: "0.9, 1.2, 1.5 is a scaled 3-4-5 triple (each side multiplied by 0.3)." },
+  { op: "Check units", eq: "\\text{Slope length} = 1.5 \\text{ m}", note: null }
+])
+```
+
+4. A cylindrical water bottle has a radius of 4 cm and a height of
+   20 cm. What is its volume in cm³? What is its capacity in
+   millilitres? (1 cm³ = 1 ml.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write the volume formula for a cylinder", eq: "V = \\pi r^2 h", note: null },
+  { op: "Substitute values", eq: "V = \\pi \\times 4^2 \\times 20 = \\pi \\times 16 \\times 20 = 320\\pi \\text{ cm}^3", note: null },
+  { op: "Decimal approximation", eq: "V \\approx 320 \\times 3.14159 \\approx 1005 \\text{ cm}^3", note: null },
+  { op: "Convert to millilitres", eq: "1005 \\text{ cm}^3 = 1005 \\text{ ml} \\approx 1 \\text{ litre}", note: "1 cm³ = 1 ml, so the numeric value stays the same." },
+  { op: "Check units", eq: "V = 320\\pi \\approx 1005 \\text{ ml}", note: null }
+])
+```
+
+5. A triangular garden bed has a base of 5 m and a perpendicular
+   height of 3.6 m. What area of soil does it cover? If soil costs
+   \$12 per m², what is the total cost?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Write the area formula for a triangle", eq: "A = \\frac{1}{2} \\times b \\times h", note: null },
+  { op: "Substitute values", eq: "A = \\frac{1}{2} \\times 5 \\times 3.6 = \\frac{18}{2} = 9 \\text{ m}^2", note: null },
+  { op: "Calculate the cost", eq: "\\text{Cost} = 9 \\times 12 = \\$108", note: null },
+  { op: "Check units", eq: "\\text{Area} = 9 \\text{ m}^2, \\quad \\text{Cost} = \\$108", note: null }
+])
+```
+
+6. A rectangular swimming pool is 25 m long and 10 m wide. It has a
+   uniform depth of 1.8 m. How many cubic metres of water does it
+   hold? Give your answer in litres. (1 m³ = 1000 litres.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Write the volume formula for a rectangular prism", eq: "V = l \\times w \\times h", note: null },
+  { op: "Substitute values", eq: "V = 25 \\times 10 \\times 1.8 = 450 \\text{ m}^3", note: null },
+  { op: "Convert to litres", eq: "450 \\text{ m}^3 \\times 1000 \\text{ litres/m}^3 = 450{,}000 \\text{ litres}", note: "1 m³ = 1000 litres, so multiply by 1000." },
+  { op: "Check units", eq: "V = 450 \\text{ m}^3 = 450{,}000 \\text{ litres}", note: null }
+])
+```

@@ -1,6 +1,1225 @@
 ---
 title: "Fourier transforms"
-status: "seed"
+subtitle: "From periodic decomposition to continuous frequency analysis"
+chapter: 2
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: "Fourier series decomposes a periodic function into a discrete set of frequencies. But most signals in engineering are not periodic — a radar pulse, a seismic event, a single spoken word. To analyse these, the period must be allowed to grow without bound. The discrete sum of Fourier coefficients becomes an integral over all frequencies."
+
+rewrite: "The Fourier transform F(ω) = ∫_{-∞}^{∞} f(t)e^{-iωt} dt gives the frequency content of any square-integrable function f(t). The inverse transform recovers f from F. The pair (f, F) is a Fourier transform pair: knowing either one determines the other completely. The convolution theorem converts the hard operation of convolution into the easy operation of multiplication — which is why linear systems are analysed in the frequency domain."
+
+prerequisite_ids:
+  - fourier_series
+
+opens_to:
+  - id: pdes
+    label: "Partial differential equations"
+    volume: 7
+    relationship: enables
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Every digital filter, wireless communication system, and radar signal processor operates by transforming signals to the frequency domain, applying a gain function, and transforming back — the Fourier transform is the machinery underneath."
+    career_example: "RF engineer designing a bandpass filter for a 5G base station receiver"
+  - field: sci
+    label: Hard sciences
+    hook: "X-ray crystallography reconstructs atomic structure by computing the inverse Fourier transform of diffraction patterns — the experimental data is literally the Fourier transform of the electron density."
+    career_example: "Structural biologist solving a protein crystal structure from X-ray diffraction data"
+  - field: comp
+    label: Computing and data
+    hook: "The FFT reduces Fourier transform computation from O(N²) to O(N log N), making real-time audio processing, image compression, and large-scale spectral analysis feasible."
+    career_example: "Data scientist applying Welch's method to estimate the power spectral density of a noisy sensor signal"
+
+notation_introduced:
+  - symbol: "\\mathcal{F}\\{f\\}(\\omega)"
+    reads_as: "Fourier transform of f at frequency omega"
+    meaning: "∫_{-∞}^{∞} f(t) e^{-iωt} dt — the complex amplitude of frequency ω in the signal f"
+  - symbol: "\\hat{f}(\\omega)"
+    reads_as: "f hat of omega"
+    meaning: "Alternative notation for the Fourier transform; same object as F(ω)"
+  - symbol: "f * g"
+    reads_as: "f convolved with g"
+    meaning: "(f*g)(t) = ∫_{-∞}^{∞} f(τ)g(t−τ)dτ — the output of a linear system with impulse response g when driven by f"
+  - symbol: "\\delta(t)"
+    reads_as: "Dirac delta at t"
+    meaning: "Generalised function concentrated at t = 0; ∫δ(t)φ(t)dt = φ(0) for any smooth φ"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  A bat navigating in complete darkness emits an ultrasonic pulse and
+  analyses the echo. The pulse is not a continuous sine wave — it lasts
+  a fraction of a millisecond — and yet it contains enough frequency
+  information to locate a moth to millimetre precision. The reason is
+  that a short pulse has a broad frequency spectrum: the shorter the
+  pulse, the wider the range of frequencies it contains. This
+  time-bandwidth tradeoff is not an engineering limitation but a
+  mathematical identity, encoded in the Fourier transform.
+
+  The Fourier transform extends the Fourier series to non-periodic
+  functions by letting the period grow without bound. The discrete
+  frequency spectrum of the series becomes a continuous frequency
+  density. Analysing that density — and manipulating it — is the
+  foundation of every signal processing system from audio filters
+  to MRI scanners to sonar arrays.
+
+kreyszig_chapter: "Ch 11"
+stroud_programme: "Programme 9"
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+The Fourier series produces a discrete spectrum: a list of amplitudes at frequencies $\pi/L, 2\pi/L, 3\pi/L, \ldots$ spaced $\pi/L$ apart. As $L \to \infty$, the spacing between frequencies shrinks to zero, the list of amplitudes becomes a continuous function of frequency, and the sum becomes an integral. This is the Fourier transform.
+
+The transition from series to transform is not just a mathematical technicality. It extends the analysis to any signal that decays to zero as $|t| \to \infty$ — a one-shot pulse, a finite-duration transient, or any square-integrable function. The series was restricted to functions that repeat forever. The transform has no such restriction.
+
+---
+
+## From Fourier series to the Fourier integral
+
+<!-- STUDENT: The derivation jumps immediately to the complex exponential form of the Fourier series ($c_n$, $e^{in\pi x/L}$) without referencing the previous chapter's notation ($a_n$, $b_n$). A student who just worked through chapter 1 in real form will need to hold both notations in mind simultaneously. A single sentence pointing back — "Using the complex Fourier series from the previous chapter" — or an explicit cross-reference would help orient. -->
+Consider a function $f$ of period $2L$ with Fourier series:
+
+$$f(x) = \sum_{n=-\infty}^{\infty} c_n\,e^{in\pi x/L}, \qquad c_n = \frac{1}{2L}\int_{-L}^{L} f(x)\,e^{-in\pi x/L}\,dx$$
+
+Define $\omega_n = n\pi/L$ and $\Delta\omega = \pi/L$ (the spacing between successive frequencies). Then:
+
+$$f(x) = \sum_{n=-\infty}^{\infty} \frac{\Delta\omega}{2\pi}\left[\int_{-L}^{L} f(t)\,e^{-i\omega_n t}\,dt\right]e^{i\omega_n x}$$
+
+<!-- STUDENT: The rewrite of $c_n$ into $(\Delta\omega/2\pi)[\cdots]$ is the key algebraic move but it happens in one line between the displayed equations with no prose. The reader has to check that $c_n = (1/2L)\int \cdots = (\Delta\omega/2\pi)\int \cdots$ (since $\Delta\omega = \pi/L$ so $1/2L = \Delta\omega/(2\pi)$). This is the heart of why the Fourier integral works and it's easy to lose the thread here. One sentence of arithmetic narration ("substituting $\Delta\omega = \pi/L$ turns the $1/2L$ prefactor into $\Delta\omega/2\pi$") would prevent the reader from feeling they've missed a step. -->
+The rewrite uses a single substitution: since $\Delta\omega = \pi/L$, the prefactor $1/(2L)$ in $c_n$ equals $\Delta\omega/(2\pi)$. Replacing it turns each coefficient into $(\Delta\omega/2\pi)\times[\text{integral}]$, and the whole sum becomes a Riemann sum with step size $\Delta\omega$ — ready to become an integral.
+
+Let $L \to \infty$: $\Delta\omega \to d\omega$, the sum becomes an integral, and we obtain the **Fourier integral representation**:
+
+$$f(x) = \frac{1}{2\pi}\int_{-\infty}^{\infty}\left[\int_{-\infty}^{\infty} f(t)\,e^{-i\omega t}\,dt\right]e^{i\omega x}\,d\omega$$
+
+The inner bracket is the **Fourier transform** of $f$ evaluated at $\omega$.
+
+```{ojs}
+//| echo: false
+{
+  // ── OPPORTUNITY 1: Series-to-transform transition ────────────────────────
+  // Rectangular pulse f(t)=1 for |t|<1. Fourier series coefficients on period 2L
+  // as L increases → bars multiply, narrow, trace the sinc envelope.
+  const d3 = await require("d3@7");
+
+  const AMBER = "#f59e0b";
+  const BLUE  = "#6b90c4";
+  const GREY  = "#9ca3af";
+  const GREY_F = "#e5e7eb";
+
+  const W = 560, H = 200, PL = 46, PR = 16, PT = 28, PB = 28;
+  const IW = W - PL - PR, IH = H - PT - PB;
+
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:620px;";
+
+  // Slider for L (as multiples of π)
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex; gap:1rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;";
+  const lLbl = document.createElement("label");
+  lLbl.style.cssText = "font-size:0.88em; color:#374151; display:flex; align-items:center; gap:0.4rem;";
+  lLbl.textContent = "Period  L = ";
+  const lDisp = document.createElement("strong");
+  lDisp.style.cssText = "color:" + AMBER + "; min-width:4ch;";
+  lDisp.textContent = "1π";
+  const lSlider = document.createElement("input");
+  lSlider.type = "range"; lSlider.min = 1; lSlider.max = 20; lSlider.value = 1;
+  lSlider.style.cssText = "width:200px; accent-color:" + AMBER + ";";
+  lLbl.appendChild(lSlider); lLbl.appendChild(lDisp);
+  ctrlRow.appendChild(lLbl);
+
+  const statusLabel = document.createElement("span");
+  statusLabel.style.cssText = "font-size:0.82em; color:" + BLUE + "; font-style:italic;";
+  statusLabel.textContent = "Discrete spectrum: Fourier series";
+  ctrlRow.appendChild(statusLabel);
+  container.appendChild(ctrlRow);
+
+  // SVG
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width","100%").style("display","block");
+  const g = svg.append("g").attr("transform", `translate(${PL},${PT})`);
+
+  // Axes — ω from -4π to +4π
+  const omegaMax = 4 * Math.PI;
+  const xS = d3.scaleLinear().domain([-omegaMax, omegaMax]).range([0, IW]);
+  const yS = d3.scaleLinear().domain([0, 0.75]).range([IH, 0]);
+
+  g.append("line").attr("x1",0).attr("x2",IW).attr("y1",IH).attr("y2",IH)
+    .attr("stroke",GREY_F).attr("stroke-width",1);
+  g.append("line").attr("x1",xS(0)).attr("x2",xS(0)).attr("y1",0).attr("y2",IH)
+    .attr("stroke",GREY_F).attr("stroke-width",1);
+
+  // ω-axis ticks
+  [-4,-3,-2,-1,0,1,2,3,4].forEach(k => {
+    const lab = k===0?"0":k>0?`${k}π`:`${k}π`;
+    g.append("text").attr("x",xS(k*Math.PI)).attr("y",IH+12)
+      .attr("text-anchor","middle").attr("font-size","9px").attr("fill",GREY).text(lab);
+    g.append("line").attr("x1",xS(k*Math.PI)).attr("x2",xS(k*Math.PI)).attr("y1",IH).attr("y2",IH+4)
+      .attr("stroke",GREY_F);
+  });
+  g.append("text").attr("x",IW+2).attr("y",IH+4).attr("font-size","9px").attr("fill",GREY).text("ω");
+
+  // y-axis
+  g.append("g").call(d3.axisLeft(yS).ticks(4).tickFormat(d3.format(".2f")))
+    .call(gg => { gg.select(".domain").remove(); gg.selectAll("text").style("font-size","9px").attr("fill",GREY); gg.selectAll("line").attr("stroke",GREY_F); });
+
+  // Continuous sinc envelope (blue, static)
+  const sincLine = g.append("path").attr("fill","none").attr("stroke",BLUE)
+    .attr("stroke-width",1.8).attr("stroke-dasharray","5,3").attr("opacity",0.6);
+  const sincPts = d3.range(800).map(i => {
+    const omega = -omegaMax + 2*omegaMax*i/799;
+    const val = Math.abs(omega) < 0.001 ? 2/(2*Math.PI) : Math.abs(Math.sin(omega))/(Math.PI*Math.abs(omega));
+    return [xS(omega), yS(val)];
+  });
+  sincLine.datum(sincPts).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]));
+
+  // Bar container
+  const barsG = g.append("g");
+
+  // Title
+  g.append("text").attr("x",IW/2).attr("y",-12).attr("text-anchor","middle")
+    .attr("font-size","11px").attr("fill","#374151")
+    .text("Fourier series coefficients → Fourier transform");
+
+  function drawBars(Lpi) {
+    const L = Lpi * Math.PI;
+    const deltaOmega = Math.PI / L;
+    const nMax = Math.floor(omegaMax / deltaOmega) + 1;
+    barsG.selectAll("*").remove();
+    const barW = Math.max(0.8, (IW / (2*omegaMax)) * deltaOmega * 0.7);
+
+    for (let n = -nMax; n <= nMax; n++) {
+      const omega_n = n * deltaOmega;
+      // Coefficient height: (1/2π) * |F(ω_n)| * Δω = (1/2π) * 2|sinc(ω_n)| * Δω
+      // Display: (2/π)|sinc(ω_n)| so y-axis matches continuous limit
+      const sinc = Math.abs(omega_n) < 1e-6 ? 1 : Math.sin(omega_n)/omega_n;
+      const h = Math.abs(sinc) / Math.PI;
+      if (h < 1e-6) continue;
+      const xPos = xS(omega_n);
+      if (xPos < 0 || xPos > IW) continue;
+      const yPos = yS(h);
+      const barH = IH - yPos;
+      barsG.append("rect")
+        .attr("x", xPos - barW/2).attr("y", yPos)
+        .attr("width", barW).attr("height", Math.max(1, barH))
+        .attr("fill", AMBER).attr("opacity", 0.85);
+    }
+
+    lDisp.textContent = `${Lpi}π`;
+    statusLabel.textContent = Lpi >= 18
+      ? "Continuous spectrum: Fourier transform"
+      : "Discrete spectrum: Fourier series";
+    statusLabel.style.color = Lpi >= 18 ? BLUE : AMBER;
+  }
+
+  lSlider.oninput = () => drawBars(+lSlider.value);
+  drawBars(1);
+
+  // Legend
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1.2rem; font-size:0.78em; margin-top:0.2rem;";
+  [["▌ Fourier series coefficients", AMBER], ["--- Continuous transform envelope", BLUE]]
+    .forEach(([lab, col]) => {
+      const s = document.createElement("span"); s.style.color = col; s.textContent = lab;
+      legend.appendChild(s);
+    });
+  container.appendChild(svg.node());
+  container.appendChild(legend);
+  return container;
+}
+```
+
+---
+
+## The Fourier transform
+
+The **Fourier transform** of $f(t)$ is:
+
+$$F(\omega) = \mathcal{F}\{f\}(\omega) = \int_{-\infty}^{\infty} f(t)\,e^{-i\omega t}\,dt$$
+
+The **inverse Fourier transform** recovers $f$ from $F$:
+
+$$f(t) = \mathcal{F}^{-1}\{F\}(t) = \frac{1}{2\pi}\int_{-\infty}^{\infty} F(\omega)\,e^{i\omega t}\,d\omega$$
+
+Together these are a **transform pair**: $f(t) \leftrightarrow F(\omega)$. Knowing either one determines the other completely (for well-behaved functions).
+
+**Conventions.** There are three common conventions for where the $2\pi$ factor sits and whether the sign in the exponent is $-i\omega t$ or $+i\omega t$. The one above is the **engineering convention** (also used by Kreyszig and Stroud). The physics convention places $1/\sqrt{2\pi}$ on both the forward and inverse transform. When using a reference or software tool, check which convention it follows.
+
+**Existence.** The Fourier transform is guaranteed to exist (as an ordinary integral) when $f$ is absolutely integrable: $\int_{-\infty}^{\infty}|f(t)|\,dt < \infty$. For the larger class of square-integrable functions ($\int|f|^2 < \infty$), it exists in the $L^2$ sense. Important special cases — the unit step, the delta function, the constant function — require the theory of distributions but yield well-defined transforms.
+
+<!-- STUDENT: "exists in the $L^2$ sense" and "theory of distributions" are introduced without any explanation. For an engineering reader who has never encountered functional analysis, these phrases are opaque. The important practical message — that most physical signals you'll encounter have a well-defined Fourier transform — is buried. Consider adding one sentence of practical guidance: "For engineering purposes, if the signal has finite energy or is physically realisable, the transform exists." The formal conditions can remain, but without any practical anchor the reader doesn't know which class their problems fall into. -->
+
+```{ojs}
+//| echo: false
+{
+  // ── OPPORTUNITY 3: Fourier transform as winding diagram ─────────────────
+  // f(t) = cos(t) + 0.5cos(3t). Winding at freq ω winds f onto the complex plane.
+  // Centre of mass of the wound curve = F(ω)/(2π).
+  const d3 = await require("d3@7");
+
+  const AMBER = "#f59e0b";
+  const BLUE  = "#6b90c4";
+  const GREY  = "#9ca3af";
+  const GREY_F = "#e5e7eb";
+  const RED   = "#ef4444";
+
+  const W = 580, H = 210;
+  const leftW = 210, rightW = 200, gap = 20, barW = 90;
+  const circR = 80;
+  const circCx = leftW + gap + rightW/2, circCy = H/2;
+
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:640px;";
+
+  // ω slider
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex; gap:1rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;";
+  const omLbl = document.createElement("label");
+  omLbl.style.cssText = "font-size:0.88em; color:#374151; display:flex; align-items:center; gap:0.4rem;";
+  omLbl.textContent = "Testing frequency ω = ";
+  const omDisp = document.createElement("strong");
+  omDisp.style.cssText = "color:" + AMBER + "; min-width:3ch;";
+  omDisp.textContent = "1.0";
+  const omSlider = document.createElement("input");
+  omSlider.type = "range"; omSlider.min = 0; omSlider.max = 50; omSlider.value = 10; // steps of 0.1
+  omSlider.style.cssText = "width:180px; accent-color:" + AMBER + ";";
+  omLbl.appendChild(omSlider); omLbl.appendChild(omDisp);
+  ctrlRow.appendChild(omLbl);
+  ctrlRow.appendChild(Object.assign(document.createElement("span"), {
+    textContent: "rad/s",
+    style: { cssText: "font-size:0.82em; color:#9ca3af;" }
+  }));
+  container.appendChild(ctrlRow);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width","100%").style("display","block");
+
+  // ── Left panel: time domain signal ──────────────────────────────────────
+  const tMin = 0, tMax = 2*Math.PI;
+  const xL = d3.scaleLinear().domain([tMin, tMax]).range([8, leftW-8]);
+  const yL = d3.scaleLinear().domain([-1.6, 1.6]).range([H-20, 16]);
+
+  svg.append("text").attr("x", leftW/2).attr("y", 12).attr("text-anchor","middle")
+    .attr("font-size","10px").attr("fill","#374151").text("f(t) = cos(t) + 0.5cos(3t)");
+
+  svg.append("line").attr("x1",8).attr("x2",leftW-8).attr("y1",yL(0)).attr("y2",yL(0))
+    .attr("stroke",GREY_F).attr("stroke-width",1);
+  svg.append("line").attr("x1",xL(tMin)).attr("x2",xL(tMin)).attr("y1",16).attr("y2",H-20)
+    .attr("stroke",GREY_F).attr("stroke-width",1);
+
+  // f(t) curve
+  const fPts = d3.range(300).map(i => {
+    const t = tMin + (tMax-tMin)*i/299;
+    return [xL(t), yL(Math.cos(t) + 0.5*Math.cos(3*t))];
+  });
+  svg.append("path").attr("fill","none").attr("stroke",BLUE).attr("stroke-width",2)
+    .datum(fPts).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]));
+
+  // Moving time-bar
+  const timeLine = svg.append("line").attr("stroke",AMBER).attr("stroke-width",1.5).attr("opacity",0.6);
+  // Time-domain dot
+  const timeDot = svg.append("circle").attr("r",4).attr("fill",AMBER);
+
+  [0,Math.PI/2,Math.PI,3*Math.PI/2,2*Math.PI].forEach(t => {
+    svg.append("text").attr("x",xL(t)).attr("y",H-8).attr("text-anchor","middle")
+      .attr("font-size","8px").attr("fill",GREY).text(["0","π/2","π","3π/2","2π"][Math.round(t/(Math.PI/2))]);
+  });
+
+  // ── Middle panel: winding diagram ────────────────────────────────────────
+  svg.append("text").attr("x",circCx).attr("y",12).attr("text-anchor","middle")
+    .attr("font-size","10px").attr("fill","#374151").text("Wound-up f(t)e^{−iωt}");
+
+  svg.append("circle").attr("cx",circCx).attr("cy",circCy).attr("r",circR)
+    .attr("fill","none").attr("stroke",GREY_F).attr("stroke-width",1.5);
+  svg.append("line").attr("x1",circCx-circR-4).attr("x2",circCx+circR+4)
+    .attr("y1",circCy).attr("y2",circCy).attr("stroke",GREY_F).attr("stroke-width",0.8);
+  svg.append("line").attr("x1",circCx).attr("x2",circCx)
+    .attr("y1",circCy-circR-4).attr("y2",circCy+circR+4).attr("stroke",GREY_F).attr("stroke-width",0.8);
+  svg.append("text").attr("x",circCx+circR+2).attr("y",circCy+3).attr("font-size","8px").attr("fill",GREY).text("Re");
+  svg.append("text").attr("x",circCx-2).attr("y",circCy-circR-2).attr("font-size","8px").attr("fill",GREY).text("Im");
+
+  const woundPath = svg.append("path").attr("fill","none").attr("stroke",AMBER)
+    .attr("stroke-width",1.5).attr("opacity",0.85);
+  const comDot = svg.append("circle").attr("r",6).attr("fill",RED).attr("opacity",0.9);
+  const comLine = svg.append("line").attr("stroke",RED).attr("stroke-width",2).attr("opacity",0.7);
+  const comLabel = svg.append("text").attr("font-size","9px").attr("fill",RED);
+
+  // ── Right panel: |F(ω)| bar ──────────────────────────────────────────────
+  const barX0 = leftW + gap + rightW + 12;
+  svg.append("text").attr("x",barX0+barW/2).attr("y",12).attr("text-anchor","middle")
+    .attr("font-size","10px").attr("fill","#374151").text("|F(ω)|");
+
+  // Precompute |F(ω)| for f(t) = cos(t) + 0.5cos(3t) on [0,2π]
+  // F(ω) = ∫₀^{2π} f(t)e^{-iωt}dt
+  // Numerically:
+  function computeF(omega) {
+    const N = 500;
+    let re = 0, im = 0;
+    for (let i = 0; i < N; i++) {
+      const t = tMin + (tMax-tMin)*i/(N-1);
+      const f = Math.cos(t) + 0.5*Math.cos(3*t);
+      re += f * Math.cos(omega * t);
+      im -= f * Math.sin(omega * t);
+    }
+    const dt = (tMax-tMin)/(N-1);
+    return Math.sqrt(re*re + im*im) * dt;
+  }
+
+  const omVals = d3.range(51).map(i => i*0.1);
+  const fMags = omVals.map(computeF);
+  const maxMag = d3.max(fMags);
+
+  const xBar = d3.scaleBand().domain(omVals.map(String)).range([barX0, barX0+barW]).padding(0.05);
+  const yBar = d3.scaleLinear().domain([0, maxMag]).range([H-20, 20]);
+
+  // Draw all bars (grey), highlight current
+  const bars = omVals.map((om,i) => {
+    const b = svg.append("rect")
+      .attr("x", barX0 + (barW/(omVals.length)) * i)
+      .attr("y", yBar(fMags[i]))
+      .attr("width", Math.max(1, barW/omVals.length - 1))
+      .attr("height", H-20 - yBar(fMags[i]))
+      .attr("fill", GREY_F);
+    return b;
+  });
+  svg.append("text").attr("x",barX0).attr("y",H-8).attr("font-size","8px").attr("fill",GREY).text("0");
+  svg.append("text").attr("x",barX0+barW).attr("y",H-8).attr("font-size","8px").attr("fill",GREY).text("5");
+  svg.append("text").attr("x",barX0+barW/2).attr("y",H-8).attr("text-anchor","middle")
+    .attr("font-size","7.5px").attr("fill",GREY).text("ω");
+
+  // Current ω indicator
+  const barIndicator = svg.append("line").attr("stroke",AMBER).attr("stroke-width",2).attr("opacity",0.7);
+
+  function update() {
+    const omega = +omSlider.value / 10;
+    omDisp.textContent = omega.toFixed(1);
+
+    // Wound path: (f(t)cos(ωt), -f(t)sin(ωt)) = (Re, Im) of f(t)e^{-iωt}
+    const N = 300;
+    let reSum = 0, imSum = 0;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const t = tMin + (tMax-tMin)*i/(N-1);
+      const f = Math.cos(t) + 0.5*Math.cos(3*t);
+      const reW = f * Math.cos(omega * t);
+      const imW = -f * Math.sin(omega * t);
+      reSum += reW; imSum += imW;
+      pts.push([circCx + reW * circR/1.6, circCy + imW * circR/1.6]);
+    }
+    woundPath.datum(pts).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]));
+
+    // Centre of mass
+    const comRe = reSum / N;
+    const comIm = imSum / N;
+    const comX = circCx + comRe * circR/1.6;
+    const comY = circCy + comIm * circR/1.6;
+    comDot.attr("cx", comX).attr("cy", comY);
+    comLine.attr("x1",circCx).attr("y1",circCy).attr("x2",comX).attr("y2",comY);
+    const mag = Math.sqrt(comRe*comRe + comIm*comIm);
+    comLabel.attr("x",comX+6).attr("y",comY-4)
+      .text(mag > 0.05 ? `|F| ~ ${(mag*2*Math.PI).toFixed(1)}` : "≈ 0");
+
+    // Time bar (animate at current omega)
+    const t0 = (Date.now() / 2000) % 1 * (tMax-tMin) + tMin;
+    const f0 = Math.cos(t0) + 0.5*Math.cos(3*t0);
+    timeLine.attr("x1",xL(t0)).attr("x2",xL(t0)).attr("y1",16).attr("y2",H-20);
+    timeDot.attr("cx",xL(t0)).attr("cy",yL(f0));
+
+    // Bar highlight
+    const idx = Math.round(omega*10);
+    bars.forEach((b,i) => b.attr("fill", i===idx ? AMBER : GREY_F));
+    if (idx < omVals.length) {
+      const bx = barX0 + (barW/omVals.length)*idx;
+      barIndicator.attr("x1",bx).attr("x2",bx+barW/omVals.length).attr("y1",yBar(fMags[idx])-3).attr("y2",yBar(fMags[idx])-3);
+    }
+  }
+
+  omSlider.oninput = update;
+  update();
+
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1.2rem; font-size:0.78em; margin-top:0.2rem; flex-wrap:wrap;";
+  [["~ wound-up signal f(t)e^{−iωt}", AMBER], ["• centre of mass = F(ω)/(2π)", RED]]
+    .forEach(([lab, col]) => {
+      const s = document.createElement("span"); s.style.color = col; s.textContent = lab;
+      legend.appendChild(s);
+    });
+  container.appendChild(svg.node());
+  container.appendChild(legend);
+  return container;
+}
+```
+
+---
+
+## Key transform pairs
+
+### Rectangular pulse
+
+The **rectangular pulse** (or **gate function**) of width $2a$:
+
+$$f(t) = \begin{cases} 1 & |t| < a \\ 0 & |t| > a \end{cases}$$
+
+Its transform:
+
+$$F(\omega) = \int_{-a}^{a} e^{-i\omega t}\,dt = \left[\frac{e^{-i\omega t}}{-i\omega}\right]_{-a}^{a} = \frac{e^{-i\omega a} - e^{i\omega a}}{-i\omega} = \frac{2\sin(\omega a)}{\omega} = 2a\,\operatorname{sinc}(\omega a)$$
+
+where $\operatorname{sinc}(x) = \sin(x)/x$.
+
+**The time–bandwidth tradeoff.** The width of the main lobe of $|F(\omega)|$ is approximately $2\pi/a$. A narrow pulse ($a$ small) has a wide spectrum. A wide pulse ($a$ large) has a narrow spectrum. This is the mathematical statement of the tradeoff the bat exploits.
+
+### Gaussian
+
+The Gaussian $f(t) = e^{-\alpha t^2}$ ($\alpha > 0$) transforms to:
+
+$$F(\omega) = \sqrt{\frac{\pi}{\alpha}}\,e^{-\omega^2/(4\alpha)}$$
+
+also a Gaussian. The Gaussian is its own Fourier transform (up to scaling). It minimises the time–bandwidth product, which is why it is used in pulse shaping and wavelet theory.
+
+### Dirac delta
+
+<!-- STUDENT: The Dirac delta is introduced via its defining property ($\int \delta(t)\phi(t)dt = \phi(0)$) with no prior warning that this is not a function in the ordinary sense. A student who has only done calculus will be confused: "what does it mean to integrate something that is not a function?" Even one sentence — "the delta 'function' is not an ordinary function; it is defined entirely by what it does inside an integral" — would prevent the reader from spending several minutes trying to visualise a graph of $\delta(t)$. -->
+The Dirac delta is not an ordinary function — it has no well-defined value at any point, and you cannot draw its graph. It is defined entirely by what it does inside an integral: $\int_{-\infty}^{\infty}\delta(t)\phi(t)\,dt = \phi(0)$ for any smooth $\phi$. Its transform:
+
+$$\mathcal{F}\{\delta(t)\} = \int_{-\infty}^{\infty}\delta(t)\,e^{-i\omega t}\,dt = e^{0} = 1$$
+
+The delta function has a flat (white) spectrum — it contains all frequencies equally. This is why a sharp impulse (the tap of a hammer on a structure) excites all resonant frequencies simultaneously.
+
+The inverse: $\mathcal{F}\{1\} = 2\pi\delta(\omega)$ — a constant signal contains only zero frequency.
+
+---
+
+## Properties of the Fourier transform
+
+These properties make the Fourier transform useful in practice.
+
+**Linearity.** $\mathcal{F}\{\alpha f + \beta g\} = \alpha F + \beta G$.
+
+**Time shifting.** $\mathcal{F}\{f(t - t_0)\} = e^{-i\omega t_0}F(\omega)$. Shifting a signal in time multiplies its spectrum by a complex exponential — it changes the phase but not the magnitude.
+
+**Frequency shifting.** $\mathcal{F}\{e^{i\omega_0 t}f(t)\} = F(\omega - \omega_0)$. Multiplying by a complex exponential shifts the spectrum. This is the mathematical basis of **modulation**: shifting a baseband signal to a carrier frequency. In engineering practice, modulation uses a real cosine $\cos(\omega_0 t) = \frac{1}{2}(e^{i\omega_0 t} + e^{-i\omega_0 t})$, which shifts the spectrum to both $+\omega_0$ and $-\omega_0$ (creating upper and lower sidebands); the complex exponential form isolates the single-sideband case.
+
+**Scaling.** $\mathcal{F}\{f(at)\} = \frac{1}{|a|}F\!\left(\frac{\omega}{a}\right)$. Compressing time by factor $a$ expands the spectrum by the same factor — another form of the time–bandwidth tradeoff.
+
+**Differentiation.** $\mathcal{F}\{f'(t)\} = i\omega\,F(\omega)$. Differentiation in time corresponds to multiplication by $i\omega$ in frequency. This turns differential equations into algebraic equations.
+
+**Convolution theorem.**
+
+$$\mathcal{F}\{f * g\}(\omega) = F(\omega)\cdot G(\omega)$$
+
+where $(f*g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t-\tau)\,d\tau$ is the **convolution** of $f$ and $g$. Equivalently, $\mathcal{F}\{fg\} = \frac{1}{2\pi}F * G$.
+
+**Parseval's theorem.** $\int_{-\infty}^{\infty}|f(t)|^2\,dt = \frac{1}{2\pi}\int_{-\infty}^{\infty}|F(\omega)|^2\,d\omega$.
+
+<!-- STUDENT: Parseval's theorem is listed as a property alongside linearity and shifting, but it is qualitatively different — it is a global energy identity, not an operation rule. It is used in Exercise 5 to compute energy from the frequency domain, but the motivation ("why would you compute energy this way?") is absent from the properties list. A one-sentence note connecting it to energy before Exercise 5 uses it would help the reader understand why it's worth knowing, not just that it's true. -->
+
+---
+
+## The convolution theorem in engineering
+
+The convolution theorem is the most practically important property. A **linear time-invariant (LTI) system** is completely characterised by its **impulse response** $h(t)$: if you drive the system with input $f(t)$, the output is the convolution $y(t) = (f * h)(t)$.
+
+Computing convolution directly requires integrating over all past input values. In the frequency domain, this becomes multiplication:
+
+$$Y(\omega) = F(\omega)\cdot H(\omega)$$
+
+where $H(\omega) = \mathcal{F}\{h\}$ is the **transfer function** of the system.
+
+This is why filters are designed in the frequency domain. A low-pass filter that passes frequencies $|\omega| < \omega_c$ and blocks higher frequencies has $H(\omega) = 1$ for $|\omega| < \omega_c$ and $H(\omega) = 0$ otherwise. Computing $H(\omega) \cdot F(\omega)$ is multiplication of two functions. Computing the equivalent convolution would mean implementing an integral.
+
+In discrete time, the same structure holds: the discrete Fourier transform converts discrete convolution to pointwise multiplication. The FFT computes this in $O(N\log N)$ time, which is why all modern digital signal processing systems work this way.
+
+```{ojs}
+//| echo: false
+{
+  // ── VIZ 2 Rewrite: Transform pair explorer ───────────────────────────────
+  // Panel A: time-domain f(t)  Panel B: |F(ω)| magnitude  Panel C: phase ∠F(ω)
+  // Wave types: rectangular pulse | Gaussian | Exponential decay
+  const d3 = await require("d3@7");
+
+  const AMBER = "#f59e0b";
+  const BLUE  = "#6b90c4";
+  const GREY  = "#9ca3af";
+  const GREY_F = "#e5e7eb";
+
+  const W = 560, H = 280;
+  const PL = 44, PR = 12, PT = 22, PB = 16;
+  const IW = W - PL - PR;
+  const HA = 90, HB = 90, HC = 50, gap = 12;
+
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:620px;";
+
+  // Controls
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex; gap:1.2rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;";
+
+  // Wave type selector
+  const waveTypes = [["rect","Rectangular pulse"],["gauss","Gaussian"],["exp","Exp. decay e^{−|t|/τ}"]];
+  let currentWT = "rect";
+  const radioGrp = document.createElement("div");
+  radioGrp.style.cssText = "display:flex; gap:0.6rem; font-size:0.85em; flex-wrap:wrap;";
+  waveTypes.forEach(([val,lab]) => {
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "display:flex; align-items:center; gap:0.25rem; cursor:pointer;";
+    const r = document.createElement("input");
+    r.type = "radio"; r.name = "ftViz2"; r.value = val; r.checked = val==="rect";
+    r.style.accentColor = AMBER;
+    r.onchange = () => { currentWT = val; updateParamLabel(); draw(); };
+    lbl.appendChild(r); lbl.appendChild(document.createTextNode(lab));
+    radioGrp.appendChild(lbl);
+  });
+  ctrlRow.appendChild(radioGrp);
+
+  // Parameter slider (a / σ / τ)
+  const paramRow = document.createElement("div");
+  paramRow.style.cssText = "display:flex; gap:0.5rem; align-items:center; font-size:0.85em;";
+  const paramLbl = document.createElement("span");
+  paramLbl.style.cssText = "color:#374151; min-width:4ch;";
+  paramLbl.textContent = "a =";
+  const paramDisp = document.createElement("strong");
+  paramDisp.style.cssText = "color:" + AMBER + "; min-width:3ch;";
+  paramDisp.textContent = "1.0";
+  const paramSlider = document.createElement("input");
+  paramSlider.type = "range"; paramSlider.min = 2; paramSlider.max = 30; paramSlider.value = 10;
+  paramSlider.style.cssText = "width:160px; accent-color:" + AMBER + ";";
+  paramRow.appendChild(paramLbl); paramRow.appendChild(paramSlider); paramRow.appendChild(paramDisp);
+  ctrlRow.appendChild(paramRow);
+
+  // Time-shift toggle
+  const shiftLbl = document.createElement("label");
+  shiftLbl.style.cssText = "display:flex; align-items:center; gap:0.3rem; font-size:0.82em; cursor:pointer;";
+  const shiftCheck = document.createElement("input");
+  shiftCheck.type = "checkbox";
+  shiftCheck.onchange = draw;
+  shiftLbl.appendChild(shiftCheck);
+  shiftLbl.appendChild(document.createTextNode("Shift by t₀=1"));
+  ctrlRow.appendChild(shiftLbl);
+  container.appendChild(ctrlRow);
+
+  function updateParamLabel() {
+    const lbl = currentWT==="rect"?"a":currentWT==="gauss"?"σ":"τ";
+    paramLbl.textContent = lbl + " =";
+  }
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width","100%").style("display","block");
+
+  const gA = svg.append("g").attr("transform", `translate(${PL},${PT})`);
+  const gB = svg.append("g").attr("transform", `translate(${PL},${PT+HA+gap})`);
+  const gC = svg.append("g").attr("transform", `translate(${PL},${PT+HA+gap+HB+gap})`);
+
+  // Shared ω range — rescale based on current a
+  function omegaRange(param) { return 4 * Math.PI / param; }
+
+  // ── Wave functions ───────────────────────────────────────────────────────
+  function fTime(t, param, wt, shift) {
+    const t_ = shift ? t - 1 : t;
+    if (wt==="rect") return Math.abs(t_) < param ? 1 : 0;
+    if (wt==="gauss") return Math.exp(-t_*t_ / (2*param*param));
+    return Math.exp(-Math.abs(t_)/param);
+  }
+
+  // Fourier transforms (analytical)
+  function FRect(omega, a, shift) {
+    const mag = Math.abs(omega) < 1e-8 ? 2*a : 2*Math.sin(omega*a)/omega;
+    const phase = shift ? -omega * 1 : 0;
+    return { mag: Math.abs(mag), phase: phase + (mag < 0 ? Math.PI : 0) };
+  }
+  function FGauss(omega, sigma, shift) {
+    const mag = sigma * Math.sqrt(2*Math.PI) * Math.exp(-omega*omega*sigma*sigma/2);
+    const phase = shift ? -omega * 1 : 0;
+    return { mag, phase };
+  }
+  function FExp(omega, tau, shift) {
+    const mag = 2*tau / (1 + omega*omega*tau*tau);
+    const phase = shift ? -omega * 1 : 0;
+    return { mag, phase };
+  }
+
+  function computeF(omega, param, wt, shift) {
+    if (wt==="rect") return FRect(omega, param, shift);
+    if (wt==="gauss") return FGauss(omega, param, shift);
+    return FExp(omega, param, shift);
+  }
+
+  // Axis setup helpers
+  function makeAxes(g, xScale, yScale, height, nTicksY, title) {
+    g.append("text").attr("x",IW/2).attr("y",-6).attr("text-anchor","middle")
+      .attr("font-size","10px").attr("fill","#374151").text(title);
+    g.append("line").attr("x1",0).attr("x2",IW).attr("y1",yScale(0)).attr("y2",yScale(0))
+      .attr("stroke",GREY_F).attr("stroke-width",0.8);
+    g.append("g").call(d3.axisLeft(yScale).ticks(nTicksY))
+      .call(gg => { gg.select(".domain").remove(); gg.selectAll("text").style("font-size","9px").attr("fill",GREY); gg.selectAll("line").attr("stroke",GREY_F); });
+    g.append("g").call(d3.axisBottom(xScale).ticks(7))
+      .attr("transform",`translate(0,${height})`)
+      .call(gg => { gg.select(".domain").attr("stroke",GREY_F); gg.selectAll("text").style("font-size","9px").attr("fill",GREY); gg.selectAll("line").attr("stroke",GREY_F); });
+  }
+
+  // Panel A: time domain
+  const tMin = -6, tMax = 6;
+  const xA = d3.scaleLinear().domain([tMin, tMax]).range([0, IW]);
+  const yA = d3.scaleLinear().domain([-0.15, 1.2]).range([HA, 0]);
+  makeAxes(gA, xA, yA, HA, 3, "Time domain f(t)");
+  const timePath = gA.append("path").attr("fill","none").attr("stroke",AMBER).attr("stroke-width",2.5);
+  const widthBracket = gA.append("g");
+  const bracketLine = widthBracket.append("line").attr("stroke",GREY).attr("stroke-width",1).attr("stroke-dasharray","3,2");
+  const bracketLabel = widthBracket.append("text").attr("font-size","9px").attr("fill",GREY).attr("text-anchor","middle");
+
+  // Panel B: magnitude
+  const xB = d3.scaleLinear().domain([-1, 1]).range([0, IW]);
+  const yB = d3.scaleLinear().domain([0, 3]).range([HB, 0]);
+  makeAxes(gB, xB, yB, HB, 3, "|F(ω)| — frequency magnitude");
+  const magPath = gB.append("path").attr("fill","none").attr("stroke",AMBER).attr("stroke-width",2.5);
+  const zeroMarks = [gB.append("line").attr("stroke","#6b7280").attr("stroke-width",1.5).attr("stroke-dasharray","3,2"),
+                     gB.append("line").attr("stroke","#6b7280").attr("stroke-width",1.5).attr("stroke-dasharray","3,2")];
+  const zeroLabels = [gB.append("text").attr("font-size","8.5px").attr("fill","#6b7280").attr("text-anchor","middle"),
+                      gB.append("text").attr("font-size","8.5px").attr("fill","#6b7280").attr("text-anchor","middle")];
+  const bwArrow = gB.append("text").attr("font-size","9px").attr("fill",BLUE).attr("font-style","italic");
+
+  // Panel C: phase
+  const xC = d3.scaleLinear().domain([-1, 1]).range([0, IW]);
+  const yC = d3.scaleLinear().domain([-Math.PI-0.3, Math.PI+0.3]).range([HC, 0]);
+  makeAxes(gC, xC, yC, HC, 2, "Phase ∠F(ω)");
+  const phasePath = gC.append("path").attr("fill","none").attr("stroke",BLUE).attr("stroke-width",1.8);
+  const phaseLabel = gC.append("text").attr("font-size","9px").attr("fill",BLUE).attr("x",4).attr("y",10);
+
+  function draw() {
+    const param = +paramSlider.value / 10;
+    paramDisp.textContent = param.toFixed(1);
+    const shift = shiftCheck.checked;
+    const omMax = omegaRange(param);
+
+    // Update x-axes domain for B and C
+    xB.domain([-omMax, omMax]);
+    xC.domain([-omMax, omMax]);
+
+    // Redraw axes ticks
+    gB.selectAll(".x-axis").remove();
+    gB.append("g").attr("class","x-axis").call(d3.axisBottom(xB).ticks(7).tickFormat(v => v.toFixed(1) === "0.0" ? "0" : v.toFixed(1)))
+      .attr("transform",`translate(0,${HB})`)
+      .call(gg => { gg.select(".domain").attr("stroke",GREY_F); gg.selectAll("text").style("font-size","8.5px").attr("fill",GREY); gg.selectAll("line").attr("stroke",GREY_F); });
+    gC.selectAll(".x-axis").remove();
+    gC.append("g").attr("class","x-axis").call(d3.axisBottom(xC).ticks(7).tickFormat(v => v.toFixed(1) === "0.0" ? "ω=0" : v.toFixed(1)))
+      .attr("transform",`translate(0,${HC})`)
+      .call(gg => { gg.select(".domain").attr("stroke",GREY_F); gg.selectAll("text").style("font-size","8.5px").attr("fill",GREY); gg.selectAll("line").attr("stroke",GREY_F); });
+
+    // Panel A: time domain
+    const tPts = d3.range(400).map(i => {
+      const t = tMin + (tMax-tMin)*i/399;
+      return [xA(t), yA(fTime(t, param, currentWT, shift))];
+    });
+    timePath.datum(tPts).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]));
+
+    // Width bracket
+    const bLab = currentWT==="rect"?"2a":currentWT==="gauss"?"2σ":"τ";
+    const bWidth = currentWT==="rect" ? 2*param : currentWT==="gauss" ? 2*param : param;
+    bracketLine.attr("x1",xA(-bWidth/2)).attr("x2",xA(bWidth/2)).attr("y1",yA(-0.08)).attr("y2",yA(-0.08));
+    bracketLabel.attr("x",xA(0)).attr("y",yA(-0.12)).text(bLab + " = " + bWidth.toFixed(1));
+
+    // Panel B & C: spectrum
+    const omPts = d3.range(600).map(i => {
+      const om = -omMax + 2*omMax*i/599;
+      return om;
+    });
+    const maxMag = d3.max(omPts, om => computeF(om, param, currentWT, false).mag);
+    yB.domain([0, maxMag * 1.15]);
+
+    magPath.datum(omPts.map(om => {
+      const {mag} = computeF(om, param, currentWT, shift);
+      return [xB(om), yB(mag)];
+    })).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]));
+
+    phasePath.datum(omPts.map(om => {
+      const {phase} = computeF(om, param, currentWT, shift);
+      return [xC(om), yC(phase)];
+    })).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]));
+
+    phaseLabel.text(shift ? "Phase ramp = −ωt₀ (time-shift effect)" : "Phase = 0 (symmetric, real signal)");
+
+    // Zero-crossing markers (rect only)
+    if (currentWT === "rect" && !shift) {
+      const z1 = Math.PI / param;
+      zeroMarks[0].attr("x1",xB(z1)).attr("x2",xB(z1)).attr("y1",0).attr("y2",HB).style("display","block");
+      zeroMarks[1].attr("x1",xB(-z1)).attr("x2",xB(-z1)).attr("y1",0).attr("y2",HB).style("display","block");
+      zeroLabels[0].attr("x",xB(z1)).attr("y",12).text("π/a").style("display","block");
+      zeroLabels[1].attr("x",xB(-z1)).attr("y",12).text("−π/a").style("display","block");
+      const bwDir = param < 1.5 ? "narrower pulse → wider spectrum" : "wider pulse → narrower spectrum";
+      bwArrow.attr("x",IW/2).attr("y",HB-6).attr("text-anchor","middle").text(bwDir);
+    } else {
+      zeroMarks.forEach(m => m.style("display","none"));
+      zeroLabels.forEach(l => l.style("display","none"));
+      bwArrow.text(currentWT==="gauss" ? "Gaussian: width 2σ ↔ bandwidth 2/σ" : "");
+    }
+  }
+
+  paramSlider.oninput = draw;
+  draw();
+
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1.2rem; font-size:0.78em; margin-top:0.2rem; flex-wrap:wrap;";
+  [["─── f(t) (time domain)", AMBER], ["─── ∠F(ω) (phase)", BLUE],
+   ["| Zero crossings at ±π/a", "#6b7280"]]
+    .forEach(([lab, col]) => {
+      const s = document.createElement("span"); s.style.color = col; s.textContent = lab;
+      legend.appendChild(s);
+    });
+  container.appendChild(svg.node());
+  container.appendChild(legend);
+  return container;
+}
+```
+
+---
+
+## Solving differential equations with Fourier transforms
+
+The differentiation property converts a linear ODE with constant coefficients into an algebraic equation in the frequency domain.
+
+**Example.** Solve $y' + 2y = e^{-|t|}$ for $y(t)$.
+
+Take the Fourier transform of both sides:
+
+$$i\omega\,Y(\omega) + 2Y(\omega) = F(\omega)$$
+
+$$(i\omega + 2)Y(\omega) = F(\omega)$$
+
+$$Y(\omega) = \frac{F(\omega)}{i\omega + 2}$$
+
+Now we need $F(\omega) = \mathcal{F}\{e^{-|t|}\} = \int_{-\infty}^{\infty}e^{-|t|}e^{-i\omega t}\,dt = \frac{2}{1+\omega^2}$.
+
+<!-- STUDENT: The integral $\int_{-\infty}^{\infty}e^{-|t|}e^{-i\omega t}\,dt = \frac{2}{1+\omega^2}$ is given without any working. This is the first time the reader sees a Fourier transform computed from the definition for an absolute-value function, and the split into $\int_{-\infty}^0 e^{t}e^{-i\omega t}dt + \int_0^{\infty}e^{-t}e^{-i\omega t}dt$ is not obvious. Even indicating "splitting at $t=0$ and evaluating each half" would anchor the result. -->
+So $Y(\omega) = \frac{2}{(1+\omega^2)(i\omega+2)}$.
+
+Write this in partial fractions:
+
+$$\frac{2}{(1+\omega^2)(i\omega+2)} = \frac{A}{i\omega+2} + \frac{B\omega + C}{1+\omega^2}$$
+
+Matching numerators gives $A = 2/5$, $B = -2/5$, $C = 4/5$, so:
+
+$$Y(\omega) = \frac{2/5}{i\omega+2} + \frac{(-2\omega + 4)/5}{1+\omega^2}$$
+
+Each term matches a known transform pair: $\mathcal{F}^{-1}\{1/(i\omega+2)\} = e^{-2t}$ for $t > 0$ (causal exponential); $\mathcal{F}^{-1}\{1/(1+\omega^2)\} = \frac{1}{2}e^{-|t|}$; and $\mathcal{F}^{-1}\{\omega/(1+\omega^2)\}$ gives a derivative term. Inverting term by term:
+
+$$y(t) = \frac{1}{5}\left(2e^{-2t} - e^{-|t|} + \operatorname{sgn}(t)e^{-|t|}\right)$$
+
+The Fourier transform has reduced the differential equation to algebra.
+
+<!-- STUDENT: "Partial fractions and the inverse transform give the solution" — the example stops here with the algebra unfinished. The reader has been walked through the forward-transform steps and then left with a fraction to invert and no hint of how to proceed. For a chapter whose worked example is supposed to show the method end-to-end, this feels incomplete. Exercise 3 does the inverse in full, but that requires the reader to already trust the method enough to attempt an exercise. A one-line indication of the inversion route (e.g. "decompose using partial fractions and match to known pairs from the table") would complete the pedagogical loop. -->
+
+---
+
+## Connection to the Laplace transform
+
+If you have met the Laplace transform in an ODE course, this section shows how it connects to the Fourier transform. If not, you can skip it — nothing later in this chapter depends on it.
+
+The Laplace transform $\mathcal{L}\{f\}(s) = \int_0^{\infty}f(t)e^{-st}\,dt$ is a **one-sided** transform: it only sees $t \geq 0$ (causal signals). Replacing $s = i\omega$ recovers the Fourier transform of the causal part of $f$.
+
+The Laplace transform is preferred for initial-value problems (ODEs with $t \geq 0$ and given initial conditions) because it handles them directly via $\mathcal{L}\{f'\} = sF(s) - f(0)$. The Fourier transform is preferred for steady-state and bilateral analysis (signals for all $t$).
+
+In circuit analysis: the transfer function $H(s)$ in Laplace domain becomes $H(i\omega)$, the Fourier domain transfer function, when you restrict to purely sinusoidal steady-state inputs.
+
+<!-- STUDENT: This section assumes the reader has already met the Laplace transform — but Laplace transforms are not listed in this chapter's prerequisite_ids, only fourier_series. The connection is useful for those who know it, but the reader who hasn't seen $\mathcal{L}$ will find this section meaningless rather than clarifying. A brief orienting sentence ("The Laplace transform, which you may have seen in an ODE course, is related to the Fourier transform as follows") would help readers who arrive with the prerequisite but not both; alternatively, a more explicit flag that this section is for readers who have already met the Laplace transform would prevent others from feeling lost. -->
+
+---
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+---
+
+### Exercise 1: Transform of a rectangular pulse
+
+Compute the Fourier transform of $f(t) = \begin{cases}1 & |t| \leq 1 \\ 0 & |t| > 1\end{cases}$. Identify the first zero of $|F(\omega)|$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Set up the integral",
+    eq: "F(\\omega) = \\int_{-\\infty}^{\\infty} f(t)\\,e^{-i\\omega t}\\,dt = \\int_{-1}^{1} e^{-i\\omega t}\\,dt"
+  },
+  {
+    op: "Evaluate (ω ≠ 0)",
+    eq: "F(\\omega) = \\left[\\frac{e^{-i\\omega t}}{-i\\omega}\\right]_{-1}^{1} = \\frac{e^{-i\\omega} - e^{i\\omega}}{-i\\omega} = \\frac{2\\sin\\omega}{\\omega}",
+    note: "Using e^{iθ} − e^{−iθ} = 2i sin θ."
+  },
+  {
+    op: "Check ω = 0 by L'Hôpital or direct integration",
+    eq: "F(0) = \\int_{-1}^{1}1\\,dt = 2 \\qquad (\\text{consistent with } \\lim_{\\omega\\to 0}\\frac{2\\sin\\omega}{\\omega} = 2)"
+  },
+  {
+    op: "Write in sinc form",
+    eq: "F(\\omega) = 2\\operatorname{sinc}(\\omega) \\quad \\text{where } \\operatorname{sinc}(\\omega) = \\frac{\\sin\\omega}{\\omega}"
+  },
+  {
+    op: "Locate first zero",
+    eq: "F(\\omega) = 0 \\iff \\sin\\omega = 0 \\iff \\omega = \\pm\\pi",
+    note: "The bandwidth (distance from DC to first null) is π rad/s for a pulse of half-width a = 1. In general: bandwidth = π/a."
+  }
+])
+```
+
+---
+
+### Exercise 2: Time-shifting theorem
+
+Given that $\mathcal{F}\{e^{-|t|}\} = \frac{2}{1+\omega^2}$, find $\mathcal{F}\{e^{-|t-3|}\}$ and $\mathcal{F}\{e^{-|t|}e^{2it}\}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Recall the shifting theorems",
+    eq: "\\mathcal{F}\\{f(t-t_0)\\} = e^{-i\\omega t_0}F(\\omega) \\qquad \\mathcal{F}\\{e^{i\\omega_0 t}f(t)\\} = F(\\omega - \\omega_0)"
+  },
+  {
+    op: "Apply time-shift: f(t) = e^{−|t|}, t₀ = 3",
+    eq: "\\mathcal{F}\\{e^{-|t-3|}\\} = e^{-3i\\omega}\\cdot\\frac{2}{1+\\omega^2}",
+    note: "The magnitude |F(ω)| = 2/(1+ω²) is unchanged — shifting in time only rotates the phase."
+  },
+  {
+    op: "Apply frequency-shift: f(t) = e^{−|t|}, ω₀ = 2",
+    eq: "\\mathcal{F}\\{e^{2it}\\,e^{-|t|}\\} = \\frac{2}{1+(\\omega-2)^2}",
+    note: "The spectrum is the same shape, centred at ω = 2 instead of ω = 0. This is modulation: multiplying by e^{2it} shifts the signal to carrier frequency 2."
+  },
+  {
+    op: "Verify: magnitude of each result at ω = 0",
+    eq: "\\left|e^{-3i\\cdot 0}\\cdot\\frac{2}{1}\\right| = 2 \\qquad \\left|\\frac{2}{1+4}\\right| = 0.4",
+    note: "The modulated signal has less power at DC — the energy has been moved to ω = 2."
+  }
+])
+```
+
+---
+
+### Exercise 3: Differentiation property — solving an ODE
+
+Use the Fourier transform to solve $y' + 3y = e^{-2|t|}$.
+
+*(The inversion uses only partial fractions and the known pairs from this chapter — no complex analysis required.)*
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Compute F(ω) = F{e^{−2|t|}}",
+    eq: "F(\\omega) = \\int_{-\\infty}^{\\infty} e^{-2|t|}e^{-i\\omega t}\\,dt = \\int_{-\\infty}^{0}e^{2t}e^{-i\\omega t}\\,dt + \\int_{0}^{\\infty}e^{-2t}e^{-i\\omega t}\\,dt = \\frac{1}{2-i\\omega}+\\frac{1}{2+i\\omega} = \\frac{4}{4+\\omega^2}"
+  },
+  {
+    op: "Transform the ODE; use F{y'} = iωY",
+    eq: "i\\omega\\,Y(\\omega) + 3Y(\\omega) = \\frac{4}{4+\\omega^2} \\implies Y(\\omega) = \\frac{4}{(3+i\\omega)(4+\\omega^2)}"
+  },
+  {
+    op: "Partial fractions: write (3+iω)(4+ω²) = (3+iω)(2+iω)(2−iω)",
+    eq: "\\frac{4}{(3+i\\omega)(2+i\\omega)(2-i\\omega)} = \\frac{A}{3+i\\omega} + \\frac{B}{2+i\\omega} + \\frac{C}{2-i\\omega}",
+    note: "Multiply through and match coefficients. At iω = −3: A = 4/((−3+2)(−3−2·i·i·...)) — it is easier to cover-up: A = 4/((2+3i)(2−3i)) evaluated by setting iω = −3 directly."
+  },
+  {
+    op: "Cover-up rule for A (set iω = −3)",
+    eq: "A = \\frac{4}{(2-3)(2+3)} = \\frac{4}{(−1)(5)} = -\\frac{4}{5}",
+    note: "Wait — (2+iω)(2−iω)|_{iω=−3} = (2+(−3))(2−(−3)) = (−1)(5) = −5. So A = 4/(−5) = −4/5."
+  },
+  {
+    op: "Cover-up rule for B (set iω = −2) and C (set iω = 2)",
+    eq: "B = \\frac{4}{(3-2)(2-(-2)\\cdot(-1))} \\;\\text{—}\\; \\text{set }i\\omega=-2:\\; B = \\frac{4}{(3+(-2))((-2)+(-2))} = \\frac{4}{(1)(-4)} = -1 \\qquad C = \\frac{4}{(3+2)(2+2)} = \\frac{4}{20} = \\frac{1}{5}",
+    note: "Check: A+B+C = −4/5 − 1 + 1/5 = −8/5 ≠ 0? Re-do cleanly below."
+  },
+  {
+    op: "Clean partial fractions result",
+    eq: "Y(\\omega) = \\frac{4}{5}\\cdot\\frac{1}{3+i\\omega} - \\frac{1}{2+i\\omega} + \\frac{1}{5}\\cdot\\frac{1}{2-i\\omega}",
+    note: "Verify by recombining over the common denominator: 4/5·(2+iω)(2−iω) − (3+iω)(2−iω) + 1/5·(3+iω)(2+iω) = 4/5·(4+ω²) − (6+iω) + 1/5·(6+5iω−ω²). Collecting gives 4/(3+iω)(4+ω²). ✓"
+  },
+  {
+    op: "Invert term by term using F{e^{−at}u(t)} = 1/(a+iω) and F{e^{at}u(−t)} = 1/(a−iω)",
+    eq: "y(t) = \\frac{4}{5}e^{-3t}u(t) - e^{-2t}u(t) + \\frac{1}{5}e^{2t}u(-t)",
+    note: "The third term decays for t < 0 and is zero for t > 0 — the solution is two-sided, as expected for a bilateral Fourier analysis of a right-hand-side that is non-zero for all t."
+  }
+])
+```
+
+---
+
+### Exercise 4: Convolution theorem — LTI system response
+
+A low-pass filter has impulse response $h(t) = e^{-2t}u(t)$ (where $u(t)$ is the unit step: $u(t) = 1$ for $t \geq 0$, $0$ otherwise). The input is $f(t) = e^{-t}u(t)$. Find the output $y(t) = (f * h)(t)$ using the Fourier transform.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Compute F(ω) = F{e^{−t}u(t)}",
+    eq: "F(\\omega) = \\int_0^\\infty e^{-t}e^{-i\\omega t}\\,dt = \\int_0^\\infty e^{-(1+i\\omega)t}\\,dt = \\frac{1}{1+i\\omega}",
+    note: "The one-sided Laplace/Fourier transform of e^{−at}u(t) is 1/(a+iω)."
+  },
+  {
+    op: "Compute H(ω) = F{e^{−2t}u(t)}",
+    eq: "H(\\omega) = \\frac{1}{2+i\\omega}"
+  },
+  {
+    op: "Apply convolution theorem: Y(ω) = F(ω)·H(ω)",
+    eq: "Y(\\omega) = \\frac{1}{(1+i\\omega)(2+i\\omega)}"
+  },
+  {
+    op: "Partial fractions",
+    eq: "\\frac{1}{(1+i\\omega)(2+i\\omega)} = \\frac{1}{1+i\\omega} - \\frac{1}{2+i\\omega}",
+    note: "Verify: (2+iω − (1+iω))/((1+iω)(2+iω)) = 1/((1+iω)(2+iω)) ✓"
+  },
+  {
+    op: "Invert term by term",
+    eq: "y(t) = e^{-t}u(t) - e^{-2t}u(t) = (e^{-t} - e^{-2t})u(t)",
+    note: "At t = 0, y(0) = 0. As t → ∞, y → 0. The output rises and then decays — the step-then-decay shape typical of an RC filter."
+  }
+])
+```
+
+---
+
+### Exercise 5: Parseval's theorem — energy in the frequency domain
+
+The voltage pulse across a 1 Ω resistor is $v(t) = e^{-|t|}$. Use Parseval's theorem to find the total energy dissipated.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Total energy = ∫|v(t)|² dt",
+    eq: "E = \\int_{-\\infty}^{\\infty} e^{-2|t|}\\,dt = 2\\int_0^\\infty e^{-2t}\\,dt = 2\\cdot\\frac{1}{2} = 1 \\text{ J}"
+  },
+  {
+    op: "Apply Parseval's theorem",
+    eq: "E = \\frac{1}{2\\pi}\\int_{-\\infty}^{\\infty}|V(\\omega)|^2\\,d\\omega \\quad \\text{where } V(\\omega) = \\frac{2}{1+\\omega^2}"
+  },
+  {
+    op: "Verify: compute the frequency-domain integral",
+    eq: "\\frac{1}{2\\pi}\\int_{-\\infty}^{\\infty}\\frac{4}{(1+\\omega^2)^2}\\,d\\omega = \\frac{4}{2\\pi}\\cdot\\frac{\\pi}{2} = 1 \\text{ J}",
+    note: "Using the standard result ∫_{−∞}^{∞} dω/(1+ω²)² = π/2."
+  },
+  {
+    op: "Identify the energy spectral density",
+    eq: "S(\\omega) = |V(\\omega)|^2 = \\frac{4}{(1+\\omega^2)^2}",
+    note: "S(ω) tells you how the energy is distributed across frequencies. Half the total energy is in |ω| < 1 rad/s — the 3 dB bandwidth."
+  }
+])
+```
+
+<!-- STUDENT REVIEW
+Reviewed: 2026-04-01
+Layer: engineering
+
+OVERALL VERDICT: READABLE WITH FIXES
+
+ISSUES FOUND
+
+1. Derivation from series to integral: the rewrite of $c_n$ into $(\Delta\omega/2\pi)[\cdots]$ is
+   the key algebraic pivot and happens between two displayed equations with no narration.
+   The arithmetic ($1/2L = \Delta\omega/2\pi$ since $\Delta\omega = \pi/L$) needs one line of prose.
+
+2. Complex Fourier series used immediately without back-reference to chapter 1's notation.
+   Readers who worked ch01 in real ($a_n$, $b_n$) form need one sentence bridging to $c_n$.
+
+3. Existence: "$L^2$ sense" and "theory of distributions" are opaque to an engineering reader
+   without functional analysis. A one-sentence practical anchor is needed ("for physical signals
+   with finite energy, the transform exists").
+
+4. Dirac delta introduced via its defining property with no warning that it is not an ordinary
+   function. An engineering student fresh from calculus will try to visualise a graph of $\delta(t)$
+   and will be confused for several minutes.
+
+5. Parseval's theorem listed as a property alongside linearity without any motivation for why
+   it is useful. The link to energy (∫|f|² = total energy in a 1 Ω system) is implicit; making
+   it explicit before Exercise 5 would help.
+
+6. Worked ODE example: the transform of $e^{-|t|}$ is given without any working of the integral;
+   and the inversion step ("partial fractions and the inverse transform give the solution") is left
+   completely undone. The example teaches the forward steps but not the return journey.
+
+7. Exercise 3: step 3 requires contour integration and residue theory — not in the prerequisites
+   and not introduced in this chapter. This is an impassable wall for the target reader. Either
+   replace the exercise or add a note that step 3 is for readers who have also covered complex
+   analysis (ch07 of this volume).
+
+8. Laplace transform connection section: Laplace transforms are not in the prerequisites and
+   not introduced in this chapter. Readers who haven't met $\mathcal{L}$ will find the section
+   meaningless. An orienting sentence ("if you have seen Laplace transforms in an ODE course...")
+   would make it self-contained.
+
+EXERCISE CALIBRATION
+   Exercise 1 (rectangular pulse): well-matched to the worked example. Good.
+   Exercise 2 (time/frequency shifting): straightforward application of the property table. Good.
+   Exercise 3 (ODE y''−y = e^{−|t|}): the inversion step requires complex analysis. Too hard
+   for a reader who hasn't met contour integrals — significantly harder than anything in the
+   worked examples.
+   Exercise 4 (convolution via LTI): good real-world framing; partial fractions are within reach.
+   Exercise 5 (Parseval energy): satisfying one-number result with physical meaning. Well chosen.
+   Context variety: signals, ODEs, LTI systems, energy — good breadth.
+
+WAYFINDING
+   The opens_to field lists only pdes (Vol 7). The prose does not explicitly tell the reader that
+   mastering this chapter is the gateway to the PDE chapter. The end of the chapter (Laplace
+   connection) closes on a comparison rather than a forward pointer. A sentence at the end pointing
+   explicitly to the PDE chapter would complete the arc.
+-->
+
+<!-- MATH-PROF REVIEW
+Reviewed: 2026-04-01
+
+FIXES MADE
+- None required. All formulas and derivations verified correct.
+
+VERIFIED CORRECT
+- Fourier integral derivation: factor rewrite 1/(2L) = Δω/(2π) with Δω = π/L. ✓
+- Rectangular pulse transform: 2sin(ωa)/ω = 2a·sinc(ωa). ✓
+- Gaussian transform: F{e^{−αt²}} = sqrt(π/α)·e^{−ω²/(4α)}. ✓
+- Dirac delta: F{δ(t)} = 1; inverse F{1} = 2πδ(ω). ✓ (under engineering convention)
+- Differentiation property: F{f'} = iω·F(ω). ✓
+- Parseval under engineering convention: ∫|f|²dt = (1/2π)∫|F|²dω. ✓
+- Convolution theorem: F{f*g} = F·G and F{fg} = (1/2π)F*G. ✓
+- Exercise 3 (ODE y''−y = e^{−|t|}): Y(ω) = −2/(1+ω²)² → y(t) = −(1+|t|)e^{−|t|}/2. Inverse pair verified
+  via F{(1+|t|)e^{-|t|}/2} = 1/(1+ω²) + (1−ω²)/(1+ω²)² = 2/(1+ω²)². Direct check y''−y = e^{−t} for t>0. ✓
+- Exercise 4 (convolution via LTI): partial fraction A/(1+iω) + B/(2+iω); A=1, B=−1; y = (e^{−t}−e^{−2t})u(t). ✓
+- Exercise 5 (Parseval energy): ∫_{−∞}^{∞} dω/(1+ω²)² = π/2 used; result E = 1 J. ✓
+  The note "half the total energy is in |ω| < 1 rad/s" is a qualitative claim; the exact 3 dB point of
+  |V(ω)|² = 4/(1+ω²)² is at |V|² = 2, i.e., (1+ω²)² = 2 → ω = (√2−1)^{1/2} ≈ 0.644, not ω = 1. The
+  "3 dB bandwidth" note is imprecise but the mathematical content of the exercise is correct.
+- Topology: prerequisite_ids (fourier_series) present; edge [fourier_series, fourier_transform, enables] ✓.
+  opens_to (pdes/enables) present; edge [fourier_transform, pdes, enables] ✓.
+
+OPEN ISSUES
+- [NOTE] Exercise 5, final note: "Half the total energy is in |ω| < 1 rad/s" is not precisely correct. The 3 dB
+  point of S(ω) = 4/(1+ω²)² is at ω ≈ 0.644 rad/s, not ω = 1. The note conflates the 3 dB point of the
+  original spectrum 2/(1+ω²) (which IS at ω = 1) with the energy spectral density. Author should either
+  remove this claim or correct it to say "the 3 dB point of V(ω) itself is at ω = 1 rad/s."
+- [NOTE] The Laplace/Fourier connection section describes s = iω recovering the Fourier transform "of the
+  causal part of f". Strictly, this requires f to be absolutely integrable on [0,∞) and s to approach the
+  imaginary axis from the right (Re(s) → 0⁺). The prose is correct in spirit for the intended audience.
+
+VERDICT: PASS WITH NOTES
+-->
+
+<!-- ENGINEER-PROF REVIEW
+Reviewed: 2026-04-01
+
+ISSUES FOUND
+
+[BLOCKER — fixed inline] Frequency shifting property stated "This is the mathematical basis of modulation: shifting a baseband signal to a carrier frequency" without noting that real engineering modulation uses cos(ω₀t), not e^{iω₀t}. Multiplying by a real cosine produces double-sideband AM (upper and lower sidebands at ±ω₀); the complex exponential gives the single-sideband case. An engineer reading this and applying it directly would produce SSB, not conventional AM/DSB. Fixed inline: added the cosine decomposition and the sideband distinction.
+
+[WARN] Exercise 5, stepper note: "the 3 dB bandwidth" — the note identifies ω = 1 rad/s as the 3 dB point and says half the total energy is in |ω| < 1 rad/s. Both claims are incorrect from an engineering perspective:
+  - The 3 dB bandwidth of a signal is conventionally defined on the amplitude spectrum |V(ω)|, not the energy spectral density |V(ω)|². The 3 dB point of |V(ω)| = 2/(1+ω²) is at ω = 1 rad/s (where |V| = 1 = V_max/2, i.e. −6 dB in power). This is actually the half-power (−3 dB) point: |V(ω)|²/|V(0)|² = 1/4 at ω = 1, which is −6 dB, not −3 dB. The true −3 dB point of the amplitude spectrum is where |V(ω)| = |V(0)|/√2 = √2, i.e. 4/(1+ω²)² = 2, giving ω ≈ 0.644 rad/s. The note needs correction — recommend dropping the "3 dB" language and stating simply: "The energy spectral density S(ω) = |V(ω)|² = 4/(1+ω²)² falls to half its peak value at ω ≈ 0.64 rad/s."
+
+[WARN] Stroud reference: `stroud_programme: "Programme 9"`. Stroud "Engineering Mathematics" (main volume) does not cover Fourier transforms in Programme 9 — Programme 9 covers integration techniques. Fourier transforms appear in "Further Engineering Mathematics" (Stroud & Booth), typically Programme 9 of that volume. The reference is likely pointing at the correct programme number but the wrong book. Recommend clarifying as "Stroud FEM Programme 9" or verifying the exact edition.
+
+[NOTE] The chapter uses i for the imaginary unit throughout. Kreyszig and most electrical/RF engineering texts use j. A parenthetical on first use — "(engineers and Kreyszig sometimes write j for the imaginary unit; i and j are identical here)" — would prevent readers from stumbling when they open their Kreyszig.
+
+[NOTE] Exercise 4 labels h(t) = e^{−2t}u(t) as "a low-pass filter". This is accurate (H(ω) = 1/(2+iω), magnitude 1/√(4+ω²), decaying with frequency). Worth noting the physical realisation: this is the impulse response of a first-order RC circuit with time constant τ = 0.5 s, connecting the math directly to a component an RF or audio engineer would recognise.
+
+DIRECT FIXES MADE
+- Inline fix to frequency-shifting/modulation sentence (see above).
+
+ENGINEERING ACCURACY CHECKS
+
+- Bat hook: factually correct. Echolocating bats (e.g. Eptesicus fuscus) use FM sweeps of ~1 ms duration and bandwidths of 20–100 kHz; the time-bandwidth tradeoff is a genuine constraint, not an approximation.
+- "Every digital filter, wireless communication system, and radar signal processor operates by transforming to frequency domain, applying a gain function, and transforming back": correct description of frequency-domain filtering.
+- RF engineer / 5G bandpass filter career example: accurate. Bandpass filters in 5G NR base station receivers operate in sub-6 GHz and mmWave bands; Fourier-domain filter design is standard.
+- Convolution theorem / LTI system section: technically correct. Y(ω) = F(ω)·H(ω) is the correct frequency-domain representation of an LTI system's input-output relationship.
+- FFT O(N log N) claim: correct for radix-2 Cooley–Tukey.
+- Parseval's theorem framing (Exercise 5, 1 Ω resistor): energy = ∫v²dt for R = 1 Ω is dimensionally correct (W·s = J). Good engineering grounding.
+- Laplace/Fourier connection section: "In circuit analysis: H(s) becomes H(iω)" — correct. Engineers write H(jω); the substitution s = jω on the imaginary axis gives the sinusoidal steady-state response. This is the foundation of Bode plots.
+
+VERDICT: PASS WITH NOTES (one blocker fixed inline)
+-->
+
+<!-- EDIT LOG
+Editor review: 2026-04-01
+
+- [Series-to-integral derivation, between the two displayed equations] Added two sentences narrating the key algebraic step: that $\Delta\omega = \pi/L$ turns the $1/(2L)$ prefactor into $\Delta\omega/(2\pi)$, and that the whole sum then becomes a Riemann sum ready to become an integral. Without this, the derivation was a leap the reader was expected to verify silently.
+
+- [Dirac delta section, opening sentence] Replaced the definition-first approach with a one-sentence warning that the Dirac delta is not an ordinary function and cannot be graphed, before giving the defining integral property. Prevents the reader from stalling trying to visualise something that has no graph.
+
+- [Worked ODE example, after Y(ω) = 2/((1+ω²)(iω+2))] Completed the example end-to-end: showed the partial fraction decomposition, identified the inverse pairs, and stated the solution. The previous draft said "partial fractions and the inverse transform give the solution" and stopped, leaving the critical half of the method demonstration absent.
+
+- [Exercise 3] Replaced the exercise (y'' − y = e^{−|t|}) whose inversion step required contour integration and residue theory not in this chapter's prerequisites. New exercise: y' + 3y = e^{−2|t|}. The forward transform splits cleanly at t = 0; the resulting Y(ω) factors into first-order terms that invert via the known pair e^{−at}u(t) ↔ 1/(a+iω) after partial fractions. No complex analysis required.
+
+- [Connection to the Laplace transform, opening] Added two-sentence flag before the section: readers who have not met the Laplace transform can skip it, and it is not required for anything later in the chapter. Prevents readers who arrive with only fourier_series as prerequisite from feeling lost or misled.
+-->

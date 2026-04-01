@@ -5,7 +5,7 @@ page-layout: full
 toc: false
 ---
 
-Every chapter in this series has a position in the map below. Nodes are grouped by layer — foundations at the centre, engineering mathematics at the outside. Colours show which destination fields each topic serves.
+Every chapter in this series has a position in the map below. Nodes are grouped by layer — foundations at the centre, engineering mathematics outside that, and discipline-facing upper-year methods on the outer ring. Colours show which destination fields each topic serves.
 
 Click any node to see what it is, where it leads, and which fields use it.
 
@@ -33,8 +33,8 @@ fieldColors = ({
   geo:  "#993C1D"
 });
 
-layerRadius   = ({ 1: 120, 2: 220, 3: 310, 4: 410 });
-layerNodeSize = ({ 1: 8,   2: 10,  3: 11,  4: 11  });
+layerRadius   = ({ 1: 120, 2: 220, 3: 310, 4: 410, 5: 510 });
+layerNodeSize = ({ 1: 8,   2: 10,  3: 11,  4: 11,  5: 11  });
 ```
 
 ```{ojs}
@@ -54,7 +54,11 @@ viewof selectedNode = {
 bloom = {
   if (!topo) return html`<p><em>Loading…</em></p>`;
 
-  const W = Math.min((window.innerWidth || 800) - 48, 860);
+  const outerRadius = layerRadius[5] + 36;
+  const W = Math.min(
+    Math.max((window.innerWidth || 800) - 48, outerRadius * 2 + 40),
+    1120
+  );
   const H = W;
   const cx = W / 2, cy = H / 2;
 
@@ -94,7 +98,7 @@ bloom = {
 
   // Guide rings
   svg.append("g").selectAll("circle")
-    .data([1, 2, 3, 4])
+    .data([1, 2, 3, 4, 5])
     .join("circle")
     .attr("cx", cx).attr("cy", cy)
     .attr("r", d => layerRadius[d] + 18)
@@ -109,7 +113,8 @@ bloom = {
       { layer: 1, label: "Pre-university" },
       { layer: 2, label: "Bridge" },
       { layer: 3, label: "University" },
-      { layer: 4, label: "Engineering" }
+      { layer: 4, label: "Engineering" },
+      { layer: 5, label: "Discipline" }
     ])
     .join("text")
     .attr("x", cx)

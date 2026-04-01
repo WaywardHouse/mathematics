@@ -1,6 +1,824 @@
 ---
 title: "Inequalities"
-status: "seed"
+subtitle: "The range of answers that still work"
+
+volume: 2
+chapter: 2
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You know how to find the exact value that satisfies an equation.
+  But many real situations don't have one right answer — they have
+  a range of acceptable answers, and the question is which ones work.
+
+rewrite: |
+  An inequality describes a constraint, not a fixed value.
+  Solving it means finding every number in the range that satisfies
+  the constraint — not just one, but all of them.
+
+opens_to:
+  - id: "v2c3-patterns"
+    label: "Patterns and sequences"
+    volume: 2
+    relationship: "enriches"
+  - id: "v7-optimisation"
+    label: "Optimisation and graphs"
+    volume: 7
+    relationship: "enables"
+  - id: "v4-lin-alg"
+    label: "Applied linear algebra"
+    volume: 4
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "linear_eq"
+
+destinations:
+  - field: "biz"
+    label: "Finance"
+    hook: "A budget is an inequality — your total spending must stay below a limit."
+    career_example: "Financial analyst setting spend constraints in a model"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Every structural component has a load limit — a maximum it must not exceed."
+    career_example: "Structural engineer checking whether a beam is within its safe working load"
+  - field: "comp"
+    label: "Computing"
+    hook: "Input validation checks whether a value falls inside an acceptable range."
+    career_example: "Software developer writing range checks for user-entered data"
+
+hook: |
+  Your monthly budget for food is £120. There are dozens of ways to
+  spend it — some that work, many that don't. The question isn't
+  "what exactly do I spend?" It's "what combinations are even possible?"
+
+  A shelf is rated to hold 50 kg. The boxes you're stacking weigh 8 kg
+  each. You don't need the exact weight — you need to know how many
+  boxes you can put on before it becomes unsafe.
+
+  A password field requires between 8 and 20 characters. No single
+  length is the answer. Any length in that range works.
+
+  These are all inequalities. An equation gives you one answer.
+  An inequality gives you a whole region of answers — and the boundary
+  that separates "works" from "doesn't work."
+
+notation_introduced:
+  - symbol: "<"
+    reads_as: "is less than"
+    notation_weight: 1
+  - symbol: ">"
+    reads_as: "is greater than"
+    notation_weight: 1
+  - symbol: "≤"
+    reads_as: "is less than or equal to"
+    notation_weight: 1
+  - symbol: "≥"
+    reads_as: "is greater than or equal to"
+    notation_weight: 1
+  - symbol: "a < x < b"
+    reads_as: "x is between a and b, not including the endpoints"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 9
+  strand: "Variables, Equations & Inequalities"
+  outcome: "4.2"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+Your monthly budget for food is £120. There are dozens of ways to
+spend it — some that work, many that don't. The question isn't
+"what exactly do I spend?" It's "what combinations are even possible?"
+
+A shelf is rated to hold 50 kg. The boxes you're stacking weigh 8 kg
+each. You don't need the exact weight — you need to know how many
+boxes you can put on before it becomes unsafe.
+
+A password field requires between 8 and 20 characters. No single
+length is the answer. Any length in that range works.
+
+These are all inequalities. An equation gives you one answer.
+An inequality gives you a whole region of answers — and the boundary
+that separates "works" from "doesn't work."
+
+## What the notation is saying
+
+An equation uses $=$ to say two things are exactly equal. An inequality
+uses a different symbol to say one thing is *bigger* or *smaller* than
+another.
+
+The four symbols:
+
+| Symbol | Reads as | Example |
+|--------|----------|---------|
+| $<$ | is less than | $3 < 7$ |
+| $>$ | is greater than | $12 > 5$ |
+| $\leq$ | is less than or equal to | $x \leq 10$ |
+| $\geq$ | is greater than or equal to | $n \geq 4$ |
+
+The pointy end of the symbol always faces the smaller value.
+So $3 < 7$ reads "3 is less than 7" — the small end points at 3,
+the open end opens toward 7. If you forget which way round it goes,
+just picture the symbol as an arrow squishing the smaller number.
+
+The difference between $<$ and $\leq$ matters. If a shelf holds
+*at most* 50 kg, exactly 50 kg is fine — so you'd write $w \leq 50$.
+If something must be *strictly less than* 50, exactly 50 is not fine —
+so you'd write $w < 50$.
+
+A **compound inequality** combines two inequalities into one statement.
+$8 \leq n \leq 20$ reads "n is at least 8 and at most 20" — both
+conditions must hold at once. This is the password length rule:
+any whole number from 8 to 20 satisfies it.
+
+## The method
+
+Solving an inequality is almost identical to solving an equation.
+You do the same things: add, subtract, multiply, divide — keeping
+both sides balanced until the unknown is isolated.
+
+**There is one exception. It's the only genuinely surprising thing
+in this chapter. It deserves its own section.**
+
+### The sign-flip rule
+
+When you multiply or divide both sides of an inequality by a
+**negative number**, the direction of the inequality reverses.
+
+Here's why, shown directly. Start with something you know is true:
+
+$$3 < 5$$
+
+Three is less than five. Yes. Now multiply both sides by $-1$:
+
+$$-3 \quad \text{and} \quad -5$$
+
+Which of these is smaller? $-5$ is. It's further left on the number
+line. So the relationship has flipped:
+
+$$-3 > -5$$
+
+The original said "3 is less than 5." After multiplying by $-1$,
+the true statement is "$-3$ is greater than $-5$."
+
+This isn't a rule someone invented. It's what actually happens on the
+number line when you negate both sides. Multiplying by $-1$ reflects
+every number across zero — what was to the left of zero ends up to the
+right, and the ordering reverses.
+
+::: {.callout-warning appearance="simple"}
+**The sign-flip rule**
+
+Multiplying or dividing both sides of an inequality by a *negative*
+number reverses the direction of the inequality sign.
+
+$$3 < 5 \implies -3 > -5$$
+
+If you forget to flip, your answer will point the wrong way — and
+every value in your "solution" will actually be wrong.
+:::
+
+### Solving a linear inequality, step by step
+
+$$2x - 3 < 7$$
+
+Add 3 to both sides (adding is safe — no sign flip):
+
+$$2x < 10$$
+
+Divide both sides by 2 (dividing by a *positive* number — no flip needed):
+
+$$x < 5$$
+
+The solution is every number less than 5. Not just one number: all of them.
+
+Now compare with one that triggers the flip:
+
+$$-3x + 1 \geq 10$$
+
+Subtract 1 from both sides:
+
+$$-3x \geq 9$$
+
+Divide both sides by $-3$. This is negative — flip the sign:
+
+$$x \leq -3$$
+
+The solution is every number less than or equal to $-3$. Check:
+try $x = -4$. Then $-3(-4) + 1 = 12 + 1 = 13$, and $13 \geq 10$. Yes.
+Try $x = 0$. Then $-3(0) + 1 = 1$, and $1 \geq 10$. No — and
+$x = 0$ is not in our solution set, so that's correct.
+
+::: {.callout-note appearance="simple"}
+**Why solving inequalities works**
+
+An inequality is a statement about the relationship between two
+quantities. Doing the same operation to both sides preserves that
+relationship — as long as the operation doesn't reverse the ordering.
+Addition and subtraction never reverse ordering. Multiplication and
+division by a *positive* number preserve ordering. Multiplication or
+division by a *negative* number reverses it. That's the whole story.
+:::
+
+### Reading the solution on a number line
+
+A number line makes the solution visible. You mark the boundary value
+and shade the region that satisfies the inequality.
+
+**Open circle** ($\circ$) at the boundary: the boundary value is *not*
+included. Use this for strict inequalities ($<$ and $>$).
+
+**Closed circle** ($\bullet$) at the boundary: the boundary value *is*
+included. Use this for $\leq$ and $\geq$.
+
+For $x < 5$: draw an open circle at 5, shade to the left.
+
+For $x \leq 5$: draw a closed circle at 5, shade to the left.
+
+For $x > -3$: draw an open circle at $-3$, shade to the right.
+
+For a compound inequality like $-2 < x \leq 4$: open circle at $-2$,
+closed circle at $4$, shade the segment between them.
+
+**Interactive: Number line inequality explorer.** Use the slider to set the boundary value. Choose the inequality direction and whether the boundary is included. The shaded region and circle type update live.
+
+```{ojs}
+//| echo: false
+viewof nlBoundary = Inputs.range([-5, 20], {
+  label: "Boundary value",
+  step: 0.5,
+  value: 5
+})
+```
+
+```{ojs}
+//| echo: false
+viewof nlSymbol = Inputs.select(["<", "≤", ">", "≥"], {
+  label: "Inequality symbol  (x  __ boundary)",
+  value: "<"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const boundary = nlBoundary;
+  const sym = nlSymbol;
+  const inclusive = sym === "≤" || sym === "≥";
+  const shadedLeft = sym === "<" || sym === "≤";
+
+  const W = 560, H = 110;
+  const PAD = 40;
+  const AXIS_Y = 60;
+  const TICK_H = 8;
+  const domainMin = -5, domainMax = 20;
+  const scale = (v) => PAD + (v - domainMin) / (domainMax - domainMin) * (W - 2 * PAD);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // Axis line
+  svg.append("line")
+    .attr("x1", PAD).attr("y1", AXIS_Y)
+    .attr("x2", W - PAD).attr("y2", AXIS_Y)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 2);
+
+  // Arrow heads
+  svg.append("polygon")
+    .attr("points", `${W - PAD},${AXIS_Y} ${W - PAD - 8},${AXIS_Y - 4} ${W - PAD - 8},${AXIS_Y + 4}`)
+    .attr("fill", "#9ca3af");
+  svg.append("polygon")
+    .attr("points", `${PAD},${AXIS_Y} ${PAD + 8},${AXIS_Y - 4} ${PAD + 8},${AXIS_Y + 4}`)
+    .attr("fill", "#9ca3af");
+
+  // Tick marks and labels for integers in domain
+  for (let v = domainMin; v <= domainMax; v += 5) {
+    const x = scale(v);
+    svg.append("line")
+      .attr("x1", x).attr("y1", AXIS_Y - TICK_H / 2)
+      .attr("x2", x).attr("y2", AXIS_Y + TICK_H / 2)
+      .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+    svg.append("text")
+      .attr("x", x).attr("y", AXIS_Y + 22)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "11px").attr("fill", "#6b7280")
+      .text(v);
+  }
+
+  // Shaded region
+  const bx = scale(boundary);
+  const shadeColor = "#0d9488";
+  if (shadedLeft) {
+    svg.append("rect")
+      .attr("x", PAD).attr("y", AXIS_Y - 6)
+      .attr("width", Math.max(0, bx - PAD)).attr("height", 12)
+      .attr("fill", shadeColor).attr("opacity", 0.25);
+    // Arrow showing infinite extent to the left
+    svg.append("polygon")
+      .attr("points", `${PAD},${AXIS_Y} ${PAD + 8},${AXIS_Y - 4} ${PAD + 8},${AXIS_Y + 4}`)
+      .attr("fill", shadeColor).attr("opacity", 0.6);
+  } else {
+    svg.append("rect")
+      .attr("x", bx).attr("y", AXIS_Y - 6)
+      .attr("width", Math.max(0, W - PAD - bx)).attr("height", 12)
+      .attr("fill", shadeColor).attr("opacity", 0.25);
+    // Arrow showing infinite extent to the right
+    svg.append("polygon")
+      .attr("points", `${W - PAD},${AXIS_Y} ${W - PAD - 8},${AXIS_Y - 4} ${W - PAD - 8},${AXIS_Y + 4}`)
+      .attr("fill", shadeColor).attr("opacity", 0.6);
+  }
+
+  // Boundary circle
+  if (inclusive) {
+    svg.append("circle")
+      .attr("cx", bx).attr("cy", AXIS_Y)
+      .attr("r", 7).attr("fill", shadeColor).attr("stroke", shadeColor).attr("stroke-width", 2);
+  } else {
+    svg.append("circle")
+      .attr("cx", bx).attr("cy", AXIS_Y)
+      .attr("r", 7).attr("fill", "#fff").attr("stroke", shadeColor).attr("stroke-width", 2.5);
+  }
+
+  // Boundary label
+  svg.append("text")
+    .attr("x", bx).attr("y", AXIS_Y - 18)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px").attr("fill", shadeColor).attr("font-weight", "600")
+    .text(boundary % 1 === 0 ? boundary : boundary.toFixed(1));
+
+  // Inequality statement
+  const circleDesc = inclusive ? "closed circle (boundary included)" : "open circle (boundary excluded)";
+  svg.append("text")
+    .attr("x", W / 2).attr("y", H - 6)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "11px").attr("fill", "#6b7280")
+    .text(`x ${sym} ${boundary % 1 === 0 ? boundary : boundary.toFixed(1)}   —   ${circleDesc}`);
+
+  return svg.node();
+}
+```
+
+## Worked examples
+
+**Example 1 — Budgeting.** You have £120 to spend on food this month.
+You've already spent £47. You want to buy some items that cost £8 each.
+How many can you buy without going over budget?
+
+Let $n$ = number of items.
+
+$$47 + 8n \leq 120$$
+
+Subtract 47 from both sides:
+
+$$8n \leq 73$$
+
+Divide both sides by 8 (positive — no flip):
+
+$$n \leq 9.125$$
+
+Since $n$ must be a whole number, the answer is $n \leq 9$. You can
+buy at most 9 items.
+
+Check: $47 + 8 \times 9 = 47 + 72 = 119$. Within budget. And
+$47 + 8 \times 10 = 127$. Over. Correct.
+
+---
+
+**Example 2 — Shelf load.** A wall-mounted shelf is rated to hold
+at most 50 kg. Each box you place on it weighs 8 kg.
+
+How many boxes can the shelf safely hold?
+
+The shelf load rating tells you how much weight the shelf can carry
+on top of it. The brackets that mount the shelf to the wall bear
+their own weight separately — they don't count against the shelf's
+carrying capacity.
+
+Let $b$ = number of boxes.
+
+$$8b \leq 50$$
+
+$$b \leq 6.25$$
+
+Since $b$ must be a whole number: at most 6 boxes.
+
+Check: $8 \times 6 = 48 \leq 50$. ✓ Seven boxes: $8 \times 7 = 56 > 50$. ✗
+
+---
+
+**Example 3 — Password validation.** A website requires passwords to
+be at least 8 characters long but no longer than 20 characters.
+A user types a password. The code checks whether its length $n$ is
+acceptable.
+
+The valid range is:
+
+$$8 \leq n \leq 20$$
+
+Any value of $n$ satisfying both conditions is acceptable.
+$n = 7$? Too short. $n = 8$? Fine — the lower boundary is included.
+$n = 20$? Fine. $n = 21$? Too long.
+
+This is a compound inequality. In code, you'd check both conditions
+at once: `8 <= n && n <= 20` (or the equivalent in whatever language
+you're using). The mathematics and the code are the same structure.
+
+---
+
+**Example 4 — An inequality with a negative coefficient.** The
+temperature in a storage room must be kept strictly below $5°\text{C}$.
+The thermostat setting $t$ (in °C) satisfies:
+
+$$-2t + 14 > 4$$
+
+Subtract 14 from both sides:
+
+$$-2t > -10$$
+
+Divide by $-2$ — negative, so flip:
+
+$$t < 5$$
+
+The thermostat must be set below 5°C. The sign flip was necessary here:
+if you forgot it and wrote $t > 5$, you'd be saying temperatures *above*
+5°C are acceptable, which is exactly wrong.
+
+**Interactive: Inequality explorer.** Set the coefficients $a$ and $b$, choose the constant $c$ and the inequality direction. The solution is shown algebraically and on a number line. The sign-flip warning lights up when $a$ is negative.
+
+```{ojs}
+//| echo: false
+viewof ieA = Inputs.range([-5, 5], { label: "a  (coefficient of x)", step: 1, value: 2 })
+```
+
+```{ojs}
+//| echo: false
+viewof ieB = Inputs.range([-10, 10], { label: "b  (constant, left side)", step: 1, value: -3 })
+```
+
+```{ojs}
+//| echo: false
+viewof ieC = Inputs.range([-20, 20], { label: "c  (right-hand side)", step: 1, value: 7 })
+```
+
+```{ojs}
+//| echo: false
+viewof ieSym = Inputs.select(["<", "≤", ">", "≥"], { label: "Inequality symbol", value: "<" })
+```
+
+```{ojs}
+//| echo: false
+{
+  const a = Math.round(ieA), b = Math.round(ieB), c = Math.round(ieC), sym = ieSym;
+
+  // Solve:  ax + b  sym  c   →   ax  sym  c - b   →   x  sym'  (c-b)/a
+  // If a < 0, sym flips.
+  const rhs = c - b;
+  const needsFlip = a < 0;
+  const flipped = { "<": ">", "≤": "≥", ">": "<", "≥": "≤" };
+  const solvedSym = needsFlip ? flipped[sym] : sym;
+
+  const W = 560, H = 200;
+  const PAD = 40;
+  const AXIS_Y = 150;
+  const TICK_H = 8;
+
+  const leftStr = a === 1 ? `x + ${b}` : a === -1 ? `-x + ${b}` : `${a}x + ${b}`;
+  const lhsClean = b >= 0
+    ? (a === 1 ? `x + ${b}` : a === -1 ? `-x + ${b}` : `${a}x + ${b}`)
+    : (a === 1 ? `x - ${Math.abs(b)}` : a === -1 ? `-x - ${Math.abs(b)}` : `${a}x - ${Math.abs(b)}`);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // Step labels
+  const steps = [
+    `Original:  ${lhsClean}  ${sym}  ${c}`,
+    `Subtract ${b} from both sides:  ${a === 1 ? "x" : a === -1 ? "-x" : `${a}x`}  ${sym}  ${rhs}`,
+    a === 0
+      ? (rhs > 0 && (sym === "<" || sym === "≤") ? "No solution (0x = 0, always)" : "All real numbers satisfy this")
+      : needsFlip
+        ? `Divide by ${a}  (negative — flip sign):  x  ${solvedSym}  ${rhs / a}`
+        : `Divide by ${a}:  x  ${solvedSym}  ${rhs / a}`
+  ];
+
+  steps.forEach((txt, i) => {
+    const isFlipStep = i === 2 && needsFlip;
+    svg.append("text")
+      .attr("x", 16).attr("y", 24 + i * 28)
+      .attr("font-size", "12px")
+      .attr("fill", isFlipStep ? "#b45309" : i === steps.length - 1 ? "#0d9488" : "#374151")
+      .attr("font-weight", isFlipStep || i === steps.length - 1 ? "600" : "400")
+      .text(txt);
+  });
+
+  if (needsFlip) {
+    svg.append("text")
+      .attr("x", 16).attr("y", 24 + steps.length * 28)
+      .attr("font-size", "11px").attr("fill", "#b45309")
+      .text("⚠ Sign flip applied — dividing by a negative number reverses the inequality.");
+  }
+
+  if (a !== 0) {
+    const solution = rhs / a;
+    const domainMin = Math.floor(solution) - 8;
+    const domainMax = Math.ceil(solution) + 8;
+    const scale = (v) => PAD + (v - domainMin) / (domainMax - domainMin) * (W - 2 * PAD);
+    const bx = scale(solution);
+    const shadedLeft = solvedSym === "<" || solvedSym === "≤";
+    const inclusive = solvedSym === "≤" || solvedSym === "≥";
+    const shadeColor = "#0d9488";
+
+    // Axis
+    svg.append("line")
+      .attr("x1", PAD).attr("y1", AXIS_Y)
+      .attr("x2", W - PAD).attr("y2", AXIS_Y)
+      .attr("stroke", "#9ca3af").attr("stroke-width", 2);
+
+    // Arrows
+    svg.append("polygon")
+      .attr("points", `${W - PAD},${AXIS_Y} ${W - PAD - 8},${AXIS_Y - 4} ${W - PAD - 8},${AXIS_Y + 4}`)
+      .attr("fill", "#9ca3af");
+    svg.append("polygon")
+      .attr("points", `${PAD},${AXIS_Y} ${PAD + 8},${AXIS_Y - 4} ${PAD + 8},${AXIS_Y + 4}`)
+      .attr("fill", "#9ca3af");
+
+    // Ticks
+    for (let v = Math.ceil(domainMin); v <= Math.floor(domainMax); v += Math.ceil((domainMax - domainMin) / 8)) {
+      const x = scale(v);
+      svg.append("line")
+        .attr("x1", x).attr("y1", AXIS_Y - TICK_H / 2)
+        .attr("x2", x).attr("y2", AXIS_Y + TICK_H / 2)
+        .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+      svg.append("text")
+        .attr("x", x).attr("y", AXIS_Y + 20)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "10px").attr("fill", "#6b7280")
+        .text(v);
+    }
+
+    // Shade
+    if (shadedLeft) {
+      svg.append("rect")
+        .attr("x", PAD).attr("y", AXIS_Y - 5)
+        .attr("width", Math.max(0, bx - PAD)).attr("height", 10)
+        .attr("fill", shadeColor).attr("opacity", 0.25);
+    } else {
+      svg.append("rect")
+        .attr("x", bx).attr("y", AXIS_Y - 5)
+        .attr("width", Math.max(0, W - PAD - bx)).attr("height", 10)
+        .attr("fill", shadeColor).attr("opacity", 0.25);
+    }
+
+    // Boundary circle
+    if (inclusive) {
+      svg.append("circle")
+        .attr("cx", bx).attr("cy", AXIS_Y)
+        .attr("r", 6).attr("fill", shadeColor).attr("stroke", shadeColor).attr("stroke-width", 2);
+    } else {
+      svg.append("circle")
+        .attr("cx", bx).attr("cy", AXIS_Y)
+        .attr("r", 6).attr("fill", "#fff").attr("stroke", shadeColor).attr("stroke-width", 2.5);
+    }
+
+    svg.append("text")
+      .attr("x", bx).attr("y", AXIS_Y - 14)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "11px").attr("fill", shadeColor).attr("font-weight", "600")
+      .text(Number.isInteger(solution) ? solution : solution.toFixed(2));
+  }
+
+  return svg.node();
+}
+```
+
+## Where this goes
+
+Inequalities are where the idea of a *constraint* enters mathematics.
+An equation pins down one value. An inequality describes a boundary —
+everything on one side is feasible, everything on the other isn't.
+
+The most direct continuation is **linear programming** — how to find
+the best point within a region defined by multiple inequalities at once.
+That's in the Optimisation chapter in Volume 7. A manufacturer choosing
+how much of two products to make, subject to labour and material
+constraints, is solving a linear programme. The feasible region is
+defined entirely by inequalities like the ones in this chapter.
+
+The second direction is **systems of inequalities** and their role in
+applied linear algebra. When a machine learning model classifies data,
+it's often drawing a boundary in a high-dimensional space — one side
+satisfies the classification condition, the other doesn't. That
+boundary is expressed as an inequality. The linear equations you
+learned in the previous chapter define the boundary; the inequality
+says which side is which. That thread runs from here through linear
+algebra (Volume 4) all the way to optimisation and machine learning.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A financial analyst building a budget model sets upper and lower
+  bounds on each line of spending — those bounds are inequalities.
+- A structural engineer checks that the load on every beam stays
+  within its rated capacity — an inequality checked against the design
+  at every point.
+- A software developer writing input validation checks that every
+  user-entered value lies in an acceptable range — a compound
+  inequality executed in code.
+- A supply chain planner ensures stock levels stay between a minimum
+  (to avoid running out) and a maximum (to avoid overflow) — two
+  inequalities, applied simultaneously.
+:::
+
+## Exercises
+
+Each problem has a clean answer. The work is in translating the
+situation into the notation before you solve it.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+1. You can spend at most £50 per month on streaming services. You
+   already pay £14.97 for two services. How many additional services
+   at £9.99 per month can you add and still stay within your budget?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write the inequality",            eq: "14.97 + 9.99s \\leq 50" },
+  { op: "Subtract 14.97 from both sides",  eq: "9.99s \\leq 35.03" },
+  { op: "Divide both sides by 9.99",       eq: "s \\leq 3.506\\ldots" },
+  { op: "Round down (whole services only)", eq: "s \\leq 3" },
+  { op: "Check",                            eq: "14.97 + 9.99 \\times 3 = 14.97 + 29.97 = 44.94 \\leq 50 \\checkmark" }
+])
+```
+
+2. A lift (elevator) has a maximum capacity of 630 kg. A group of adults
+   with an average weight of 78 kg wants to use it. What is the largest
+   number of people who can ride together safely?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Write the inequality",          eq: "78p \\leq 630" },
+  { op: "Divide both sides by 78",       eq: "p \\leq 8.076\\ldots" },
+  { op: "Round down (whole people only)", eq: "p \\leq 8" },
+  { op: "Check",                          eq: "78 \\times 8 = 624 \\leq 630 \\checkmark;\\quad 78 \\times 9 = 702 > 630 \\checkmark" }
+])
+```
+
+3. Solve for $x$ and mark the solution on a number line:
+   $$-4x + 5 > 17$$
+   Explain in one sentence what happens to the inequality sign and why.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Write the inequality",           eq: "-4x + 5 > 17" },
+  { op: "Subtract 5 from both sides",     eq: "-4x > 12" },
+  { op: "Divide by −4  (flip sign)",      eq: "x < -3", note: "Dividing by a negative number reverses the inequality — what was greater becomes less once all values are negated." },
+  { op: "Check: try x = −4",             eq: "-4(-4) + 5 = 16 + 5 = 21 > 17 \\checkmark" },
+  { op: "Check: try x = −2 (not in solution)", eq: "-4(-2) + 5 = 8 + 5 = 13 \\not> 17 \\checkmark" }
+])
+```
+
+4. A password must be at least 8 characters. It must also be fewer than
+   3 times the minimum length. Write this as a compound inequality for
+   the password length $n$, then state the range of valid lengths.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write the lower bound",          eq: "n \\geq 8" },
+  { op: "Write the upper bound",          eq: "n < 3 \\times 8 = 24" },
+  { op: "Combine as compound inequality", eq: "8 \\leq n < 24" },
+  { op: "State the valid lengths",        eq: "n \\in \\{8, 9, 10, \\ldots, 23\\}", note: "23 is the largest valid length because n must be strictly less than 24." },
+  { op: "Check boundaries",              eq: "n=8: \\geq 8 \\checkmark,\\; n=23: < 24 \\checkmark,\\; n=24: \\text{ fails}" }
+])
+```
+
+5. Solve the compound inequality and state which whole numbers satisfy it:
+   $$1 < 3x - 2 \leq 13$$
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Write the compound inequality",  eq: "1 < 3x - 2 \\leq 13" },
+  { op: "Add 2 to all three parts",       eq: "3 < 3x \\leq 15", note: "Adding the same amount to all parts preserves both inequalities." },
+  { op: "Divide all three parts by 3",    eq: "1 < x \\leq 5" },
+  { op: "State whole-number solutions",   eq: "x \\in \\{2, 3, 4, 5\\}", note: "x must be strictly greater than 1, so 1 is excluded; x = 5 is included because ≤." },
+  { op: "Check endpoints",               eq: "x=2:\\; 3(2)-2=4,\\; 1 < 4 \\leq 13 \\checkmark;\\quad x=5:\\; 3(5)-2=13,\\; 1 < 13 \\leq 13 \\checkmark" }
+])
+```
+
+6. A phone plan charges £0.08 per minute after a 200-minute monthly
+   allowance. You want your total bill to be under £25. The base plan
+   costs £12. How many additional minutes can you use?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Write the inequality",           eq: "12 + 0.08m < 25" },
+  { op: "Subtract 12 from both sides",    eq: "0.08m < 13" },
+  { op: "Divide both sides by 0.08",      eq: "m < 162.5" },
+  { op: "State the answer",               eq: "m \\leq 162 \\text{ additional minutes}", note: "Since minutes are whole numbers, the most you can use is 162." },
+  { op: "Check",                          eq: "12 + 0.08 \\times 162 = 12 + 12.96 = 24.96 < 25 \\checkmark" }
+])
+```
+
+7. A company's safety guideline says a storage shelf should never hold
+   more than 75% of its rated maximum. The shelf is rated to 80 kg.
+   Boxes weigh 6 kg each. What is the maximum number of boxes you can
+   store on this shelf within the guideline?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(7, [
+  { op: "Find the safe weight limit",     eq: "0.75 \\times 80 = 60 \\text{ kg}" },
+  { op: "Write the inequality",           eq: "6b \\leq 60" },
+  { op: "Divide both sides by 6",         eq: "b \\leq 10" },
+  { op: "Check",                          eq: "6 \\times 10 = 60 \\leq 60 \\checkmark;\\quad 6 \\times 11 = 66 > 60 \\checkmark" }
+])
+```

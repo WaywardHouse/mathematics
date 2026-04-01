@@ -1,0 +1,434 @@
+---
+title: "Computational methods for engineering models"
+subtitle: "Meshes, weak forms, and conservation in computation"
+chapter: 4
+volume: 8
+layer: "discipline"
+status: "draft"
+
+axiom: |
+  Governing equations become useful in upper-year engineering only when they
+  can be computed on real geometries and real data.
+
+rewrite: |
+  Discretisation is not bookkeeping. It is the mathematical act that turns a
+  continuum model into a trustworthy simulation.
+
+opens_to:
+  - id: nonlinear_optim
+    label: "Nonlinear optimisation for design and operations"
+    volume: 8
+    relationship: enriches
+
+prerequisite_ids:
+  - numerics
+  - continuum_transport
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Finite difference, finite volume, and finite element thinking power most upper-year simulation tools."
+    career_example: "Simulation engineer deciding whether a model is trustworthy enough to support a design choice"
+  - field: comp
+    label: Computing and data
+    hook: "Scientific computing depends on stable discretisation, sparse linear algebra, and solver design."
+    career_example: "Scientific programmer building a sparse solver for a mesh-based model"
+  - field: geo
+    label: Geography and environment
+    hook: "Terrain, atmosphere, and hydrology models all depend on discretising a continuous world without losing the governing structure."
+    career_example: "Earth system modeller comparing grid resolution against runtime and conservation error"
+
+hook: |
+  The governing equations may be right and still produce a useless simulation.
+  A coarse mesh smears a boundary layer. A bad time step destabilises a model.
+  A solver converges to something, but not to the physics you meant. Upper-year
+  engineering lives in that gap between the equation on paper and the model you
+  actually trust.
+
+notation_introduced:
+  - symbol: "\\Delta x"
+    reads_as: "delta x — the grid spacing"
+    notation_weight: 1
+  - symbol: "\\Delta t"
+    reads_as: "delta t — the time step"
+    notation_weight: 1
+  - symbol: "u_i^n"
+    reads_as: "u i n — the approximation at grid point i and time step n"
+    notation_weight: 2
+  - symbol: "A\\mathbf{u} = \\mathbf{b}"
+    reads_as: "A u equals b — the algebraic system after discretisation"
+    notation_weight: 2
+  - symbol: "R(h)"
+    reads_as: "R of h — the residual or discretisation error as a function of mesh size"
+    notation_weight: 2
+  - symbol: "\\int_\\Omega"
+    reads_as: "integral over omega — an integral over the domain"
+    notation_weight: 2
+  - symbol: "\\phi_i"
+    reads_as: "phi sub i — a basis or shape function"
+    notation_weight: 3
+
+exercises:
+  type: "project"
+  real_world_context: true
+
+uofa_course: "MEC E 563"
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+The governing equations may be right and still produce a useless simulation.
+A coarse mesh smears a boundary layer. A bad time step destabilises a model.
+A solver converges to something, but not to the physics you meant. Upper-year
+engineering lives in that gap between the equation on paper and the model you
+actually trust.
+
+This chapter is about the mathematical move that closes that gap. A continuum
+equation is not yet computable. A computer needs finitely many unknowns,
+finitely many equations, and an update rule or linear system it can actually
+solve. Discretisation supplies that finite structure.
+
+The key idea is that every discretisation keeps some truths and sacrifices
+others. One method may preserve conservation neatly. Another may represent
+curved geometry more naturally. Another may be easy to implement but unstable
+for large time steps. Trustworthy simulation is the art of knowing which
+sacrifices are acceptable.
+
+---
+
+## From equation to algebraic system
+
+Take the one-dimensional diffusion equation
+
+$$\frac{\partial u}{\partial t} = D\frac{\partial^2 u}{\partial x^2}$$
+
+defined on a grid with spatial spacing $\Delta x$ and time step $\Delta t$.
+The continuous field $u(x,t)$ becomes a table of approximate values $u_i^n$,
+read "u at grid point i and time level n."
+
+Using a forward difference in time and a central difference in space:
+
+$$\frac{u_i^{n+1} - u_i^n}{\Delta t}
+\approx
+D\frac{u_{i+1}^n - 2u_i^n + u_{i-1}^n}{(\Delta x)^2}$$
+
+Rearrange:
+
+$$u_i^{n+1}
+=
+u_i^n
++
+\frac{D\Delta t}{(\Delta x)^2}
+\left(u_{i+1}^n - 2u_i^n + u_{i-1}^n\right)$$
+
+The PDE has become a recurrence. Once the spatial grid is fixed, the whole
+problem is now algebra.
+
+This is the central translation of computational engineering:
+
+- fields become arrays
+- derivatives become finite differences, flux balances, or basis-function
+  integrals
+- boundary conditions become algebraic constraints
+- the model becomes either a time-marching update or a linear/nonlinear system
+
+<!-- VIZ: Discretisation translator. Show one PDE panel, one grid panel, and one algebra panel side by side. Let the reader toggle between finite difference, finite volume, and finite element viewpoints for the same 1D diffusion problem. Update the stencil/control-volume/basis picture and the resulting algebraic equation simultaneously. -->
+
+## Three dominant viewpoints
+
+Upper-year engineering simulation is often organised around three families of
+discretisation.
+
+**Finite difference**
+
+Replace derivatives directly with local difference quotients on a grid.
+Conceptually simple. Especially natural on structured meshes and textbook
+geometries.
+
+**Finite volume**
+
+Integrate the balance law over control volumes, then approximate fluxes at
+faces. Especially attractive when conservation matters strongly, as in fluid
+flow, transport, and environmental modelling.
+
+**Finite element**
+
+Represent the solution using basis functions $\phi_i$ over elements and solve a
+weak or variational form (a reformulation that replaces the PDE with an
+integral condition, trading pointwise accuracy for broader geometric
+flexibility). Especially useful on complicated geometries and in structural
+mechanics.
+
+These are not three unrelated subjects. They are three ways of answering the
+same question: how should a continuum law be turned into finite equations?
+
+## Stability, consistency, and convergence
+
+A discretisation is not good merely because it can be coded.
+
+Three recurring tests matter:
+
+- **consistency**: does the discrete equation approach the continuous one as
+  the mesh is refined?
+- **stability**: do errors remain controlled instead of blowing up?
+- **convergence**: does the computed solution approach the true solution as the
+  grid is refined?
+
+Students often meet these separately. In practice they are linked. A consistent
+method that is unstable may be useless. A stable method that is too diffusive
+may hide the physics you care about.
+
+For the explicit diffusion update above, the ratio
+
+$$r = \frac{D\Delta t}{(\Delta x)^2}$$
+
+controls stability. For the 1D explicit diffusion scheme the stability bound is
+
+$$r = \frac{D\Delta t}{(\Delta x)^2} \leq \frac{1}{2}$$
+
+If $r$ exceeds $\frac{1}{2}$, the numerical solution can oscillate or blow up
+even when the physical problem is perfectly well behaved. This bound means
+halving the grid spacing forces the time step to shrink by a factor of four —
+a practical cost of explicit time-stepping.
+
+::: {.callout-note appearance="simple"}
+## Why This Works
+
+Discretisation replaces infinitely many degrees of freedom with finitely many.
+That replacement introduces error automatically. The right question is never
+"is there error?" but "what kind of error, how large, and does it destroy the
+physical meaning of the model?"
+
+Computational mathematics is therefore not separate from modelling. The method
+is part of the model.
+:::
+
+## The core method
+
+A first pass through a computational engineering model usually goes like this:
+
+1. Write the governing equation and the boundary/initial conditions.
+2. Decide which discrete viewpoint matches the physics and geometry best.
+3. Define the grid, mesh, or basis functions.
+4. Derive the algebraic update or system.
+5. Check the main stability or conditioning constraint.
+6. Interpret the numerical output in physical terms and test mesh sensitivity.
+
+The last step matters as much as the derivation. If halving $\Delta x$ changes
+the answer substantially, the previous mesh was telling you more about the
+discretisation than about the system.
+
+## Worked example 1: explicit diffusion update
+
+Take
+
+$$\frac{\partial u}{\partial t} = D\frac{\partial^2 u}{\partial x^2}$$
+
+with $D = 1$, $\Delta x = 0.1$, and $\Delta t = 0.002$.
+
+Then
+
+$$r = \frac{D\Delta t}{(\Delta x)^2}
+=
+\frac{1(0.002)}{0.01}
+= 0.2$$
+
+For the standard explicit 1D diffusion scheme, the stability requirement is
+$r \leq \tfrac{1}{2}$. Since $0.2 < 0.5$, this time step is within the stable
+range and is plausibly acceptable for this grid.
+
+Now change only the time step to $\Delta t = 0.008$. Then
+
+$$r = \frac{0.008}{0.01} = 0.8$$
+
+and the scheme is no longer stable — $0.8 > 0.5$. Same PDE. Same material parameter.
+Different numerical behaviour because the discretisation changed.
+
+This is why simulation judgement is mathematical judgement. The equation on the
+page did not fail. The computational choice did.
+
+## Worked example 2: a finite-volume mass balance
+
+Suppose a pollutant concentration is tracked over a control volume of width
+$\Delta x$. The half-integer subscripts label the cell faces: $F_{i-1/2}$ is
+the flux at the left face of cell $i$ (between cells $i-1$ and $i$), and
+$F_{i+1/2}$ is the flux at the right face (between cells $i$ and $i+1$). Then a finite-volume update has the form
+
+$$\frac{c_i^{n+1} - c_i^n}{\Delta t}
+=
+-\frac{F_{i+1/2}^n - F_{i-1/2}^n}{\Delta x} + s_i^n$$
+
+This is the discrete balance law in its most honest form:
+
+- future storage minus current storage
+- equals net flux imbalance
+- plus any local source
+
+The attraction of the finite-volume approach is that conservation is built into
+the discretisation. If what leaves one cell enters the next, the algebra itself
+remembers that.
+
+That is why finite volume is so common in transport and environmental systems.
+The method echoes the underlying physics instead of merely approximating the
+derivatives.
+
+## Worked example 3: why finite elements dominate structural analysis
+
+In a structural problem, geometry is often awkward: holes, supports, joints,
+changing thickness, mixed materials. A regular grid is not always natural.
+
+Finite elements instead approximate the displacement field using basis or shape
+functions:
+
+$$u_h(x) = \sum_i U_i \phi_i(x)$$
+
+The unknowns are the nodal coefficients $U_i$. The governing equations become a
+matrix system
+
+$$K\mathbf{U} = \mathbf{f}$$
+
+where $K$ is the **stiffness matrix** — a different $K$ from the control gain
+in Chapter 1, but the same letter is standard in both fields.
+
+The important mathematical point is not the assembly details. It is that the
+continuum problem has been projected onto a finite-dimensional space spanned by
+the $\phi_i$. Geometry and material behaviour are therefore represented through
+the choice of mesh and basis functions, not just through a derivative stencil.
+
+A second important point is that $K$ is almost always **sparse**: each basis
+function $\phi_i$ overlaps only with neighbouring basis functions, so most
+entries of $K$ are zero. A mesh with millions of nodes still produces a matrix
+with only a few non-zeros per row. This sparsity is why large FEM problems are
+computationally tractable — direct or iterative sparse solvers exploit it
+heavily, and it is why scientific computing and finite element analysis are
+inseparable subjects at scale.
+
+## Where this goes
+
+The next natural continuation is
+[Nonlinear optimisation for design and operations](07-nonlinear-optimisation.qmd).
+Once a simulation model is trustworthy enough to represent the system, design
+questions become computational questions: which shape, parameter, schedule, or
+control setting produces the best feasible outcome?
+
+This chapter also deepens what you should mean by "model." In upper-year work,
+the numerical method is not downstream implementation detail. It is part of the
+model's claim to credibility.
+
+::: {.callout-tip appearance="simple"}
+## Applications
+
+- heat-transfer simulation in machine components
+- finite-element structural analysis
+- finite-volume flow and transport models
+- weather, hydrology, and terrain-based environmental models
+- sparse linear systems in scientific computing
+- mesh-sensitivity and timestep-sensitivity studies
+:::
+
+## Exercises
+
+These are project-style exercises. Do not stop at the formula. Explain what the
+numerical choice means for the model.
+
+### Exercise 1
+
+For the explicit diffusion scheme with $D = 2$, $\Delta x = 0.05$, and
+$\Delta t = 0.0004$, compute
+
+$$r = \frac{D\Delta t}{(\Delta x)^2}$$
+
+and decide whether the time step is plausibly stable for the standard explicit
+scheme.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Write the stability ratio"
+    eq: "r = \\dfrac{D\\Delta t}{(\\Delta x)^2} = \\dfrac{2(0.0004)}{(0.05)^2}"
+    note: ~
+  - op: "Compute the denominator"
+    eq: "(0.05)^2 = 0.0025"
+    note: ~
+  - op: "Compute the ratio"
+    eq: "r = \\dfrac{0.0008}{0.0025} = 0.32"
+    note: ~
+  - op: "Interpret"
+    eq: "0.32 < 0.5 \\quad \\Rightarrow \\quad \\text{the explicit step is plausibly stable}"
+    note: "For the standard 1D diffusion scheme, this lies within the usual stability bound."
+  - op: "Check"
+    eq: "\\text{same PDE, different } \\Delta t \\text{ or } \\Delta x \\text{ could change the numerical behaviour}"
+    note: "The ratio, not the constants individually, is the key quantity."
+-->
+
+### Exercise 2
+
+A finite-volume cell has inflow flux $F_{i-1/2} = 3$, outflow flux
+$F_{i+1/2} = 5$, source term $s_i = 1$, and width $\Delta x = 2$.
+
+Write the sign of the net flux contribution and explain whether storage tends to
+increase or decrease before the source term is included.
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the flux imbalance term"
+    eq: "-\\dfrac{F_{i+1/2} - F_{i-1/2}}{\\Delta x} = -\\dfrac{5-3}{2}"
+    note: "Outflow minus inflow appears inside the numerator."
+  - op: "Compute the sign"
+    eq: "-\\dfrac{2}{2} = -1"
+    note: ~
+  - op: "Interpret"
+    eq: "\\text{net flux alone tends to decrease storage in the cell}"
+    note: "More is leaving than entering."
+  - op: "Include the source qualitatively"
+    eq: "\\text{the positive source partly offsets that loss}"
+    note: "Whether storage finally rises or falls depends on the full balance."
+  - op: "Check"
+    eq: "\\text{finite-volume signs encode the physical bookkeeping directly}"
+    note: "That is one reason the method is attractive in transport problems."
+-->
+
+### Exercise 3
+
+Write a short comparison note explaining when you would prefer:
+
+1. finite difference
+2. finite volume
+3. finite element
+
+Use one example application for each method.
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Assign finite difference"
+    eq: "\\text{prefer on simple structured grids when derivative stencils are natural}"
+    note: "Example: textbook 1D heat diffusion on a uniform rod."
+  - op: "Assign finite volume"
+    eq: "\\text{prefer when local conservation is central}"
+    note: "Example: contaminant transport or fluid flow through control volumes."
+  - op: "Assign finite element"
+    eq: "\\text{prefer on complicated geometry or in structural mechanics}"
+    note: "Example: stress analysis in a component with holes and mixed materials."
+  - op: "State the common principle"
+    eq: "\\text{all three convert a continuum law into finitely many unknowns and equations}"
+    note: "The choice is about what structure you want the discretisation to preserve."
+  - op: "Check"
+    eq: "\\text{method choice is a modelling decision, not just a software setting}"
+    note: ~
+-->
+
+### Exercise 4
+
+Choose one simulation problem from your own field and prepare a one-page model
+brief naming:
+
+1. the governing equation
+2. the boundary and initial conditions
+3. the likely discretisation family
+4. one likely stability or conditioning concern
+5. one mesh- or timestep-sensitivity check you would run before trusting the
+   result
+
+<!-- VIZ: Mesh and timestep sensitivity explorer. Show the same 1D transient diffusion problem solved on coarse and fine grids with different timesteps. Let the reader toggle resolution and timestep and compare the numerical profiles, a simple error estimate, and runtime cost. Make the trust-versus-cost tradeoff explicit. -->

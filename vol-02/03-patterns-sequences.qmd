@@ -1,6 +1,831 @@
 ---
 title: "Patterns and sequences"
-status: "seed"
+subtitle: "When the next step follows a rule"
+
+volume: 2
+chapter: 3
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know that numbers can change in predictable ways —
+  prices go up by a fixed amount, quantities double, scores accumulate.
+  You've been reading patterns like this since primary school.
+
+rewrite: |
+  A sequence is a list where position determines value.
+  Once you see that, you have a function: put a position in, get a value out.
+  That connection — position to value — is the root of everything that follows.
+
+opens_to:
+  - id: "v2c4-graphing"
+    label: "Graphing relations"
+    volume: 2
+    relationship: "enables"
+  - id: "v3c4-functions"
+    label: "Functions and relations"
+    volume: 3
+    relationship: "motivates"
+  - id: "v4c4-sequences-series"
+    label: "Sequences and series"
+    volume: 4
+    relationship: "enables"
+  - id: "v5c1-limits"
+    label: "Limits and continuity"
+    volume: 5
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "num"
+  - "linear_eq"
+
+destinations:
+  - field: "biz"
+    label: "Finance"
+    hook: "Compound interest is a geometric sequence — each year's balance is the previous year's multiplied by the same growth factor."
+    career_example: "Financial analyst projecting investment returns over time"
+  - field: "comp"
+    label: "Computing"
+    hook: "A loop that runs n times visits positions 1, 2, 3, …, n — an arithmetic sequence that determines the algorithm's cost."
+    career_example: "Software engineer reasoning about how runtime scales with input size"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Bacterial population doublings follow a geometric sequence — understanding the pattern predicts when the culture overflows the flask."
+    career_example: "Biologist modelling population growth under ideal conditions"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Equally-spaced sensor readings along a pipeline form an arithmetic sequence — the positions are as important as the values."
+    career_example: "Structural engineer analysing load measurements at regular intervals"
+
+hook: |
+  You decide to save £20 a week. After one week: £20. After two weeks:
+  £40. After ten weeks: £200. You didn't need a formula for that — you
+  just kept adding twenty.
+
+  A chain message says: send this to three friends. Each of those three
+  sends it to three more. After one round: 3 people. After two rounds:
+  9 people. After three rounds: 27 people. That one grows differently.
+  Faster. Worryingly faster.
+
+  Both of those are sequences. The first adds the same amount each time.
+  The second multiplies by the same amount each time. Knowing which kind
+  you're looking at — and being able to jump straight to any term without
+  listing all the ones before it — is what this chapter is about.
+
+notation_introduced:
+  - symbol: "a_n"
+    reads_as: "the nth term — the value at position n"
+    notation_weight: 2
+  - symbol: "a_1"
+    reads_as: "the first term — the starting value"
+    notation_weight: 1
+  - symbol: "d"
+    reads_as: "the common difference — the fixed amount added each time"
+    notation_weight: 1
+  - symbol: "r"
+    reads_as: "the common ratio — the fixed amount multiplied each time"
+    notation_weight: 1
+  - symbol: "a_n = a_1 + (n-1)d"
+    reads_as: "the nth term of an arithmetic sequence equals the first term plus n minus one lots of the common difference"
+    notation_weight: 3
+  - symbol: "a_n = a_1 × r^(n−1)"
+    reads_as: "the nth term of a geometric sequence equals the first term multiplied by the ratio raised to the power of n minus one"
+    notation_weight: 3
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 9
+  strand: "Patterns and Relations"
+  outcome: "1.1"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You decide to save £20 a week. After one week: £20. After two weeks:
+£40. After ten weeks: £200. You didn't need a formula for that — you
+just kept adding twenty.
+
+A chain message says: send this to three friends. Each of those three
+sends it to three more. After one round: 3 people. After two rounds:
+9 people. After three rounds: 27 people. That one grows differently.
+Faster. Worryingly faster.
+
+Both of those are sequences. The first adds the same amount each time.
+The second multiplies by the same amount each time. Knowing which kind
+you're looking at — and being able to jump straight to any term without
+listing all the ones before it — is what this chapter is about.
+
+## What makes a sequence a sequence
+
+A sequence is a list of numbers in a definite order, where each
+position has exactly one value. Position 1 has a value. Position 2
+has a value. Position $n$ has a value. The order matters — you can't
+shuffle the terms and call it the same sequence.
+
+What makes a sequence *useful* is when there's a pattern: a rule that
+connects each term to the one before it, or better yet, a rule that
+connects any term directly to its position number.
+
+That second kind — where you can calculate any term from its position
+alone — is a function. You put a position in, you get a value out.
+That idea is one of the most important in all of mathematics, and
+sequences are where it shows up first in a concrete, tangible way.
+
+For now: spot the pattern, name the rule, find any term.
+
+## What the notation is saying
+
+We write the terms of a sequence as:
+
+$$a_1, a_2, a_3, \ldots, a_n$$
+
+Read that as: "a-one, a-two, a-three, up to a-n." The letter $a$
+names the sequence; the subscript number is the position. So $a_1$
+— read "a-one" — is the first term, and $a_n$ — read "a-n" — is the
+term at position $n$, wherever that happens to be.
+
+Two sequences, two different rules:
+
+- **Arithmetic sequences** add the same amount each step. That fixed
+  amount is called the **common difference**, written $d$.
+- **Geometric sequences** multiply by the same amount each step. That
+  fixed multiplier is called the **common ratio**, written $r$.
+
+## Arithmetic sequences
+
+### Recognising one
+
+Look at the gaps between consecutive terms. If the gap is always the
+same, it's arithmetic.
+
+$$3, \; 7, \; 11, \; 15, \; 19, \ldots$$
+
+The gap is 4 every time. So $d = 4$ and this is arithmetic.
+
+$$100, \; 94, \; 88, \; 82, \ldots$$
+
+The gap is $-6$ every time. So $d = -6$. A decreasing sequence still
+counts — the difference is just negative.
+
+### The nth term formula
+
+Listing terms one by one works fine if you only want the first few.
+But what if you want the 50th term? You don't want to list 50 items.
+
+Notice what's happening with each term:
+
+| Position | Term | Working |
+|----------|------|---------|
+| 1 | $a_1$ | just the starting value |
+| 2 | $a_1 + d$ | added the difference once |
+| 3 | $a_1 + 2d$ | added the difference twice |
+| 4 | $a_1 + 3d$ | added the difference three times |
+| $n$ | $a_1 + (n-1)d$ | added the difference $n - 1$ times |
+
+The pattern: to get to position $n$ from position 1, you add $d$ exactly
+$(n - 1)$ times. So:
+
+$$a_n = a_1 + (n - 1)d$$
+
+Read that aloud: "the nth term equals the first term, plus n minus one
+lots of the common difference."
+
+The $(n - 1)$ looks odd at first. Here's why it isn't: at position 1
+you add the difference *zero* times, at position 2 you add it *once*,
+at position $n$ you add it $n - 1$ times. The count of additions is
+always one less than the position.
+
+**Interactive: Arithmetic sequence builder.** Set the first term and common difference. The dot plot shows the first 10 terms — notice the points fall on a straight line.
+
+```{ojs}
+//| echo: false
+viewof arithA1 = Inputs.range([1, 20], { label: "First term a₁", step: 1, value: 3 })
+```
+
+```{ojs}
+//| echo: false
+viewof arithD = Inputs.range([-5, 10], { label: "Common difference d", step: 1, value: 4 })
+```
+
+```{ojs}
+//| echo: false
+{
+  const a1 = Math.round(arithA1);
+  const d  = Math.round(arithD);
+  const N  = 10;
+  const terms = Array.from({ length: N }, (_, i) => ({ n: i + 1, v: a1 + i * d }));
+
+  const W = 560, H = 280;
+  const PAD_L = 60, PAD_R = 30, PAD_T = 40, PAD_B = 50;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+
+  const vals = terms.map(t => t.v);
+  const vMin = Math.min(...vals);
+  const vMax = Math.max(...vals);
+  const vRange = vMax === vMin ? 1 : vMax - vMin;
+  const vLo = vMin - vRange * 0.15;
+  const vHi = vMax + vRange * 0.15;
+
+  const xScale = (n) => PAD_L + (n - 1) / (N - 1) * plotW;
+  const yScale = (v) => PAD_T + plotH - (v - vLo) / (vHi - vLo) * plotH;
+
+  const d3local = await require("d3@7");
+  const svg = d3local.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // Gridlines
+  for (let i = 1; i <= N; i++) {
+    svg.append("line")
+      .attr("x1", xScale(i)).attr("y1", PAD_T)
+      .attr("x2", xScale(i)).attr("y2", PAD_T + plotH)
+      .attr("stroke", "#f3f4f6").attr("stroke-width", 1);
+  }
+
+  // Axes
+  svg.append("line")
+    .attr("x1", PAD_L).attr("y1", PAD_T + plotH)
+    .attr("x2", PAD_L + plotW).attr("y2", PAD_T + plotH)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+  svg.append("line")
+    .attr("x1", PAD_L).attr("y1", PAD_T)
+    .attr("x2", PAD_L).attr("y2", PAD_T + plotH)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+
+  // x-axis labels
+  terms.forEach(t => {
+    svg.append("text")
+      .attr("x", xScale(t.n)).attr("y", PAD_T + plotH + 18)
+      .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#6b7280")
+      .text(t.n);
+  });
+  svg.append("text")
+    .attr("x", PAD_L + plotW / 2).attr("y", H - 6)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#6b7280")
+    .text("Position (n)");
+
+  // y-axis label
+  svg.append("text")
+    .attr("transform", `translate(14, ${PAD_T + plotH / 2}) rotate(-90)`)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#6b7280")
+    .text("Value (aₙ)");
+
+  // Line connecting dots
+  const lineGen = d3local.line().x(t => xScale(t.n)).y(t => yScale(t.v));
+  svg.append("path")
+    .datum(terms)
+    .attr("d", lineGen)
+    .attr("fill", "none").attr("stroke", "#0d9488").attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "4 3").attr("opacity", 0.5);
+
+  // Dots + value labels
+  terms.forEach(t => {
+    svg.append("circle")
+      .attr("cx", xScale(t.n)).attr("cy", yScale(t.v))
+      .attr("r", 5).attr("fill", "#0d9488").attr("stroke", "#fff").attr("stroke-width", 1.5);
+    svg.append("text")
+      .attr("x", xScale(t.n)).attr("y", yScale(t.v) - 10)
+      .attr("text-anchor", "middle").attr("font-size", "10px").attr("fill", "#374151")
+      .text(t.v);
+  });
+
+  // Formula label
+  svg.append("text")
+    .attr("x", PAD_L + plotW - 4).attr("y", PAD_T + 14)
+    .attr("text-anchor", "end").attr("font-size", "12px").attr("fill", "#0d9488").attr("font-weight", "600")
+    .text(`a₁ = ${a1},  d = ${d}`);
+
+  return svg.node();
+}
+```
+
+## Worked examples — arithmetic
+
+**Example 1 (sci).** Bacterial measurements are taken every 4 hours
+starting at hour 0. The recorded counts (in thousands) are:
+12, 15, 18, 21, …
+
+The question is: what is the count at hour 36?
+
+First, work out which measurement number that is. Hour 0 is measurement 1,
+hour 4 is measurement 2, and so on — each measurement is 4 hours after
+the previous one. So hour 36 is measurement number $\frac{36}{4} + 1 = 10$.
+
+Now check whether the sequence is arithmetic: $15 - 12 = 3$, $18 - 15 = 3$,
+$21 - 18 = 3$. Yes, $d = 3$.
+
+$$a_{10} = 12 + (10 - 1) \times 3 = 12 + 27 = 39$$
+
+The count at hour 36 is 39 thousand. (This is arithmetic growth —
+constant addition. Real bacterial growth is geometric, but the
+measuring interval can create arithmetic-looking data over short
+spans.)
+
+---
+
+**Example 2 (biz).** A gamer earns 150 points for completing level 1.
+Each subsequent level awards 25 more points than the previous one.
+How many points does level 18 award?
+
+Here $a_1 = 150$ and $d = 25$.
+
+$$a_{18} = 150 + (18 - 1) \times 25 = 150 + 425 = 575$$
+
+Level 18 awards 575 points.
+
+---
+
+**Example 3 (comp).** A programmer is adding rows to a triangle pattern:
+row 1 has 1 tile, row 2 has 3 tiles, row 3 has 5 tiles.
+
+The sequence is 1, 3, 5, 7, … with $a_1 = 1$ and $d = 2$.
+
+How many tiles does row 20 need?
+
+$$a_{20} = 1 + (20 - 1) \times 2 = 1 + 38 = 39$$
+
+Row 20 needs 39 tiles. A programmer building this pattern in a loop
+would use exactly this calculation to allocate memory or set loop bounds.
+
+---
+
+**Example 4 (eng).** A steel cable loses 3mm of useful length each time
+it's re-terminated. It starts at 500mm. After how many re-terminations
+is it shorter than 450mm?
+
+The sequence is $500, 497, 494, \ldots$ with $a_1 = 500$ and $d = -3$.
+
+We want $a_n < 450$:
+
+$$500 + (n - 1)(-3) < 450$$
+$$-(n-1) \times 3 < -50$$
+$$(n - 1) \times 3 > 50$$
+$$n - 1 > 16.67$$
+$$n > 17.67$$
+
+So after the 18th re-termination the cable is below 450mm.
+Check: $a_{18} = 500 + 17 \times (-3) = 500 - 51 = 449$. Yes.
+
+## Geometric sequences
+
+### Recognising one
+
+Look at the *ratios* between consecutive terms instead of the gaps.
+If the ratio is always the same, it's geometric.
+
+$$2, \; 6, \; 18, \; 54, \ldots$$
+
+Divide each term by the previous one: $6 \div 2 = 3$, $18 \div 6 = 3$,
+$54 \div 18 = 3$. The ratio is always 3, so $r = 3$.
+
+$$80, \; 40, \; 20, \; 10, \ldots$$
+
+Each term is half the previous one: $r = 0.5$. A shrinking sequence —
+the ratio just has to be positive and consistent.
+
+### The nth term formula
+
+The same logic as arithmetic, but with multiplication:
+
+| Position | Term | Working |
+|----------|------|---------|
+| 1 | $a_1$ | starting value |
+| 2 | $a_1 \times r$ | multiplied once |
+| 3 | $a_1 \times r^2$ | multiplied twice |
+| 4 | $a_1 \times r^3$ | multiplied three times |
+| $n$ | $a_1 \times r^{n-1}$ | multiplied $n - 1$ times |
+
+So:
+
+$$a_n = a_1 \times r^{n-1}$$
+
+The $(n - 1)$ is there for the same reason as in arithmetic: at
+position 1 you multiply by $r$ zero times. Any number raised to the
+power zero equals 1 — so $r^0 = 1$, and the first term is just
+$a_1 \times 1 = a_1$. Each step up adds one more multiplication.
+
+**Connection to Vol 1 Ch 3:** if this looks like the compound growth
+formula, that's because it is. Compound interest is a geometric
+sequence. Each year's balance is the first year's amount multiplied
+by the growth factor $(1 + \text{rate})$, raised to the number of
+years. The structure is identical.
+
+**Interactive: Sequence explorer.** Toggle between arithmetic and geometric. Adjust the first term and the common difference or ratio. The dot plot makes the shape of growth immediately visible — linear versus curved.
+
+```{ojs}
+//| echo: false
+viewof seqType = Inputs.toggle({ label: "Show geometric sequence (off = arithmetic)", value: false })
+```
+
+```{ojs}
+//| echo: false
+viewof seqA1 = Inputs.range([1, 100], { label: "First term a₁", step: 1, value: 5 })
+```
+
+```{ojs}
+//| echo: false
+viewof seqParam = Inputs.range(seqType ? [0.5, 3.0] : [1, 10], {
+  label: seqType ? "Common ratio r" : "Common difference d",
+  step: seqType ? 0.1 : 1,
+  value: seqType ? 1.8 : 4
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const isGeo = seqType;
+  const a1 = Math.round(seqA1);
+  const param = seqParam;
+  const N = 10;
+
+  const terms = Array.from({ length: N }, (_, i) => ({
+    n: i + 1,
+    v: isGeo ? a1 * Math.pow(param, i) : a1 + i * param
+  }));
+
+  const W = 560, H = 280;
+  const PAD_L = 65, PAD_R = 30, PAD_T = 40, PAD_B = 50;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+
+  const vals = terms.map(t => t.v);
+  const vMin = Math.min(...vals);
+  const vMax = Math.max(...vals);
+  const vRange = vMax === vMin ? 1 : vMax - vMin;
+  const vLo = Math.min(0, vMin - vRange * 0.1);
+  const vHi = vMax + vRange * 0.15;
+
+  const xScale = (n) => PAD_L + (n - 1) / (N - 1) * plotW;
+  const yScale = (v) => PAD_T + plotH - (v - vLo) / (vHi - vLo) * plotH;
+
+  const d3local = await require("d3@7");
+  const svg = d3local.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  const colour = isGeo ? "#7c3aed" : "#0d9488";
+  const typeLabel = isGeo
+    ? `Geometric: a₁ = ${a1}, r = ${param.toFixed(1)}`
+    : `Arithmetic: a₁ = ${a1}, d = ${param}`;
+
+  // Gridlines
+  for (let i = 1; i <= N; i++) {
+    svg.append("line")
+      .attr("x1", xScale(i)).attr("y1", PAD_T)
+      .attr("x2", xScale(i)).attr("y2", PAD_T + plotH)
+      .attr("stroke", "#f3f4f6").attr("stroke-width", 1);
+  }
+
+  // Axes
+  svg.append("line")
+    .attr("x1", PAD_L).attr("y1", PAD_T + plotH)
+    .attr("x2", PAD_L + plotW).attr("y2", PAD_T + plotH)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+  svg.append("line")
+    .attr("x1", PAD_L).attr("y1", PAD_T)
+    .attr("x2", PAD_L).attr("y2", PAD_T + plotH)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+
+  // x-axis labels
+  terms.forEach(t => {
+    svg.append("text")
+      .attr("x", xScale(t.n)).attr("y", PAD_T + plotH + 18)
+      .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#6b7280")
+      .text(t.n);
+  });
+  svg.append("text")
+    .attr("x", PAD_L + plotW / 2).attr("y", H - 6)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#6b7280")
+    .text("Position (n)");
+
+  // y-axis label
+  svg.append("text")
+    .attr("transform", `translate(14, ${PAD_T + plotH / 2}) rotate(-90)`)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#6b7280")
+    .text("Value (aₙ)");
+
+  // Line
+  const lineGen = d3local.line().x(t => xScale(t.n)).y(t => yScale(t.v));
+  svg.append("path")
+    .datum(terms)
+    .attr("d", lineGen)
+    .attr("fill", "none").attr("stroke", colour).attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", isGeo ? "none" : "4 3").attr("opacity", 0.5);
+
+  // Dots
+  terms.forEach(t => {
+    const cy = yScale(t.v);
+    svg.append("circle")
+      .attr("cx", xScale(t.n)).attr("cy", cy)
+      .attr("r", 5).attr("fill", colour).attr("stroke", "#fff").attr("stroke-width", 1.5);
+    const labelVal = t.v >= 1000 ? `${(t.v / 1000).toFixed(1)}k` :
+                     t.v >= 10 ? Math.round(t.v) : t.v.toFixed(1);
+    svg.append("text")
+      .attr("x", xScale(t.n)).attr("y", cy - 10)
+      .attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#374151")
+      .text(labelVal);
+  });
+
+  // Type label
+  svg.append("text")
+    .attr("x", PAD_L + 4).attr("y", PAD_T + 14)
+    .attr("font-size", "12px").attr("fill", colour).attr("font-weight", "600")
+    .text(typeLabel);
+
+  return svg.node();
+}
+```
+
+## Worked examples — geometric
+
+**Example 5 (biz).** A video gets 200 views on day 1. Each day it gets
+three times as many views as the day before. How many views on day 6?
+
+Here $a_1 = 200$ and $r = 3$.
+
+$$a_6 = 200 \times 3^{6-1} = 200 \times 3^5 = 200 \times 243 = 48{,}600$$
+
+48,600 views on day 6. That's the shape of viral growth — it looks
+manageable for the first few steps, then becomes enormous.
+
+---
+
+**Example 6 (sci).** A radioactive sample has 640 micrograms at the
+start. Each hour, it retains half its mass. How much remains after
+5 hours?
+
+Here $a_1 = 640$ and $r = 0.5$. Term 1 is at $t = 0$ (the start), so
+after 5 hours we're looking at term 6.
+
+$$a_6 = 640 \times 0.5^{6-1} = 640 \times 0.5^5 = 640 \times \frac{1}{32} = 20$$
+
+20 micrograms remain after 5 hours.
+
+## Telling them apart
+
+The question to ask: does the sequence *add* a fixed amount each step,
+or *multiply* by a fixed amount?
+
+| Check | Arithmetic | Geometric |
+|-------|-----------|----------|
+| What's constant? | the difference between terms | the ratio between terms |
+| Each term is... | previous term $+ d$ | previous term $\times r$ |
+| On a graph it looks like... | a straight line | a curve |
+| Formula | $a_n = a_1 + (n-1)d$ | $a_n = a_1 \times r^{n-1}$ |
+
+If neither test passes — the differences aren't constant and neither are
+the ratios — the sequence isn't arithmetic or geometric. There are
+other kinds, but these two cover most of what you'll see at this level.
+
+## Sequences as functions
+
+Here's the thing to take away from this chapter.
+
+A sequence is a function. You feed in a position number — 1, 2, 3, …, $n$ —
+and the formula gives you back a value. One input, one output, a
+definite rule. That's the definition of a function.
+
+For an arithmetic sequence with $a_1 = 5$ and $d = 3$:
+
+$$a_n = 5 + (n-1) \times 3 = 5 + 3n - 3 = 3n + 2$$
+
+That last form — $3n + 2$ — should look familiar. It's a linear
+expression. The position $n$ plays the same role as $x$ in a linear
+equation. If you plotted the terms on a graph with position on the
+horizontal axis and value on the vertical, you'd get points lying
+on a straight line.
+
+Geometric sequences, plotted the same way, give points lying on a
+curve — the same kind of exponential curve you saw in compound growth.
+
+The bigger idea — that a rule can take any input and return a
+predictable output — is what Chapter 4 is about. Sequences are the
+clearest introduction to it because the inputs are always whole numbers,
+so you can list them and see the pattern directly. When Chapter 4
+generalises to real-number inputs, you'll already have the idea.
+
+## Where this goes
+
+**Chapter 4 — Graphing relations** takes the connection from this chapter
+seriously. If $a_n = 3n + 2$ is a function of $n$, then it has a graph.
+You'll learn to draw that graph, read information off it, and understand
+what the slope and intercept actually mean. Arithmetic sequences produce
+straight-line graphs; geometric sequences produce curves. Seeing them
+visually makes the difference between the two types immediately obvious.
+
+**Volume 4 — Sequences and series** returns to sequences at a higher
+level. A *series* is what you get when you add up the terms of a
+sequence: how much have you saved total after $n$ weeks? How many
+people has the chain message reached in total? The formulas become more
+involved, but the foundation — arithmetic or geometric, position determines
+value — is exactly what this chapter builds.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A financial analyst projecting investment returns is working with a
+  geometric sequence — each period's value is the previous one scaled
+  by a growth factor.
+- A software engineer estimating how long an algorithm takes as the
+  input grows is often asking whether the cost is arithmetic (grows
+  linearly) or geometric (grows exponentially).
+- A biologist tracking bacterial colony doublings is reading a geometric
+  sequence, even if the lab notebook just shows raw counts.
+- A structural engineer numbering equally-spaced sensor stations along a
+  bridge is building an arithmetic sequence into the measurement system.
+
+The difference between "adds the same amount" and "multiplies by the
+same amount" is the difference between manageable and overwhelming.
+Recognising which one you're dealing with is a genuinely useful skill.
+:::
+
+## Exercises
+
+These are puzzles. Each has a clean answer, but the interesting part is
+identifying the type of sequence and setting up the formula before you
+calculate. Don't just list terms.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+1. A social media account gains 40 followers per day. It starts with
+   120 followers. How many followers does it have after 3 weeks (21 days)?
+   *(Identify: arithmetic or geometric? Write the formula, then calculate.)*
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Identify sequence type",        eq: "\\text{Arithmetic — gains a fixed 40 each day}", note: "Constant addition = arithmetic." },
+  { op: "Write the formula",             eq: "a_n = 120 + (n-1) \\times 40" },
+  { op: "Find term at day 21 (n = 21)",  eq: "a_{21} = 120 + 20 \\times 40 = 120 + 800 = 920" },
+  { op: "Check",                         eq: "a_1 = 120 \\checkmark,\\quad a_2 = 160 \\checkmark,\\quad a_{21} = 920 \\checkmark" }
+])
+```
+
+2. The sequence 5, 9, 13, 17, … — what is the 25th term?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Find the common difference",    eq: "d = 9 - 5 = 4" },
+  { op: "Write the formula",             eq: "a_n = 5 + (n-1) \\times 4" },
+  { op: "Substitute n = 25",             eq: "a_{25} = 5 + 24 \\times 4 = 5 + 96 = 101" },
+  { op: "Check",                         eq: "a_1 = 5 \\checkmark,\\quad a_2 = 9 \\checkmark,\\quad a_{25} = 101 \\checkmark" }
+])
+```
+
+3. A ball is dropped from 160cm. Each bounce reaches exactly 75% of
+   the previous height. How high is the 5th bounce? Round to the
+   nearest centimetre.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Identify sequence type",        eq: "\\text{Geometric — multiplied by 0.75 each time}" },
+  { op: "Write the formula",             eq: "a_n = 160 \\times 0.75^{n-1}", note: "The first bounce is n = 1 (immediately after the drop)." },
+  { op: "Substitute n = 5",              eq: "a_5 = 160 \\times 0.75^4 = 160 \\times 0.3164\\ldots \\approx 50.6" },
+  { op: "Round to nearest cm",           eq: "a_5 \\approx 51 \\text{ cm}" },
+  { op: "Check",                         eq: "160, 120, 90, 67.5, 50.6 \\ldots \\checkmark" }
+])
+```
+
+4. A sequence begins 3, 6, 12, 24, …
+   a. Write the formula for the nth term.
+   b. Which term first exceeds 3,000?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Find the common ratio",         eq: "r = 6 \\div 3 = 2" },
+  { op: "Write the formula (part a)",    eq: "a_n = 3 \\times 2^{n-1}" },
+  { op: "Try n = 10",                    eq: "a_{10} = 3 \\times 2^9 = 3 \\times 512 = 1536 < 3000" },
+  { op: "Try n = 11",                    eq: "a_{11} = 3 \\times 2^{10} = 3 \\times 1024 = 3072 > 3000 \\checkmark" },
+  { op: "Answer (part b)",               eq: "\\text{Term 11 is the first to exceed 3,000}" }
+])
+```
+
+5. Exam scores in a practice series improve by 4 marks each attempt:
+   46, 50, 54, 58, …
+   After how many attempts does a student first reach or exceed 80 marks?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Write the formula",             eq: "a_n = 46 + (n-1) \\times 4" },
+  { op: "Set up inequality",             eq: "46 + (n-1) \\times 4 \\geq 80" },
+  { op: "Subtract 46",                   eq: "(n-1) \\times 4 \\geq 34" },
+  { op: "Divide by 4",                   eq: "n - 1 \\geq 8.5" },
+  { op: "Add 1, round up",               eq: "n \\geq 9.5 \\Rightarrow n = 10" },
+  { op: "Check",                         eq: "a_{10} = 46 + 9 \\times 4 = 46 + 36 = 82 \\geq 80 \\checkmark" }
+])
+```
+
+6. A fundraiser's social posts are shared in a pattern. On day 1 it
+   reaches 5 people. Each day it reaches 4 times as many people as the
+   day before. On which day does it first reach more than 50,000 people?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Write the formula",             eq: "a_n = 5 \\times 4^{n-1}" },
+  { op: "Try n = 7",                     eq: "a_7 = 5 \\times 4^6 = 5 \\times 4096 = 20{,}480 < 50{,}000" },
+  { op: "Try n = 8",                     eq: "a_8 = 5 \\times 4^7 = 5 \\times 16{,}384 = 81{,}920 > 50{,}000 \\checkmark" },
+  { op: "Answer",                        eq: "\\text{Day 8 is the first day it exceeds 50,000 people}" }
+])
+```
+
+7. Two sequences both start at 10.
+   - Sequence A: add 15 each term.
+   - Sequence B: multiply by 1.5 each term.
+
+   By the 10th term, which is larger? By how much?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(7, [
+  { op: "Sequence A — formula",          eq: "a_n = 10 + (n-1) \\times 15" },
+  { op: "Sequence A — 10th term",        eq: "a_{10} = 10 + 9 \\times 15 = 10 + 135 = 145" },
+  { op: "Sequence B — formula",          eq: "b_n = 10 \\times 1.5^{n-1}" },
+  { op: "Sequence B — 10th term",        eq: "b_{10} = 10 \\times 1.5^9 = 10 \\times 38.44\\ldots \\approx 384.4" },
+  { op: "Compare",                       eq: "384.4 - 145 \\approx 239.4", note: "Geometric growth overtakes arithmetic — by the 10th term, Sequence B is more than twice as large." }
+])
+```

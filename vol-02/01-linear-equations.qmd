@@ -35,9 +35,8 @@ opens_to:
     relationship: "motivates"
 
 prerequisite_ids:
-  - "v1c4-integers"
-  - "v1c2-ratio"
-  - "v2c3-patterns"
+  - "integers"
+  - "ratio"
 
 destinations:
   - field: "eng"
@@ -62,8 +61,14 @@ destinations:
     career_example: "Urban planner modelling growth scenarios"
 
 hook: |
-  How many hours to cover the rent. When the cheaper phone plan becomes
-  worth it. What dose for this body weight.
+  You and three friends want to split a bill evenly, but one person
+  already paid for something earlier. How much does each person owe now?
+
+  You earn £8.50 an hour at a weekend job. You need £120 for a gig ticket.
+  How many shifts do you need?
+
+  You're buying snacks for a group. Each bag costs the same. You spend
+  £14.40 in total. How much was each bag?
 
   These are all the same question underneath: you know the relationship,
   you're missing one of the values. A linear equation is just that
@@ -90,8 +95,14 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-How many hours to cover the rent. When the cheaper phone plan becomes
-worth it. What dose for this body weight.
+You and three friends want to split a bill evenly, but one person
+already paid for something earlier. How much does each person owe now?
+
+You earn £8.50 an hour at a weekend job. You need £120 for a gig ticket.
+How many shifts do you need?
+
+You're buying snacks for a group. Each bag costs the same. You spend
+£14.40 in total. How much was each bag?
 
 These are all the same question underneath: you know the relationship,
 you're missing one of the values. A linear equation is just that
@@ -102,7 +113,7 @@ relationship written down, with a placeholder for the missing part.
 $$3x + 7 = 22$$
 
 Read it as: three of something, plus seven, gives twenty-two. The $x$ is
-the placeholder — a name for the gap in our knowledge. The equals sign
+the placeholder — a name for the gap in your knowledge. The equals sign
 means both sides describe the same amount.
 
 Peel away what's around the unknown until it stands alone. Three of
@@ -115,6 +126,194 @@ The concept stays this simple. What gets harder is the notation
 accumulating, and equations appearing inside larger problems where it
 isn't obvious that's what they are.
 
+---
+
+**Interactive: Equation balance.** The scale below shows both sides of an equation. Choose an operation and a value. Apply it to both sides and watch the equation update — the balance holds because you're changing both sides equally.
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+viewof balanceOp = Inputs.select(["+", "−", "×", "÷"], {
+  label: "Operation",
+  value: "+"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof balanceVal = Inputs.range([-10, 10], {
+  label: "Value to apply to both sides",
+  step: 1,
+  value: 3
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  // Starting equation: 3x + 7 = 22
+  // We track the numeric sides as they stand after one operation.
+  // Left side: 3x + 7  →  represented symbolically
+  // Right side: 22
+  // For display we show the symbolic equation text and what each side becomes.
+
+  const op  = balanceOp;
+  const val = Number.isFinite(balanceVal) ? Math.round(balanceVal) : 3;
+
+  // Guard against division by zero
+  const divByZero = op === "÷" && val === 0;
+
+  // Represent the original equation symbolically
+  const origLeft  = "3x + 7";
+  const origRight = "22";
+
+  // Compute what happens to the right-hand side (a pure number)
+  let newRight;
+  if (op === "+")       newRight = 22 + val;
+  else if (op === "−")  newRight = 22 - val;
+  else if (op === "×")  newRight = 22 * val;
+  else if (op === "÷")  newRight = divByZero ? null : 22 / val;
+
+  // Build a symbolic description of the new left side
+  let newLeftDesc;
+  const valStr = val < 0 ? `(${val})` : `${val}`;
+  if (op === "+")       newLeftDesc = `3x + 7 + ${valStr}`;
+  else if (op === "−")  newLeftDesc = `3x + 7 − ${valStr}`;
+  else if (op === "×")  newLeftDesc = `${valStr}(3x + 7)`;
+  else if (op === "÷")  newLeftDesc = divByZero ? "3x + 7 ÷ 0" : `(3x + 7) ÷ ${valStr}`;
+
+  // Display
+  const W = 560;
+  const H = 260;
+  const MID_X = W / 2;
+  const BEAM_Y = 120;
+  const PIVOT_Y = 80;
+  const PAN_Y   = 170;
+  const PAN_W   = 150;
+  const PAN_H   = 44;
+  const ROPE_H  = 50;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // ── Pivot post ──
+  svg.append("line")
+    .attr("x1", MID_X).attr("y1", PIVOT_Y - 10)
+    .attr("x2", MID_X).attr("y2", BEAM_Y)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 3);
+
+  svg.append("circle")
+    .attr("cx", MID_X).attr("cy", PIVOT_Y - 10)
+    .attr("r", 6)
+    .attr("fill", "#6b7280");
+
+  // ── Beam ──
+  svg.append("line")
+    .attr("x1", 80).attr("y1", BEAM_Y)
+    .attr("x2", W - 80).attr("y2", BEAM_Y)
+    .attr("stroke", "#374151").attr("stroke-width", 4)
+    .attr("stroke-linecap", "round");
+
+  // ── Ropes ──
+  const leftPanCX  = 130;
+  const rightPanCX = W - 130;
+
+  svg.append("line")
+    .attr("x1", leftPanCX).attr("y1", BEAM_Y)
+    .attr("x2", leftPanCX).attr("y2", PAN_Y - PAN_H / 2)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 2);
+
+  svg.append("line")
+    .attr("x1", rightPanCX).attr("y1", BEAM_Y)
+    .attr("x2", rightPanCX).attr("y2", PAN_Y - PAN_H / 2)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 2);
+
+  // ── Pans ──
+  const panFill = "#f3f4f6";
+  const panStroke = "#d1d5db";
+
+  svg.append("rect")
+    .attr("x", leftPanCX - PAN_W / 2).attr("y", PAN_Y - PAN_H / 2)
+    .attr("width", PAN_W).attr("height", PAN_H)
+    .attr("rx", 6)
+    .attr("fill", panFill).attr("stroke", panStroke).attr("stroke-width", 1.5);
+
+  svg.append("rect")
+    .attr("x", rightPanCX - PAN_W / 2).attr("y", PAN_Y - PAN_H / 2)
+    .attr("width", PAN_W).attr("height", PAN_H)
+    .attr("rx", 6)
+    .attr("fill", panFill).attr("stroke", panStroke).attr("stroke-width", 1.5);
+
+  // ── Pan labels: new expressions ──
+  const leftLabel  = divByZero ? "÷ 0 not defined" : newLeftDesc;
+  const rightLabel = divByZero ? "÷ 0 not defined" :
+    (Number.isInteger(newRight) ? `${newRight}` : newRight.toFixed(2));
+
+  svg.append("text")
+    .attr("x", leftPanCX).attr("y", PAN_Y + 5)
+    .attr("text-anchor", "middle")
+    .attr("fill", divByZero ? "#dc2626" : "#1f2937")
+    .attr("font-size", divByZero ? "10px" : "12px")
+    .attr("font-weight", "700")
+    .text(leftLabel);
+
+  svg.append("text")
+    .attr("x", rightPanCX).attr("y", PAN_Y + 5)
+    .attr("text-anchor", "middle")
+    .attr("fill", divByZero ? "#dc2626" : "#1f2937")
+    .attr("font-size", "14px")
+    .attr("font-weight", "700")
+    .text(rightLabel);
+
+  // ── Equation line above balance ──
+  const origEq = `Original: ${origLeft} = ${origRight}`;
+  svg.append("text")
+    .attr("x", MID_X).attr("y", 32)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#374151").attr("font-size", "13px").attr("font-weight", "600")
+    .text(origEq);
+
+  // ── Operation applied ──
+  const opSymbol = op === "÷" ? "÷" : op === "×" ? "×" : op;
+  const opDesc = divByZero
+    ? "Cannot divide by zero — the balance breaks"
+    : `Apply  ${opSymbol} ${val}  to both sides`;
+
+  svg.append("text")
+    .attr("x", MID_X).attr("y", 52)
+    .attr("text-anchor", "middle")
+    .attr("fill", divByZero ? "#dc2626" : "#0d9488")
+    .attr("font-size", "12px")
+    .text(opDesc);
+
+  // ── "Both sides equal" label ──
+  if (!divByZero) {
+    svg.append("text")
+      .attr("x", MID_X).attr("y", H - 12)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#6b7280").attr("font-size", "11px")
+      .text("Both sides still describe the same amount — the balance holds.");
+  }
+
+  // ── "=" centred between pans ──
+  svg.append("text")
+    .attr("x", MID_X).attr("y", PAN_Y + 6)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#6b7280").attr("font-size", "18px").attr("font-weight", "700")
+    .text("=");
+
+  return svg.node();
+}
+```
+
+---
+
 ## The method
 
 The rule is: whatever you do to one side of the equals sign, do to the
@@ -124,11 +323,13 @@ amount — as long as you do the same thing to both, the balance holds.
 
 $$3x + 7 = 22$$
 
-Subtract 7 from both sides:
+Subtract 7 from both sides — this removes the 7 from the left, leaving
+just the term with $x$:
 
 $$3x = 15$$
 
-Divide both sides by 3:
+Divide both sides by 3 — this peels away the coefficient, leaving $x$
+alone:
 
 $$x = 5$$
 
@@ -143,91 +344,254 @@ the same amount — you've broken the equation. Doing the same thing
 to both sides preserves the equality. That's the whole method.
 :::
 
+---
+
+**Interactive: Equation solver.** Set the coefficients $a$, $b$, and $c$ in the equation $ax + b = c$. The solution steps update live with your numbers.
+
+```{ojs}
+//| echo: false
+viewof solveA = Inputs.range([-10, 10], {
+  label: "a  (coefficient of x)",
+  step: 1,
+  value: 3
+})
+```
+
+```{ojs}
+//| echo: false
+viewof solveB = Inputs.range([-20, 20], {
+  label: "b  (constant on left)",
+  step: 1,
+  value: 7
+})
+```
+
+```{ojs}
+//| echo: false
+viewof solveC = Inputs.range([-50, 50], {
+  label: "c  (right-hand side)",
+  step: 1,
+  value: 22
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const a = Number.isFinite(solveA) ? Math.round(solveA) : 3;
+  const b = Number.isFinite(solveB) ? Math.round(solveB) : 7;
+  const c = Number.isFinite(solveC) ? Math.round(solveC) : 22;
+
+  const noSolution = a === 0;
+  const cMinusB    = c - b;
+  const x          = noSolution ? null : cMinusB / a;
+
+  // Format a coefficient: omit "1x" → "x", handle negatives neatly
+  const coeffStr = (n) => {
+    if (n === 1)  return "x";
+    if (n === -1) return "−x";
+    if (n < 0)    return `${n}x`;
+    return `${n}x`;
+  };
+
+  // Format the left side "ax + b" nicely
+  const leftSide = () => {
+    const aPart = coeffStr(a);
+    if (b === 0) return `${aPart}`;
+    if (b > 0)   return `${aPart} + ${b}`;
+    return `${aPart} − ${Math.abs(b)}`;
+  };
+
+  const W = 560;
+  const H = noSolution ? 130 : 200;
+  const ROW_H = 38;
+  const LABEL_X = 20;
+  const EQ_X = 180;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Header: equation as given
+  svg.append("text")
+    .attr("x", LABEL_X).attr("y", 28)
+    .attr("fill", "#1f2937").attr("font-size", "15px").attr("font-weight", "700")
+    .text(`Solve:  ${leftSide()} = ${c}`);
+
+  if (noSolution) {
+    svg.append("text")
+      .attr("x", LABEL_X).attr("y", 70)
+      .attr("fill", "#dc2626").attr("font-size", "13px").attr("font-weight", "600")
+      .text("a = 0: no unique solution (x drops out of the equation).");
+
+    svg.append("text")
+      .attr("x", LABEL_X).attr("y", 96)
+      .attr("fill", "#6b7280").attr("font-size", "12px")
+      .text(b === c
+        ? `With a = 0 the equation reads ${b} = ${c}, which is always true — any x works.`
+        : `With a = 0 the equation reads ${b} = ${c}, which is never true — no x works.`
+      );
+  } else {
+    // Step 1
+    const step1Y = 64;
+    svg.append("text")
+      .attr("x", LABEL_X).attr("y", step1Y)
+      .attr("fill", "#6b7280").attr("font-size", "12px")
+      .text(`Step 1 — subtract ${b < 0 ? `(${b})` : b} from both sides`
+            + (b < 0 ? "  [adding a negative]" : "")
+            + ":");
+
+    const bStr = b < 0 ? `+ (${b})` : `− ${b}`;
+    svg.append("text")
+      .attr("x", EQ_X).attr("y", step1Y + 20)
+      .attr("fill", "#1f2937").attr("font-size", "14px").attr("font-weight", "600")
+      .text(`${coeffStr(a)} = ${c} ${bStr}  =  ${cMinusB}`);
+
+    // Step 2
+    const step2Y = step1Y + 56;
+    svg.append("text")
+      .attr("x", LABEL_X).attr("y", step2Y)
+      .attr("fill", "#6b7280").attr("font-size", "12px")
+      .text(`Step 2 — divide both sides by ${a < 0 ? `(${a})` : a}:`);
+
+    const xDisplay = Number.isInteger(x)
+      ? `${x}`
+      : x.toFixed(4).replace(/\.?0+$/, "");
+
+    svg.append("text")
+      .attr("x", EQ_X).attr("y", step2Y + 20)
+      .attr("fill", "#1f2937").attr("font-size", "14px").attr("font-weight", "600")
+      .text(`x = ${cMinusB} ÷ ${a}  =  ${xDisplay}`);
+
+    // Answer box
+    const ansY = step2Y + 46;
+    svg.append("rect")
+      .attr("x", EQ_X - 8).attr("y", ansY - 20)
+      .attr("width", 220).attr("height", 32)
+      .attr("rx", 6)
+      .attr("fill", "#0d9488").attr("opacity", 0.12)
+      .attr("stroke", "#0d9488").attr("stroke-width", 1.5);
+
+    svg.append("text")
+      .attr("x", EQ_X + 2).attr("y", ansY)
+      .attr("fill", "#0d9488").attr("font-size", "15px").attr("font-weight", "700")
+      .text(`Answer:  x = ${xDisplay}`);
+
+    // Check
+    const checkY = ansY + 28;
+    const checkLeft  = a * (Number.isInteger(x) ? x : parseFloat(xDisplay)) + b;
+    const checkRight = c;
+    const checkOk    = Math.abs(checkLeft - checkRight) < 1e-9;
+    svg.append("text")
+      .attr("x", LABEL_X).attr("y", checkY)
+      .attr("fill", checkOk ? "#6b7280" : "#dc2626")
+      .attr("font-size", "11px")
+      .text(checkOk
+        ? `Check: ${a}×${xDisplay} + ${b} = ${checkLeft} ✓`
+        : `Check: ${a}×${xDisplay} + ${b} = ${checkLeft}  (expected ${c}) — rounding`
+      );
+  }
+
+  return svg.node();
+}
+```
+
+---
+
 ## Worked examples
 
-**Example 1.** A plumber charges a £50 call-out fee plus £40 per hour.
-The bill comes to £210. How many hours did the job take?
+**Example 1.** You're saving up for a festival wristband. The wristband
+costs £85. You already have £20 saved and earn £13 per hour doing
+odd jobs. How many hours do you need to work?
 
 Let $h$ = hours worked.
 
-$$50 + 40h = 210$$
+$$20 + 13h = 85$$
 
-$$40h = 160$$
+Subtract 20 from both sides — to clear the fixed amount already saved:
 
-$$h = 4$$
+$$13h = 65$$
 
-Four hours. Check: $50 + 40 \times 4 = 50 + 160 = 210$. Yes.
+Divide both sides by 13 — to get from "13 of something" to "one of something":
+
+$$h = 5$$
+
+Five hours. Check: $20 + 13 \times 5 = 20 + 65 = 85$. Yes.
 
 ---
 
-**Example 2.** Two phone plans. Plan A costs £15 per month plus £0.10
-per minute of calls. Plan B costs £25 per month with unlimited calls.
-At how many minutes per month does Plan B become cheaper?
+**Example 2.** Two streaming services. Service A costs £8 per month
+plus £2 per film you rent. Service B costs £18 per month with
+unlimited films. How many film rentals per month makes the two services
+equal in cost?
 
-Let $m$ = minutes per month.
+Let $f$ = films rented per month.
 
-Plan A costs: $15 + 0.1m$
+Service A costs: $8 + 2f$
 
-Plan B costs: $25$
+Service B costs: $18$
 
 They're equal when:
 
-$$15 + 0.1m = 25$$
+$$8 + 2f = 18$$
 
-$$0.1m = 10$$
+$$2f = 10$$
 
-$$m = 100$$
+$$f = 5$$
 
-At 100 minutes per month they cost the same. Above 100 minutes,
-Plan B is cheaper.
+At 5 films per month they cost the same. Above 5 films, Service B
+is cheaper.
 
 ---
 
-**Example 3.** A solution is 30% alcohol by volume. How many litres of
-pure water must be added to 2 litres of this solution to bring it down
-to 20% alcohol?
+**Example 3.** You're making a fruit drink by mixing juice concentrate
+with water. The concentrate is 60% real juice. You want the final drink
+to be 20% real juice. You start with 1 litre of concentrate. How much
+water do you add?
 
-The amount of alcohol stays fixed at $0.30 \times 2 = 0.6$ litres.
-After adding $w$ litres of water, the total volume is $2 + w$ litres,
-and we want the alcohol fraction to be 20%:
+The amount of real juice stays fixed at $0.60 \times 1 = 0.6$ litres.
+After adding $w$ litres of water, the total volume is $1 + w$ litres,
+and you want the juice fraction to be 20%:
 
-$$\frac{0.6}{2 + w} = 0.2$$
+$$\frac{0.6}{1 + w} = 0.2$$
 
-$$0.6 = 0.2(2 + w)$$
+Multiply both sides by $(1 + w)$ — to clear the fraction:
 
-$$0.6 = 0.4 + 0.2w$$
+$$0.6 = 0.2(1 + w)$$
 
-$$0.2 = 0.2w$$
+Expand the right side:
 
-$$w = 1$$
+$$0.6 = 0.2 + 0.2w$$
 
-Add 1 litre of water. This is the kind of calculation a pharmacist,
-a chemist, or a process engineer does routinely.
+Subtract 0.2 from both sides:
+
+$$0.4 = 0.2w$$
+
+Divide both sides by 0.2:
+
+$$w = 2$$
+
+Add 2 litres of water.
 
 ## Where this goes
 
-Linear equations with one unknown are the simplest case. From here,
-two directions open.
-
-The first is **more unknowns** — two equations, two unknowns; three
-equations, three unknowns. Systems of linear equations. We reach those
-in Volume 4, and they become the foundation of matrix algebra and
-eventually of the numerical methods that underpin modern engineering
-and machine learning.
-
-The second is **more structure** — what if the unknown appears in a
-more complex relationship? What if the relationship isn't linear at all?
-That opens polynomials, then functions, then calculus. The $x$ in this
-chapter is the same $x$ you'll meet in all of those — just with more
-company around it.
+This chapter covered one unknown on one side. The next two chapters in this
+volume — inequalities and graphing — extend the same idea in different
+directions: inequalities ask which values *satisfy* a relationship rather
+than pinning down one exact answer, and graphing shows what happens when
+you let the unknown vary continuously. The further horizon worth knowing
+about is **systems of equations** (Volume 4): two unknowns, two equations,
+solved together. The method is the same balancing act you've already learned,
+applied twice at once.
 
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
 
 - An electrical engineer writing Kirchhoff's voltage law is solving
   a linear equation for current or voltage.
-- A pharmacist calculating a dose by body weight is solving a linear
-  equation.
+- A nutritionist calculating how much of an ingredient hits a target
+  percentage is solving a linear equation.
 - A financial analyst finding a break-even point is solving a linear
   equation.
 - A data scientist fitting a regression line is solving a system of
@@ -242,23 +606,159 @@ These are puzzles, not drills. Each one has a clean answer, but the
 interesting part is setting up the equation — translating the situation
 into the notation before you solve it.
 
-1. A taxi charges £2.50 plus £1.20 per kilometre. A journey costs
-   £11.50. How far was the journey?
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
 
-2. A recipe makes 12 biscuits using 200g of flour. You have 550g
-   of flour. How many biscuits can you make? *(Set up an equation
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+1. A bus pass costs £1.50 to buy, then £0.90 per journey. You spend
+   £9.60 in total. How many journeys did you take?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write as an equation",           eq: "1.50 + 0.90j = 9.60" },
+  { op: "Subtract 1.50 from both sides",  eq: "0.90j = 8.10" },
+  { op: "Divide both sides by 0.90",      eq: "j = 9" },
+  { op: "Check",                           eq: "1.50 + 0.90 \\times 9 = 1.50 + 8.10 = 9.60 \\checkmark" }
+])
+```
+
+2. A recipe makes 12 cookies using 180g of flour. You have 480g
+   of flour. How many cookies can you make? *(Set up an equation
    first. Don't just divide.)*
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Write as an equation",          eq: "\\frac{180}{12} = \\frac{480}{c}", note: "Flour per cookie is constant, so set up equal ratios." },
+  { op: "Simplify left side",             eq: "15 = \\frac{480}{c}" },
+  { op: "Multiply both sides by c",       eq: "15c = 480" },
+  { op: "Divide both sides by 15",        eq: "c = 32" },
+  { op: "Check",                          eq: "\\frac{180}{12} = 15 \\text{ g/cookie},\\quad 15 \\times 32 = 480 \\checkmark" }
+])
+```
 
 3. Two cyclists start 120km apart and ride toward each other. One
    rides at 20km/h, the other at 25km/h. After how many hours do
    they meet?
 
-4. A tank holds 800 litres of water and drains at 35 litres per
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Write as an equation",           eq: "20t + 25t = 120", note: "Together they close 45 km each hour, starting 120 km apart." },
+  { op: "Collect like terms",             eq: "45t = 120" },
+  { op: "Divide both sides by 45",        eq: "t = \\frac{120}{45} = \\frac{8}{3} \\approx 2.67 \\text{ h}" },
+  { op: "Check",                          eq: "20 \\times \\tfrac{8}{3} + 25 \\times \\tfrac{8}{3} = \\tfrac{160}{3} + \\tfrac{200}{3} = \\tfrac{360}{3} = 120 \\checkmark" }
+])
+```
+
+When two quantities are changing in opposite directions and you want to
+know when they're equal, the unknown ends up on both sides of the
+equation. The fix is simple: collect all the terms with the unknown on
+one side, and all the plain numbers on the other.
+
+For example, if one thing is shrinking and another is growing, you might
+get something like $500 - 35t = 200 + 15t$. Subtract $15t$ from both
+sides to collect the variable terms: $500 - 50t = 200$. Then subtract
+200: $300 = 50t$. Divide by 50: $t = 6$. The same balance rule as
+before — it just takes one extra step to gather the unknowns first.
+
+4. A water tank holds 800 litres and drains at 35 litres per
    minute. A second tank holds 200 litres and fills at 15 litres
    per minute. After how many minutes do they contain the same
    amount?
 
-5. A contractor quotes £3,200 for a job that will take her team
-   some number of days. The fixed materials cost is £800; the
-   rest is labour at £160 per person per day, with a team of 3.
-   How many days is the job?
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write as an equation",           eq: "800 - 35t = 200 + 15t", note: "Tank 1 decreases; tank 2 increases. Set them equal." },
+  { op: "Subtract 15t from both sides",   eq: "800 - 50t = 200" },
+  { op: "Subtract 800 from both sides",   eq: "-50t = -600" },
+  { op: "Divide both sides by −50",       eq: "t = 12" },
+  { op: "Check",                          eq: "800 - 35 \\times 12 = 800 - 420 = 380;\\quad 200 + 15 \\times 12 = 200 + 180 = 380 \\checkmark" }
+])
+```
+
+5. You and two friends are splitting the cost of a group gift. The
+   total cost is £96, but one friend already put in £18 as a deposit.
+   How much does each of the three of you pay now?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Write as an equation",           eq: "3p + 18 = 96", note: "Three people each pay p, plus the £18 already paid, equals £96." },
+  { op: "Subtract 18 from both sides",    eq: "3p = 78" },
+  { op: "Divide both sides by 3",         eq: "p = 26" },
+  { op: "Check",                          eq: "3 \\times 26 + 18 = 78 + 18 = 96 \\checkmark" }
+])
+```

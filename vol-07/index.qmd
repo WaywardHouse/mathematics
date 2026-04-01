@@ -1,6 +1,32 @@
 ---
 title: "Volume 7 — Engineering mathematics"
-status: "seed"
+status: "draft"
 ---
 
-*Seed — front matter to be completed before content is written.*
+This volume is the core mathematics sequence that first- and second-year
+engineering students usually experience as separate courses: ordinary
+differential equations, linear algebra, multivariable calculus, vector
+calculus, Fourier methods, PDEs, complex analysis, numerical methods,
+optimisation, and probability.
+
+The build is intentionally broad before it becomes specialised. The aim is
+not to imitate a single textbook chapter order, but to give readers the
+mathematical objects that upper-year engineering courses assume they can
+already use: state equations, eigenmodes, fields, transforms, discretised
+systems, feasible regions, and distributions.
+
+Volume 8 extends this into the mathematics that appears inside third- and
+fourth-year discipline courses: control and feedback, discrete-time systems,
+continuum models, computational simulation, estimation, reliability, and
+nonlinear design optimisation.
+
+## Sections
+
+| Section | Core move |
+|---------|-----------|
+| ODEs | Model change by relating a system to its own rates |
+| Linear algebra and vector calculus | Move from single equations to spaces, fields, and operators |
+| Fourier analysis and PDEs | Decompose signals and solve distributed physical systems |
+| Complex analysis | Use the complex plane as a practical computational tool |
+| Numerical methods | Replace exact formulas with controlled approximation |
+| Optimisation and probability | Decide and infer under constraints and uncertainty |

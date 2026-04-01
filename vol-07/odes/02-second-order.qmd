@@ -1,6 +1,971 @@
 ---
 title: "Second-order ODEs"
-status: "seed"
+subtitle: "Oscillation, damping, and resonance"
+chapter: 2
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: "You can solve first-order ODEs by separation or integrating factor. Many physical systems — every spring, every circuit with inductance, every oscillating structure — are governed by second-order equations."
+
+rewrite: "The characteristic equation turns the ODE into an algebraic problem. The nature of its roots — real, repeated, or complex — determines whether the system decays, oscillates, or resonates."
+
+prerequisite_ids:
+  - diff_calc
+  - int_calc
+
+opens_to:
+  - id: odes
+    label: "Systems and phase plane"
+    volume: 7
+    relationship: enables
+  - id: laplace
+    label: "Laplace transforms"
+    volume: 7
+    relationship: motivates
+  - id: fourier_series
+    label: "Fourier series"
+    volume: 7
+    relationship: motivates
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Structural vibration, suspension systems, control systems, and RLC circuits are all second-order linear ODEs. Resonance is an engineering catastrophe — or a useful phenomenon, depending on the application."
+  - field: sci
+    label: Hard sciences
+    hook: "Quantum harmonic oscillator, coupled pendula, acoustic resonance — second-order linear equations are the language of oscillating physical systems."
+  - field: comp
+    label: Computing and data
+    hook: "Second-order ODE solvers underlie physics engines, robot dynamics simulation, and neural ODEs. The stability analysis of these systems comes directly from the characteristic equation."
+  - field: biz
+    label: Finance and quant
+    hook: "Mean-reverting stochastic processes and oscillatory economic cycles can be modelled with second-order linear ODEs in their deterministic limit."
+
+notation_introduced:
+  - symbol: "y''"
+    reads_as: "y double-prime"
+    meaning: "Second derivative of y with respect to x"
+  - symbol: "\\omega_0"
+    reads_as: "omega-zero"
+    meaning: "Natural (undamped) frequency: $\\omega_0 = \\sqrt{k/m}$"
+  - symbol: "\\zeta"
+    reads_as: "zeta"
+    meaning: "Damping ratio: $\\zeta = c/(2\\sqrt{km})$"
+  - symbol: "y_c"
+    reads_as: "y-c"
+    meaning: "Complementary (homogeneous) solution"
+  - symbol: "y_p"
+    reads_as: "y-p"
+    meaning: "Particular solution"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  A suspension bridge, a car spring, a tuning fork — all are governed by
+  the same second-order equation. Whether the motion decays smoothly to
+  rest, oscillates forever, or grows catastrophically without bound
+  depends entirely on the roots of a quadratic. The Tacoma Narrows Bridge
+  collapsed in 1940 because those roots were in the wrong place. This
+  chapter gives you the tools to find them and read what they mean.
+
+kreyszig_chapter: "Ch 2–3"
+stroud_programme: null
+uofa_course: "MATH 201"
 ---
 
-*Seed — front matter to be completed before content is written.*
+In November 1940, four months after it opened, the Tacoma Narrows Bridge began twisting in a 65 km/h wind. The oscillations grew. Within hours the deck was flexing through metres of arc. Then it collapsed.
+
+The engineers had missed a resonance condition. The wind's forcing frequency matched the bridge's natural frequency, and the amplitude grew without bound. A second-order ODE — mass, damping, stiffness, forcing — contained the answer. The question is whether you know how to read it.
+
+This chapter develops every tool needed to answer that question. By the end you will be able to look at any spring, circuit, or structure, write down its governing equation, and classify its response before solving it.
+
+## Structure of the general equation
+
+A second-order linear ODE with constant coefficients has the form
+
+$$ay'' + by' + cy = f(x)$$
+
+where $a \neq 0$. The coefficients $a$, $b$, $c$ are constants; $f(x)$ is the **forcing function** (or input, or source term).
+
+**Why second order?** Newton's second law says $F = ma$, where $a = \ddot{x}$ is the second derivative of position. Any system governed by Newton's second law — masses on springs, charges in circuits, beams under load — produces a second-order ODE. The second derivative is not an accident of notation; it encodes the physics.
+
+**Linearity and superposition.** The equation is linear because $y$, $y'$, $y''$ each appear to the first power and are not multiplied together. Linearity buys you the superposition principle: if $y_1$ and $y_2$ are both solutions to the homogeneous equation ($f = 0$), then so is $c_1 y_1 + c_2 y_2$ for any constants $c_1$, $c_2$. This principle is the engine of everything that follows.
+
+**The decomposition: complementary + particular.** The general solution is
+
+$$y = y_c + y_p$$
+
+where $y_c$ (the **complementary solution**) solves the homogeneous equation $ay'' + by' + cy = 0$, and $y_p$ (the **particular solution**) is any one solution to the full equation with $f(x)$ present. The two free constants in $y_c$ absorb the initial conditions.
+
+**Why two initial conditions?** The ODE is second order, so its general solution contains two arbitrary constants. To pick a unique solution from the family, you need two pieces of information — typically $y(x_0)$ and $y'(x_0)$. Specify position and velocity at time zero, and the subsequent motion is determined.
+
+::: {.callout-note appearance="simple"}
+**The structure in one line**
+
+$$\underbrace{ay'' + by' + cy = 0}_{\text{homogeneous: find } y_c} \quad + \quad \underbrace{ay'' + by' + cy = f(x)}_{\text{find any } y_p} \quad \Longrightarrow \quad y = y_c + y_p$$
+:::
+
+## Homogeneous equations: the characteristic equation
+
+Take the homogeneous equation
+
+$$ay'' + by' + cy = 0$$
+
+and try a solution of the form $y = e^{rx}$. Substituting:
+
+$$y = e^{rx}, \quad y' = re^{rx}, \quad y'' = r^2 e^{rx}$$
+
+$$a r^2 e^{rx} + b r e^{rx} + c e^{rx} = 0$$
+
+Factor out $e^{rx}$, which is never zero:
+
+$$e^{rx}(ar^2 + br + c) = 0 \implies ar^2 + br + c = 0$$
+
+This is the **characteristic equation**. An ODE has become an algebraic problem: find the roots of a quadratic. The nature of those roots determines the form of $y_c$.
+
+The quadratic formula gives
+
+$$r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+
+The discriminant $\Delta = b^2 - 4ac$ controls everything.
+
+### Case 1: Two distinct real roots ($\Delta > 0$)
+
+Two distinct roots $r_1 \neq r_2$, both real. The general solution is
+
+$$y_c = C_1 e^{r_1 x} + C_2 e^{r_2 x}$$
+
+These are two linearly independent solutions; their linear combination spans the solution space.
+
+**Physical behaviour:** If both roots are negative, both exponentials decay. The system returns to equilibrium without oscillating. In a spring-mass context this is the **overdamped** regime — the mass creeps back slowly, never crossing the equilibrium.
+
+**Example.** Solve $y'' - 5y' + 6y = 0$.
+
+Characteristic equation: $r^2 - 5r + 6 = 0$, which factors as $(r-2)(r-3) = 0$.
+
+Roots: $r_1 = 2$, $r_2 = 3$.
+
+General solution: $y = C_1 e^{2x} + C_2 e^{3x}$.
+
+### Case 2: Repeated real root ($\Delta = 0$)
+
+One root $r = -b/(2a)$ repeated. The naive approach gives only $e^{rx}$, which is one solution. A second independent solution is $xe^{rx}$ (derivable by reduction of order — see §6 below, or verify by substitution).
+
+General solution:
+
+$$y_c = (C_1 + C_2 x)e^{rx}$$
+
+**Physical behaviour:** The system returns to equilibrium as fast as possible without oscillating. This is **critical damping** — the boundary between decaying and oscillating behaviour. Car suspension systems are often tuned close to critical damping.
+
+**Example.** Solve $y'' + 4y' + 4y = 0$.
+
+Characteristic equation: $r^2 + 4r + 4 = (r+2)^2 = 0$.
+
+Root: $r = -2$ (repeated).
+
+General solution: $y = (C_1 + C_2 x)e^{-2x}$.
+
+### Case 3: Complex conjugate roots ($\Delta < 0$)
+
+The roots are $r = \alpha \pm \beta i$ where $\alpha = -b/(2a)$ and $\beta = \sqrt{4ac - b^2}/(2a) > 0$.
+
+Using Euler's formula $e^{i\theta} = \cos\theta + i\sin\theta$, the complex exponentials can be rewritten as real-valued functions:
+
+$$y_c = e^{\alpha x}(C_1 \cos(\beta x) + C_2 \sin(\beta x))$$
+
+**Physical behaviour:** The $e^{\alpha x}$ factor is the envelope. If $\alpha < 0$, the oscillation decays — this is **underdamped**. If $\alpha = 0$, oscillation continues forever at constant amplitude — **undamped simple harmonic motion**. If $\alpha > 0$, the oscillation grows (unstable system).
+
+**Example.** Solve $y'' + 2y' + 5y = 0$.
+
+Characteristic equation: $r^2 + 2r + 5 = 0$.
+
+Roots: $r = (-2 \pm \sqrt{4 - 20})/2 = (-2 \pm \sqrt{-16})/2 = -1 \pm 2i$.
+
+So $\alpha = -1$, $\beta = 2$.
+
+General solution: $y = e^{-x}(C_1 \cos 2x + C_2 \sin 2x)$.
+
+::: {.callout-note appearance="simple"}
+**Summary: three cases**
+
+| Discriminant | Roots | Solution | Behaviour |
+|---|---|---|---|
+| $\Delta > 0$ | Two distinct real | $C_1 e^{r_1 x} + C_2 e^{r_2 x}$ | Overdamped / exponential |
+| $\Delta = 0$ | Repeated real | $(C_1 + C_2 x)e^{rx}$ | Critically damped |
+| $\Delta < 0$ | Complex conjugate | $e^{\alpha x}(C_1\cos\beta x + C_2\sin\beta x)$ | Underdamped / oscillatory |
+:::
+
+```{ojs}
+//| echo: false
+viewof smdM = Inputs.range([0.1, 5], {step: 0.1, value: 1, label: "m (mass, kg)"})
+viewof smdC = Inputs.range([0, 10], {step: 0.1, value: 1, label: "c (damping, N·s/m)"})
+viewof smdK = Inputs.range([0.1, 20], {step: 0.1, value: 4, label: "k (stiffness, N/m)"})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const width = 560, height = 300;
+  const margin = { top: 20, right: 20, bottom: 45, left: 55 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const m = smdM, c = smdC, k = smdK;
+  const disc = c * c - 4 * m * k;
+
+  // Classify regime
+  const eps = 1e-6;
+  let regime;
+  if (disc > eps) regime = "Overdamped (Δ > 0)";
+  else if (disc > -eps) regime = "Critically damped (Δ = 0)";
+  else regime = "Underdamped (Δ < 0)";
+
+  // Euler integration: m x'' + c x' + k x = 0, x(0)=1, x'(0)=0
+  const dt = 0.01, steps = 600;
+  const ts = [], xs = [];
+  let x = 1, v = 0;
+  for (let i = 0; i <= steps; i++) {
+    ts.push(i * dt);
+    xs.push(x);
+    const a = (-c * v - k * x) / m;
+    v += a * dt;
+    x += v * dt;
+  }
+
+  const xExtent = d3.extent(xs);
+  const yMin = Math.min(xExtent[0], -1.05);
+  const yMax = Math.max(xExtent[1], 1.05);
+
+  const xScale = d3.scaleLinear().domain([0, steps * dt]).range([0, innerW]);
+  const yScale = d3.scaleLinear().domain([yMin, yMax]).range([innerH, 0]);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .attr("width", width)
+    .attr("height", height)
+    .style("font-family", "sans-serif");
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Zero line
+  g.append("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", yScale(0)).attr("y2", yScale(0))
+    .attr("stroke", "#999").attr("stroke-dasharray", "4,3").attr("stroke-width", 1);
+
+  // Exponential envelope for underdamped
+  if (disc < -eps) {
+    const alpha = c / (2 * m);
+    const envLine = d3.line()
+      .x((_, i) => xScale(ts[i]))
+      .y((v) => yScale(v));
+
+    const envPos = ts.map(t => Math.exp(-alpha * t));
+    const envNeg = ts.map(t => -Math.exp(-alpha * t));
+
+    g.append("path")
+      .datum(envPos)
+      .attr("fill", "none")
+      .attr("stroke", "#999")
+      .attr("stroke-dasharray", "5,4")
+      .attr("stroke-width", 1.2)
+      .attr("d", envLine);
+
+    g.append("path")
+      .datum(envNeg)
+      .attr("fill", "none")
+      .attr("stroke", "#999")
+      .attr("stroke-dasharray", "5,4")
+      .attr("stroke-width", 1.2)
+      .attr("d", envLine);
+  }
+
+  // Response curve
+  const line = d3.line()
+    .x((_, i) => xScale(ts[i]))
+    .y((v) => yScale(v));
+
+  g.append("path")
+    .datum(xs)
+    .attr("fill", "none")
+    .attr("stroke", "#3b82f6")
+    .attr("stroke-width", 2)
+    .attr("d", line);
+
+  // Axes
+  g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(xScale).ticks(6));
+  g.append("g").call(d3.axisLeft(yScale).ticks(5));
+
+  // Axis labels
+  g.append("text")
+    .attr("x", innerW / 2).attr("y", innerH + 38)
+    .attr("text-anchor", "middle").attr("font-size", 13)
+    .text("t (s)");
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -42)
+    .attr("text-anchor", "middle").attr("font-size", 13)
+    .text("x(t) (m)");
+
+  // Regime label (top-right)
+  const regimeColour = disc > eps ? "#b45309" : disc > -eps ? "#7c3aed" : "#059669";
+  g.append("text")
+    .attr("x", innerW - 5).attr("y", 15)
+    .attr("text-anchor", "end").attr("font-size", 12).attr("font-weight", "bold")
+    .attr("fill", regimeColour)
+    .text(regime);
+
+  // ω₀ and ζ
+  const omega0 = Math.sqrt(k / m);
+  const zeta = c / (2 * Math.sqrt(k * m));
+  g.append("text")
+    .attr("x", innerW - 5).attr("y", 32)
+    .attr("text-anchor", "end").attr("font-size", 11).attr("fill", "#555")
+    .text(`ω₀ = ${omega0.toFixed(3)}  ζ = ${zeta.toFixed(3)}`);
+
+  return svg.node();
+}
+```
+
+## The spring-mass-damper system
+
+The physical archetype for every second-order linear ODE is a mass $m$ on a spring with stiffness $k$, connected to a dashpot (viscous damper) with damping coefficient $c$:
+
+$$m\ddot{x} + c\dot{x} + kx = 0$$
+
+Here $x(t)$ is displacement from equilibrium, dots denote time derivatives. This maps directly onto the standard form $ay'' + by' + cy = 0$ with $a = m$, $b = c$, $c_{\text{coeff}} = k$.
+
+The characteristic equation is $mr^2 + cr + k = 0$, with roots
+
+$$r = \frac{-c \pm \sqrt{c^2 - 4mk}}{2m}$$
+
+Two natural parameters emerge from dividing the equation by $m$:
+
+$$\ddot{x} + \frac{c}{m}\dot{x} + \frac{k}{m}x = 0$$
+
+**Natural frequency** (undamped):
+
+$$\omega_0 = \sqrt{\frac{k}{m}}$$
+
+**Damping ratio:**
+
+$$\zeta = \frac{c}{2\sqrt{km}} = \frac{c}{2m\omega_0}$$
+
+The equation becomes $\ddot{x} + 2\zeta\omega_0 \dot{x} + \omega_0^2 x = 0$, and the discriminant condition translates cleanly:
+
+| $\zeta$ | Regime | Behaviour |
+|---|---|---|
+| $\zeta > 1$ | Overdamped | Two negative real roots; slow return to equilibrium |
+| $\zeta = 1$ | Critically damped | Repeated negative real root; fastest return without oscillation |
+| $\zeta < 1$ | Underdamped | Complex roots; decaying oscillation at frequency $\omega_d = \omega_0\sqrt{1-\zeta^2}$ |
+| $\zeta = 0$ | Undamped | Pure imaginary roots; oscillation at $\omega_0$ forever |
+
+### Worked numerical example
+
+A spring-mass-damper system has $m = 1$ kg, $c = 5$ N·s/m, $k = 6$ N/m. Find $x(t)$ given $x(0) = 1$, $\dot{x}(0) = 0$.
+
+**Step 1: characteristic equation.**
+
+$$r^2 + 5r + 6 = 0 \implies (r+2)(r+3) = 0 \implies r_1 = -2,\ r_2 = -3$$
+
+**Step 2: classify.** Both roots real and negative. Discriminant $= 25 - 24 = 1 > 0$.
+
+Check via $\zeta$: $\omega_0 = \sqrt{6} \approx 2.449$, $\zeta = 5/(2\sqrt{6}) \approx 1.02 > 1$. Overdamped.
+
+**Step 3: general solution.**
+
+$$x(t) = C_1 e^{-2t} + C_2 e^{-3t}$$
+
+**Step 4: apply initial conditions.**
+
+$x(0) = 1$: $C_1 + C_2 = 1$
+
+$\dot{x}(0) = 0$: $-2C_1 - 3C_2 = 0 \implies C_1 = -3C_2/2$
+
+Substituting: $-3C_2/2 + C_2 = 1 \implies -C_2/2 = 1 \implies C_2 = -2$, $C_1 = 3$.
+
+**Solution:**
+
+$$x(t) = 3e^{-2t} - 2e^{-3t}$$
+
+The mass starts at $x = 1$, initially moves slightly before the two exponentials pull it back to zero without oscillating. Physical interpretation: heavy damping prevents overshoot.
+
+Now change the damping: $m = 1$, $c = 2$, $k = 1$. Characteristic equation: $r^2 + 2r + 1 = (r+1)^2 = 0$. Root $r = -1$ repeated. Critically damped. With $x(0) = 1$, $\dot{x}(0) = 0$:
+
+$x = (C_1 + C_2 t)e^{-t}$; $x(0) = C_1 = 1$; $\dot{x}(0) = C_2 - C_1 = 0 \implies C_2 = 1$.
+
+$$x(t) = (1 + t)e^{-t}$$
+
+Now change to $m = 1$, $c = 1$, $k = 4$. Characteristic equation: $r^2 + r + 4 = 0$.
+
+Roots: $r = (-1 \pm \sqrt{1-16})/2 = -1/2 \pm i\sqrt{15}/2$. Underdamped. General solution: $x(t) = e^{-t/2}(C_1\cos\frac{\sqrt{15}}{2}t + C_2\sin\frac{\sqrt{15}}{2}t)$.
+
+With $x(0) = 1$, $\dot{x}(0) = 0$:
+
+$x(0) = C_1 = 1$.
+
+Differentiate using the product rule: $\dot{x}(t) = -\tfrac{1}{2}e^{-t/2}(C_1\cos\frac{\sqrt{15}}{2}t + C_2\sin\frac{\sqrt{15}}{2}t) + e^{-t/2}(-C_1\tfrac{\sqrt{15}}{2}\sin\frac{\sqrt{15}}{2}t + C_2\tfrac{\sqrt{15}}{2}\cos\frac{\sqrt{15}}{2}t)$.
+
+At $t = 0$: $\dot{x}(0) = -\tfrac{1}{2}C_1 + C_2\tfrac{\sqrt{15}}{2} = 0$, so $C_2 = \tfrac{C_1}{\sqrt{15}} = \tfrac{1}{\sqrt{15}}$.
+
+$$x(t) = e^{-t/2}\!\left(\cos\frac{\sqrt{15}}{2}t + \frac{1}{\sqrt{15}}\sin\frac{\sqrt{15}}{2}t\right)$$
+
+The oscillation is visible; the exponential envelope $e^{-t/2}$ decays it.
+
+::: {.callout-tip appearance="simple"}
+**Engineering rule of thumb**
+
+$\zeta > 1$: overdamped — sluggish, no oscillation. $\zeta = 1$: critically damped — fastest non-oscillatory return. $\zeta < 1$: underdamped — fast but overshoots; for $\zeta \ll 1$ the oscillation persists for many cycles.
+
+Automotive suspension targets $\zeta \approx 0.3$–$0.4$: some overshoot is acceptable; too much damping makes the ride stiff and slow to recover.
+:::
+
+## Method of undetermined coefficients
+
+When $f(x) \neq 0$, we need a particular solution $y_p$. The method of undetermined coefficients works when $f(x)$ belongs to a standard family: polynomials, exponentials, sines and cosines, and products of these.
+
+The strategy: guess $y_p$ has the same form as $f(x)$, with unknown coefficients. Substitute into the ODE; match coefficients on both sides.
+
+### Standard guess table
+
+| $f(x)$ | Guess for $y_p$ |
+|---|---|
+| $P_n(x)$ (polynomial, degree $n$) | $A_n x^n + \cdots + A_1 x + A_0$ |
+| $e^{\alpha x}$ | $Ae^{\alpha x}$ |
+| $\cos(\beta x)$ or $\sin(\beta x)$ | $A\cos(\beta x) + B\sin(\beta x)$ |
+| $e^{\alpha x}\cos(\beta x)$ or similar | $e^{\alpha x}(A\cos(\beta x) + B\sin(\beta x))$ |
+| $P_n(x)e^{\alpha x}$ | $e^{\alpha x}(A_n x^n + \cdots + A_0)$ |
+
+**The modification rule.** If the guess for $y_p$ duplicates a term already present in $y_c$, multiply the guess by $x$ (or $x^2$ if $y_c$ contains both $e^{rx}$ and $xe^{rx}$, as in the repeated-root case). Failure to apply this rule produces a contradiction when you substitute.
+
+### Worked example 1: exponential forcing
+
+Find a particular solution of $y'' + 3y' + 2y = e^{-3x}$.
+
+Homogeneous equation: $r^2 + 3r + 2 = (r+1)(r+2) = 0$, roots $r = -1, -2$.
+
+$y_c = C_1 e^{-x} + C_2 e^{-2x}$.
+
+$f(x) = e^{-3x}$: the exponent $-3$ does not match any root, so no modification is needed. Guess $y_p = Ae^{-3x}$.
+
+Substitute:
+
+$$y_p'' + 3y_p' + 2y_p = 9Ae^{-3x} - 9Ae^{-3x} + 2Ae^{-3x} = 2Ae^{-3x}$$
+
+Set equal to $e^{-3x}$: $2A = 1 \implies A = 1/2$.
+
+$$y_p = \tfrac{1}{2}e^{-3x}$$
+
+General solution: $y = C_1 e^{-x} + C_2 e^{-2x} + \frac{1}{2}e^{-3x}$.
+
+### Worked example 2: sinusoidal forcing
+
+Find a particular solution of $y'' + 4y' + 5y = \sin(2x)$.
+
+Homogeneous: $r^2 + 4r + 5 = 0 \implies r = -2 \pm i$. So $y_c = e^{-2x}(C_1\cos x + C_2\sin x)$.
+
+$f(x) = \sin(2x)$: guess $y_p = A\cos(2x) + B\sin(2x)$.
+
+Compute derivatives:
+
+$$y_p' = -2A\sin(2x) + 2B\cos(2x)$$
+$$y_p'' = -4A\cos(2x) - 4B\sin(2x)$$
+
+Substitute:
+
+$$(-4A\cos 2x - 4B\sin 2x) + 4(-2A\sin 2x + 2B\cos 2x) + 5(A\cos 2x + B\sin 2x) = \sin 2x$$
+
+Collect $\cos(2x)$: $-4A + 8B + 5A = (A + 8B)\cos 2x$
+
+Collect $\sin(2x)$: $-4B - 8A + 5B = (B - 8A)\sin 2x$
+
+Match to $0\cdot\cos 2x + 1\cdot\sin 2x$:
+
+$$A + 8B = 0 \implies A = -8B$$
+$$B - 8A = 1 \implies B + 64B = 1 \implies B = \tfrac{1}{65},\quad A = -\tfrac{8}{65}$$
+
+$$y_p = -\frac{8}{65}\cos(2x) + \frac{1}{65}\sin(2x)$$
+
+### Modification rule in action
+
+Find a particular solution of $y'' + 2y' + y = e^{-x}$.
+
+Characteristic equation: $(r+1)^2 = 0$, root $r = -1$ repeated.
+
+$y_c = (C_1 + C_2 x)e^{-x}$.
+
+Naive guess $Ae^{-x}$ is in $y_c$; modified guess $Axe^{-x}$ is also in $y_c$ (the $C_2 x e^{-x}$ term). So multiply again: guess $y_p = Ax^2 e^{-x}$.
+
+$$y_p' = (2Ax - Ax^2)e^{-x}, \quad y_p'' = (2A - 4Ax + Ax^2)e^{-x}$$
+
+Substitute (the $x^2 e^{-x}$ and $xe^{-x}$ terms cancel):
+
+$$y_p'' + 2y_p' + y_p = 2Ae^{-x}$$
+
+Match: $2A = 1 \implies A = 1/2$.
+
+$$y_p = \tfrac{1}{2}x^2 e^{-x}$$
+
+## Forced oscillation and resonance
+
+Now force the undamped spring-mass system:
+
+$$m\ddot{x} + kx = F_0 \cos(\omega t), \quad x(0) = 0,\ \dot{x}(0) = 0$$
+
+The homogeneous solution is $x_c = C_1\cos(\omega_0 t) + C_2\sin(\omega_0 t)$ where $\omega_0 = \sqrt{k/m}$.
+
+**Case 1: $\omega \neq \omega_0$ (off resonance).** Guess $x_p = A\cos(\omega t)$.
+
+$$-m\omega^2 A\cos(\omega t) + kA\cos(\omega t) = F_0\cos(\omega t)$$
+
+$$A(k - m\omega^2) = F_0 \implies A = \frac{F_0}{k - m\omega^2} = \frac{F_0/m}{\omega_0^2 - \omega^2}$$
+
+Applying initial conditions $x(0) = 0$, $\dot{x}(0) = 0$: the general solution is $x = C_1\cos\omega_0 t + C_2\sin\omega_0 t + \frac{F_0/m}{\omega_0^2-\omega^2}\cos\omega t$. From $x(0) = 0$: $C_1 + \frac{F_0/m}{\omega_0^2-\omega^2} = 0$, so $C_1 = -\frac{F_0/m}{\omega_0^2-\omega^2}$. From $\dot{x}(0) = 0$: $C_2\omega_0 - \frac{F_0/m}{\omega_0^2-\omega^2}\omega\sin 0 = 0$, giving $C_2 = 0$. Substituting:
+
+$$x(t) = \frac{F_0/m}{\omega_0^2 - \omega^2}\bigl(\cos(\omega t) - \cos(\omega_0 t)\bigr)$$
+
+**Beating.** When $\omega$ is close to but not equal to $\omega_0$, write $\omega_0 = \omega + \epsilon$ for small $\epsilon$. The difference $\cos(\omega t) - \cos(\omega_0 t)$ can be rewritten using a product-to-sum identity (from $\cos A - \cos B = 2\sin\frac{A+B}{2}\sin\frac{B-A}{2}$):
+
+$$\cos(\omega t) - \cos(\omega_0 t) = 2\sin\!\left(\frac{\omega_0 + \omega}{2}t\right)\sin\!\left(\frac{\omega_0 - \omega}{2}t\right)$$
+
+This is a rapid oscillation at frequency $(\omega_0 + \omega)/2 \approx \omega_0$ modulated by a slow envelope at frequency $(\omega_0 - \omega)/2 \approx \epsilon/2$. The amplitude swells and collapses periodically — **beating**. It is audible between two tuning forks of slightly different pitch.
+
+**Case 2: $\omega = \omega_0$ (resonance).** The guess $A\cos(\omega_0 t)$ duplicates a homogeneous solution; apply the modification rule and guess $x_p = t(A\cos(\omega_0 t) + B\sin(\omega_0 t))$.
+
+Substituting and simplifying (the cosine terms cancel; only the sine survives in the second derivative's cross-terms):
+
+$$x_p = \frac{F_0}{2m\omega_0} t\sin(\omega_0 t)$$
+
+The particular solution at resonance is
+
+$$\boxed{x_p = \frac{F_0}{2m\omega_0}\, t\sin(\omega_0 t)}$$
+
+The factor of $t$ in front of the sine is critical. The amplitude $\frac{F_0}{2m\omega_0} t$ grows **linearly without bound** as $t \to \infty$.
+
+::: {.callout-warning appearance="simple"}
+**Resonance is an unbounded response**
+
+At $\omega = \omega_0$, the forcing and the natural oscillation are perfectly in phase. Each cycle, the force adds energy to the system. With no damping to dissipate it, amplitude grows without limit. In a real system, something fails first — yielding, fracture, or collapse.
+
+The Tacoma Narrows Bridge, Broughton Suspension Bridge (1831), and numerous aircraft structures have failed under resonance conditions. In engineering design, knowing $\omega_0$ and ensuring forcing frequencies avoid it — or adding sufficient damping — is not optional.
+:::
+
+**With damping present.** Add a damping term $c\dot{x}$ to the forced equation. The steady-state amplitude response at driving frequency $\omega$ becomes
+
+$$X(\omega) = \frac{F_0/k}{\sqrt{(1 - r^2)^2 + (2\zeta r)^2}}, \quad r = \frac{\omega}{\omega_0}$$
+
+(This formula is derivable by applying undetermined coefficients to $m\ddot{x}+c\dot{x}+kx=F_0\cos\omega t$ — the calculation is straightforward but lengthy, and we state the result here.)
+
+As $\zeta \to 0$, the peak amplitude at $r = 1$ becomes unbounded. For $\zeta > 0$, the peak is finite but can be very large for small $\zeta$. The peak occurs near $r = 1$ and grows sharper and taller as damping decreases — the amplification factor $Q = 1/(2\zeta)$ is called the **quality factor** in electrical engineering.
+
+```{ojs}
+//| echo: false
+viewof forceC = Inputs.range([0, 5], {step: 0.05, value: 1, label: "Damping c"})
+viewof forceW0 = Inputs.range([0.1, 5], {step: 0.05, value: 2, label: "Natural frequency ω₀"})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const width = 560, height = 280;
+  const margin = { top: 30, right: 20, bottom: 48, left: 60 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const c = forceC;
+  const w0 = forceW0;
+  // m=1, k=w0^2
+  const m = 1, k = w0 * w0;
+  const zeta = c / (2 * Math.sqrt(m * k));
+
+  // Amplitude response: X / (F0/k) = 1 / sqrt((1-r^2)^2 + (2*zeta*r)^2)
+  const nPoints = 400;
+  const wMax = 2.5 * w0;
+  const data = [];
+  for (let i = 0; i <= nPoints; i++) {
+    const w = (i / nPoints) * wMax;
+    const r = w / w0;
+    const denom = Math.sqrt((1 - r * r) * (1 - r * r) + (2 * zeta * r) * (2 * zeta * r));
+    const amp = denom < 1e-9 ? 1e6 : 1 / denom;
+    data.push({ w, amp });
+  }
+
+  const ampValues = data.map(d => d.amp).filter(isFinite);
+  const yMax = d3.max(ampValues) * 1.10;
+
+  const xScale = d3.scaleLinear().domain([0, wMax]).range([0, innerW]);
+  const yScale = d3.scaleLinear().domain([0, yMax]).range([innerH, 0]);
+
+  // Colour: high c → blue, low c → red (c in [0,5])
+  const colourT = Math.min(1, c / 5);
+  const curveColour = d3.interpolateRdYlBu(colourT);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .attr("width", width)
+    .attr("height", height)
+    .style("font-family", "sans-serif");
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // ω₀ vertical dashed line
+  g.append("line")
+    .attr("x1", xScale(w0)).attr("x2", xScale(w0))
+    .attr("y1", 0).attr("y2", innerH)
+    .attr("stroke", "#777").attr("stroke-dasharray", "5,4").attr("stroke-width", 1.2);
+
+  g.append("text")
+    .attr("x", xScale(w0) + 4).attr("y", 12)
+    .attr("font-size", 12).attr("fill", "#555")
+    .text("ω₀");
+
+  // Amplitude curve
+  const line = d3.line()
+    .x(d => xScale(d.w))
+    .y(d => Math.max(0, yScale(Math.min(d.amp, yMax * 1.05))))
+    .defined(d => isFinite(d.amp));
+
+  g.append("path")
+    .datum(data)
+    .attr("fill", "none")
+    .attr("stroke", curveColour)
+    .attr("stroke-width", 2.2)
+    .attr("d", line);
+
+  // Resonance peak
+  // Peak near w = w0 * sqrt(1 - 2*zeta^2), only exists if zeta < 1/sqrt(2)
+  let peakW = null, peakAmp = null;
+  if (zeta < 1 / Math.SQRT2) {
+    peakW = w0 * Math.sqrt(Math.max(0, 1 - 2 * zeta * zeta));
+    const r = peakW / w0;
+    const denom = Math.sqrt((1 - r * r) * (1 - r * r) + (2 * zeta * r) * (2 * zeta * r));
+    peakAmp = denom < 1e-9 ? null : 1 / denom;
+  } else {
+    // No resonance peak — show value at w=0 (amp=1)
+    peakW = 0;
+    peakAmp = 1;
+  }
+
+  if (peakAmp !== null && isFinite(peakAmp) && peakAmp <= yMax * 1.05) {
+    g.append("circle")
+      .attr("cx", xScale(peakW)).attr("cy", yScale(Math.min(peakAmp, yMax)))
+      .attr("r", 4)
+      .attr("fill", curveColour).attr("stroke", "#222").attr("stroke-width", 1);
+  }
+
+  // Resonance label
+  const peakWLabel = zeta < 1 / Math.SQRT2
+    ? `ω ≈ ω₀√(1−2ζ²) = ${(w0 * Math.sqrt(Math.max(0, 1 - 2 * zeta * zeta))).toFixed(3)}`
+    : "No resonance peak (ζ ≥ 1/√2)";
+
+  g.append("text")
+    .attr("x", innerW - 5).attr("y", 14)
+    .attr("text-anchor", "end").attr("font-size", 11).attr("fill", "#555")
+    .text(`Resonance peak at ${peakWLabel}`);
+
+  // Axes
+  g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(xScale).ticks(6));
+  g.append("g").call(d3.axisLeft(yScale).ticks(5));
+
+  // Axis labels
+  g.append("text")
+    .attr("x", innerW / 2).attr("y", innerH + 40)
+    .attr("text-anchor", "middle").attr("font-size", 13)
+    .text("Driving frequency ω");
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -48)
+    .attr("text-anchor", "middle").attr("font-size", 13)
+    .text("X(ω) / (F₀/k)");
+
+  // ζ annotation
+  g.append("text")
+    .attr("x", innerW - 5).attr("y", 28)
+    .attr("text-anchor", "end").attr("font-size", 11).attr("fill", "#555")
+    .text(`ζ = ${zeta.toFixed(3)}`);
+
+  return svg.node();
+}
+```
+
+## Reduction of order
+
+Suppose you know one solution $y_1$ to $ay'' + by' + cy = 0$ — perhaps from inspection or from the characteristic equation in a non-constant coefficient problem — but cannot find a second independent one directly. The method of **reduction of order** produces $y_2$.
+
+Set $y = v(x)\,y_1(x)$ where $v(x)$ is an unknown function. Compute $y'$ and $y''$, substitute into the ODE. Terms involving $v$ (without derivatives) cancel — this is guaranteed because $y_1$ itself satisfies the equation. The result is a first-order ODE in $w = v'$, which can be solved by the integrating factor method from Chapter 1.
+
+For the constant-coefficient case, this is how the repeated-root solution $xe^{rx}$ is derived. Set $y_1 = e^{rx}$, $y = ve^{rx}$:
+
+$$y' = (v' + rv)e^{rx}, \quad y'' = (v'' + 2rv' + r^2v)e^{rx}$$
+
+Substituting into $ay'' + by' + cy = 0$ and using $ar^2 + br + c = 0$:
+
+$$a(v'' + 2rv') + bv' = 0 \implies av'' + (2ar + b)v' = 0$$
+
+At the repeated root $r = -b/(2a)$, we have $2ar + b = 0$, so $av'' = 0$, giving $v'' = 0$ and thus $v = C_1 + C_2 x$. Therefore $y = (C_1 + C_2 x)e^{rx}$ — the result we stated earlier, now derived.
+
+Reduction of order becomes more important when dealing with variable-coefficient equations (Euler–Cauchy type) or when one solution is known from a series method. It will reappear in context.
+
+## Where this leads
+
+You now have the complete toolkit for second-order linear ODEs with constant coefficients: classify by roots of the characteristic equation; add a particular solution via undetermined coefficients; understand why resonance is structurally different from off-resonance forcing.
+
+Three threads open from here:
+
+**Laplace transforms** (Chapter 4) handle initial-value problems algorithmically, absorb discontinuous forcing naturally, and are the standard industrial tool for control systems analysis. The Laplace transform of $y''$ introduces the transfer function, which encodes the characteristic equation in a different algebraic form.
+
+**Systems and phase plane** (Chapter 3) extend the ideas to pairs of first-order equations — which is what a second-order ODE becomes when you introduce $v = y'$ as a second unknown. Phase-plane portraits make the overdamped/underdamped/critically damped classification visual.
+
+**Fourier series** (Volume 7, Fourier–PDEs section) answer the question: what if $f(x)$ is not a simple sinusoid but a periodic function of arbitrary shape? Decompose it into harmonics, solve for each, and superpose. The resonance analysis extends directly.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A structural engineer computing the natural frequencies of a building must keep them away from the frequencies of earthquakes and wind — both sources of periodic forcing.
+- An electrical engineer designing an RLC filter tunes $\omega_0$ and $\zeta$ to pass or reject particular frequency bands. The quality factor $Q = 1/(2\zeta)$ measures selectivity.
+- A control systems engineer designing a PID controller must ensure the closed-loop characteristic equation has roots with negative real parts — the same stability condition as $\alpha < 0$ for the underdamped spring.
+- A physicist modelling a damped quantum harmonic oscillator writes down the same equation. The mathematics is unchanged; only the interpretation of $x$ differs.
+:::
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:1 / -1; font-size:0.82em; color:#6b7280; padding:0.1rem 0 0.25rem 0; border-top: none;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**1.** Find the general solution of $y'' - 5y' + 6y = 0$.
+
+<!-- STEPPER -->
+Step 1 | Write the characteristic equation | $r^2 - 5r + 6 = 0$
+Step 2 | Factor | $(r - 2)(r - 3) = 0$
+Step 3 | Read off the roots | $r_1 = 2,\quad r_2 = 3$
+Step 4 | Discriminant check | $\Delta = 25 - 24 = 1 > 0$ — distinct real roots
+Step 5 | Write the general solution | $y = C_1 e^{2x} + C_2 e^{3x}$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Characteristic equation",    eq: "r^2 - 5r + 6 = 0" },
+  { op: "Factor",                      eq: "(r-2)(r-3) = 0" },
+  { op: "Roots",                       eq: "r_1 = 2,\\quad r_2 = 3", note: "Discriminant Δ = 25 − 24 = 1 > 0: two distinct real roots." },
+  { op: "General solution",            eq: "y = C_1 e^{2x} + C_2 e^{3x}" }
+])
+```
+
+---
+
+**2.** Solve $y'' + 4y' + 4y = 0$, $y(0) = 1$, $y'(0) = 0$.
+
+<!-- STEPPER -->
+Step 1 | Write the characteristic equation | $r^2 + 4r + 4 = 0$
+Step 2 | Factor as a perfect square | $(r + 2)^2 = 0$
+Step 3 | Identify the repeated root | $r = -2$
+Step 4 | General solution (repeated root form) | $y = (C_1 + C_2 x)e^{-2x}$
+Step 5 | Apply $y(0) = 1$ | $C_1 = 1$
+Step 6 | Differentiate: $y' = (C_2 - 2C_1 - 2C_2 x)e^{-2x}$; apply $y'(0) = 0$ | $C_2 - 2(1) = 0 \Rightarrow C_2 = 2$
+Step 7 | Final solution | $y = (1 + 2x)e^{-2x}$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Characteristic equation",    eq: "r^2 + 4r + 4 = 0" },
+  { op: "Factor",                      eq: "(r+2)^2 = 0" },
+  { op: "Repeated root",               eq: "r = -2", note: "Discriminant Δ = 16 − 16 = 0: critically damped." },
+  { op: "General solution",            eq: "y = (C_1 + C_2 x)e^{-2x}" },
+  { op: "Apply y(0) = 1",              eq: "C_1 = 1" },
+  { op: "Differentiate; apply y'(0)=0", eq: "y'(0) = C_2 - 2C_1 = 0 \\Rightarrow C_2 = 2" },
+  { op: "Final solution",              eq: "y = (1 + 2x)e^{-2x}" }
+])
+```
+
+---
+
+**3.** Solve $y'' + 9y = 0$, $y(0) = 0$, $y'(0) = 3$.
+
+<!-- STEPPER -->
+Step 1 | Characteristic equation | $r^2 + 9 = 0$
+Step 2 | Roots | $r = \pm 3i$ — pure imaginary; $\alpha = 0$, $\beta = 3$
+Step 3 | General solution | $y = C_1 \cos(3x) + C_2 \sin(3x)$
+Step 4 | Apply $y(0) = 0$ | $C_1 = 0$
+Step 5 | Differentiate: $y' = -3C_1\sin(3x) + 3C_2\cos(3x)$; apply $y'(0) = 3$ | $3C_2 = 3 \Rightarrow C_2 = 1$
+Step 6 | Final solution | $y = \sin(3x)$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Characteristic equation",    eq: "r^2 + 9 = 0" },
+  { op: "Roots",                       eq: "r = \\pm 3i", note: "Pure imaginary roots: undamped simple harmonic motion at ω₀ = 3." },
+  { op: "General solution",            eq: "y = C_1 \\cos(3x) + C_2 \\sin(3x)" },
+  { op: "Apply y(0) = 0",              eq: "C_1 = 0" },
+  { op: "Apply y'(0) = 3",             eq: "3C_2 = 3 \\Rightarrow C_2 = 1" },
+  { op: "Final solution",              eq: "y = \\sin(3x)" }
+])
+```
+
+---
+
+**4.** Find a particular solution of $y'' + 3y' + 2y = e^{-3x}$.
+
+<!-- STEPPER -->
+Step 1 | Characteristic equation for the homogeneous part | $r^2 + 3r + 2 = (r+1)(r+2) = 0$; roots $r = -1, -2$
+Step 2 | Check: does $e^{-3x}$ appear in $y_c$? | No — the exponent $-3$ does not match $-1$ or $-2$. No modification needed.
+Step 3 | Guess $y_p = Ae^{-3x}$; compute derivatives | $y_p' = -3Ae^{-3x}$, $y_p'' = 9Ae^{-3x}$
+Step 4 | Substitute into the ODE | $9Ae^{-3x} + 3(-3A)e^{-3x} + 2Ae^{-3x} = (9A - 9A + 2A)e^{-3x} = 2Ae^{-3x}$
+Step 5 | Match to $e^{-3x}$ | $2A = 1 \Rightarrow A = \tfrac{1}{2}$
+Step 6 | Particular solution | $y_p = \tfrac{1}{2}e^{-3x}$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Homogeneous roots",           eq: "r^2+3r+2=(r+1)(r+2)=0 \\Rightarrow r=-1,-2" },
+  { op: "Modification check",          eq: "e^{-3x} \\notin y_c", note: "Exponent −3 ≠ −1 or −2. Standard guess applies." },
+  { op: "Guess",                        eq: "y_p = Ae^{-3x}" },
+  { op: "Substitute",                   eq: "9Ae^{-3x} - 9Ae^{-3x} + 2Ae^{-3x} = 2Ae^{-3x}" },
+  { op: "Match coefficients",           eq: "2A = 1 \\Rightarrow A = \\tfrac{1}{2}" },
+  { op: "Particular solution",          eq: "y_p = \\tfrac{1}{2}e^{-3x}" }
+])
+```
+
+---
+
+**5.** Solve $y'' + 4y = \cos(2x)$.
+
+*Note: the driving frequency $\omega = 2$ equals $\omega_0 = \sqrt{4} = 2$ — this is resonance. The standard guess fails; the modification rule applies.*
+
+<!-- STEPPER -->
+Step 1 | Characteristic equation | $r^2 + 4 = 0 \Rightarrow r = \pm 2i$
+Step 2 | Homogeneous solution | $y_c = C_1\cos(2x) + C_2\sin(2x)$
+Step 3 | Standard guess $A\cos(2x) + B\sin(2x)$ is already in $y_c$ — apply modification rule | Guess $y_p = x(A\cos(2x) + B\sin(2x))$
+Step 4 | Compute $y_p''$ using product rule | $y_p'' = -4x(A\cos 2x + B\sin 2x) + 2(-2A\sin 2x + 2B\cos 2x)\cdot 2$... simplifies to $-4Ax\cos 2x - 4Bx\sin 2x - 4A\sin 2x + 4B\cos 2x$
+Step 5 | Substitute $y_p'' + 4y_p = \cos(2x)$ | The $x$-terms cancel. Remaining: $-4A\sin(2x) + 4B\cos(2x) = \cos(2x)$
+Step 6 | Match coefficients | $-4A = 0 \Rightarrow A = 0$; $4B = 1 \Rightarrow B = \tfrac{1}{4}$
+Step 7 | Particular solution | $y_p = \tfrac{1}{4}x\sin(2x)$
+Step 8 | General solution | $y = C_1\cos(2x) + C_2\sin(2x) + \tfrac{1}{4}x\sin(2x)$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Characteristic equation",    eq: "r^2 + 4 = 0 \\Rightarrow r = \\pm 2i" },
+  { op: "Homogeneous solution",        eq: "y_c = C_1\\cos(2x) + C_2\\sin(2x)" },
+  { op: "Standard guess fails — resonance", eq: "\\cos(2x) \\in y_c \\Rightarrow \\text{multiply by } x", note: "This is the resonance case: ω = ω₀ = 2." },
+  { op: "Modified guess",              eq: "y_p = x(A\\cos 2x + B\\sin 2x)" },
+  { op: "Substitute; x-terms cancel",  eq: "-4A\\sin(2x) + 4B\\cos(2x) = \\cos(2x)" },
+  { op: "Match coefficients",          eq: "A = 0,\\quad B = \\tfrac{1}{4}" },
+  { op: "Particular solution",         eq: "y_p = \\tfrac{1}{4}x\\sin(2x)", note: "The factor of x causes amplitude to grow linearly with x — the resonance signature." },
+  { op: "General solution",            eq: "y = C_1\\cos(2x) + C_2\\sin(2x) + \\tfrac{1}{4}x\\sin(2x)" }
+])
+```
+
+---
+
+**6.** An RLC circuit has $L = 1$ H, $R = 2$ Ω, $C = \tfrac{1}{3}$ F with no forcing voltage. The governing equation for charge $q(t)$ is $L\ddot{q} + R\dot{q} + q/C = 0$. Find $q(t)$ given $q(0) = 1$ C, $\dot{q}(0) = 0$. Classify the response.
+
+<!-- STEPPER -->
+Step 1 | Write the ODE with given values | $\ddot{q} + 2\dot{q} + 3q = 0$
+Step 2 | Characteristic equation | $r^2 + 2r + 3 = 0$
+Step 3 | Discriminant | $\Delta = 4 - 12 = -8 < 0$ — complex roots; underdamped
+Step 4 | Roots | $r = \dfrac{-2 \pm \sqrt{-8}}{2} = -1 \pm i\sqrt{2}$
+Step 5 | General solution | $q = e^{-t}(C_1\cos(\sqrt{2}\,t) + C_2\sin(\sqrt{2}\,t))$
+Step 6 | Apply $q(0) = 1$ | $C_1 = 1$
+Step 7 | Differentiate; apply $\dot{q}(0) = 0$ | $\dot{q}(0) = -C_1 + \sqrt{2}\,C_2 = 0 \Rightarrow C_2 = \tfrac{1}{\sqrt{2}}$
+Step 8 | Final solution | $q(t) = e^{-t}\!\left(\cos(\sqrt{2}\,t) + \dfrac{1}{\sqrt{2}}\sin(\sqrt{2}\,t)\right)$
+Step 9 | Physical interpretation | The charge oscillates at $\omega_d = \sqrt{2}$ rad/s with an exponentially decaying envelope $e^{-t}$. The resistor dissipates energy; the circuit is underdamped.
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "ODE with given values",       eq: "\\ddot{q} + 2\\dot{q} + 3q = 0", note: "L=1, R=2, 1/C=3." },
+  { op: "Characteristic equation",    eq: "r^2 + 2r + 3 = 0" },
+  { op: "Discriminant",                eq: "\\Delta = 4 - 12 = -8 < 0", note: "Negative discriminant: underdamped oscillation." },
+  { op: "Roots",                        eq: "r = -1 \\pm i\\sqrt{2}" },
+  { op: "General solution",            eq: "q = e^{-t}\\bigl(C_1\\cos(\\sqrt{2}\\,t) + C_2\\sin(\\sqrt{2}\\,t)\\bigr)" },
+  { op: "Apply q(0) = 1",              eq: "C_1 = 1" },
+  { op: "Apply \\dot{q}(0) = 0",       eq: "-C_1 + \\sqrt{2}\\,C_2 = 0 \\Rightarrow C_2 = \\tfrac{1}{\\sqrt{2}}" },
+  { op: "Final solution",              eq: "q(t) = e^{-t}\\!\\left(\\cos(\\sqrt{2}\\,t) + \\tfrac{1}{\\sqrt{2}}\\sin(\\sqrt{2}\\,t)\\right)", note: "Underdamped: decaying oscillation. The circuit rings at ωd = √2 rad/s and settles to q = 0." }
+])
+```

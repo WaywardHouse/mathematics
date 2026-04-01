@@ -1,6 +1,783 @@
 ---
 title: "Trigonometry"
-status: "seed"
+subtitle: "Angles and the ratios they fix"
+
+volume: 3
+chapter: 2
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know how to measure lengths and work with ratios.
+  Shapes have angles as well as sides — and the two are connected.
+
+rewrite: |
+  In a right triangle, the angle alone fixes the ratio between any
+  two sides. Name the sides relative to the angle you care about,
+  pick the right ratio, and you can find any missing length or angle.
+
+opens_to:
+  - id: "v3c4-functions"
+    label: "Functions and relations"
+    volume: 3
+    relationship: "enables"
+  - id: "v5c2-differential-calculus"
+    label: "Differential calculus"
+    volume: 5
+    relationship: "motivates"
+  - id: "v7c1-first-order-odes"
+    label: "Ordinary differential equations"
+    volume: 7
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "geom"
+  - "ratio"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Every structural load calculation involves an angle. Roof pitch, ramp grade, cable tension — all resolved with trig."
+    career_example: "Structural engineer calculating force components along a support cable"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Wave motion, optics, and circular motion are all expressed using sine and cosine."
+    career_example: "Physicist describing the displacement of a pendulum over time"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "Surveying and navigation use bearing angles and the sine rule to find distances that can't be measured directly."
+    career_example: "Surveyor triangulating the position of a remote landmark"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Game engines rotate, project, and reflect objects using trigonometric transformations."
+    career_example: "Game developer rotating a sprite or camera in 2D space"
+
+hook: |
+  You're building a wheelchair ramp. The code says the angle can't
+  exceed 4.8°. You know how high the step is. How long does the ramp
+  need to be?
+
+  You're standing 30 metres from a building, looking up at the roof.
+  You want to know how tall the building is, but you can't climb it.
+  You can measure the angle you're looking up at. Is that enough?
+
+  Your phone screen is 15.6 cm tall and 7.2 cm wide. What's the
+  diagonal? Easy — Pythagoras. But what's the angle in the corner?
+  That's where trig comes in.
+
+  Each of these situations has a right triangle in it somewhere. You
+  know some sides and angles, and you want to find others. Trigonometry
+  gives you three ratios that connect them.
+
+notation_introduced:
+  - symbol: "\\sin(\\theta)"
+    reads_as: "sine of theta — opposite over hypotenuse"
+    notation_weight: 2
+  - symbol: "\\cos(\\theta)"
+    reads_as: "cosine of theta — adjacent over hypotenuse"
+    notation_weight: 2
+  - symbol: "\\tan(\\theta)"
+    reads_as: "tangent of theta — opposite over adjacent"
+    notation_weight: 2
+  - symbol: "\\theta"
+    reads_as: "theta — the angle you're working with"
+    notation_weight: 1
+  - symbol: "\\sin^{-1}"
+    reads_as: "inverse sine — the angle whose sine is this value"
+    notation_weight: 2
+  - symbol: "\\cos^{-1}(x)"
+    reads_as: "inverse cosine — the angle whose cosine is x"
+    notation_weight: 2
+  - symbol: "\\tan^{-1}(x)"
+    reads_as: "inverse tangent — the angle whose tangent is x"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 10
+  strand: "Measurement"
+  outcome: "2.1"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You're building a wheelchair ramp. The code says the angle can't
+exceed 4.8°. You know how high the step is. How long does the ramp
+need to be?
+
+You're standing 30 metres from a building, looking up at the roof.
+You want to know how tall the building is, but you can't climb it.
+You can measure the angle you're looking up at. Is that enough?
+
+Your phone screen is 15.6 cm tall and 7.2 cm wide. What's the
+diagonal? Easy — Pythagoras. But what's the angle in the corner?
+That's where trig comes in.
+
+Each of these situations has a right triangle in it somewhere. You
+know some sides and angles, and you want to find others. Trigonometry
+gives you three ratios that connect them.
+
+## What the notation is saying
+
+Start with a right triangle. One angle is exactly 90°. Pick one of
+the other angles and call it $\theta$ (the Greek letter *theta* — just
+a name for "the angle you're working with").
+
+Now name the three sides relative to $\theta$:
+
+- The **hypotenuse** is the longest side, always opposite the right
+  angle.
+- The **opposite** side is the one directly across the triangle from
+  $\theta$ — the side $\theta$ "faces".
+- The **adjacent** side is the one next to $\theta$ that isn't the
+  hypotenuse — the side $\theta$ "leans against".
+
+The three trig ratios are:
+
+$$\sin(\theta) = \frac{\text{opposite}}{\text{hypotenuse}}$$
+
+Read it: "the sine of theta equals opposite over hypotenuse."
+
+$$\cos(\theta) = \frac{\text{adjacent}}{\text{hypotenuse}}$$
+
+Read it: "the cosine of theta equals adjacent over hypotenuse."
+
+$$\tan(\theta) = \frac{\text{opposite}}{\text{adjacent}}$$
+
+Read it: "the tangent of theta equals opposite over adjacent."
+
+The memory aid is **SOH-CAH-TOA**: Sine = Opposite/Hypotenuse,
+Cosine = Adjacent/Hypotenuse, Tangent = Opposite/Adjacent. It's a
+mnemonic, not mathematics — use it until you don't need it any more.
+
+```{ojs}
+//| echo: false
+viewof triAngle = Inputs.range([5, 85], {
+  value: 35,
+  step: 1,
+  label: "Angle θ (degrees)"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof triHyp = Inputs.range([1, 10], {
+  value: 6,
+  step: 0.5,
+  label: "Hypotenuse length (units)"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const deg = triAngle;
+  const hyp = triHyp;
+  const rad = deg * Math.PI / 180;
+  const opp = hyp * Math.sin(rad);
+  const adj = hyp * Math.cos(rad);
+
+  const scale = 30;
+  const svgW = 520, svgH = 300;
+  const margin = 50;
+
+  // Triangle: right angle at bottom-left
+  const ox = margin, oy = svgH - margin - 20;
+  const ax = ox + adj * scale, ay = oy;      // bottom-right
+  const bx = ox, by = oy - opp * scale;      // top-left
+
+  const svg = d3.create("svg")
+    .attr("width", svgW)
+    .attr("height", svgH)
+    .style("font-family", "inherit");
+
+  // Triangle fill
+  svg.append("polygon")
+    .attr("points", `${ox},${oy} ${ax},${ay} ${bx},${by}`)
+    .attr("fill", "#f0f9ff")
+    .attr("stroke", "#0369a1")
+    .attr("stroke-width", 2);
+
+  // Right-angle marker
+  const sq = 10;
+  svg.append("rect")
+    .attr("x", ox).attr("y", oy - sq)
+    .attr("width", sq).attr("height", sq)
+    .attr("fill", "none").attr("stroke", "#374151").attr("stroke-width", 1.5);
+
+  // Angle arc at bottom-right
+  const arcR = 22;
+  const arcPath = d3.arc()({
+    innerRadius: 0, outerRadius: arcR,
+    startAngle: Math.PI,
+    endAngle: Math.PI + rad
+  });
+  svg.append("path")
+    .attr("d", arcPath)
+    .attr("transform", `translate(${ax},${ay}) rotate(-90)`)
+    .attr("fill", "#fde68a")
+    .attr("stroke", "#d97706")
+    .attr("stroke-width", 1);
+
+  svg.append("text")
+    .attr("x", ax - arcR - 14).attr("y", ay - 8)
+    .attr("font-size", "13px").attr("fill", "#92400e")
+    .text(`θ=${deg}°`);
+
+  // Side labels
+  // Hypotenuse midpoint
+  const hmx = (ax + bx) / 2 + 14, hmy = (ay + by) / 2;
+  svg.append("text")
+    .attr("x", hmx).attr("y", hmy)
+    .attr("font-size", "12px").attr("fill", "#0369a1").attr("font-weight", "600")
+    .text(`hyp = ${hyp.toFixed(1)}`);
+
+  // Adjacent (bottom)
+  svg.append("text")
+    .attr("x", ox + adj * scale / 2).attr("y", oy + 18)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#059669")
+    .text(`adj = ${adj.toFixed(2)}`);
+
+  // Opposite (left side)
+  svg.append("text")
+    .attr("x", ox - 14).attr("y", oy - opp * scale / 2)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#dc2626")
+    .text(`opp = ${opp.toFixed(2)}`);
+
+  // Ratios panel
+  const px = 310, py = 40;
+  svg.append("rect")
+    .attr("x", px - 10).attr("y", py - 20)
+    .attr("width", 190).attr("height", 140)
+    .attr("fill", "#f8fafc").attr("stroke", "#e2e8f0").attr("rx", 6);
+
+  svg.append("text").attr("x", px).attr("y", py)
+    .attr("font-size", "13px").attr("font-weight", "600").attr("fill", "#374151")
+    .text("Ratios (fixed by θ alone)");
+
+  svg.append("text").attr("x", px).attr("y", py + 26)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`sin(${deg}°) = opp/hyp`);
+  svg.append("text").attr("x", px).attr("y", py + 44)
+    .attr("font-size", "13px").attr("fill", "#dc2626")
+    .text(`= ${Math.sin(rad).toFixed(4)}`);
+
+  svg.append("text").attr("x", px).attr("y", py + 66)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`cos(${deg}°) = adj/hyp`);
+  svg.append("text").attr("x", px).attr("y", py + 84)
+    .attr("font-size", "13px").attr("fill", "#059669")
+    .text(`= ${Math.cos(rad).toFixed(4)}`);
+
+  svg.append("text").attr("x", px).attr("y", py + 106)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`tan(${deg}°) = opp/adj`);
+  svg.append("text").attr("x", px).attr("y", py + 124)
+    .attr("font-size", "13px").attr("fill", "#7c3aed")
+    .text(`= ${Math.tan(rad).toFixed(4)}`);
+
+  return svg.node();
+}
+```
+
+## The method
+
+### Finding an unknown side
+
+You know an angle and one side. You want another side. Pick the ratio
+that connects what you know to what you want.
+
+**Example.** A ramp rises 0.5 m. The angle at the base is 4°. How
+long is the ramp surface?
+
+The 0.5 m is the side opposite the 4° angle. The ramp surface is the
+hypotenuse. The ratio connecting opposite and hypotenuse is sine:
+
+$$\sin(4°) = \frac{0.5}{\text{hyp}}$$
+
+Rearrange step by step:
+
+$$\sin(4°) \times \text{hyp} = 0.5 \quad \text{[multiply both sides by hyp]}$$
+
+$$\text{hyp} = \frac{0.5}{\sin(4°)} \quad \text{[divide both sides by } \sin(4°)\text{]}$$
+
+$$\text{hyp} \approx \frac{0.5}{0.0698} \approx 7.2 \text{ m}$$
+
+The ramp needs to be about 7.2 m long.
+
+### Finding an unknown angle
+
+You know two sides. You want the angle between them. Use the inverse
+trig function.
+
+$\sin^{-1}$ reads as "inverse sine" or "arcsine". It asks: what angle
+has this sine value? If $\sin(\theta) = 0.5$, then
+$\theta = \sin^{-1}(0.5) = 30°$. The $^{-1}$ notation means "undo
+the sine" — it does not mean "one over sine."
+
+Similarly, $\cos^{-1}$ and $\tan^{-1}$ undo the cosine and tangent
+respectively. All three inverse functions work the same way: give them
+a ratio, get back an angle.
+
+**Example.** Your phone screen is 15.6 cm tall and 7.2 cm wide.
+What angle does the diagonal make with the long side?
+
+The two known sides are 15.6 cm (adjacent to the angle at the
+bottom-left corner) and 7.2 cm (opposite). The ratio connecting
+opposite and adjacent is tangent:
+
+$$\tan(\theta) = \frac{7.2}{15.6} \approx 0.4615$$
+
+Apply inverse tangent to both sides:
+
+$$\theta = \tan^{-1}(0.4615) \approx 24.8°$$
+
+The diagonal meets the long side at about 25°.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+The ratios are fixed by the angle alone — not by how big the triangle
+is. Any right triangle with a 30° angle has the same ratio of opposite
+to hypotenuse: exactly 0.5. Scale the triangle up by ten times and both
+sides get ten times longer, but the ratio stays the same.
+
+This is why the ratios are useful. They depend only on the angle, so
+you can look up $\sin(30°) = 0.5$ once and use it for any triangle
+containing a 30° angle, whatever its size.
+:::
+
+## Worked examples
+
+**Example 1 — Finding the height of a building (geography/surveying)**
+
+A surveyor stands 40 m from the base of a radio mast. She measures
+the angle of elevation to the top as 62°. How tall is the mast?
+
+The 40 m is the side adjacent to the 62° angle. The mast height is the
+opposite side. The ratio connecting adjacent and opposite is tangent:
+
+$$\tan(62°) = \frac{\text{height}}{40}$$
+
+Multiply both sides by 40:
+
+$$\text{height} = 40 \times \tan(62°)$$
+
+$\tan(62°) \approx 1.8807$, so:
+
+$$\text{height} = 40 \times 1.8807 \approx 75.2 \text{ m}$$
+
+The mast is approximately 75 m tall. Check: $\tan^{-1}(75.2/40)
+= \tan^{-1}(1.880) \approx 62°$. Yes.
+
+---
+
+**Example 2 — Rope from a fence post (geometry/practical)**
+
+A rope is tied from the top of a fence post to a peg in the ground.
+The post is vertical and the rope makes an angle of 35° with the post.
+The rope has a tension of 80 N — the force acting along the rope. What
+is the component of that tension pulling horizontally away from the
+post?
+
+The 80 N tension acts along the rope — that's the hypotenuse of a
+right triangle. The angle at the top of the post is 35°. The
+horizontal pull is the side opposite that angle:
+
+$$\sin(35°) = \frac{\text{horizontal component}}{80}$$
+
+$$\text{horizontal component} = 80 \times \sin(35°)$$
+
+$\sin(35°) \approx 0.5736$, so:
+
+$$\text{horizontal component} = 80 \times 0.5736 \approx 45.9 \text{ N}$$
+
+The peg must hold against about 46 N of horizontal pull.
+
+---
+
+**Example 3 — Finding the ramp angle for a target slope (science/engineering)**
+
+A physiotherapy exercise ramp needs a slope of 1 in 8 — for every
+8 cm of horizontal run, it rises 1 cm. What angle does this correspond
+to?
+
+The slope ratio gives you opposite over adjacent: $\frac{1}{8} = 0.125$.
+That's the tangent of the angle:
+
+$$\tan(\theta) = \frac{1}{8} = 0.125$$
+
+$$\theta = \tan^{-1}(0.125) \approx 7.1°$$
+
+The ramp makes an angle of about 7° with the floor.
+
+---
+
+**Example 4 — Rotating a point in 2D (computing/game development)**
+
+A game object is at position $(5, 0)$ — five units to the right of
+the origin, on the horizontal axis. The game rotates everything 40°
+anticlockwise. Where does the object end up?
+
+The object starts at distance 5 from the origin (its "hypotenuse" from
+the rotation centre). After a 40° rotation, the new $x$-coordinate is
+the adjacent side of the 40° angle, and the new $y$-coordinate is the
+opposite side:
+
+$$x' = 5 \times \cos(40°) \approx 5 \times 0.7660 \approx 3.83$$
+
+$$y' = 5 \times \sin(40°) \approx 5 \times 0.6428 \approx 3.21$$
+
+The object moves to approximately $(3.83,\ 3.21)$. This is the core of
+every 2D rotation in a game engine.
+
+```{ojs}
+//| echo: false
+viewof elevDist = Inputs.range([5, 30], {
+  value: 15,
+  step: 1,
+  label: "Horizontal distance from building (m)"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const dist = elevDist;
+  const buildingH = 20; // fixed metres
+  const angleRad = Math.atan(buildingH / dist);
+  const angleDeg = angleRad * 180 / Math.PI;
+
+  const svgW = 500, svgH = 300;
+  const margin = 40;
+  const scale = 7; // px per metre
+
+  // Scene coordinates
+  const groundY = svgH - margin - 20;
+  const buildingX = svgW - margin - 60;
+  const observerX = buildingX - dist * scale;
+  const buildingTopY = groundY - buildingH * scale;
+
+  const svg = d3.create("svg")
+    .attr("width", svgW)
+    .attr("height", svgH)
+    .style("font-family", "inherit");
+
+  // Ground line
+  svg.append("line")
+    .attr("x1", margin).attr("y1", groundY)
+    .attr("x2", svgW - margin).attr("y2", groundY)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+
+  // Building (vertical line)
+  svg.append("line")
+    .attr("x1", buildingX).attr("y1", groundY)
+    .attr("x2", buildingX).attr("y2", buildingTopY)
+    .attr("stroke", "#374151").attr("stroke-width", 4);
+
+  // Building label
+  svg.append("text")
+    .attr("x", buildingX + 8).attr("y", (groundY + buildingTopY) / 2)
+    .attr("font-size", "12px").attr("fill", "#374151")
+    .text("20 m");
+
+  // Observer dot
+  svg.append("circle")
+    .attr("cx", observerX).attr("cy", groundY)
+    .attr("r", 6)
+    .attr("fill", "#f59e0b").attr("stroke", "#d97706").attr("stroke-width", 1.5);
+
+  svg.append("text")
+    .attr("x", observerX).attr("y", groundY + 18)
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#374151")
+    .text("observer");
+
+  // Hypotenuse line
+  svg.append("line")
+    .attr("x1", observerX).attr("y1", groundY)
+    .attr("x2", buildingX).attr("y2", buildingTopY)
+    .attr("stroke", "#2563eb").attr("stroke-width", 2)
+    .attr("stroke-dasharray", "5,3");
+
+  // Horizontal distance label
+  svg.append("line")
+    .attr("x1", observerX).attr("y1", groundY + 28)
+    .attr("x2", buildingX).attr("y2", groundY + 28)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1)
+    .attr("marker-end", "url(#arrow)");
+
+  svg.append("text")
+    .attr("x", (observerX + buildingX) / 2).attr("y", groundY + 42)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#6b7280")
+    .text(`d = ${dist} m`);
+
+  // Angle arc at observer
+  const arcR = 28;
+  const arcPath = d3.arc()({
+    innerRadius: 0, outerRadius: arcR,
+    startAngle: -Math.PI / 2,
+    endAngle: -Math.PI / 2 + angleRad
+  });
+  svg.append("path")
+    .attr("d", arcPath)
+    .attr("transform", `translate(${observerX},${groundY}) rotate(${90 - angleDeg})`)
+    .attr("fill", "#fde68a").attr("stroke", "#d97706").attr("stroke-width", 1);
+
+  // Opposite label (building height)
+  svg.append("text")
+    .attr("x", buildingX - 10).attr("y", groundY - buildingH * scale / 2)
+    .attr("text-anchor", "end").attr("font-size", "12px").attr("fill", "#dc2626")
+    .text("opp = 20 m");
+
+  // Adjacent label
+  svg.append("text")
+    .attr("x", (observerX + buildingX) / 2).attr("y", groundY - 8)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#059669")
+    .text(`adj = ${dist} m`);
+
+  // Results panel
+  const px = margin, py = margin;
+  svg.append("rect")
+    .attr("x", px - 4).attr("y", py - 18)
+    .attr("width", 210).attr("height", 80)
+    .attr("fill", "#f8fafc").attr("stroke", "#e2e8f0").attr("rx", 6);
+
+  svg.append("text").attr("x", px).attr("y", py)
+    .attr("font-size", "13px").attr("font-weight", "600").attr("fill", "#374151")
+    .text("Angle of elevation");
+
+  svg.append("text").attr("x", px).attr("y", py + 22)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`θ = tan⁻¹(20 / ${dist})`);
+
+  svg.append("text").attr("x", px).attr("y", py + 42)
+    .attr("font-size", "14px").attr("fill", "#2563eb").attr("font-weight", "600")
+    .text(`θ = ${angleDeg.toFixed(1)}°`);
+
+  svg.append("text").attr("x", px).attr("y", py + 60)
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .text(`(tan⁻¹(${(buildingH/dist).toFixed(3)}))`);
+
+  return svg.node();
+}
+```
+
+## Where this goes
+
+The three ratios in this chapter are functions — you put in an angle
+and get out a number. **Volume 3, Chapter 4** (Functions and relations)
+gives that idea its full treatment: a function is a rule that maps one
+value to another, and sine, cosine, and tangent are the first examples
+most people meet of functions that are not straight lines. Once you see
+trig through the function lens you can ask new questions: what does the
+graph look like? Where is it increasing? Does it repeat?
+
+It repeats — and that turns out to matter enormously. **Differential
+calculus** (Volume 5) uses sine and cosine as its central worked
+examples because they are the simplest functions whose rate of change
+is also a trig function. The derivative of $\sin$ is $\cos$; the
+derivative of $\cos$ is $-\sin$. That self-referential property is why
+trig is indispensable in physics and engineering, and it's the first
+real glimpse of how calculus and trigonometry are connected at a deep
+level.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A structural engineer resolves a cable force into horizontal and
+  vertical components before checking whether a joint will hold.
+- A physicist writes the equation of a pendulum's motion using sine —
+  the angle oscillates like a sine wave over time.
+- A navigator uses bearing angles and the sine rule to triangulate a
+  ship's position from two known landmarks.
+- A game developer rotates sprites, aims projectiles, and swings
+  camera views using $\sin$ and $\cos$ applied to coordinates.
+- A sound engineer represents audio waveforms as sums of sine waves
+  — the starting point of Fourier analysis.
+:::
+
+## Exercises
+
+These are puzzles. Each one has a clean answer. The work is in
+identifying which sides and which ratio to use before you reach for
+the calculator.
+
+---
+
+**1.** A ski slope is 800 m long and the vertical drop is 240 m. What
+angle does the slope make with the horizontal? Give your answer to one
+decimal place.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Identify opposite, adjacent, hypotenuse", eq: "\\text{hypotenuse} = 800\\text{ m},\\quad \\text{opposite} = 240\\text{ m}", note: "The slope surface is the hypotenuse; the vertical drop is opposite the angle at the base." },
+  { op: "Choose the ratio", eq: "\\sin(\\theta) = \\frac{\\text{opposite}}{\\text{hypotenuse}} = \\frac{240}{800}", note: null },
+  { op: "Simplify the fraction", eq: "\\sin(\\theta) = 0.3", note: null },
+  { op: "Apply inverse sine", eq: "\\theta = \\sin^{-1}(0.3)", note: "Inverse sine asks: what angle has a sine of 0.3?" },
+  { op: "Calculate", eq: "\\theta \\approx 17.5°", note: null },
+  { op: "Check", eq: "\\sin(17.5°) \\approx 0.3007 \\approx 0.3 \\checkmark", note: null }
+])
+```
+
+---
+
+**2.** A ladder 6 m long leans against a wall. It makes an angle of
+72° with the ground. How high up the wall does the top of the ladder
+reach? Give your answer to two decimal places.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Identify opposite, adjacent, hypotenuse", eq: "\\text{hypotenuse} = 6\\text{ m},\\quad \\theta = 72°,\\quad \\text{opposite} = \\text{wall height}", note: "The ladder is the hypotenuse; the wall height is the side opposite the 72° angle at the base." },
+  { op: "Choose the ratio", eq: "\\sin(72°) = \\frac{\\text{wall height}}{6}", note: null },
+  { op: "Rearrange", eq: "\\text{wall height} = 6 \\times \\sin(72°)", note: null },
+  { op: "Calculate", eq: "\\text{wall height} = 6 \\times 0.9511 \\approx 5.71\\text{ m}", note: null },
+  { op: "Check", eq: "\\sin^{-1}\\!\\left(\\frac{5.71}{6}\\right) = \\sin^{-1}(0.9517) \\approx 72.1° \\approx 72° \\checkmark", note: null }
+])
+```
+
+---
+
+**3.** A phone screen has a diagonal of 16.5 cm and the screen is
+8.0 cm wide. What angle does the diagonal make with the bottom edge
+of the screen?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Identify opposite, adjacent, hypotenuse", eq: "\\text{hypotenuse} = 16.5\\text{ cm},\\quad \\text{adjacent} = 8.0\\text{ cm (width, beside the angle)}", note: "The angle is at the bottom corner; the width is adjacent, the diagonal is the hypotenuse." },
+  { op: "Choose the ratio", eq: "\\cos(\\theta) = \\frac{\\text{adjacent}}{\\text{hypotenuse}} = \\frac{8.0}{16.5}", note: null },
+  { op: "Compute the ratio", eq: "\\cos(\\theta) \\approx 0.4848", note: null },
+  { op: "Apply inverse cosine", eq: "\\theta = \\cos^{-1}(0.4848) \\approx 61.0°", note: null },
+  { op: "Check", eq: "\\cos(61°) \\approx 0.4848,\\quad 16.5 \\times 0.4848 \\approx 8.0\\text{ cm} \\checkmark", note: null }
+])
+```
+
+---
+
+**4.** A solar panel is mounted on a roof. To maximise energy
+collection in Alberta, the panel should face the sun at an angle of
+elevation of 53°. The vertical rise from the base of the panel to
+its top edge is 1.2 m. How long is the panel surface?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Identify opposite, adjacent, hypotenuse", eq: "\\theta = 53°,\\quad \\text{opposite} = 1.2\\text{ m (vertical rise)},\\quad \\text{hypotenuse} = \\text{panel length}", note: "The vertical rise is opposite the angle; the panel surface is the hypotenuse." },
+  { op: "Choose the ratio", eq: "\\sin(53°) = \\frac{1.2}{\\text{panel length}}", note: null },
+  { op: "Rearrange", eq: "\\text{panel length} = \\frac{1.2}{\\sin(53°)}", note: null },
+  { op: "Calculate", eq: "\\text{panel length} = \\frac{1.2}{0.7986} \\approx 1.50\\text{ m}", note: null },
+  { op: "Check", eq: "\\sin(53°) \\times 1.50 \\approx 0.7986 \\times 1.50 \\approx 1.20\\text{ m} \\checkmark", note: null }
+])
+```
+
+---
+
+**5.** A zip line descends from a platform 18 m high. The cable makes
+an angle of 35° with the horizontal. How long is the cable, and how
+far from the base of the platform does it end?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Identify opposite, adjacent, hypotenuse", eq: "\\text{opposite} = 18\\text{ m (height)},\\quad \\theta = 35°,\\quad \\text{hypotenuse} = \\text{cable length}", note: "The height of the platform is the side opposite the 35° angle at the far end of the cable." },
+  { op: "Find the cable length using sine", eq: "\\sin(35°) = \\frac{18}{\\text{cable}}", note: null },
+  { op: "Rearrange", eq: "\\text{cable} = \\frac{18}{\\sin(35°)} = \\frac{18}{0.5736} \\approx 31.4\\text{ m}", note: null },
+  { op: "Find the horizontal distance using cosine", eq: "\\cos(35°) = \\frac{\\text{horizontal}}{\\text{cable}} \\implies \\text{horizontal} = 31.4 \\times \\cos(35°)", note: null },
+  { op: "Calculate horizontal distance", eq: "\\text{horizontal} = 31.4 \\times 0.8192 \\approx 25.7\\text{ m}", note: null },
+  { op: "Check using Pythagoras", eq: "\\sqrt{18^2 + 25.7^2} = \\sqrt{324 + 660.5} = \\sqrt{984.5} \\approx 31.4\\text{ m} \\checkmark", note: null }
+])
+```
+
+---
+
+**6.** A ladder 5 m long leans against a wall. Its base is 1.8 m from
+the wall. (a) What angle does the ladder make with the ground?
+(b) How high up the wall does it reach?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Identify the sides", eq: "\\text{hypotenuse} = 5\\text{ m},\\quad \\text{adjacent} = 1.8\\text{ m (base distance)}", note: "The ladder is the hypotenuse; the base distance from the wall is adjacent to the angle at the ground." },
+  { op: "Find the angle using inverse cosine", eq: "\\cos(\\theta) = \\frac{1.8}{5} = 0.36", note: null },
+  { op: "Apply inverse cosine", eq: "\\theta = \\cos^{-1}(0.36) \\approx 68.9°", note: null },
+  { op: "Find the height using sine", eq: "\\sin(68.9°) = \\frac{\\text{height}}{5}", note: null },
+  { op: "Calculate height", eq: "\\text{height} = 5 \\times \\sin(68.9°) \\approx 5 \\times 0.9331 \\approx 4.67\\text{ m}", note: null },
+  { op: "Check using Pythagoras", eq: "\\sqrt{1.8^2 + 4.67^2} = \\sqrt{3.24 + 21.81} = \\sqrt{25.05} \\approx 5.0\\text{ m} \\checkmark", note: null }
+])
+```

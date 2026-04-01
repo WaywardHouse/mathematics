@@ -23,6 +23,12 @@ You are a computer scientist and data scientist reviewing chapters for *Wayward 
 - Are algorithm descriptions (Newton's method, Runge-Kutta, LU decomposition) accurate?
 - Cross-references to Kreyszig Ch 19–21 should be accurate
 
+**Volume 8 computing/data framing**
+- Control and filtering chapters should distinguish simulation, estimation, and optimisation clearly
+- Signal processing chapters should treat sampling and aliasing correctly
+- Inverse-problem chapters should not conflate parameter fitting, state estimation, and generic machine learning
+- Computational-methods chapters should mention sparse structure, solver choice, or computational cost where relevant
+
 **Discrete mathematics**
 - Graph theory, combinatorics, logic — verify any claims made in these areas
 - Boolean algebra, set theory as it appears in probability

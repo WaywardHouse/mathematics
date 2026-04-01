@@ -1,6 +1,1260 @@
 ---
-title: "Statistical inference"
-status: "seed"
+title: "Statistical Inference"
+subtitle: "From sample to conclusion"
+chapter: 3
+volume: 6
+layer: "pre-university"
+status: "review"
+
+hook: |
+  A study makes the news: a new energy drink improves reaction time by
+  12 milliseconds in a sample of 40 students. The company says it works.
+  A sceptic says that gap could be pure chance. Both are looking at the
+  same number — but only one of them has the tools to settle the question.
+
+axiom: |
+  You have data from a sample. The population is too large to measure
+  completely, but you can draw principled conclusions from what you observed.
+
+rewrite: |
+  The sampling distribution tells you how much your estimate would vary
+  if you repeated the study. That variability is what makes confidence
+  intervals and hypothesis tests precise rather than guesswork.
+
+prerequisite_ids:
+  - stat_basic
+  - exp_log
+
+opens_to:
+  - id: prob_stats
+    label: "Probability and mathematical statistics"
+    volume: 7
+    relationship: enables
+  - id: numerics
+    label: "Numerical methods"
+    volume: 7
+    relationship: enriches
+
+destinations:
+  - field: sci
+    label: Hard sciences
+    hook: "Every published experiment reports a p-value — this is where that number comes from."
+  - field: biz
+    label: Finance and quant
+    hook: "A/B testing, quality control, and actuarial inference all run on these tools."
+  - field: comp
+    label: Computing and data
+    hook: "Machine learning validation — train/test splits, significance of benchmark improvements — is applied inference."
+  - field: geo
+    label: Geography and environment
+    hook: "Climate trend detection and environmental monitoring require formal inference to separate signal from noise."
+
+notation_introduced:
+  - symbol: "\\bar{x}"
+    read_as: "x-bar"
+    meaning: "Sample mean"
+  - symbol: "\\mu"
+    read_as: "mu"
+    meaning: "Population mean"
+  - symbol: "\\sigma"
+    read_as: "sigma"
+    meaning: "Population standard deviation"
+  - symbol: "s"
+    read_as: "s"
+    meaning: "Sample standard deviation"
+  - symbol: "n"
+    read_as: "n"
+    meaning: "Sample size"
+  - symbol: "SE"
+    read_as: "standard error"
+    meaning: "Standard deviation of the sampling distribution: $SE = \\sigma/\\sqrt{n}$"
+  - symbol: "z"
+    read_as: "z"
+    meaning: "Standard normal test statistic"
+  - symbol: "H_0"
+    read_as: "H-naught"
+    meaning: "Null hypothesis"
+  - symbol: "H_1"
+    read_as: "H-1 or H-a"
+    meaning: "Alternative hypothesis"
+  - symbol: "\\alpha"
+    read_as: "alpha"
+    meaning: "Significance level (probability of Type I error)"
+  - symbol: "p\\text{-value}"
+    read_as: "p-value"
+    meaning: "Probability of observing data at least this extreme if H₀ is true"
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 12
+  strand: "Statistics"
+  outcome: "S3"
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A study makes the news: a new energy drink improves reaction time by 12
+milliseconds on average in a sample of 40 university students. The
+company behind it claims the drink genuinely works. A sceptic says the
+12 ms gap could just be luck.
+
+Both people are looking at the same number. How can they reach opposite
+conclusions?
+
+The answer is that a single number from a single sample cannot settle
+the question on its own. What matters is what numbers like that look
+like when the drink *does nothing* — when the only thing producing
+variation is chance. If 12 ms is the kind of gap you'd often see from
+chance alone, the result is unremarkable. If 12 ms is extremely
+unusual under chance, something else is probably going on.
+
+This chapter is about how to make that reasoning precise. The tools are
+called **statistical inference** — the machinery for drawing conclusions
+about populations from samples, while being honest about uncertainty.
+
+## Populations and samples
+
+A **population** is the complete set of individuals or measurements you
+care about. A **sample** is the subset you can actually observe.
+
+In most real situations, measuring the entire population is impossible.
+You cannot test every batch of tablets that will ever leave a factory.
+You cannot ask every voter in an election what they think today. You
+cannot measure the resting heart rate of every adult in the country.
+So you take a sample — as many observations as you can afford — and
+reason from there.
+
+The fundamental challenge is that the sample will not perfectly reflect
+the population. Take a different sample and you'll get a different mean.
+Take enough different samples and the sample means form their own
+distribution — one that carries useful information about the population.
+
+A few terms used throughout:
+
+- $N$ (or sometimes the full description): the **population size** — total number of individuals
+- $n$: the **sample size** — how many you actually measured
+- $\mu$ (mu): the **population mean** — what you want to know but usually cannot compute directly
+- $\bar{x}$ (x-bar): the **sample mean** — what you computed from your $n$ observations
+- $\sigma$: the **population standard deviation** — spread of the whole population
+- $s$: the **sample standard deviation** — spread estimated from your sample
+
+The goal of inference is to say something credible about $\mu$ using
+$\bar{x}$, knowing that $\bar{x}$ is a good guess but not an exact answer.
+
+### What makes a sample useful
+
+Not every sample tells you much. A sample of convenience — asking only
+your friends, measuring only the easiest-to-reach parts of a forest,
+testing only patients who volunteer — may be biased in ways that
+invalidate any conclusion about the broader population.
+
+A **representative sample** is one where each member of the population
+has a fair chance of being included. The cleanest version is a **simple
+random sample**: every member of the population is equally likely to
+be chosen, and choices are independent. In practice, this is an ideal
+rather than a guarantee, but it is the assumption that makes everything
+in this chapter valid. Whenever you see a claim built on inference,
+ask: was the sample actually representative?
+
+## The sampling distribution
+
+Suppose heights in a population are normally distributed with mean
+$\mu = 170$ cm and standard deviation $\sigma = 8$ cm. You take a
+random sample of $n = 25$ people and compute their mean height $\bar{x}$.
+
+Now imagine doing this many times: take 25 people, compute $\bar{x}$,
+record it. Take another 25, compute $\bar{x}$, record it. Repeat this
+thousands of times.
+
+What would you see if you plotted all those sample means?
+
+Three things, and all three are predictable:
+
+1. The sample means cluster around $\mu = 170$. No surprise — if your
+   sampling is unbiased, the average of the averages should track the
+   true population mean.
+
+2. The sample means are *less* spread out than individual heights.
+   Averaging smooths out extremes. A single person might be 155 cm or
+   185 cm — that's plausible. But a *mean* of 25 people being 155 cm
+   would require nearly everyone in the sample to be very short, which
+   is far less likely.
+
+3. The distribution of sample means is approximately normal — even if
+   the population itself is not perfectly normal.
+
+This distribution — the distribution of $\bar{x}$ across all possible
+samples of size $n$ — is called the **sampling distribution of the
+mean**.
+
+```{ojs}
+//| echo: false
+// Sampling Distribution Simulator
+// Reader sets μ, σ, n; draws 1000 samples and watches x̄ pile up into
+// a histogram with the theoretical N(μ, σ²/n) curve overlaid.
+
+viewof sim_mu = Inputs.range([50, 150], {value: 100, step: 1, label: "Population mean μ"})
+```
+
+```{ojs}
+//| echo: false
+viewof sim_sigma = Inputs.range([5, 30], {value: 12, step: 1, label: "Population SD σ"})
+```
+
+```{ojs}
+//| echo: false
+viewof sim_n = Inputs.range([1, 100], {value: 25, step: 1, label: "Sample size n"})
+```
+
+```{ojs}
+//| echo: false
+viewof sim_drawBtn = Inputs.button("Draw 1000 samples")
+```
+
+```{ojs}
+//| echo: false
+{
+  // Accumulate sample means across button presses
+  const stored = { means: [] };
+
+  // Re-run whenever drawBtn is clicked or parameters change
+  sim_drawBtn;
+  const mu = sim_mu, sigma = sim_sigma, n = sim_n;
+
+  // Box-Muller normal random generator
+  function randNorm(mu, sigma) {
+    let u, v;
+    do { u = Math.random(); } while (u === 0);
+    v = Math.random();
+    return mu + sigma * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  // Draw 1000 new sample means and append
+  for (let i = 0; i < 1000; i++) {
+    let sum = 0;
+    for (let j = 0; j < n; j++) sum += randNorm(mu, sigma);
+    stored.means.push(sum / n);
+  }
+
+  const means = stored.means;
+  const SE = sigma / Math.sqrt(n);
+  const totalDrawn = means.length;
+
+  // Layout
+  const W = 600, H = 320;
+  const marginL = 55, marginR = 20, marginT = 30, marginB = 50;
+  const plotW = W - marginL - marginR;
+  const plotH = H - marginT - marginB;
+
+  // Axis range: μ ± 4*SE but at least μ ± 3*sigma/sqrt(1)
+  const xMin = mu - 4.5 * Math.max(SE, 1);
+  const xMax = mu + 4.5 * Math.max(SE, 1);
+
+  // Histogram bins
+  const nBins = 50;
+  const binW = (xMax - xMin) / nBins;
+  const counts = new Array(nBins).fill(0);
+  for (const m of means) {
+    const b = Math.floor((m - xMin) / binW);
+    if (b >= 0 && b < nBins) counts[b]++;
+  }
+  const maxCount = Math.max(...counts, 1);
+
+  // Scale helpers
+  const xScale = x => marginL + ((x - xMin) / (xMax - xMin)) * plotW;
+  const yScaleCount = c => marginT + plotH - (c / maxCount) * plotH;
+
+  // Theoretical normal PDF, scaled to match histogram
+  function normalPDF(x, mean, sd) {
+    return Math.exp(-0.5 * ((x - mean) / sd) ** 2) / (sd * Math.sqrt(2 * Math.PI));
+  }
+  const pdfScale = totalDrawn * binW; // converts density → expected count
+
+  // Build SVG
+  const svg = d3.create("svg").attr("width", W).attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .style("font-family", "inherit")
+    .style("overflow", "visible");
+
+  // Background
+  svg.append("rect").attr("x", marginL).attr("y", marginT)
+    .attr("width", plotW).attr("height", plotH)
+    .attr("fill", "#f9fafb").attr("rx", 3);
+
+  // Histogram bars
+  for (let i = 0; i < nBins; i++) {
+    const bx = xMin + i * binW;
+    svg.append("rect")
+      .attr("x", xScale(bx) + 0.5)
+      .attr("y", yScaleCount(counts[i]))
+      .attr("width", Math.max(1, xScale(bx + binW) - xScale(bx) - 1))
+      .attr("height", marginT + plotH - yScaleCount(counts[i]))
+      .attr("fill", "#93c5fd")
+      .attr("stroke", "#60a5fa")
+      .attr("stroke-width", 0.4);
+  }
+
+  // Theoretical curve N(μ, σ²/n)
+  const curvePoints = [];
+  const steps = 200;
+  for (let i = 0; i <= steps; i++) {
+    const cx = xMin + (i / steps) * (xMax - xMin);
+    const cy = normalPDF(cx, mu, SE) * pdfScale;
+    const scaledY = marginT + plotH - (cy / maxCount) * plotH;
+    curvePoints.push([xScale(cx), Math.max(marginT, scaledY)]);
+  }
+  const lineGen = d3.line().x(d => d[0]).y(d => d[1]).curve(d3.curveBasis);
+  svg.append("path").attr("d", lineGen(curvePoints))
+    .attr("fill", "none").attr("stroke", "#1d4ed8").attr("stroke-width", 2);
+
+  // Mean line
+  svg.append("line")
+    .attr("x1", xScale(mu)).attr("x2", xScale(mu))
+    .attr("y1", marginT).attr("y2", marginT + plotH)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1).attr("stroke-dasharray", "4,3");
+
+  // x-axis
+  const xTicks = 6;
+  const xStep = (xMax - xMin) / xTicks;
+  svg.append("line").attr("x1", marginL).attr("x2", marginL + plotW)
+    .attr("y1", marginT + plotH).attr("y2", marginT + plotH)
+    .attr("stroke", "#374151").attr("stroke-width", 1);
+  for (let i = 0; i <= xTicks; i++) {
+    const val = xMin + i * xStep;
+    const px = xScale(val);
+    svg.append("line").attr("x1", px).attr("x2", px)
+      .attr("y1", marginT + plotH).attr("y2", marginT + plotH + 4)
+      .attr("stroke", "#374151");
+    svg.append("text").attr("x", px).attr("y", marginT + plotH + 16)
+      .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#374151")
+      .text(val.toFixed(1));
+  }
+  svg.append("text").attr("x", marginL + plotW / 2).attr("y", H - 6)
+    .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", "#374151")
+    .text("Sample mean x̄");
+
+  // y-axis label
+  svg.append("text")
+    .attr("transform", `translate(14, ${marginT + plotH / 2}) rotate(-90)`)
+    .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", "#374151")
+    .text("Count");
+
+  // Info panel
+  const infoX = marginL + plotW - 160, infoY = marginT + 8;
+  svg.append("rect").attr("x", infoX - 6).attr("y", infoY - 4)
+    .attr("width", 164).attr("height", 62).attr("rx", 4)
+    .attr("fill", "white").attr("stroke", "#e5e7eb");
+  svg.append("text").attr("x", infoX).attr("y", infoY + 10)
+    .attr("font-size", 12).attr("fill", "#1d4ed8").attr("font-weight", "600")
+    .text(`SE = σ/√n = ${SE.toFixed(3)}`);
+  svg.append("text").attr("x", infoX).attr("y", infoY + 28)
+    .attr("font-size", 11).attr("fill", "#374151")
+    .text(`μ = ${mu},  σ = ${sigma},  n = ${n}`);
+  svg.append("text").attr("x", infoX).attr("y", infoY + 46)
+    .attr("font-size", 11).attr("fill", "#6b7280")
+    .text(`${totalDrawn.toLocaleString()} sample means drawn`);
+
+  // Legend
+  svg.append("rect").attr("x", marginL + 6).attr("y", marginT + 8)
+    .attr("width", 12).attr("height", 12).attr("fill", "#93c5fd").attr("stroke", "#60a5fa");
+  svg.append("text").attr("x", marginL + 22).attr("y", marginT + 19)
+    .attr("font-size", 11).attr("fill", "#374151").text("Simulated x̄ values");
+  svg.append("line").attr("x1", marginL + 6).attr("x2", marginL + 18)
+    .attr("y1", marginT + 33).attr("y2", marginT + 33)
+    .attr("stroke", "#1d4ed8").attr("stroke-width", 2);
+  svg.append("text").attr("x", marginL + 22).attr("y", marginT + 37)
+    .attr("font-size", 11).attr("fill", "#374151").text("Theoretical N(μ, σ²/n)");
+
+  // Title
+  svg.append("text").attr("x", W / 2).attr("y", marginT - 10)
+    .attr("text-anchor", "middle").attr("font-size", 13).attr("fill", "#111827").attr("font-weight", "600")
+    .text("Sampling distribution of x̄");
+
+  return svg.node();
+}
+```
+
+## The Central Limit Theorem
+
+The three observations above are not separate facts. They are
+consequences of a single result called the **Central Limit Theorem**
+(CLT).
+
+::: {.callout-note}
+**The Central Limit Theorem**
+
+If you take random samples of size $n$ from a population with mean
+$\mu$ and standard deviation $\sigma$, then for sufficiently large $n$,
+the sampling distribution of $\bar{x}$ is approximately normal:
+
+$$\bar{x} \sim N\!\left(\mu,\, \frac{\sigma^2}{n}\right)$$
+
+The mean of the sampling distribution equals $\mu$.
+The standard deviation of the sampling distribution is $\dfrac{\sigma}{\sqrt{n}}$.
+:::
+
+The standard deviation of the sampling distribution has its own name:
+the **standard error** (SE).
+
+$$SE = \frac{\sigma}{\sqrt{n}}$$
+
+The standard error is not the spread of individual measurements — it
+is the spread of *sample means*. It tells you how much $\bar{x}$
+typically varies from one sample to the next.
+
+### Why this is surprising
+
+The CLT makes no assumption about the shape of the population
+distribution. Whether the individual measurements are skewed, uniform,
+bimodal, or anything else, the sample means pile up into a bell curve
+once $n$ is large enough.
+
+This is the reason the normal distribution appears so often in
+statistical work. It is not because every quantity in nature is normally
+distributed. It is because *sample means* tend to be normally
+distributed, and most of the quantities we measure and compare are
+averages of some kind.
+
+As a rough guide, $n \geq 30$ is often enough for the CLT to give a
+good approximation. For symmetric populations, even smaller samples
+work well. For heavily skewed populations, larger $n$ may be needed.
+
+### Working with the standard error — a numerical example
+
+Return to the height example: $\mu = 170$ cm, $\sigma = 8$ cm.
+
+**For samples of size $n = 25$:**
+
+$$SE = \frac{8}{\sqrt{25}} = \frac{8}{5} = 1.6 \text{ cm}$$
+
+The sampling distribution is $\bar{x} \sim N(170, 1.6^2)$.
+A sample mean of 173 cm is:
+
+$$z = \frac{173 - 170}{1.6} = \frac{3}{1.6} = 1.875 \text{ standard errors above the mean}$$
+
+**For samples of size $n = 100$:**
+
+$$SE = \frac{8}{\sqrt{100}} = \frac{8}{10} = 0.8 \text{ cm}$$
+
+The same sample mean of 173 cm is now:
+
+$$z = \frac{173 - 170}{0.8} = \frac{3}{0.8} = 3.75 \text{ standard errors above the mean}$$
+
+With $n = 25$, a sample mean of 173 cm is not very surprising — it is
+less than 2 standard errors out. With $n = 100$, the same 173 cm is
+very surprising — nearly 4 standard errors out. Larger samples give
+you more information, so unusual results become more informative.
+
+This is the key insight: **more data makes your estimate more precise**,
+and the improvement scales as $1/\sqrt{n}$, not $1/n$. To halve the
+standard error, you need four times as much data.
+
+## Confidence intervals
+
+You take a sample, compute $\bar{x}$, and want to say something about
+$\mu$. A single number — "$\mu$ is approximately 170 cm" — is called a
+**point estimate**. It is useful but incomplete, because it gives no
+indication of how uncertain you are.
+
+An **interval estimate** gives a range of plausible values for $\mu$.
+A **confidence interval** attaches a stated level of confidence to that
+range — typically 90%, 95%, or 99%.
+
+### Building a 95% confidence interval
+
+From Chapter 2, you know that for a normal distribution, 95% of values
+fall within approximately 1.96 standard deviations of the mean.
+Precisely:
+
+$$P(-1.96 \leq Z \leq 1.96) = 0.95$$
+
+where $Z \sim N(0,1)$.
+
+Since $\bar{x} \sim N(\mu, \sigma^2/n)$, standardising gives:
+
+$$P\!\left(-1.96 \leq \frac{\bar{x} - \mu}{SE} \leq 1.96\right) = 0.95$$
+
+Rearranging the inequality to isolate $\mu$: multiply through by SE to get
+$\bar{x} - 1.96 \cdot SE \leq \mu \leq \bar{x} + 1.96 \cdot SE$.
+This is the same algebra as rearranging $-1.96 \leq (x-5)/2 \leq 1.96$ for $x$ — multiply through by 2, then add 5 throughout.
+
+$$P\!\left(\bar{x} - 1.96 \cdot SE \leq \mu \leq \bar{x} + 1.96 \cdot SE\right) = 0.95$$
+
+This is the **95% confidence interval for $\mu$** (when $\sigma$ is known):
+
+$$\boxed{\bar{x} \pm 1.96 \cdot \frac{\sigma}{\sqrt{n}}}$$
+
+The value 1.96 is called the **critical value** for 95% confidence.
+For other confidence levels, the critical value changes:
+
+| Confidence level | Critical value $z^*$ |
+|---|---|
+| 90% | 1.645 |
+| 95% | 1.960 |
+| 99% | 2.576 |
+
+### Worked example — confidence interval
+
+A nutritionist measures the daily sodium intake (mg) of a random sample
+of $n = 36$ adults from a region. The sample mean is $\bar{x} = 2{,}450$
+mg. Population studies suggest $\sigma = 360$ mg for daily sodium intake.
+
+Construct a 95% confidence interval for the true mean daily sodium
+intake $\mu$ in this region.
+
+**Step 1: Calculate the standard error.**
+
+$$SE = \frac{\sigma}{\sqrt{n}} = \frac{360}{\sqrt{36}} = \frac{360}{6} = 60 \text{ mg}$$
+
+**Step 2: Find the margin of error.**
+
+$$\text{Margin of error} = 1.96 \times SE = 1.96 \times 60 = 117.6 \text{ mg}$$
+
+**Step 3: Construct the interval.**
+
+$$\bar{x} \pm \text{margin of error} = 2{,}450 \pm 117.6$$
+
+$$\text{CI: } (2{,}332.4 \text{ mg},\ 2{,}567.6 \text{ mg})$$
+
+**Step 4: Interpret.**
+
+> We are 95% confident that the true mean daily sodium intake in this
+> region is between 2,332 mg and 2,568 mg.
+
+### What "95% confident" actually means
+
+This is one of the most commonly misunderstood ideas in statistics.
+
+**The incorrect interpretation:** "There is a 95% probability that $\mu$
+lies in this interval."
+
+This sounds reasonable but is wrong. The population mean $\mu$ is a
+fixed (if unknown) number — it does not have a probability distribution.
+It either is or is not in the interval. The interval itself is random,
+because $\bar{x}$ varies from sample to sample.
+
+**The correct interpretation:** If you were to repeat this sampling
+procedure many times — each time collecting 36 adults, computing
+$\bar{x}$, and constructing the interval — then 95% of the resulting
+intervals would contain the true $\mu$.
+
+In other words, confidence describes the procedure, not any single
+interval. The 95% refers to the long-run success rate of the method.
+
+In practice, you have one interval from one sample, and you cannot
+know whether yours is one of the 95% that work or one of the 5% that
+don't. The confidence level tells you the method is reliable, not that
+any particular result is guaranteed.
+
+::: {.callout-tip}
+**A useful sentence template for interpreting confidence intervals**
+
+"We are [level]% confident that the true population mean [quantity] is
+between [lower] and [upper] [units]."
+
+Avoid: "There is a 95% chance the mean is in this interval."
+Use: "We are 95% confident the mean is in this interval."
+:::
+
+## Hypothesis testing
+
+A confidence interval tells you what values of $\mu$ are plausible
+given your data. A **hypothesis test** answers a more direct question:
+is the evidence strong enough to reject a specific claim about $\mu$?
+
+### The logic of the test
+
+The framework borrows from legal reasoning. A court presumes innocence
+until the evidence makes guilt sufficiently clear. In statistics:
+
+- You start by assuming a specific null state — the **null hypothesis** $H_0$.
+- You ask: if the null hypothesis were true, how likely is it that
+  you'd see data at least as extreme as what you observed?
+- If the answer is "very unlikely," the data is evidence against $H_0$.
+
+What counts as "very unlikely" is a threshold you set in advance,
+called the **significance level** $\alpha$. The most common choice is
+$\alpha = 0.05$.
+
+### Setting up the hypotheses
+
+Every test involves two competing hypotheses:
+
+**The null hypothesis $H_0$** is the claim being tested. It usually
+represents "no effect," "no difference," or a specific benchmark value.
+You write it as an equality: $H_0: \mu = \mu_0$, where $\mu_0$ is the
+claimed value.
+
+**The alternative hypothesis $H_1$** (sometimes written $H_a$) is what
+you believe might be true instead. It can be:
+
+- **Two-tailed:** $H_1: \mu \neq \mu_0$ — the mean could be either
+  higher or lower than claimed
+- **One-tailed (upper):** $H_1: \mu > \mu_0$ — you suspect the mean
+  is higher
+- **One-tailed (lower):** $H_1: \mu < \mu_0$ — you suspect the mean
+  is lower
+
+The choice of one- or two-tailed test should reflect your research
+question *before* you look at the data. Choosing the direction after
+seeing the data inflates the apparent significance and undermines the
+logic of the test.
+
+### The test statistic
+
+If $H_0: \mu = \mu_0$ is true, then the sampling distribution of
+$\bar{x}$ is:
+
+$$\bar{x} \sim N\!\left(\mu_0,\, \frac{\sigma^2}{n}\right)$$
+
+Standardising gives the **z-test statistic**:
+
+$$z = \frac{\bar{x} - \mu_0}{\sigma / \sqrt{n}}$$
+
+This $z$ value measures how many standard errors your observed sample
+mean is from the null hypothesis value. If $|z|$ is small, your data
+is consistent with $H_0$. If $|z|$ is large, your data is unusual
+under $H_0$.
+
+### The p-value
+
+The **p-value** is the probability of observing a test statistic at
+least as extreme as the one you computed, *if $H_0$ is true*.
+
+- For a two-tailed test ($H_1: \mu \neq \mu_0$): $p\text{-value} = 2 \times P(Z \geq |z|)$
+- For an upper-tailed test ($H_1: \mu > \mu_0$): $p\text{-value} = P(Z \geq z)$
+- For a lower-tailed test ($H_1: \mu < \mu_0$): $p\text{-value} = P(Z \leq z)$
+
+A small p-value means your observed data would be rare under $H_0$ —
+the data is hard to explain by chance alone.
+
+### The decision rule
+
+Compare the p-value to the significance level $\alpha$:
+
+- If $p\text{-value} \leq \alpha$: **reject $H_0$**. The data is
+  sufficiently unusual under $H_0$ to conclude there is evidence for $H_1$.
+- If $p\text{-value} > \alpha$: **fail to reject $H_0$**. The data is
+  consistent with $H_0$ — not proof that $H_0$ is true, only that
+  there is insufficient evidence to reject it.
+
+Note the careful language: you *fail to reject*, not *accept* $H_0$.
+Absence of evidence is not evidence of absence.
+
+```{ojs}
+//| echo: false
+// Hypothesis Test Explorer
+// Reader sets μ₀, x̄, σ, n; chooses tail type and α.
+// The viz draws N(μ₀, σ²/n), marks x̄, shades rejection region,
+// and shows z, p-value, and the reject/fail-to-reject decision.
+
+viewof ht_mu0 = Inputs.range([50, 250], {value: 650, step: 1, label: "Null mean μ₀"})
+```
+
+```{ojs}
+//| echo: false
+viewof ht_xbar = Inputs.range([50, 250], {value: 672, step: 0.1, label: "Observed mean x̄"})
+```
+
+```{ojs}
+//| echo: false
+viewof ht_sigma = Inputs.range([1, 100], {value: 80, step: 1, label: "Population SD σ"})
+```
+
+```{ojs}
+//| echo: false
+viewof ht_n = Inputs.range([2, 200], {value: 40, step: 1, label: "Sample size n"})
+```
+
+```{ojs}
+//| echo: false
+viewof ht_tail = Inputs.select(["two-tailed", "upper (H₁: μ > μ₀)", "lower (H₁: μ < μ₀)"], {
+  value: "upper (H₁: μ > μ₀)",
+  label: "Test type"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof ht_alpha = Inputs.select([0.01, 0.05, 0.10], {value: 0.05, label: "Significance level α"})
+```
+
+```{ojs}
+//| echo: false
+{
+  const mu0 = ht_mu0, xbar = ht_xbar, sigma = ht_sigma, n = ht_n;
+  const alpha = ht_alpha;
+  const tail = ht_tail;
+
+  const SE = sigma / Math.sqrt(n);
+  const z = (xbar - mu0) / SE;
+
+  // Standard normal CDF via error function approximation
+  function erf(x) {
+    const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429, p=0.3275911;
+    const sign = x < 0 ? -1 : 1;
+    const t = 1 / (1 + p * Math.abs(x));
+    const y = 1 - (((((a5*t + a4)*t + a3)*t + a2)*t + a1)*t) * Math.exp(-x*x);
+    return sign * y;
+  }
+  function normalCDF(x) { return 0.5 * (1 + erf(x / Math.sqrt(2))); }
+  function normalPDF(x, mu, sd) {
+    return Math.exp(-0.5 * ((x - mu) / sd) ** 2) / (sd * Math.sqrt(2 * Math.PI));
+  }
+
+  // p-value
+  let pval;
+  if (tail === "two-tailed") pval = 2 * (1 - normalCDF(Math.abs(z)));
+  else if (tail.startsWith("upper")) pval = 1 - normalCDF(z);
+  else pval = normalCDF(z);
+  pval = Math.max(0, Math.min(1, pval));
+
+  // Critical z values
+  let zCritUpper = Infinity, zCritLower = -Infinity;
+  if (tail === "two-tailed") {
+    zCritUpper = -normalCDFInv(alpha / 2);
+    zCritLower = normalCDFInv(alpha / 2);
+  } else if (tail.startsWith("upper")) {
+    zCritUpper = -normalCDFInv(alpha);
+  } else {
+    zCritLower = normalCDFInv(alpha);
+  }
+
+  // Inverse normal CDF (bisection) — good enough for critical value display
+  function normalCDFInv(p) {
+    let lo = -10, hi = 10;
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      if (normalCDF(mid) < p) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  // Fix: compute critical values after defining normalCDFInv
+  let critLo = -Infinity, critHi = Infinity;
+  if (tail === "two-tailed") {
+    critLo = normalCDFInv(alpha / 2);
+    critHi = normalCDFInv(1 - alpha / 2);
+  } else if (tail.startsWith("upper")) {
+    critHi = normalCDFInv(1 - alpha);
+  } else {
+    critLo = normalCDFInv(alpha);
+  }
+
+  const decision = pval <= alpha ? "Reject H₀" : "Fail to reject H₀";
+  const decisionColor = pval <= alpha ? "#dc2626" : "#059669";
+
+  // Layout
+  const W = 620, H = 320;
+  const mL = 55, mR = 20, mT = 40, mB = 55;
+  const pW = W - mL - mR, pH = H - mT - mB;
+
+  // x-axis range: μ₀ ± 4 SE, ensure xbar is visible
+  const spread = Math.max(4 * SE, Math.abs(xbar - mu0) + 2 * SE);
+  const xMin = mu0 - spread;
+  const xMax = mu0 + spread;
+
+  const xScale = x => mL + ((x - xMin) / (xMax - xMin)) * pW;
+  const maxPDF = normalPDF(mu0, mu0, SE);
+  const yScale = y => mT + pH - (y / maxPDF) * pH * 0.92;
+
+  const svg = d3.create("svg").attr("width", W).attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .style("font-family", "inherit").style("overflow", "visible");
+
+  svg.append("rect").attr("x", mL).attr("y", mT).attr("width", pW).attr("height", pH)
+    .attr("fill", "#f9fafb").attr("rx", 3);
+
+  // Build curve path points
+  const steps = 400;
+  function curvePoints(xFrom, xTo) {
+    const pts = [];
+    for (let i = 0; i <= steps; i++) {
+      const cx = xFrom + (i / steps) * (xTo - xFrom);
+      pts.push([xScale(cx), yScale(normalPDF(cx, mu0, SE))]);
+    }
+    return pts;
+  }
+
+  const lineGen = d3.line().x(d => d[0]).y(d => d[1]).curve(d3.curveBasis);
+
+  // Shade rejection region(s)
+  function shadedArea(xFrom, xTo, color) {
+    const pts = curvePoints(xFrom, xTo);
+    const area = [...pts, [xScale(xTo), mT + pH], [xScale(xFrom), mT + pH]];
+    svg.append("polygon")
+      .attr("points", area.map(p => p.join(",")).join(" "))
+      .attr("fill", color).attr("opacity", 0.35);
+  }
+
+  const rejColor = "#fca5a5";
+  if (tail === "two-tailed") {
+    shadedArea(xMin, mu0 + critLo * SE, rejColor);
+    shadedArea(mu0 + critHi * SE, xMax, rejColor);
+  } else if (tail.startsWith("upper")) {
+    shadedArea(mu0 + critHi * SE, xMax, rejColor);
+  } else {
+    shadedArea(xMin, mu0 + critLo * SE, rejColor);
+  }
+
+  // Main curve
+  svg.append("path").attr("d", lineGen(curvePoints(xMin, xMax)))
+    .attr("fill", "none").attr("stroke", "#1d4ed8").attr("stroke-width", 2.5);
+
+  // Critical value lines
+  function critLine(xVal, label) {
+    if (!isFinite(xVal)) return;
+    const px = xScale(xVal);
+    svg.append("line").attr("x1", px).attr("x2", px).attr("y1", mT).attr("y2", mT + pH)
+      .attr("stroke", "#dc2626").attr("stroke-width", 1.5).attr("stroke-dasharray", "5,3");
+    svg.append("text").attr("x", px).attr("y", mT - 6)
+      .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", "#dc2626")
+      .text(label);
+  }
+  if (tail === "two-tailed") {
+    critLine(mu0 + critLo * SE, `z* = ${critLo.toFixed(2)}`);
+    critLine(mu0 + critHi * SE, `z* = ${critHi.toFixed(2)}`);
+  } else if (tail.startsWith("upper")) {
+    critLine(mu0 + critHi * SE, `z* = ${critHi.toFixed(2)}`);
+  } else {
+    critLine(mu0 + critLo * SE, `z* = ${critLo.toFixed(2)}`);
+  }
+
+  // Observed x̄ line
+  const xbarPx = xScale(xbar);
+  svg.append("line").attr("x1", xbarPx).attr("x2", xbarPx).attr("y1", mT).attr("y2", mT + pH)
+    .attr("stroke", "#7c3aed").attr("stroke-width", 2);
+  svg.append("text").attr("x", xbarPx).attr("y", mT + pH + 16)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#7c3aed")
+    .text(`x̄ = ${xbar}`);
+
+  // μ₀ line
+  const mu0Px = xScale(mu0);
+  svg.append("line").attr("x1", mu0Px).attr("x2", mu0Px).attr("y1", mT).attr("y2", mT + pH)
+    .attr("stroke", "#374151").attr("stroke-width", 1).attr("stroke-dasharray", "3,3");
+  svg.append("text").attr("x", mu0Px).attr("y", mT + pH + 28)
+    .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", "#374151")
+    .text(`μ₀ = ${mu0}`);
+
+  // x-axis
+  svg.append("line").attr("x1", mL).attr("x2", mL + pW)
+    .attr("y1", mT + pH).attr("y2", mT + pH).attr("stroke", "#374151");
+  const nTicks = 7;
+  for (let i = 0; i <= nTicks; i++) {
+    const val = xMin + (i / nTicks) * (xMax - xMin);
+    const px = xScale(val);
+    svg.append("line").attr("x1", px).attr("x2", px)
+      .attr("y1", mT + pH).attr("y2", mT + pH + 4).attr("stroke", "#374151");
+    svg.append("text").attr("x", px).attr("y", mT + pH + 14)
+      .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", "#374151")
+      .text(val.toFixed(1));
+  }
+
+  // Info box
+  const iX = mL + 8, iY = mT + 6;
+  svg.append("rect").attr("x", iX - 4).attr("y", iY - 4)
+    .attr("width", 210).attr("height", 80).attr("rx", 4)
+    .attr("fill", "white").attr("stroke", "#e5e7eb");
+  svg.append("text").attr("x", iX).attr("y", iY + 12).attr("font-size", 12).attr("fill", "#374151")
+    .text(`SE = ${SE.toFixed(3)}`);
+  svg.append("text").attr("x", iX).attr("y", iY + 28).attr("font-size", 12).attr("fill", "#374151")
+    .text(`z = ${z.toFixed(3)}`);
+  svg.append("text").attr("x", iX).attr("y", iY + 44).attr("font-size", 12).attr("fill", "#374151")
+    .text(`p-value = ${pval < 0.001 ? "< 0.001" : pval.toFixed(4)}`);
+  svg.append("text").attr("x", iX).attr("y", iY + 62).attr("font-size", 13)
+    .attr("fill", decisionColor).attr("font-weight", "700").text(decision);
+
+  // Title
+  svg.append("text").attr("x", W / 2).attr("y", mT - 18)
+    .attr("text-anchor", "middle").attr("font-size", 13).attr("fill", "#111827").attr("font-weight", "600")
+    .text("Hypothesis test: N(μ₀, σ²/n) sampling distribution");
+
+  return svg.node();
+}
+```
+
+## Worked example — full hypothesis test
+
+The school cafeteria claims that a standard portion of their pasta
+contains 650 mg of sodium. A nutritionist suspects the actual amount is
+higher. She measures 40 randomly chosen portions and finds a sample
+mean of $\bar{x} = 672$ mg. From manufacturer data, $\sigma = 80$ mg.
+
+Test the nutritionist's claim at the 5% significance level.
+
+**Step 1: State the hypotheses.**
+
+The cafeteria claims $\mu = 650$ mg. The nutritionist suspects it is
+*higher*, so this is a one-tailed (upper) test.
+
+$$H_0: \mu = 650 \quad H_1: \mu > 650$$
+
+**Step 2: Choose the significance level.**
+
+$$\alpha = 0.05$$
+
+**Step 3: Compute the test statistic.**
+
+$$z = \frac{\bar{x} - \mu_0}{\sigma / \sqrt{n}} = \frac{672 - 650}{80 / \sqrt{40}} = \frac{22}{80/6.325} = \frac{22}{12.65} \approx 1.74$$
+
+**Step 4: Find the p-value.**
+
+For an upper-tailed test:
+
+$$p\text{-value} = P(Z \geq 1.74)$$
+
+From a standard normal table: $P(Z \leq 1.74) \approx 0.9591$.
+
+$$p\text{-value} = 1 - 0.9591 = 0.0409$$
+
+**Step 5: Make a decision.**
+
+$p\text{-value} = 0.041 < \alpha = 0.05$, so we **reject $H_0$**.
+
+**Step 6: State the conclusion in plain language.**
+
+> At the 5% significance level, there is sufficient evidence to
+> conclude that the mean sodium content of cafeteria pasta portions
+> exceeds the claimed 650 mg.
+
+Notice what this conclusion does *not* say. It does not say the true
+mean is 672 mg. It does not say the cafeteria is lying. It says the
+evidence is strong enough to act on the suspicion that something is
+off. The strength of that conclusion depends on the assumptions: random
+sampling, known $\sigma$, and that the significance level was chosen
+before looking at the data.
+
+## Type I and Type II errors
+
+Every hypothesis test makes a binary decision under uncertainty. Two
+kinds of mistakes are possible:
+
+| | $H_0$ is actually true | $H_0$ is actually false |
+|---|---|---|
+| **Reject $H_0$** | **Type I error** (false positive) | Correct decision |
+| **Fail to reject $H_0$** | Correct decision | **Type II error** (false negative) |
+
+A **Type I error** is rejecting $H_0$ when it is true — concluding
+there is an effect when there is none. The probability of a Type I
+error is exactly $\alpha$, the significance level you chose. Setting
+$\alpha = 0.05$ means you accept a 5% chance of a false positive if
+$H_0$ is true.
+
+A **Type II error** is failing to reject $H_0$ when it is false —
+missing a real effect. Its probability is denoted $\beta$. The
+**power** of a test is $1 - \beta$: the probability of correctly
+detecting a true effect.
+
+### Why this tradeoff matters
+
+Reducing $\alpha$ (demanding stronger evidence before rejecting $H_0$)
+decreases the chance of a false positive but increases the chance of
+a false negative — you become more conservative and more likely to miss
+real effects.
+
+The stakes differ by context. A Type I error in a drug trial means
+approving an ineffective drug — real harm. A Type II error means
+failing to approve an effective one — also real harm, but different in
+character. Before running a study, statisticians specify both $\alpha$
+and the desired power, then calculate the sample size $n$ required to
+achieve both. Larger samples reduce both types of error simultaneously,
+which is why clinical trials are expensive.
+
+::: {.callout-tip}
+**A concrete framing**
+
+A fire alarm that goes off every time someone burns toast (Type I error:
+false positive) is annoying and teaches people to ignore it. A fire
+alarm that never sounds during an actual fire (Type II error: false
+negative) is catastrophic. Good alarm design — and good statistical
+design — requires thinking carefully about which error is more costly.
+:::
+
+## Connecting to the bigger picture
+
+Every time you see a published result with a p-value, you are looking
+at the output of this machinery. The researcher had a null hypothesis,
+collected data, computed a test statistic, and compared the p-value to
+a threshold.
+
+When $\sigma$ is unknown and estimated from the
+sample (using $s$ instead), the test statistic no longer follows the
+standard normal distribution. It follows a **t-distribution**, which
+is slightly wider and depends on the sample size. For large $n$, the
+difference is small; for small samples, it matters. The t-distribution
+is the natural next step beyond this chapter.
+
+Two further extensions are essential for most real work:
+
+**Comparing two groups.** Does treatment A work better than treatment
+B? Here you test whether the *difference* in means $\mu_1 - \mu_2 = 0$
+rather than testing a single mean. The two-sample z-test or t-test
+extends the framework from this chapter directly.
+
+**Regression.** Once you move to modelling how one variable predicts
+another, you are still doing inference — testing whether the slope of a
+line is zero, constructing confidence intervals around predictions. The
+language of $H_0$, test statistics, and p-values is identical.
+
+The machinery in this chapter is the foundation for all of it.
+
+## Where this goes
+
+::: {.callout-note appearance="simple"}
+**What this chapter enables**
+
+- **Computing (comp):** Machine learning validation — train/test splits, significance of benchmark improvements — is applied inference. Every time a researcher reports that model A beats model B, the question is whether the difference is real or sampling noise.
+- **Hard sciences (sci):** Every published experiment reports a p-value. Clinical trial analysis, drug approval decisions, and environmental monitoring all run on the framework you have just learned.
+- **Finance and business (biz):** A/B testing at scale, quality control charts, and actuarial inference are direct applications. The decision to change a product is a hypothesis test with real stakes.
+- **Geography and environment (geo):** Climate trend detection — distinguishing a genuine warming signal from year-to-year variation — requires formal inference. So does environmental monitoring for pollution events and species population changes.
+:::
+
+## Exercises
+
+::: {.callout-note appearance="simple"}
+**A note on these exercises**
+
+All exercises in this chapter give you $\sigma$, the population standard deviation. In practice, $\sigma$ is almost never known — you estimate it from the sample using $s$. That extension (the t-distribution) is the natural next step beyond this chapter. For now, you will always be given $\sigma$.
+:::
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.5rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**Exercise 1.** A population of salmon in a river system has a known
+standard deviation of $\sigma = 42$ mm in body length. A researcher
+samples $n$ fish from this population.
+
+(a) Calculate the standard error when $n = 9$.
+(b) Calculate the standard error when $n = 36$.
+(c) Calculate the standard error when $n = 144$.
+(d) By what factor does the standard error change each time $n$
+    increases by a factor of 4? Explain why this makes sense
+    using the formula.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Formula", eq: "SE = \\dfrac{\\sigma}{\\sqrt{n}}" },
+  { op: "(a) n = 9", eq: "SE = \\dfrac{42}{\\sqrt{9}} = \\dfrac{42}{3} = 14 \\text{ mm}" },
+  { op: "(b) n = 36", eq: "SE = \\dfrac{42}{\\sqrt{36}} = \\dfrac{42}{6} = 7 \\text{ mm}" },
+  { op: "(c) n = 144", eq: "SE = \\dfrac{42}{\\sqrt{144}} = \\dfrac{42}{12} = 3.5 \\text{ mm}" },
+  { op: "(d) Factor each time", eq: "14 \\to 7 \\to 3.5: \\text{ each time } SE \\text{ halves}", note: "n increases by ×4 each time; √4 = 2, so SE divides by 2." },
+  { op: "General rule", eq: "SE \\propto \\dfrac{1}{\\sqrt{n}}: \\text{ quadruple } n \\Rightarrow \\text{halve } SE" }
+])
+```
+
+---
+
+**Exercise 2.** A climatologist records the daily high temperature at a
+monitoring station over 49 randomly selected days. The sample mean is
+$\bar{x} = 18.4°$C. From long-term records, the population standard
+deviation is $\sigma = 5.6°$C.
+
+(a) Calculate the standard error for this sample.
+(b) Construct a 95% confidence interval for the true mean daily high
+    temperature at this location.
+(c) Construct a 99% confidence interval. (Use $z^* = 2.576$.)
+(d) Write one sentence interpreting your 95% CI correctly.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "(a) Standard error", eq: "SE = \\dfrac{\\sigma}{\\sqrt{n}} = \\dfrac{5.6}{\\sqrt{49}} = \\dfrac{5.6}{7} = 0.8^{\\circ}\\text{C}" },
+  { op: "(b) 95% margin of error", eq: "1.96 \\times 0.8 = 1.568^{\\circ}\\text{C}", note: "Critical value z* = 1.96 for 95% confidence." },
+  { op: "(b) 95% CI", eq: "18.4 \\pm 1.568 \\implies (16.83^{\\circ}\\text{C},\\ 19.97^{\\circ}\\text{C})" },
+  { op: "(c) 99% margin of error", eq: "2.576 \\times 0.8 = 2.061^{\\circ}\\text{C}", note: "Critical value z* = 2.576 for 99% confidence." },
+  { op: "(c) 99% CI", eq: "18.4 \\pm 2.061 \\implies (16.34^{\\circ}\\text{C},\\ 20.46^{\\circ}\\text{C})" },
+  { op: "(d) Interpretation", eq: "\\text{We are 95\\% confident the true mean daily high is between } 16.83^{\\circ}\\text{C and } 19.97^{\\circ}\\text{C.}", note: "Confidence describes the procedure, not the probability that this particular interval contains μ." }
+])
+```
+
+---
+
+**Exercise 3.** For each of the following scenarios, state the null and
+alternative hypotheses. Identify whether the test is one-tailed or
+two-tailed. If one-tailed, state the direction.
+
+(a) A consumer watchdog tests whether a cereal box labelled "500 g net
+    weight" actually contains 500 g on average. The watchdog is
+    concerned the boxes may contain *less* than advertised.
+
+(b) A researcher believes a new fertiliser changes mean crop yield.
+    She does not know whether the effect is positive or negative.
+
+(c) A traffic engineer claims that average vehicle speed on a stretch
+    of highway is 95 km/h. A safety audit suspects drivers are
+    exceeding this average.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "(a) Null hypothesis", eq: "H_0: \\mu = 500 \\text{ g}", note: "The label claim is the null state." },
+  { op: "(a) Alternative", eq: "H_1: \\mu < 500 \\text{ g} \\quad \\text{(one-tailed, lower)}", note: "The watchdog suspects less than advertised — lower tail only." },
+  { op: "(b) Null hypothesis", eq: "H_0: \\mu = \\mu_{\\text{control}}", note: "No effect of the fertiliser on mean yield." },
+  { op: "(b) Alternative", eq: "H_1: \\mu \\neq \\mu_{\\text{control}} \\quad \\text{(two-tailed)}", note: "Direction unknown in advance — test both tails." },
+  { op: "(c) Null hypothesis", eq: "H_0: \\mu = 95 \\text{ km/h}" },
+  { op: "(c) Alternative", eq: "H_1: \\mu > 95 \\text{ km/h} \\quad \\text{(one-tailed, upper)}", note: "The safety audit suspects speeds are higher — upper tail only." }
+])
+```
+
+---
+
+**Exercise 4.** An athletics coach claims that the training programme
+he coaches produces marathon runners with a mean finish time of 210
+minutes. A sports scientist believes the true mean is different (in
+either direction). She times 36 runners through the programme. Their
+sample mean finish time is $\bar{x} = 205.2$ minutes. The population
+standard deviation is known to be $\sigma = 18$ minutes.
+
+(a) State $H_0$ and $H_1$.
+(b) Calculate the test statistic $z$.
+(c) Find the p-value. (This is a two-tailed test; use
+    $P(Z \leq -1.60) \approx 0.055$ as a reference value.)
+(d) At $\alpha = 0.05$, state your decision and conclusion in plain
+    language.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "(a) Hypotheses", eq: "H_0: \\mu = 210 \\text{ min}, \\quad H_1: \\mu \\neq 210 \\text{ min}", note: "Two-tailed: the scientist suspects a difference in either direction." },
+  { op: "(b) Standard error", eq: "SE = \\dfrac{\\sigma}{\\sqrt{n}} = \\dfrac{18}{\\sqrt{36}} = \\dfrac{18}{6} = 3 \\text{ min}" },
+  { op: "(b) Test statistic", eq: "z = \\dfrac{\\bar{x} - \\mu_0}{SE} = \\dfrac{205.2 - 210}{3} = \\dfrac{-4.8}{3} = -1.60" },
+  { op: "(c) p-value (two-tailed)", eq: "p = 2 \\times P(Z \\leq -1.60) \\approx 2 \\times 0.055 = 0.110", note: "Both tails are counted because H₁ is two-sided." },
+  { op: "(d) Decision", eq: "p = 0.110 > \\alpha = 0.05 \\implies \\text{fail to reject } H_0", note: "The evidence is not strong enough at the 5% level to conclude the mean differs from 210 minutes." },
+  { op: "(d) Conclusion", eq: "\\text{Insufficient evidence that the true mean finish time differs from 210 min}", note: "Failing to reject H₀ does not prove the mean is exactly 210 — only that the data are consistent with it." }
+])
+```
+
+---
+
+**Exercise 5.** A pharmaceutical company is testing a new painkiller.
+The clinical team must choose a significance level before running the
+trial.
+
+(a) Explain what a Type I error would mean in this context.
+(b) Explain what a Type II error would mean in this context.
+(c) The team is debating between $\alpha = 0.05$ and $\alpha = 0.01$.
+    Describe the tradeoff. Which error becomes more likely if they
+    choose the stricter threshold? Which becomes less likely?
+(d) The drug is for a condition where the standard treatment has
+    serious side effects. How might this context influence the choice
+    of significance level? There is no single right answer — explain
+    your reasoning.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "(a) Type I error here", eq: "\\text{Reject } H_0 \\text{ when drug has no real effect}", note: "The drug is approved and prescribed, but it does not work — patients are exposed to side effects for no benefit." },
+  { op: "(b) Type II error here", eq: "\\text{Fail to reject } H_0 \\text{ when drug does work}", note: "An effective painkiller is not approved — patients who would have benefited go without it." },
+  { op: "(c) Stricter threshold (α = 0.01)", eq: "P(\\text{Type I}) = 0.01 \\downarrow, \\quad P(\\text{Type II}) = \\beta \\uparrow", note: "Demanding stronger evidence reduces false approvals but increases the chance of missing a genuinely effective drug." },
+  { op: "(c) Looser threshold (α = 0.05)", eq: "P(\\text{Type I}) = 0.05 \\uparrow, \\quad P(\\text{Type II}) = \\beta \\downarrow", note: "More approvals overall — including more false ones." },
+  { op: "(d) Context argument", eq: "\\text{Standard treatment has serious side effects} \\Rightarrow \\text{Type II error is costly}", note: "If patients suffer under current treatment, missing an effective alternative is a serious harm. This argues for a less strict α to reduce β — though the team must weigh both risks explicitly." }
+])
+```
+
+---
+
+*Exercise 6 goes beyond what this chapter formally covers — you don't need the two-sample formula, but you do need to reason carefully about what would be required.*
+
+**Exercise 6.** A data scientist is running an A/B test for an
+e-commerce site. Version A (the existing checkout flow) has a known
+mean order value of $\mu_A = \$87$ with $\sigma_A = \$22$, estimated
+from thousands of previous transactions. Version B (a redesigned flow)
+is tested on a new sample.
+
+(a) A sample of 100 users on Version B produces $\bar{x}_B = \$93$.
+    If you were to test whether this is significantly different from
+    the Version A mean of \$87, what would your null and alternative
+    hypotheses be?
+(b) What additional information would you need to conduct a formal
+    two-sample test comparing Version A and Version B means?
+(c) The data scientist argues: "Version B has a higher sample mean,
+    so we should switch." A statistician responds: "Not so fast."
+    Explain the statistician's concern in terms of sampling
+    variability and the standard error. What would a proper
+    inference procedure provide that the raw comparison of means
+    cannot?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "(a) Null hypothesis", eq: "H_0: \\mu_B = 87", note: "The new design produces the same mean order value as Version A." },
+  { op: "(a) Alternative", eq: "H_1: \\mu_B \\neq 87 \\quad \\text{(two-tailed)}", note: "The design could increase or decrease mean order value." },
+  { op: "(b) Additional information needed", eq: "\\sigma_B \\text{ (or } s_B\\text{) for Version B}", note: "You need a measure of spread for the B sample to compute SE for the two-sample test. You also need the B sample to be a random, representative sample." },
+  { op: "(b) SE for Version B alone", eq: "SE_B = \\dfrac{\\sigma_B}{\\sqrt{n_B}} = \\dfrac{\\sigma_B}{\\sqrt{100}}", note: "With σ_B known (or estimated by s_B), the test statistic can be computed." },
+  { op: "(c) The statistician's concern", eq: "SE_B = \\dfrac{22}{10} = 2.20 \\text{ (using } \\sigma_A \\text{ as proxy)}", note: "Even if σ_B ≈ σ_A = 22, the SE of the B sample mean is $2.20. A $6 difference is about 2.7 SEs — notable, but the sampling distribution must be checked formally." },
+  { op: "(c) What inference adds", eq: "z = \\dfrac{93 - 87}{2.20} \\approx 2.73, \\quad p \\approx 0.006", note: "Formal inference gives a p-value. The raw comparison of $93 vs $87 tells you nothing about whether such a gap is plausible from chance; the test statistic and p-value do." }
+])
+```

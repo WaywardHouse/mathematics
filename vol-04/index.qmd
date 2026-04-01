@@ -1,6 +1,18 @@
 ---
 title: "Volume 4 — Functions and change"
-status: "seed"
 ---
 
-*Seed — front matter to be completed before content is written.*
+The central move of this volume is tracking scale and structure.
+
+In previous volumes, you studied relationships where scaling happens in simple or periodic ways. This volume is about what happens when growth accelerates, when dimensions expand, and when you need to handle many different, changing variables all at once.
+
+By the end of this volume, you will be comfortable navigating exponential growth and decay, working within the complex plane, organizing large sets of linear constraints using matrices, and making sense of infinite step-by-step accumulations.
+
+## Chapters
+
+| Chapter | Title | Core move |
+|---------|-------|-----------|
+| 1 | Exponents and logarithms | Managing multiplicative growth |
+| 2 | Complex numbers | Expanding the number plane |
+| 3 | Systems and matrices | Handling multiple relationships at once |
+| 4 | Sequences and series | Identifying and summing discrete patterns |

@@ -1,6 +1,18 @@
 ---
 title: "Volume 6 — Probability and data"
-status: "seed"
 ---
 
-*Seed — front matter to be completed before content is written.*
+The central move of this volume is quantifying uncertainty.
+
+Often, you won't have the exact formula or the complete set of facts. This volume provides the tools for operating in those gray areas where outcomes are determined by chance or obscured by noise.
+
+By the end of this volume, you will learn how to formally measure the likelihood of future events, recognize the natural shapes that variation takes, draw robust conclusions from limited samples, and separate true signals from random fluctuations.
+
+## Chapters
+
+| Chapter | Title | Core move |
+|---------|-------|-----------|
+| 1 | Probability theory | Modeling unpredictable events |
+| 2 | Distributions | Recognizing shapes of variation |
+| 3 | Statistical inference | Drawing conclusions from valid samples |
+| 4 | Data analysis | Finding signals in noise |

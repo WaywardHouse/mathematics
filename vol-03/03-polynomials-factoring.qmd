@@ -1,6 +1,885 @@
 ---
 title: "Polynomials and factoring"
-status: "seed"
+subtitle: "When the curve is the point"
+
+volume: 3
+chapter: 3
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know how to work with linear relationships — straight lines,
+  constant rates, one unknown. But most real relationships curve. The
+  straight line is the exception, not the rule.
+
+rewrite: |
+  A polynomial is a relationship where powers of the unknown combine.
+  The squared term is what makes it curve. Factoring breaks a polynomial
+  back into the pieces that multiplied together to make it, which lets
+  you find where it equals zero — and where it reaches its peak or trough.
+
+opens_to:
+  - id: "v3c4-functions"
+    label: "Functions and relations"
+    volume: 3
+    relationship: "enables"
+  - id: "v5c2-differential-calculus"
+    label: "Differential calculus"
+    volume: 5
+    relationship: "motivates"
+  - id: "v4c2-complex-numbers"
+    label: "Complex numbers"
+    volume: 4
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "linear_eq"
+  - "patterns"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Stress and deflection in beams follow quadratic curves — polynomial models describe physical relationships that aren't linear."
+    career_example: "Structural engineer calculating beam deflection under load"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Projectile motion traces a parabola, and fitting a polynomial to data is a standard modelling technique."
+    career_example: "Physicist modelling the trajectory of a projectile"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Revenue, cost, and profit curves are often quadratic — the maximum or minimum of a polynomial is where the interesting decision is."
+    career_example: "Analyst finding the price point that maximises profit"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Bezier curves — used in every vector graphics program — are polynomials, and polynomial hashing underpins many data structures."
+    career_example: "Graphics programmer working with spline-based curves"
+
+hook: |
+  You kick a ball straight up. For a moment it keeps going — then it
+  slows, stops, and falls back down. The height isn't a straight line;
+  it curves up and back. That curve has an equation.
+
+  You're fencing off a rectangular garden and you've got 40 metres of
+  fencing. You want the biggest possible area. If you make it long and
+  thin, the area shrinks. If you make it square, the area is as large as
+  it can be. Finding that optimum — that maximum — is a polynomial problem.
+
+  Your school sells tickets to a performance. At a lower price more people
+  buy, but revenue per ticket drops. At a higher price fewer people buy.
+  Somewhere in the middle is the price that brings in the most money. That
+  relationship between price and total revenue follows a curve — a polynomial.
+
+  Straight lines describe constant rates. Polynomials describe the rest.
+
+notation_introduced:
+  - symbol: "y"
+    reads_as: "the output — the value the polynomial produces for a given x"
+    notation_weight: 1
+  - symbol: "ax^2 + bx + c"
+    reads_as: "a times x-squared, plus b times x, plus c"
+    notation_weight: 2
+  - symbol: "a, b, c"
+    reads_as: "the coefficients — the numbers multiplying each power of x"
+    notation_weight: 1
+  - symbol: "x²"
+    reads_as: "x squared — x multiplied by itself"
+    notation_weight: 1
+  - symbol: "\\Delta = b^2 - 4ac"
+    reads_as: "the discriminant — b squared minus four a c"
+    notation_weight: 2
+  - symbol: "x = \\frac{-b \\pm \\sqrt{\\Delta}}{2a}"
+    reads_as: "x equals negative b, plus or minus the square root of the discriminant, all divided by two a"
+    notation_weight: 3
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 10
+  strand: "Algebra and Number"
+  outcome: "5.1"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You kick a ball straight up. For a moment it keeps going — then it
+slows, stops, and falls back down. The height isn't a straight line;
+it curves up and back. That curve has an equation.
+
+You're fencing off a rectangular garden and you've got 40 metres of
+fencing. You want the biggest possible area. If you make it long and
+thin, the area shrinks. If you make it square, the area is as large as
+it can be. Finding that optimum — that maximum — is a polynomial problem.
+
+Your school sells tickets to a performance. At a lower price more people
+buy, but revenue per ticket drops. At a higher price fewer people buy.
+Somewhere in the middle is the price that brings in the most money. That
+relationship between price and total revenue follows a curve — a polynomial.
+
+Straight lines describe constant rates. Polynomials describe the rest.
+
+## What the notation is saying
+
+Here is a polynomial:
+
+$$ax^2 + bx + c$$
+
+Read it aloud: *a times x-squared, plus b times x, plus c.*
+
+The letters $a$, $b$, and $c$ are **coefficients** — the numbers
+multiplying each power of $x$. They're just fixed numbers; you'll swap
+them for actual values in any particular problem. The letter $x$ is the
+unknown — the variable you're either solving for, or letting run freely
+while you watch what the output does. When you write $y = ax^2 + bx + c$,
+$y$ is the output — the value the polynomial produces for each value of $x$.
+
+Each piece — $ax^2$, $bx$, $c$ — is called a **term**. Count the terms
+and you know you have three. The $c$ term has no $x$ at all; it's a
+plain number, a constant.
+
+The **degree** of a polynomial is the highest power of $x$ present. In
+$ax^2 + bx + c$ the highest power is 2, so the degree is 2. Degree-2
+polynomials are called **quadratics**. Degree-1 polynomials — like
+$3x + 7$ — are the linear equations from Vol 2. Degree-3 polynomials
+are called cubics, and so on.
+
+Why does the $x^2$ term make the graph curve? Because $x^2$ grows faster
+than $x$. When $x = 2$, $x^2 = 4$. When $x = 10$, $x^2 = 100$. The
+squared term pulls the output away from the straight line. Take $a = 0$
+and you're back to a line. Leave $a$ nonzero and the whole shape bends.
+
+A specific example: $y = x^2 - 5x + 6$. Here $a = 1$, $b = -5$, $c = 6$.
+The negative $b$ means the straight-line part is pulling down, and the
+positive $c$ shifts the whole thing up by 6 units. The coefficient $a = 1$
+means the parabola opens upward — a positive $a$ always curves upward,
+a negative $a$ always curves downward.
+
+## The method
+
+### Part a: Expanding
+
+Before you can factor, it helps to know how to expand — to go from
+the factored form back to the full polynomial. This makes the reverse
+step (factoring) easier to recognise.
+
+The distributive law says: multiply everything inside the brackets by
+everything outside.
+
+$$3(x + 4) = 3x + 12$$
+
+When you have two brackets multiplied together, you apply the same idea
+twice — every term in the first bracket multiplies every term in the
+second. This is sometimes called **FOIL** (First, Outer, Inner, Last),
+though the name matters less than the idea: don't miss any pair.
+
+$$(x + 3)(x + 2)$$
+
+- First terms: $x \cdot x = x^2$
+- Outer terms: $x \cdot 2 = 2x$
+- Inner terms: $3 \cdot x = 3x$
+- Last terms: $3 \cdot 2 = 6$
+
+Add them up: $x^2 + 2x + 3x + 6 = x^2 + 5x + 6$.
+
+The pattern is worth noticing. With $(x + 3)(x + 2)$, the number in
+the middle ($5$) is the sum of 3 and 2. The constant term ($6$) is their
+product. That observation is what makes factoring work in reverse.
+
+### Part b: Factoring
+
+Factoring means breaking a polynomial back into the brackets that produced
+it. There are three main methods; apply them in this order.
+
+**Method 1: Common factor.** Check whether every term shares a factor
+you can pull out.
+
+$$6x^2 + 9x = 3x(2x + 3)$$
+
+The common factor here is $3x$. Dividing both terms by $3x$ gives the
+bracket. Always check for a common factor first — it simplifies what
+comes next.
+
+**Method 2: Difference of squares.** When you have two perfect squares
+separated by a minus sign, it factors as:
+
+$$a^2 - b^2 = (a + b)(a - b)$$
+
+For example:
+
+$$x^2 - 25 = (x + 5)(x - 5)$$
+
+Check it by expanding: $(x + 5)(x - 5) = x^2 - 5x + 5x - 25 = x^2 - 25$. Yes.
+
+This works because the middle terms cancel. It doesn't work if the sign
+between the squares is positive — $x^2 + 25$ doesn't factor over the
+real numbers.
+
+**Method 3: Factoring a trinomial $ax^2 + bx + c$.** When $a = 1$, look
+for two numbers that multiply to $c$ and add to $b$.
+
+$$x^2 - 5x + 6$$
+
+You need two numbers that multiply to $6$ and add to $-5$. Try: $-2$ and
+$-3$. Product: $(-2)(-3) = 6$. Sum: $(-2) + (-3) = -5$. Yes.
+
+$$x^2 - 5x + 6 = (x - 2)(x - 3)$$
+
+When $a \neq 1$, try the **grouping method** (also called the $ac$
+method). Multiply $a$ by $c$, find two numbers with that product and sum
+$b$, then split the middle term and factor in pairs.
+
+$$2x^2 + 7x + 3$$
+
+Multiply $a \cdot c = 2 \cdot 3 = 6$. Find two numbers that multiply to
+$6$ and add to $7$: those are $1$ and $6$.
+
+Split the middle term:
+
+$$2x^2 + x + 6x + 3$$
+
+Factor in pairs:
+
+$$x(2x + 1) + 3(2x + 1) = (x + 3)(2x + 1)$$
+
+Both terms contain the factor $(2x + 1)$, so it can be pulled out — the
+same distributive law used in expanding, run backwards.
+
+Check by expanding: $(x + 3)(2x + 1) = 2x^2 + x + 6x + 3 = 2x^2 + 7x + 3$. Yes.
+
+### Part c: Solving quadratic equations
+
+A **quadratic equation** is when you set a quadratic equal to zero:
+
+$$ax^2 + bx + c = 0$$
+
+There are two methods.
+
+**Solving by factoring.** If you can factor the left side, you can use
+the fact that if two things multiply to zero, at least one of them must
+be zero.
+
+$$x^2 - 5x + 6 = 0$$
+
+$$(x - 2)(x - 3) = 0$$
+
+Either $(x - 2) = 0$ or $(x - 3) = 0$. So $x = 2$ or $x = 3$.
+
+Check both: $4 - 10 + 6 = 0$. Yes. $9 - 15 + 6 = 0$. Yes.
+
+**Solving with the quadratic formula.** Not every quadratic factors
+neatly. For any quadratic $ax^2 + bx + c = 0$, the solutions are always:
+
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+
+Read it: *x equals negative b, plus or minus the square root of b-squared
+minus four-a-c, all over two-a.*
+
+The $\pm$ sign means there are two candidate answers — one where you add
+the square root term, one where you subtract it (whether there are two,
+one, or no real answers depends on the discriminant — that's the next
+section).
+
+The piece under the square root — $b^2 - 4ac$ — is called the
+**discriminant**, often written $\Delta$ (delta). It tells you how many
+solutions exist before you do any arithmetic:
+
+- $\Delta > 0$: two real solutions (the parabola crosses the x-axis twice)
+- $\Delta = 0$: one solution (the parabola just touches the x-axis at one point)
+- $\Delta < 0$: no real solutions (the parabola doesn't reach the x-axis)
+
+### Part d: Reading the graph
+
+Every quadratic $y = ax^2 + bx + c$ draws a **parabola** — a symmetric
+U-shape (or inverted U if $a < 0$).
+
+The **roots** are where the parabola crosses the x-axis — the values of
+$x$ where $y = 0$. These are exactly the solutions to $ax^2 + bx + c = 0$.
+Factoring gives you the roots. The roots are the x-intercepts of the graph.
+
+The **vertex** is the turning point — the very top of a downward parabola
+(the maximum) or the very bottom of an upward one (the minimum). The
+x-coordinate of the vertex is:
+
+$$x_v = -\frac{b}{2a}$$
+
+Read it: *negative b over two a.* Substitute this back into the equation
+to find the y-coordinate — the maximum or minimum value itself.
+
+For $y = x^2 - 5x + 6$: $x_v = -(-5)/(2 \cdot 1) = 5/2 = 2.5$. Then
+$y = (2.5)^2 - 5(2.5) + 6 = 6.25 - 12.5 + 6 = -0.25$. The vertex is
+at $(2.5, -0.25)$ — the minimum point, halfway between the two roots at
+$x = 2$ and $x = 3$.
+
+```{ojs}
+//| echo: false
+viewof qa = Inputs.range([-2, 2], { value: 1, step: 0.5, label: "a" })
+```
+
+```{ojs}
+//| echo: false
+viewof qb = Inputs.range([-6, 6], { value: -5, step: 1, label: "b" })
+```
+
+```{ojs}
+//| echo: false
+viewof qc = Inputs.range([-9, 9], { value: 6, step: 1, label: "c" })
+```
+
+```{ojs}
+//| echo: false
+{
+  // Guard: skip if a is too close to zero
+  const a = Math.abs(qa) < 0.1 ? 0.5 : qa;
+  const b = qb, c = qc;
+
+  const svgW = 500, svgH = 360;
+  const margin = { top: 50, right: 30, bottom: 40, left: 50 };
+  const W = svgW - margin.left - margin.right;
+  const H = svgH - margin.top - margin.bottom;
+
+  const xMin = -6, xMax = 6;
+  const xs = d3.range(xMin, xMax + 0.05, 0.05);
+  const ys = xs.map(x => a * x * x + b * x + c);
+  const yMin = Math.min(...ys, -10), yMax = Math.max(...ys, 10);
+
+  const xScale = d3.scaleLinear([xMin, xMax], [0, W]);
+  const yScale = d3.scaleLinear([yMin, yMax], [H, 0]);
+
+  const disc = b * b - 4 * a * c;
+
+  // Roots
+  let roots = [];
+  if (disc > 0) {
+    roots = [
+      (-b + Math.sqrt(disc)) / (2 * a),
+      (-b - Math.sqrt(disc)) / (2 * a)
+    ].filter(r => r >= xMin && r <= xMax);
+  } else if (Math.abs(disc) < 1e-9) {
+    const r = -b / (2 * a);
+    if (r >= xMin && r <= xMax) roots = [r];
+  }
+
+  // Vertex
+  const vx = -b / (2 * a);
+  const vy = a * vx * vx + b * vx + c;
+
+  const svg = d3.create("svg")
+    .attr("width", svgW).attr("height", svgH)
+    .style("font-family", "inherit");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Axes
+  if (yScale(0) >= 0 && yScale(0) <= H) {
+    g.append("line")
+      .attr("x1", 0).attr("y1", yScale(0))
+      .attr("x2", W).attr("y2", yScale(0))
+      .attr("stroke", "#9ca3af").attr("stroke-width", 1);
+  }
+  if (xScale(0) >= 0 && xScale(0) <= W) {
+    g.append("line")
+      .attr("x1", xScale(0)).attr("y1", 0)
+      .attr("x2", xScale(0)).attr("y2", H)
+      .attr("stroke", "#9ca3af").attr("stroke-width", 1);
+  }
+
+  // Grid lines
+  for (let xi = xMin; xi <= xMax; xi++) {
+    g.append("line")
+      .attr("x1", xScale(xi)).attr("y1", 0)
+      .attr("x2", xScale(xi)).attr("y2", H)
+      .attr("stroke", "#f3f4f6").attr("stroke-width", 1);
+    g.append("text")
+      .attr("x", xScale(xi)).attr("y", yScale(0) + 14)
+      .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#9ca3af")
+      .text(xi === 0 ? "" : xi);
+  }
+
+  // Curve
+  const line = d3.line()
+    .x(x => xScale(x))
+    .y(x => yScale(a * x * x + b * x + c))
+    .curve(d3.curveCatmullRom);
+
+  g.append("path")
+    .datum(xs)
+    .attr("d", line)
+    .attr("fill", "none")
+    .attr("stroke", "#2563eb")
+    .attr("stroke-width", 2.5);
+
+  // Roots
+  roots.forEach(r => {
+    g.append("circle")
+      .attr("cx", xScale(r)).attr("cy", yScale(0))
+      .attr("r", 5)
+      .attr("fill", "#dc2626").attr("stroke", "#fff").attr("stroke-width", 1.5);
+  });
+
+  // Vertex
+  if (vx >= xMin && vx <= xMax) {
+    g.append("circle")
+      .attr("cx", xScale(vx)).attr("cy", yScale(vy))
+      .attr("r", 6)
+      .attr("fill", "#f59e0b").attr("stroke", "#fff").attr("stroke-width", 1.5);
+  }
+
+  // "No real roots" label
+  if (disc < 0) {
+    g.append("text")
+      .attr("x", W / 2).attr("y", H / 2)
+      .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#dc2626")
+      .text("no real roots (Δ < 0)");
+  }
+
+  // Info panel at top
+  const eqStr = `y = ${a}x² ${b >= 0 ? "+" : ""}${b}x ${c >= 0 ? "+" : ""}${c}`;
+  svg.append("text")
+    .attr("x", margin.left).attr("y", 22)
+    .attr("font-size", "13px").attr("font-weight", "600").attr("fill", "#111827")
+    .text(eqStr);
+
+  svg.append("text")
+    .attr("x", margin.left + 220).attr("y", 22)
+    .attr("font-size", "13px").attr("fill", disc >= 0 ? "#059669" : "#dc2626")
+    .text(`Δ = ${disc.toFixed(2)}  (${disc > 0 ? "2 roots" : disc === 0 ? "1 root" : "no real roots"})`);
+
+  // Vertex label
+  if (vx >= xMin && vx <= xMax) {
+    svg.append("text")
+      .attr("x", margin.left + xScale(vx) + 8)
+      .attr("y", margin.top + yScale(vy) - 4)
+      .attr("font-size", "11px").attr("fill", "#d97706")
+      .text(`vertex (${vx.toFixed(2)}, ${vy.toFixed(2)})`);
+  }
+
+  return svg.node();
+}
+```
+
+## Why this works
+
+::: {.callout-note appearance="simple"}
+**Where the quadratic formula comes from**
+
+The formula isn't magic — it's derived by solving $ax^2 + bx + c = 0$
+directly, using a technique called **completing the square**.
+
+The key move: rewrite $x^2 + \frac{b}{a}x$ as a perfect square minus a
+correction term.
+
+$$x^2 + \frac{b}{a}x = \left(x + \frac{b}{2a}\right)^2 - \frac{b^2}{4a^2}$$
+
+Substitute this into $ax^2 + bx + c = 0$, divide through by $a$, then
+isolate the squared bracket:
+
+$$\left(x + \frac{b}{2a}\right)^2 = \frac{b^2 - 4ac}{4a^2}$$
+
+Take the square root of both sides (giving $\pm$), then subtract
+$\frac{b}{2a}$:
+
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+
+That's it. The formula is just completing the square, done once in
+general so you don't have to do it every time.
+:::
+
+## Worked examples
+
+**Example 1 (sci) — height of a thrown ball**
+
+A ball is thrown upward from ground level with an initial speed of 14 m/s.
+Ignoring air resistance, its height in metres after $t$ seconds is:
+
+$$h(t) = 14t - 4.9t^2$$
+
+When does it land?
+
+Landing means $h = 0$:
+
+$$14t - 4.9t^2 = 0$$
+
+Factor out a common term of $t$:
+
+$$t(14 - 4.9t) = 0$$
+
+Either $t = 0$ (the moment it's thrown) or $14 - 4.9t = 0$. Solving the
+second:
+
+$$4.9t = 14 \implies t = \frac{14}{4.9} \approx 2.86 \text{ s}$$
+
+The ball lands after about 2.86 seconds.
+
+The vertex — the highest point — is at $t = 14/(2 \times 4.9) = 14/9.8
+\approx 1.43$ s, at height $h(1.43) = 14(1.43) - 4.9(1.43)^2 \approx
+20.02 - 10.02 \approx 10$ m.
+
+```{ojs}
+//| echo: false
+viewof ballH0 = Inputs.range([0, 5], { value: 0, step: 0.5, label: "Initial height h₀ (m)" })
+```
+
+```{ojs}
+//| echo: false
+viewof ballV = Inputs.range([1, 20], { value: 14, step: 1, label: "Initial speed v (m/s)" })
+```
+
+```{ojs}
+//| echo: false
+{
+  const h0 = ballH0, v = ballV;
+  // h(t) = h0 + v*t - 4.9*t^2
+  // Landing: positive root of -4.9t^2 + v*t + h0 = 0
+  const disc = v * v + 4 * 4.9 * h0;
+  const tLand = (v + Math.sqrt(disc)) / (2 * 4.9);
+  const tPeak = v / (2 * 4.9);
+  const hPeak = h0 + v * tPeak - 4.9 * tPeak * tPeak;
+
+  const svgW = 500, svgH = 320;
+  const margin = { top: 40, right: 30, bottom: 40, left: 55 };
+  const W = svgW - margin.left - margin.right;
+  const H = svgH - margin.top - margin.bottom;
+
+  const tMax = tLand * 1.05;
+  const tArr = d3.range(0, tLand + 0.01, tLand / 200);
+  const hArr = tArr.map(t => Math.max(0, h0 + v * t - 4.9 * t * t));
+
+  const xScale = d3.scaleLinear([0, tMax], [0, W]);
+  const yMax = hPeak * 1.15 + 1;
+  const yScale = d3.scaleLinear([0, yMax], [H, 0]);
+
+  const svg = d3.create("svg")
+    .attr("width", svgW).attr("height", svgH)
+    .style("font-family", "inherit");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Axes
+  g.append("line").attr("x1", 0).attr("y1", H).attr("x2", W).attr("y2", H)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+  g.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", H)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+
+  // Axis labels
+  g.append("text").attr("x", W / 2).attr("y", H + 32)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#374151")
+    .text("time t (seconds)");
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -H / 2).attr("y", -40)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#374151")
+    .text("height h (metres)");
+
+  // Curve
+  const lineGen = d3.line()
+    .x((_, i) => xScale(tArr[i]))
+    .y(h => yScale(h));
+
+  g.append("path")
+    .datum(hArr)
+    .attr("d", lineGen)
+    .attr("fill", "none")
+    .attr("stroke", "#2563eb")
+    .attr("stroke-width", 2.5);
+
+  // Peak marker
+  g.append("circle")
+    .attr("cx", xScale(tPeak)).attr("cy", yScale(hPeak))
+    .attr("r", 6).attr("fill", "#f59e0b").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+  // Landing marker
+  g.append("circle")
+    .attr("cx", xScale(tLand)).attr("cy", yScale(0))
+    .attr("r", 6).attr("fill", "#dc2626").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+  // Labels
+  g.append("text")
+    .attr("x", xScale(tPeak) + 8).attr("y", yScale(hPeak) - 8)
+    .attr("font-size", "12px").attr("fill", "#d97706")
+    .text(`peak: ${hPeak.toFixed(2)} m at t=${tPeak.toFixed(2)} s`);
+
+  g.append("text")
+    .attr("x", xScale(tLand) - 8).attr("y", yScale(0) + 18)
+    .attr("text-anchor", "end").attr("font-size", "12px").attr("fill", "#dc2626")
+    .text(`lands at t=${tLand.toFixed(2)} s`);
+
+  // Title
+  svg.append("text")
+    .attr("x", margin.left).attr("y", 24)
+    .attr("font-size", "13px").attr("font-weight", "600").attr("fill", "#111827")
+    .text(`h(t) = ${h0} + ${v}t − 4.9t²`);
+
+  return svg.node();
+}
+```
+
+---
+
+**Example 2 (eng) — maximum area from fixed fencing**
+
+You have 40 m of fencing and want to enclose a rectangular garden with
+the largest possible area. What dimensions give the maximum area?
+
+Let the width be $x$ metres. Since the total perimeter is 40 m, the two
+widths use $2x$ metres, leaving $40 - 2x$ for the two lengths. Each
+length is $(40 - 2x)/2 = 20 - x$ metres.
+
+Area:
+
+$$A = x(20 - x) = 20x - x^2$$
+
+This is a downward parabola ($a = -1$). Maximum at:
+
+$$x_v = -\frac{20}{2 \times (-1)} = 10 \text{ m}$$
+
+Length $= 20 - 10 = 10$ m. Area $= 10 \times 10 = 100$ m². A square
+encloses the most area for a given perimeter.
+
+---
+
+**Example 3 (biz) — maximum revenue from a pricing function**
+
+A small business sells handmade candles. Market research shows that at a
+price of $p$ dollars each, the number sold per week is $q = 60 - 2p$.
+Revenue is:
+
+$$R = p \cdot q = p(60 - 2p) = 60p - 2p^2$$
+
+This is a downward parabola ($a = -2$). Maximum revenue at:
+
+$$p_v = -\frac{60}{2 \times (-2)} = -\frac{60}{-4} = 15$$
+
+Price of $15. Revenue: $R = 15 \times (60 - 30) = 15 \times 30 = 450$
+per week.
+
+To confirm it's a maximum and not a minimum: $a = -2 < 0$, so the parabola
+opens downward. The vertex is the top. Any price above or below $15 gives
+less revenue.
+
+---
+
+**Example 4 (comp) — character jump arc**
+
+A game character jumps. The height of the character above the ground in
+metres at time $t$ seconds after the jump is:
+
+$$h(t) = -5t^2 + 10t$$
+
+Find the maximum height and the time the character lands.
+
+The parabola opens downward ($a = -5$), so the vertex is the maximum.
+
+Vertex time: $t_v = -10/(2 \times -5) = 1$ second.
+
+Maximum height: $h(1) = -5(1)^2 + 10(1) = -5 + 10 = 5$ metres.
+
+Landing: set $h = 0$.
+
+$$-5t^2 + 10t = 0$$
+$$t(-5t + 10) = 0$$
+
+$t = 0$ (take-off) or $t = 2$ seconds (landing).
+
+Evaluating a polynomial at a specific value — like checking the height at
+$t = 1$ or $t = 2$ — is a calculation every game engine runs many times
+per second to determine where characters and objects are.
+
+## Where this goes
+
+The natural next step is **Vol 3, Chapter 4: Functions and relations**.
+A quadratic is a function — it takes an $x$ value and produces a $y$
+value, one output for each input. Once you have the function concept, the
+parabola becomes one member of a large family: linear functions, quadratic
+functions, exponential functions, trigonometric functions. The machinery
+you've built here — reading coefficients, finding roots, locating vertices
+— applies across all of them.
+
+The bigger horizon is **calculus**. The vertex formula $x_v = -b/(2a)$
+gives you the maximum or minimum, but it only works for quadratics. What
+about a cubic, or a more complicated curve? That's what differential
+calculus (Vol 5) answers: a general method for finding the exact peak or
+trough of any smooth curve. The quadratic vertex is the simplest case of
+a much more powerful idea. When you reach it, what you learned here will
+already be familiar.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A structural engineer calculating deflection in a beam under a
+  distributed load solves a polynomial equation.
+- A physicist modelling projectile trajectory — range, maximum height,
+  time of flight — works with quadratics throughout.
+- A pricing analyst finding the revenue-maximising price point solves
+  $dR/dp = 0$, which for a linear demand function produces a quadratic.
+- A computer graphics programmer evaluating a Bezier spline is computing
+  a polynomial at a parameter value thousands of times per frame.
+- A data scientist fitting a parabola to experimental data (polynomial
+  regression of degree 2) uses the same $ax^2 + bx + c$ form.
+:::
+
+## Exercises
+
+These are puzzles. Each has a clean answer. The interesting part is
+setting up the equation first, then solving it.
+
+1. A ball is thrown upward from a cliff 20 m above the ground with an
+   initial upward speed of 10 m/s. Its height above the ground after
+   $t$ seconds is $h(t) = 20 + 10t - 4.9t^2$. When does it hit the
+   ground?
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Set height equal to zero", eq: "20 + 10t - 4.9t^2 = 0", note: "The ball hits the ground when h = 0." },
+  { op: "Rearrange into standard form", eq: "-4.9t^2 + 10t + 20 = 0", note: null },
+  { op: "Identify coefficients (the quadratic formula handles any sign of a)", eq: "a = -4.9,\\quad b = 10,\\quad c = 20", note: "No need to rearrange further — the formula works with a negative leading coefficient." },
+  { op: "Compute the discriminant", eq: "\\Delta = 10^2 - 4(-4.9)(20) = 100 + 392 = 492", note: "Positive discriminant means two real solutions; we take the one giving positive t." },
+  { op: "Apply the quadratic formula", eq: "t = \\frac{-10 \\pm \\sqrt{492}}{2 \\times (-4.9)} = \\frac{-10 \\pm 22.18}{-9.8}", note: null },
+  { op: "Take the root that gives positive t", eq: "t = \\frac{-10 - 22.18}{-9.8} = \\frac{-32.18}{-9.8} \\approx 3.28 \\text{ s}", note: "The other root gives t ≈ −1.24 s, which is before the ball was thrown." },
+  { op: "Check", eq: "h(3.28) = 20 + 10(3.28) - 4.9(3.28)^2 \\approx 20 + 32.8 - 52.7 \\approx 0.1 \\approx 0 \\checkmark", note: null }
+])
+```
+
+2. Factor $x^2 - 7x + 12$ completely, then write down the two roots of
+   $x^2 - 7x + 12 = 0$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Write the trinomial", eq: "x^2 - 7x + 12", note: null },
+  { op: "Find two numbers that multiply to 12 and add to -7", eq: "(-3) \\times (-4) = 12 \\quad\\text{and}\\quad (-3) + (-4) = -7", note: null },
+  { op: "Write the factored form", eq: "x^2 - 7x + 12 = (x - 3)(x - 4)", note: null },
+  { op: "Set each factor to zero", eq: "x - 3 = 0 \\implies x = 3 \\qquad x - 4 = 0 \\implies x = 4", note: null },
+  { op: "Check", eq: "(3)^2 - 7(3) + 12 = 9 - 21 + 12 = 0 \\checkmark \\qquad (4)^2 - 7(4) + 12 = 16 - 28 + 12 = 0 \\checkmark", note: null }
+])
+```
+
+3. A rectangular garden has an area of 48 m². Its length is 2 m more
+   than its width. Find the dimensions.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Let width = x, then length = x + 2", eq: "x(x + 2) = 48", note: null },
+  { op: "Expand", eq: "x^2 + 2x = 48", note: null },
+  { op: "Rearrange into standard form", eq: "x^2 + 2x - 48 = 0", note: null },
+  { op: "Find two numbers that multiply to -48 and add to 2", eq: "8 \\times (-6) = -48 \\quad\\text{and}\\quad 8 + (-6) = 2", note: null },
+  { op: "Factor", eq: "(x + 8)(x - 6) = 0", note: null },
+  { op: "Solve — take the positive root", eq: "x = 6 \\text{ (width)}, \\quad x + 2 = 8 \\text{ (length)}", note: "x = -8 is rejected since a width cannot be negative." },
+  { op: "Check", eq: "6 \\times 8 = 48 \\checkmark", note: null }
+])
+```
+
+4. Use the quadratic formula to solve $2x^2 - 3x - 2 = 0$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Identify coefficients", eq: "a = 2,\\quad b = -3,\\quad c = -2", note: null },
+  { op: "Compute the discriminant", eq: "\\Delta = (-3)^2 - 4(2)(-2) = 9 + 16 = 25", note: null },
+  { op: "Apply the quadratic formula", eq: "x = \\frac{3 \\pm \\sqrt{25}}{4} = \\frac{3 \\pm 5}{4}", note: null },
+  { op: "Find both solutions", eq: "x = \\frac{3 + 5}{4} = 2 \\qquad\\text{or}\\qquad x = \\frac{3 - 5}{4} = -\\frac{1}{2}", note: null },
+  { op: "Check x = 2", eq: "2(4) - 3(2) - 2 = 8 - 6 - 2 = 0 \\checkmark", note: null },
+  { op: "Check x = -1/2", eq: "2\\left(\\frac{1}{4}\\right) - 3\\left(-\\frac{1}{2}\\right) - 2 = \\frac{1}{2} + \\frac{3}{2} - 2 = 0 \\checkmark", note: null }
+])
+```
+
+5. A candle company finds its weekly profit in dollars is
+   $P(p) = -3p^2 + 48p - 165$, where $p$ is the price per candle.
+   At what price is profit maximised, and what is that profit?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Identify coefficients", eq: "a = -3,\\quad b = 48,\\quad c = -165", note: "The negative a confirms this is a downward parabola — it has a maximum." },
+  { op: "Find the price at the vertex", eq: "p_v = -\\frac{b}{2a} = -\\frac{48}{2(-3)} = -\\frac{48}{-6} = 8", note: null },
+  { op: "Substitute to find maximum profit", eq: "P(8) = -3(64) + 48(8) - 165 = -192 + 384 - 165 = 27", note: null },
+  { op: "State the answer", eq: "\\text{Maximum profit: } \\$27 \\text{ per week at a price of } \\$8", note: null },
+  { op: "Check", eq: "P(7) = -3(49) + 48(7) - 165 = -147 + 336 - 165 = 24 < 27 \\checkmark", note: "Checking a neighbouring value confirms 8 is the peak." }
+])
+```
+
+6. Factor $4x^2 - 25$ completely.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Recognise the structure", eq: "4x^2 - 25 = (2x)^2 - 5^2", note: "Both terms are perfect squares separated by a minus sign — use the difference of squares identity." },
+  { op: "Apply a² - b² = (a + b)(a - b)", eq: "4x^2 - 25 = (2x + 5)(2x - 5)", note: null },
+  { op: "Check by expanding", eq: "(2x + 5)(2x - 5) = 4x^2 - 10x + 10x - 25 = 4x^2 - 25 \\checkmark", note: null }
+])
+```

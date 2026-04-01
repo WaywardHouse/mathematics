@@ -20,7 +20,7 @@ For every chapter you review, check against `_templates/chapter-schema.yml`:
 - `exercises.type`, `exercises.real_world_context`
 
 **Field value constraints**:
-- `layer` must be one of: `pre-university`, `bridge`, `university`, `engineering`
+- `layer` must be one of: `pre-university`, `bridge`, `university`, `engineering`, `discipline`
 - `status` must be one of: `seed`, `draft`, `review`, `final`
 - `destinations[].field` must be one of: `eng`, `sci`, `biz`, `comp`, `geo`
 - `opens_to[].relationship` must be one of: `enables`, `enriches`, `motivates`
@@ -29,7 +29,10 @@ For every chapter you review, check against `_templates/chapter-schema.yml`:
 
 1. Read `_data/topology.yml`
 2. For each `prerequisite_ids` entry, verify the node id exists in topology
-3. For each `opens_to[].id`, verify the target chapter file exists
+3. For each `opens_to[].id`, verify the target is internally consistent with the repo convention in force:
+   - if chapter-slug convention is being used, verify the target chapter file exists
+   - if topology-node convention is being used, verify the node id exists in `_data/topology.yml`
+   - flag mixed conventions within the same batch as a warning
 4. For each `destinations[].field`, verify the field id exists in topology `fields`
 5. Check that `volume` and `chapter` are consistent with the chapter's position in `_quarto.yml`
 

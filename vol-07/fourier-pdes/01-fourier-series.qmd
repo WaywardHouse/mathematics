@@ -1,6 +1,1238 @@
 ---
 title: "Fourier series"
-status: "seed"
+subtitle: "Every periodic signal is a sum of pure frequencies"
+chapter: 1
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: "Periodic functions repeat. If you know one period you know everything. The question is whether there is a systematic way to break any periodic function into the simplest possible pieces — and there is: sines and cosines, one for each frequency."
+
+rewrite: "Any reasonably well-behaved periodic function of period 2L can be written as a₀/2 plus an infinite sum of cosines and sines with frequencies nπ/L. The coefficients aₙ and bₙ are computed by integrating f against the corresponding sine or cosine over one period. The mechanism behind the formulas is the orthogonality of the trigonometric functions: integrating the product of two different modes over a full period always gives zero."
+
+prerequisite_ids:
+  - trig
+  - seq_series
+  - int_calc
+
+opens_to:
+  - id: fourier_transform
+    label: "Fourier transforms"
+    volume: 7
+    relationship: enables
+  - id: pdes
+    label: "Partial differential equations"
+    volume: 7
+    relationship: motivates
+  - id: complex_analysis
+    label: "Complex analysis"
+    volume: 7
+    relationship: enriches
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Every electrical signal, vibration spectrum, and antenna radiation pattern is described in terms of its frequency content — Fourier series is the foundation of that description."
+    career_example: "Vibration engineer diagnosing a resonance peak in rotating machinery using a spectrum analyser"
+  - field: sci
+    label: Hard sciences
+    hook: "Spectroscopy, crystallography, and quantum mechanics all rely on decomposing functions into frequency components — in quantum mechanics, the energy eigenstates are literally the Fourier modes."
+    career_example: "Condensed matter physicist computing phonon dispersion relations from crystal symmetry"
+  - field: comp
+    label: Computing and data
+    hook: "MP3 audio compression, JPEG image compression, and noise-cancellation algorithms all work by discarding low-energy Fourier coefficients — keeping the most significant frequencies and dropping the rest."
+    career_example: "Audio engineer implementing a low-latency equaliser using FFT-based convolution"
+
+notation_introduced:
+  - symbol: "a_n, b_n"
+    reads_as: "Fourier coefficients a-n and b-n"
+    meaning: "Amplitudes of the cosine and sine components at frequency nπ/L"
+  - symbol: "c_n"
+    reads_as: "complex Fourier coefficient c-n"
+    meaning: "Complex amplitude of the e^{inπx/L} component; cₙ = (aₙ − ibₙ)/2"
+  - symbol: "\\langle f, g \\rangle"
+    reads_as: "inner product of f and g"
+    meaning: "∫_{-L}^{L} f(x)g(x) dx — measures how much two functions overlap"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  A piano string struck at middle C vibrates at 262 Hz. But the note you
+  hear is not a pure sine wave at 262 Hz — it contains overtones at 524 Hz,
+  786 Hz, and beyond. The relative amplitudes of those overtones are what
+  make a piano sound different from a violin playing the same note.
+  Mathematically, both instruments are producing the same fundamental
+  frequency with different mixes of harmonics. The Fourier series is the
+  tool that makes this precise: it decomposes any periodic function into
+  exactly those harmonics, and computes the amplitude of each one.
+
+  The same decomposition underlies noise-cancelling headphones (which
+  subtract the measured noise frequency by frequency), MRI scanners (which
+  reconstruct images from Fourier coefficients of radio-frequency echoes),
+  and the heat equation (where each Fourier mode decays at its own rate).
+  This chapter builds the machinery. The applications are in the chapters
+  that follow.
+
+kreyszig_chapter: "Ch 11"
+stroud_programme: "Programmes 7–8"
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+The Fourier series starts from a single observation: the simplest periodic functions are sines and cosines. They oscillate at a fixed frequency, they never change shape, and their behaviour is completely described by amplitude and phase. Every other periodic function — however jagged, however asymmetric — can be built from them by superposition. The question is: how do you find the right mix?
+
+The answer is integration. Multiply the function by each candidate sine or cosine and integrate over one period. The result, as we will show, is exactly the amplitude of that frequency component. Everything else cancels out.
+
+---
+
+## Periodic functions
+
+A function $f$ is **periodic with period $T$** if $f(x + T) = f(x)$ for all $x$. The smallest such $T > 0$ is called the **fundamental period**.
+
+We write $T = 2L$, which places one full period over the interval $[-L, L]$. This notation is standard in engineering texts and makes the coefficient formulas symmetric.
+
+<!-- STUDENT: Why does writing T = 2L "make the coefficient formulas symmetric"? This is stated as though it's obvious, but a first-time reader won't see the connection until they've seen the formulas. Either move this claim to after the formulas are presented, or drop it here — it reads as a promise the text hasn't yet kept. -->
+
+Familiar examples: $\sin(nx)$ and $\cos(nx)$ have period $2\pi/n$; the square wave (defined below) has the same period as the fundamental sine used to construct it.
+
+**The idea geometrically.** A periodic function is completely determined by its values on any interval of length $T$. Knowing one period is knowing everything. The Fourier series asks: which sum of sines and cosines, with the same period, most accurately represents $f$?
+
+---
+
+## The Fourier series
+
+For a function $f$ of period $2L$, the **Fourier series** is:
+
+$$f(x) = \frac{a_0}{2} + \sum_{n=1}^{\infty}\left[a_n\cos\!\left(\frac{n\pi x}{L}\right) + b_n\sin\!\left(\frac{n\pi x}{L}\right)\right]$$
+
+The **Fourier coefficients** are:
+
+$$a_0 = \frac{1}{L}\int_{-L}^{L} f(x)\,dx$$
+
+$$a_n = \frac{1}{L}\int_{-L}^{L} f(x)\cos\!\left(\frac{n\pi x}{L}\right)dx \qquad (n = 1, 2, 3, \ldots)$$
+
+$$b_n = \frac{1}{L}\int_{-L}^{L} f(x)\sin\!\left(\frac{n\pi x}{L}\right)dx \qquad (n = 1, 2, 3, \ldots)$$
+
+The term $a_0/2$ is the mean value of $f$ over one period. The $a_n$ terms give the amplitudes of the cosine components; the $b_n$ terms give the amplitudes of the sine components.
+
+### Why these formulas: orthogonality
+
+The formulas above are not guessed — they follow from a single property of the trigonometric functions: **orthogonality**.
+
+Over the interval $[-L, L]$:
+
+$$\int_{-L}^{L}\cos\!\left(\frac{m\pi x}{L}\right)\cos\!\left(\frac{n\pi x}{L}\right)dx = \begin{cases} 0 & m \neq n \\ L & m = n \geq 1 \\ 2L & m = n = 0 \end{cases}$$
+
+$$\int_{-L}^{L}\sin\!\left(\frac{m\pi x}{L}\right)\sin\!\left(\frac{n\pi x}{L}\right)dx = \begin{cases} 0 & m \neq n \\ L & m = n \geq 1 \end{cases}$$
+
+$$\int_{-L}^{L}\cos\!\left(\frac{m\pi x}{L}\right)\sin\!\left(\frac{n\pi x}{L}\right)dx = 0 \qquad \text{for all } m, n$$
+
+<!-- STUDENT: "These follow from the product-to-sum identities for trigonometric functions, evaluated at period boundaries." This is a one-sentence hand-wave over the most load-bearing step in the chapter. A student who has never seen these identities won't be able to verify a single one of the three tables. Even a worked one-line example for the cos×cos case (using cos A cos B = ½[cos(A−B) + cos(A+B)] and then integrating) would close the gap. As it stands the orthogonality tables feel like they arrived by magic. -->
+These follow from the product-to-sum identities. Take the $m \neq n$ case of the cosine integral as an example: the identity $\cos A \cos B = \tfrac{1}{2}[\cos(A-B)+\cos(A+B)]$ turns the product into a sum of two cosines at frequencies $(m-n)\pi/L$ and $(m+n)\pi/L$. Integrating either of those over exactly one complete period gives zero — the positive and negative half-cycles cancel. When $m = n$ the first term becomes $\cos(0) = 1$, which integrates to $2L$, accounting for the factor of $L$ in the diagonal case. The sine-sine and cosine-sine cases follow by the same argument with the analogous identities.
+
+They mean that multiplying the Fourier series by $\cos(m\pi x/L)$ and integrating over $[-L, L]$ kills every term except the one with $n = m$ — which is exactly how $a_m$ is isolated.
+
+Think of the trigonometric functions as a set of directions in function space that are pairwise perpendicular. The Fourier coefficients are the projections of $f$ onto those directions.
+
+<!-- STUDENT: The analogy "directions in function space... projections" will land for a student who has done linear algebra with dot products, but this chapter's prerequisites list trig, sequences/series, and integral calculus — not linear algebra. The notation_introduced entry for ⟨f,g⟩ is in the front matter but is never actually used or explained in the body. Either briefly introduce the inner-product notation here (one sentence: "the inner product ⟨f,g⟩ = ∫fg dx plays the same role as the dot product for vectors") or drop the analogy entirely. As written, readers who haven't done linear algebra will find this confusing rather than illuminating. -->
+
+---
+
+## Worked example: the square wave
+
+Define the square wave with period $2\pi$ as:
+
+$$f(x) = \begin{cases} 1 & 0 < x < \pi \\ -1 & -\pi < x < 0 \end{cases}$$
+
+extended periodically to all $x$.
+
+**Step 1: compute $a_0$.**
+
+$$a_0 = \frac{1}{\pi}\int_{-\pi}^{\pi} f(x)\,dx = \frac{1}{\pi}\left[\int_{-\pi}^{0}(-1)\,dx + \int_{0}^{\pi}(1)\,dx\right] = \frac{1}{\pi}[-\pi + \pi] = 0$$
+
+The mean value is zero — the positive and negative halves cancel.
+
+**Step 2: compute $a_n$.**
+
+$f(x)$ is an **odd** function: $f(-x) = -f(x)$. The cosines $\cos(nx)$ are **even** functions. An odd function times an even function is odd, and the integral of an odd function over a symmetric interval is zero:
+
+$$a_n = \frac{1}{\pi}\int_{-\pi}^{\pi} f(x)\cos(nx)\,dx = 0 \quad \text{for all } n \geq 1$$
+
+**Step 3: compute $b_n$.**
+
+$\sin(nx)$ is odd; $f$ is odd; their product is even:
+
+$$b_n = \frac{1}{\pi}\int_{-\pi}^{\pi} f(x)\sin(nx)\,dx = \frac{2}{\pi}\int_{0}^{\pi}\sin(nx)\,dx$$
+
+$$= \frac{2}{\pi}\left[-\frac{\cos(nx)}{n}\right]_{0}^{\pi} = \frac{2}{n\pi}\left[1 - \cos(n\pi)\right] = \frac{2}{n\pi}\left[1 - (-1)^n\right]$$
+
+<!-- STUDENT: The step $\cos(n\pi) = (-1)^n$ is used silently. This is not hard once you've seen it, but a student who hasn't will stall here trying to figure out where $(-1)^n$ came from. One parenthetical — "since $\cos(n\pi) = (-1)^n$ for integer $n$" — at first use would prevent this. -->
+Here $\cos(n\pi) = (-1)^n$ for any integer $n$: the cosine alternates between $-1$ and $1$ at multiples of $\pi$. When $n$ is even, $\cos(n\pi) = 1$, so $b_n = 0$. When $n$ is odd, $\cos(n\pi) = -1$, so $b_n = 4/(n\pi)$.
+
+**Result:**
+
+$$f(x) = \frac{4}{\pi}\left[\sin(x) + \frac{\sin(3x)}{3} + \frac{\sin(5x)}{5} + \frac{\sin(7x)}{7} + \cdots\right]$$
+
+The partial sums progressively sharpen toward the square wave, with the edges becoming steeper as more terms are included.
+
+```{ojs}
+//| echo: false
+{
+  // ── Fourier partial sum builder with phasor panel ──────────────────────
+  // Panel A: waveform reconstruction  Panel B: frequency spectrum
+  // Panel C: phasor wheel (inset)
+  const d3 = await require("d3@7");
+
+  // Palette
+  const AMBER = "#f59e0b";
+  const BLUE  = "#6b90c4";
+  const GREY  = "#9ca3af";
+  const GREY_FAINT = "#e5e7eb";
+  const RED   = "#ef4444";
+
+  // Dimensions
+  const WA = 520, HA = 180;   // Panel A waveform
+  const WB = 520, HB = 90;    // Panel B spectrum
+  const WC = 130, HC = 130;   // Panel C phasor
+  const margin = { t: 16, r: 16, b: 32, l: 40 };
+
+  // ── Wave functions (period 2π, L = π) ──────────────────────────────────
+  function targetSquare(x) { return x > 0 ? 1 : -1; }
+  function targetSawtooth(x) { return x / Math.PI; }
+  function targetTriangle(x) {
+    const t = ((x + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+    return 1 - (2 / Math.PI) * Math.abs(t);
+  }
+
+  // ── Fourier coefficients (bₙ only for odd, pure sine series) ───────────
+  function bCoeff(n, waveType) {
+    if (waveType === "square") {
+      return n % 2 === 1 ? 4 / (n * Math.PI) : 0;
+    } else if (waveType === "sawtooth") {
+      return (n % 2 === 0 ? -1 : 1) * 2 / n;  // alternate signs: 2(-1)^{n+1}/n
+      // Correct: b_n = 2(-1)^{n+1}/n
+    } else {  // triangle
+      if (n % 2 === 0) return 0;
+      const k = (n - 1) / 2;
+      return (k % 2 === 0 ? 8 : -8) / (n * n * Math.PI * Math.PI);
+    }
+  }
+
+  // ── Partial sum ─────────────────────────────────────────────────────────
+  function partialSum(x, N, waveType) {
+    let s = 0;
+    for (let n = 1; n <= N; n++) s += bCoeff(n, waveType) * Math.sin(n * x);
+    return s;
+  }
+
+  // Gibbs overshoot x-position (first peak of partial sum near x=0)
+  function gibbsPeakX(N) {
+    return Math.PI / N;  // first peak near jump at x=0 (actually π/(N+1) approx)
+  }
+
+  // ── Viewof controls ─────────────────────────────────────────────────────
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:620px;";
+
+  // Controls row
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex; gap:1.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;";
+
+  // N slider
+  const sliderLabel = document.createElement("label");
+  sliderLabel.style.cssText = "font-size:0.88em; color:#374151; display:flex; align-items:center; gap:0.4rem;";
+  sliderLabel.textContent = "Terms N = ";
+  const nDisplay = document.createElement("strong");
+  nDisplay.style.cssText = "color:" + AMBER + "; min-width:2ch;";
+  nDisplay.textContent = "5";
+  const nSlider = document.createElement("input");
+  nSlider.type = "range"; nSlider.min = 1; nSlider.max = 30; nSlider.value = 5;
+  nSlider.style.cssText = "width:160px; accent-color:" + AMBER + ";";
+  sliderLabel.appendChild(nSlider);
+  sliderLabel.appendChild(nDisplay);
+  ctrlRow.appendChild(sliderLabel);
+
+  // Wave type radio
+  const waveTypes = [["square","Square"], ["sawtooth","Sawtooth"], ["triangle","Triangle"]];
+  const radioGroup = document.createElement("div");
+  radioGroup.style.cssText = "display:flex; gap:0.75rem; font-size:0.88em;";
+  let currentWave = "square";
+  waveTypes.forEach(([val, lab]) => {
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "display:flex; align-items:center; gap:0.25rem; cursor:pointer;";
+    const r = document.createElement("input");
+    r.type = "radio"; r.name = "waveViz1"; r.value = val;
+    r.checked = (val === "square");
+    r.style.accentColor = AMBER;
+    r.onchange = () => { currentWave = val; draw(); };
+    lbl.appendChild(r); lbl.appendChild(document.createTextNode(lab));
+    radioGroup.appendChild(lbl);
+  });
+  ctrlRow.appendChild(radioGroup);
+  container.appendChild(ctrlRow);
+
+  // ── SVG canvas ──────────────────────────────────────────────────────────
+  const totalW = WA + 16 + WC;  // waveform + gap + phasor
+  const totalH = HA + 8 + HB + margin.b;
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${totalW + margin.l + margin.r} ${totalH + margin.t}`)
+    .attr("width", "100%")
+    .style("display","block");
+
+  const gA = svg.append("g").attr("transform", `translate(${margin.l},${margin.t})`);
+  const gB = svg.append("g").attr("transform", `translate(${margin.l},${margin.t + HA + 8})`);
+  const gC = svg.append("g").attr("transform", `translate(${margin.l + WA + 16},${margin.t})`);
+
+  // ── Panel A setup ───────────────────────────────────────────────────────
+  const xA = d3.scaleLinear().domain([-Math.PI, Math.PI]).range([0, WA]);
+  const yA = d3.scaleLinear().domain([-1.3, 1.3]).range([HA, 0]);
+
+  gA.append("line").attr("x1",0).attr("x2",WA).attr("y1",yA(0)).attr("y2",yA(0))
+    .attr("stroke", GREY_FAINT).attr("stroke-width",1);
+  gA.append("g").call(d3.axisBottom(xA).tickValues([-Math.PI,-Math.PI/2,0,Math.PI/2,Math.PI])
+    .tickFormat(d => {
+      const m = {"-3.14159":"−π","-1.5708":"−π/2","0":"0","1.5708":"π/2","3.14159":"π"};
+      return m[d.toFixed(5)] || "";
+    })).attr("transform", `translate(0,${HA})`)
+    .call(g => { g.select(".domain").attr("stroke",GREY_FAINT); g.selectAll("text").style("font-size","10px").attr("fill",GREY); g.selectAll("line").attr("stroke",GREY_FAINT); });
+  gA.append("g").call(d3.axisLeft(yA).ticks(5))
+    .call(g => { g.select(".domain").remove(); g.selectAll("text").style("font-size","10px").attr("fill",GREY); g.selectAll("line").attr("stroke",GREY_FAINT); });
+  gA.append("text").attr("x", WA/2).attr("y", -4).attr("text-anchor","middle")
+    .attr("font-size","11px").attr("fill","#374151").text("Waveform reconstruction");
+
+  // Target path (blue, drawn once per wave change)
+  const targetPath = gA.append("path").attr("fill","none").attr("stroke",BLUE)
+    .attr("stroke-width",2).attr("stroke-dasharray","4,3").attr("opacity",0.7);
+  // Partial sum path (amber)
+  const sumPath = gA.append("path").attr("fill","none").attr("stroke",AMBER).attr("stroke-width",2.5);
+  // Gibbs annotation
+  const gibbsLine = gA.append("line").attr("stroke","#dc2626").attr("stroke-width",1)
+    .attr("stroke-dasharray","3,2").style("display","none");
+  const gibbsLabel = gA.append("text").attr("font-size","9.5px").attr("fill","#dc2626")
+    .style("display","none");
+  // N label
+  const nLabel = gA.append("text").attr("x",8).attr("y",14).attr("font-size","11px")
+    .attr("fill",AMBER).attr("font-weight","bold");
+
+  // ── Panel B setup ───────────────────────────────────────────────────────
+  const xB = d3.scaleLinear().domain([0.5, 30.5]).range([0, WB]);
+  const yBmax = 1.4;
+  const yB = d3.scaleLinear().domain([0, yBmax]).range([HB - 22, 0]);
+
+  gB.append("text").attr("x",WB/2).attr("y",-4).attr("text-anchor","middle")
+    .attr("font-size","11px").attr("fill","#374151").text("Frequency spectrum |bₙ|");
+  gB.append("g").call(d3.axisBottom(xB).ticks(10).tickFormat(d => Number.isInteger(d) ? d : ""))
+    .attr("transform", `translate(0,${HB-22})`)
+    .call(g => { g.select(".domain").attr("stroke",GREY_FAINT); g.selectAll("text").style("font-size","9px").attr("fill",GREY); g.selectAll("line").attr("stroke",GREY_FAINT); });
+  gB.append("text").attr("x",WB+2).attr("y",HB-22+4).attr("font-size","9px").attr("fill",GREY).text("n");
+
+  // ── Panel C setup (phasor wheel) ────────────────────────────────────────
+  const cx = WC / 2, cy = HC / 2, r0 = WC * 0.38;
+  gC.append("circle").attr("cx",cx).attr("cy",cy).attr("r",r0)
+    .attr("fill","none").attr("stroke",GREY_FAINT).attr("stroke-width",1.5);
+  gC.append("line").attr("x1",cx).attr("x2",cx).attr("y1",cy-r0-4).attr("y2",cy+r0+4)
+    .attr("stroke",GREY_FAINT).attr("stroke-width",0.5);
+  gC.append("line").attr("x1",cx-r0-4).attr("x2",cx+r0+4).attr("y1",cy).attr("y2",cy)
+    .attr("stroke",GREY_FAINT).attr("stroke-width",0.5);
+  gC.append("text").attr("x",WC/2).attr("y",HC-2).attr("text-anchor","middle")
+    .attr("font-size","9px").attr("fill",GREY).text("Phasor wheel");
+
+  // Phasor arrows (up to 3 harmonics for square wave)
+  const phasorArrows = [1,3,5].map((_, i) => ({
+    line: gC.append("line").attr("stroke", i===0 ? AMBER : i===1 ? BLUE : "#a78bfa")
+            .attr("stroke-width", 2-i*0.4).attr("marker-end","url(#arrowC)"),
+    label: gC.append("text").attr("font-size","8px").attr("fill", i===0 ? AMBER : i===1 ? BLUE : "#a78bfa")
+  }));
+  // Arrow marker
+  svg.append("defs").append("marker").attr("id","arrowC").attr("markerWidth",6).attr("markerHeight",6)
+    .attr("refX",5).attr("refY",3).attr("orient","auto")
+    .append("path").attr("d","M0,0 L0,6 L6,3 z").attr("fill",AMBER);
+  // Projection dot
+  const projDot = gC.append("circle").attr("r",4).attr("fill",RED);
+  // Tip trace path
+  const traceData = [];
+  const tracePath = gC.append("path").attr("fill","none").attr("stroke",RED)
+    .attr("stroke-width",1).attr("opacity",0.4);
+
+  // ── Animation state ─────────────────────────────────────────────────────
+  let theta = 0;
+  let animFrame = null;
+
+  function getNHarmonics() {
+    const N = +nSlider.value;
+    if (currentWave === "square") {
+      const odds = [1,3,5,7,9,11,13,15,17,19,21,23,25,27,29].filter(n => n <= N);
+      return odds.slice(0, 3);
+    } else if (currentWave === "sawtooth") {
+      return [1,2,3].filter(n => n <= N);
+    } else {
+      const odds = [1,3,5,7,9,11].filter(n => n <= N);
+      return odds.slice(0, 3);
+    }
+  }
+
+  function drawBars(N) {
+    const barW = Math.max(1, WB / 32);
+    gB.selectAll(".specbar").remove();
+    for (let n = 1; n <= 30; n++) {
+      const coeff = Math.abs(bCoeff(n, currentWave));
+      const active = n <= N;
+      gB.append("rect").attr("class","specbar")
+        .attr("x", xB(n) - barW/2).attr("y", active ? yB(coeff) : HB-22)
+        .attr("width", barW).attr("height", active ? (HB-22) - yB(coeff) : 0)
+        .attr("fill", active ? AMBER : "none")
+        .attr("stroke", active ? AMBER : GREY_FAINT)
+        .attr("stroke-width", active ? 0 : 1)
+        .attr("opacity", active ? 1 : 0.5);
+      if (!active && coeff > 0.02) {
+        // ghost outline
+        const ghostH = Math.max(1, (HB-22) - yB(coeff));
+        gB.append("rect").attr("class","specbar")
+          .attr("x", xB(n) - barW/2).attr("y", yB(coeff))
+          .attr("width", barW).attr("height", ghostH)
+          .attr("fill","none").attr("stroke",GREY_FAINT).attr("stroke-width",1);
+      }
+    }
+  }
+
+  function draw() {
+    const N = +nSlider.value;
+    nDisplay.textContent = N;
+    nLabel.text(`N = ${N} terms`);
+
+    const nPts = 400;
+    const xs = d3.range(nPts).map(i => -Math.PI + (2*Math.PI)*i/(nPts-1));
+
+    // Target
+    const target = currentWave === "square" ? targetSquare :
+                   currentWave === "sawtooth" ? targetSawtooth : targetTriangle;
+    const lineGen = d3.line().x(d => xA(d[0])).y(d => yA(d[1]));
+    targetPath.datum(xs.map(x => [x, target(x) || 0])).attr("d", lineGen);
+
+    // Partial sum
+    sumPath.datum(xs.map(x => [x, partialSum(x, N, currentWave)])).attr("d", lineGen);
+
+    // Gibbs annotation (square wave only, N >= 5)
+    if (currentWave === "square" && N >= 5) {
+      const GIBBS_Y = 1.089;
+      gibbsLine.style("display","block")
+        .attr("x1",0).attr("x2",WA).attr("y1",yA(GIBBS_Y)).attr("y2",yA(GIBBS_Y));
+      gibbsLabel.style("display","block")
+        .attr("x",WA-4).attr("y",yA(GIBBS_Y)-3)
+        .attr("text-anchor","end").text("≈ 8.9% overshoot");
+    } else {
+      gibbsLine.style("display","none");
+      gibbsLabel.style("display","none");
+    }
+
+    drawBars(N);
+  }
+
+  function animatePhasor() {
+    const N = +nSlider.value;
+    const harmonics = getNHarmonics();
+    theta += 0.025;
+
+    // Draw phasor arrows (chain from centre)
+    let px = cx, py = cy;
+    const tips = [];
+    harmonics.forEach((n, i) => {
+      const coeff = Math.abs(bCoeff(n, currentWave));
+      const len = coeff / 1.5 * r0;  // scale to fit
+      const angle = -(n * theta) - Math.PI/2;  // -π/2 so n=1 starts pointing up
+      const ex = px + len * Math.cos(angle);
+      const ey = py + len * Math.sin(angle);
+      phasorArrows[i].line
+        .attr("x1", px).attr("y1", py)
+        .attr("x2", ex).attr("y2", ey)
+        .style("display", n <= N ? "block" : "none");
+      phasorArrows[i].label
+        .attr("x", ex + 4).attr("y", ey)
+        .text(n <= N ? `n=${n}` : "")
+        .style("display", n <= N ? "block" : "none");
+      px = ex; py = ey;
+      tips.push([ex, ey]);
+    });
+
+    // Hide unused arrows
+    for (let i = harmonics.length; i < 3; i++) {
+      phasorArrows[i].line.style("display","none");
+      phasorArrows[i].label.style("display","none");
+    }
+
+    // Projection onto real axis (horizontal = Re)
+    const tipX = tips[tips.length-1][0];
+    const tipY = tips[tips.length-1][1];
+    projDot.attr("cx", cx).attr("cy", tipY);  // project to vertical axis (Im → 0 = Re projection)
+
+    // Trace tip
+    traceData.push([tipX, tipY]);
+    if (traceData.length > 80) traceData.shift();
+    tracePath.datum(traceData).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]).curve(d3.curveLinear));
+
+    animFrame = requestAnimationFrame(animatePhasor);
+  }
+
+  nSlider.oninput = () => { draw(); };
+
+  container.appendChild(svg.node());
+
+  // Legend
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1rem; font-size:0.8em; margin-top:0.25rem; flex-wrap:wrap;";
+  [["─── Partial sum S_N(x)", AMBER], ["--- Target function", BLUE], ["| Gibbs limit (square)", "#dc2626"]]
+    .forEach(([lab, col]) => {
+      const s = document.createElement("span");
+      s.style.cssText = `color:${col};`;
+      s.textContent = lab;
+      legend.appendChild(s);
+    });
+  container.appendChild(legend);
+
+  draw();
+  animatePhasor();
+
+  // Cleanup on disconnect
+  const obs = new MutationObserver(() => {
+    if (!document.contains(container)) { cancelAnimationFrame(animFrame); obs.disconnect(); }
+  });
+  obs.observe(document.body, {childList:true, subtree:true});
+
+  return container;
+}
+```
+
+---
+
+## Convergence and the Gibbs phenomenon
+
+The Fourier series of a well-behaved periodic function converges in the following sense.
+
+**Dirichlet conditions.** If $f$ is periodic, bounded, and piecewise continuous (at most finitely many jump discontinuities per period, and finitely many maxima and minima per period), then:
+
+- At points where $f$ is continuous, the Fourier series converges to $f(x)$.
+- At a jump discontinuity $x_0$, the Fourier series converges to the average of the left and right limits: $\frac{1}{2}\left[f(x_0^-) + f(x_0^+)\right]$.
+
+**Gibbs phenomenon.** Near a jump discontinuity, the partial sums overshoot the true value by approximately $8.9\%$ of the jump height, regardless of how many terms are included. Adding more terms moves the overshoot closer to the discontinuity but does not reduce its size. This is not an error in the method — it is a fundamental property of Fourier partial sums near discontinuities. It appears in real systems as **ringing** — the ripple artefact you see in a sharply filtered audio signal or a steeply edge-enhanced image.
+
+<!-- STUDENT: "Adding more terms moves the overshoot closer to the discontinuity but does not reduce its size" — this is counterintuitive enough to deserve a brief pause. The reader's natural instinct is that more terms should make the approximation better everywhere. A one-sentence reassurance that the approximation IS better almost everywhere (the error shrinks except right at the jump) would help this land. The interactive viz addresses this, but readers without JavaScript or who read this linearly need some grounding before they see it. -->
+
+For the square wave with a jump of magnitude 2, the Gibbs overshoot is approximately $2 \times 0.089 \approx 0.18$.
+
+---
+
+## Even and odd functions
+
+Identifying the symmetry of $f$ before computing is practical, not just elegant: it cuts the integration work in half.
+
+**Even function** ($f(-x) = f(x)$, symmetric about the $y$-axis): odd-function integrands vanish, so $b_n = 0$ for all $n$. The Fourier series is a **cosine series**:
+
+$$f(x) = \frac{a_0}{2} + \sum_{n=1}^{\infty} a_n\cos\!\left(\frac{n\pi x}{L}\right)$$
+
+**Odd function** ($f(-x) = -f(x)$, antisymmetric about the $y$-axis): even-function integrands vanish, so $a_n = 0$ for all $n$. The Fourier series is a **sine series**:
+
+$$f(x) = \sum_{n=1}^{\infty} b_n\sin\!\left(\frac{n\pi x}{L}\right)$$
+
+The square wave example above was odd, which is why we only needed to compute $b_n$.
+
+---
+
+## Half-range series
+
+Often $f$ is defined only on $[0, L]$ — for example, the initial temperature profile in a rod. We cannot compute a full Fourier series without knowing $f$ on $[-L, 0]$, but we can choose how to extend it:
+
+- **Even extension**: define $f(-x) = f(x)$ on $[-L, 0]$. This produces a **Fourier cosine series** with only $a_n$ terms:
+$$f(x) = \frac{a_0}{2} + \sum_{n=1}^{\infty} a_n\cos\!\left(\frac{n\pi x}{L}\right), \quad a_n = \frac{2}{L}\int_0^L f(x)\cos\!\left(\frac{n\pi x}{L}\right)dx$$
+
+- **Odd extension**: define $f(-x) = -f(x)$ on $[-L, 0]$. This produces a **Fourier sine series** with only $b_n$ terms:
+$$f(x) = \sum_{n=1}^{\infty} b_n\sin\!\left(\frac{n\pi x}{L}\right), \quad b_n = \frac{2}{L}\int_0^L f(x)\sin\!\left(\frac{n\pi x}{L}\right)dx$$
+
+**Which to choose?** The boundary conditions of the physical problem decide: if $f(0) = f(L) = 0$ is required (as in a fixed-end vibrating string or a rod with fixed-temperature endpoints), use the sine extension. If the derivative $f'(0) = f'(L) = 0$ is required (insulated endpoints), use the cosine extension.
+
+<!-- STUDENT: This is the right guidance, but it assumes the reader already knows what "insulated endpoints" means in terms of a derivative condition. First time this connection (insulated ↔ zero derivative) appears without explanation. The heat equation section in the PDE chapter makes this clearer; a forward pointer here, or one sentence of justification ("insulated means no heat flux, which means $u_x = 0$"), would help. -->
+
+---
+
+## Complex Fourier series
+
+Using Euler's formula $e^{i\theta} = \cos\theta + i\sin\theta$, the Fourier series can be written in complex exponential form:
+
+$$f(x) = \sum_{n=-\infty}^{\infty} c_n\,e^{in\pi x/L}$$
+
+where the **complex Fourier coefficients** are:
+
+$$c_n = \frac{1}{2L}\int_{-L}^{L} f(x)\,e^{-in\pi x/L}\,dx$$
+
+The relationship to the real coefficients: $c_0 = a_0/2$, $c_n = (a_n - ib_n)/2$, $c_{-n} = (a_n + ib_n)/2 = \overline{c_n}$ for $n \geq 1$.
+
+<!-- STUDENT: The derivation of why $c_n = (a_n - ib_n)/2$ is not shown — it follows from Euler's formula substituting $\cos\theta = (e^{i\theta}+e^{-i\theta})/2$ and $\sin\theta = (e^{i\theta}-e^{-i\theta})/(2i)$, but a student who tries to check this will need to carry through the algebra themselves with no guide. One worked line showing the substitution into the $c_n$ integral would confirm the formula is not just asserted. -->
+
+The complex form is more compact and connects directly to the Fourier transform: letting $L \to \infty$ (so the period grows without bound) turns the discrete sum into an integral — the subject of the next chapter.
+
+```{ojs}
+//| echo: false
+{
+  // ── OPPORTUNITY 3: Complex exponential phasor wheel ─────────────────────
+  // Left panel: unit circle with two counter-rotating phasors e^{inθ}, e^{-inθ}
+  // Right panel: real projection traces cos(nθ)
+  const d3 = await require("d3@7");
+
+  const AMBER = "#f59e0b";
+  const BLUE  = "#6b90c4";
+  const GREY  = "#9ca3af";
+  const GREY_F = "#e5e7eb";
+  const RED   = "#ef4444";
+
+  const W = 580, H = 200;
+  const circleSize = 170;
+  const cx = circleSize / 2, cy = circleSize / 2, r0 = 70;
+  const traceW = W - circleSize - 24;
+  const traceX0 = circleSize + 24;
+
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:640px;";
+
+  // Controls
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex; gap:1.5rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;";
+
+  // n slider
+  const nLbl = document.createElement("label");
+  nLbl.style.cssText = "font-size:0.88em; color:#374151; display:flex; align-items:center; gap:0.4rem;";
+  nLbl.textContent = "Frequency n = ";
+  const nDisp = document.createElement("strong");
+  nDisp.style.cssText = "color:" + AMBER + "; min-width:1ch;";
+  nDisp.textContent = "1";
+  const nSlider2 = document.createElement("input");
+  nSlider2.type = "range"; nSlider2.min = 1; nSlider2.max = 5; nSlider2.value = 1;
+  nSlider2.style.cssText = "width:120px; accent-color:" + AMBER + ";";
+  nLbl.appendChild(nSlider2); nLbl.appendChild(nDisp);
+  ctrlRow.appendChild(nLbl);
+
+  // Play/pause
+  const playBtn = document.createElement("button");
+  playBtn.textContent = "⏸ Pause";
+  playBtn.style.cssText = "padding:0.3rem 0.7rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.85em;";
+  ctrlRow.appendChild(playBtn);
+
+  // Speed
+  const speedLbl = document.createElement("label");
+  speedLbl.style.cssText = "font-size:0.85em; color:#6b7280; display:flex; align-items:center; gap:0.3rem;";
+  speedLbl.textContent = "Speed:";
+  const speedSel = document.createElement("select");
+  speedSel.style.cssText = "font-size:0.85em; border:1px solid #d1d5db; border-radius:3px; padding:0.15rem 0.3rem;";
+  ["Slow","Normal","Fast"].forEach((s,i) => {
+    const o = document.createElement("option"); o.value = [0.5,1,2][i]; o.textContent = s;
+    if (i===1) o.selected = true;
+    speedSel.appendChild(o);
+  });
+  speedLbl.appendChild(speedSel);
+  ctrlRow.appendChild(speedLbl);
+  container.appendChild(ctrlRow);
+
+  // SVG
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width","100%").style("display","block");
+
+  // ── Left: circle panel ──────────────────────────────────────────────────
+  svg.append("text").attr("x",cx).attr("y",10).attr("text-anchor","middle")
+    .attr("font-size","10px").attr("fill","#374151").text("Complex plane");
+  svg.append("circle").attr("cx",cx).attr("cy",cy).attr("r",r0)
+    .attr("fill","none").attr("stroke",GREY_F).attr("stroke-width",1.5);
+  svg.append("line").attr("x1",cx-r0-6).attr("x2",cx+r0+6).attr("y1",cy).attr("y2",cy)
+    .attr("stroke",GREY_F).attr("stroke-width",0.8);
+  svg.append("line").attr("x1",cx).attr("x2",cx).attr("y1",cy-r0-6).attr("y2",cy+r0+6)
+    .attr("stroke",GREY_F).attr("stroke-width",0.8);
+  svg.append("text").attr("x",cx+r0+4).attr("y",cy+3).attr("font-size","9px").attr("fill",GREY).text("Re");
+  svg.append("text").attr("x",cx-3).attr("y",cy-r0-3).attr("font-size","9px").attr("fill",GREY).text("Im");
+
+  // Phasor arrows: positive (amber), negative (blue)
+  const posArrow = svg.append("line").attr("stroke",AMBER).attr("stroke-width",2.5);
+  const negArrow = svg.append("line").attr("stroke",BLUE).attr("stroke-width",2.5);
+  const posLabel = svg.append("text").attr("font-size","9px").attr("fill",AMBER).attr("font-style","italic");
+  const negLabel = svg.append("text").attr("font-size","9px").attr("fill",BLUE).attr("font-style","italic");
+
+  // Midpoint (sum/2, lies on Re axis)
+  const midDot = svg.append("circle").attr("r",5).attr("fill",RED);
+  // Projection line onto Re axis
+  const projLine = svg.append("line").attr("stroke",RED).attr("stroke-width",1.2)
+    .attr("stroke-dasharray","3,2").attr("opacity",0.6);
+
+  // ── Right: trace panel ──────────────────────────────────────────────────
+  svg.append("text").attr("x",traceX0 + traceW/2).attr("y",10).attr("text-anchor","middle")
+    .attr("font-size","10px").attr("fill","#374151").text("Real projection: cos(nθ)");
+
+  // Axes
+  const xT = d3.scaleLinear().domain([0, 2*Math.PI]).range([traceX0, traceX0+traceW]);
+  const yT = d3.scaleLinear().domain([-1.15, 1.15]).range([H-20, 18]);
+  svg.append("line").attr("x1",traceX0).attr("x2",traceX0+traceW)
+    .attr("y1",yT(0)).attr("y2",yT(0)).attr("stroke",GREY_F).attr("stroke-width",1);
+  svg.append("line").attr("x1",traceX0).attr("x2",traceX0).attr("y1",18).attr("y2",H-20)
+    .attr("stroke",GREY_F).attr("stroke-width",1);
+  [0, Math.PI/2, Math.PI, 3*Math.PI/2, 2*Math.PI].forEach(v => {
+    const label = ["0","π/2","π","3π/2","2π"][Math.round(v/(Math.PI/2))];
+    svg.append("text").attr("x",xT(v)).attr("y",H-8).attr("text-anchor","middle")
+      .attr("font-size","8px").attr("fill",GREY).text(label);
+  });
+  svg.append("text").attr("x",traceX0-4).attr("y",yT(1)).attr("text-anchor","end")
+    .attr("font-size","8px").attr("fill",GREY).text("1");
+  svg.append("text").attr("x",traceX0-4).attr("y",yT(-1)).attr("text-anchor","end")
+    .attr("font-size","8px").attr("fill",GREY).text("−1");
+
+  // Reference cosine (blue dashed)
+  const refPts = d3.range(200).map(i => {
+    const th = 2*Math.PI*i/199;
+    return [xT(th), yT(Math.cos(1 * th))];
+  });
+  const refLine = svg.append("path").attr("fill","none").attr("stroke",BLUE)
+    .attr("stroke-width",1.5).attr("stroke-dasharray","4,3").attr("opacity",0.5);
+
+  // Live trace path
+  const liveData = [];
+  const livePath = svg.append("path").attr("fill","none").attr("stroke",RED)
+    .attr("stroke-width",2);
+  // Moving point on trace
+  const tracePoint = svg.append("circle").attr("r",4.5).attr("fill",RED);
+
+  // Formula annotation
+  const formulaText = svg.append("text").attr("x",traceX0+traceW-4).attr("y",26)
+    .attr("text-anchor","end").attr("font-size","10px").attr("fill","#374151")
+    .attr("font-style","italic");
+
+  // ── Animation ────────────────────────────────────────────────────────────
+  let theta3 = 0;
+  let paused = false;
+  let rafId = null;
+
+  playBtn.onclick = () => {
+    paused = !paused;
+    playBtn.textContent = paused ? "▶ Play" : "⏸ Pause";
+    if (!paused) animate();
+  };
+
+  nSlider2.oninput = () => {
+    nDisp.textContent = nSlider2.value;
+    liveData.length = 0;
+    updateRef();
+  };
+
+  function updateRef() {
+    const n = +nSlider2.value;
+    const pts = d3.range(200).map(i => {
+      const th = 2*Math.PI*i/199;
+      return [xT(th), yT(Math.cos(n * th))];
+    });
+    refLine.datum(pts).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]));
+    formulaText.text(`Re(e^{i·${n}·θ} + e^{−i·${n}·θ}) = 2cos(${n}θ)`);
+  }
+
+  function animate() {
+    if (paused) return;
+    const n = +nSlider2.value;
+    const speed = +speedSel.value;
+    theta3 += 0.022 * speed;
+    const th = theta3 % (2*Math.PI);
+
+    // Positive phasor: e^{inθ}
+    const px = cx + r0 * Math.cos(n * theta3 - Math.PI/2);
+    const py = cy + r0 * Math.sin(n * theta3 - Math.PI/2);
+    // Negative phasor: e^{-inθ}
+    const nx_ = cx + r0 * Math.cos(-n * theta3 - Math.PI/2);
+    const ny_ = cy + r0 * Math.sin(-n * theta3 - Math.PI/2);
+
+    posArrow.attr("x1",cx).attr("y1",cy).attr("x2",px).attr("y2",py);
+    negArrow.attr("x1",cx).attr("y1",cy).attr("x2",nx_).attr("y2",ny_);
+
+    // Labels
+    posLabel.attr("x",px+4).attr("y",py-2).text(`e^{i${n}θ}`);
+    negLabel.attr("x",nx_+4).attr("y",ny_+8).text(`e^{−i${n}θ}`);
+
+    // Midpoint of sum: (e^{inθ}+e^{-inθ})/2 = cos(nθ) on Re axis
+    const reVal = Math.cos(n * theta3);
+    const midX = cx + r0 * reVal;
+    midDot.attr("cx",midX).attr("cy",cy);
+    projLine.attr("x1",cx).attr("y1",cy).attr("x2",midX).attr("y2",cy);
+
+    // Trace
+    const traceTheta = theta3 % (2*Math.PI);
+    liveData.push([xT(traceTheta), yT(reVal)]);
+    if (liveData.length > 500) liveData.shift();
+    livePath.datum(liveData).attr("d", d3.line().x(d=>d[0]).y(d=>d[1]).defined((_,i,arr) => {
+      if (i === 0) return true;
+      return Math.abs(arr[i][0] - arr[i-1][0]) < 15;  // break on wraparound
+    }));
+    tracePoint.attr("cx", xT(traceTheta)).attr("cy", yT(reVal));
+
+    rafId = requestAnimationFrame(animate);
+  }
+
+  updateRef();
+  animate();
+
+  const cleanup = new MutationObserver(() => {
+    if (!document.contains(container)) { cancelAnimationFrame(rafId); cleanup.disconnect(); }
+  });
+  cleanup.observe(document.body, {childList:true, subtree:true});
+
+  // Legend
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1.2rem; font-size:0.78em; margin-top:0.2rem; flex-wrap:wrap;";
+  [["→ e^{inθ} (positive phasor)", AMBER], ["→ e^{−inθ} (negative phasor)", BLUE], ["• Real projection = cos(nθ)", RED]]
+    .forEach(([lab, col]) => {
+      const s = document.createElement("span"); s.style.color = col; s.textContent = lab;
+      legend.appendChild(s);
+    });
+  container.appendChild(svg.node());
+  container.appendChild(legend);
+
+  return container;
+}
+```
+
+---
+
+## Parseval's theorem
+
+The total energy of a periodic signal is distributed across its frequency components. **Parseval's theorem** makes this precise:
+
+$$\frac{1}{L}\int_{-L}^{L}|f(x)|^2\,dx = \frac{a_0^2}{2} + \sum_{n=1}^{\infty}(a_n^2 + b_n^2)$$
+
+In the complex form: $\frac{1}{2L}\int_{-L}^{L}|f|^2\,dx = \sum_{n=-\infty}^{\infty}|c_n|^2$.
+
+The right side is the sum of squared amplitudes of each Fourier mode — the **power spectrum**. Parseval's theorem says that power is conserved: the total power in the time domain equals the total power in the frequency domain. It also provides a shortcut for evaluating certain series (see Exercise 5).
+
+---
+
+## Applications
+
+### Signal analysis and filtering
+
+A microphone converts a sound wave into a voltage signal $f(t)$. To apply an equaliser (boost bass, cut treble), you compute the Fourier coefficients, multiply each $b_n$ by the desired gain at frequency $n$, and reconstruct. In practice this is done with the Fast Fourier Transform (FFT), which computes all $N$ Fourier coefficients in $O(N \log N)$ operations instead of $O(N^2)$.
+
+<!-- STUDENT: The FFT is introduced here as though the reader knows what it is. The chapter's prerequisite_ids are trig, sequences, and calculus — not algorithms or signal processing. "FFT" and $O(N \log N)$ notation will be opaque to a reader coming from those prerequisites alone. Either briefly say what the FFT is (a fast algorithm for computing the discrete version of the Fourier coefficients) or save this claim for the Fourier transforms chapter where it comes up again more naturally. -->
+The Fast Fourier Transform (FFT) is an algorithm that computes all $N$ discrete Fourier coefficients in $O(N \log N)$ arithmetic operations rather than the $O(N^2)$ operations needed by direct summation. For $N = 1024$ this is roughly a hundredfold speedup; for $N = 10^6$ the gap is enormous. The FFT is what makes real-time frequency analysis practical — a direct calculation would be too slow for audio, video, and communications applications.
+
+### Heat equation initial conditions
+
+The heat equation on a rod of length $L$ with zero-temperature endpoints:
+
+$$\frac{\partial u}{\partial t} = \alpha^2\frac{\partial^2 u}{\partial x^2}, \qquad u(0,t) = u(L,t) = 0$$
+
+has general solution $u(x,t) = \sum_{n=1}^{\infty} B_n\sin(n\pi x/L)\,e^{-\alpha^2 n^2\pi^2 t/L^2}$.
+
+The coefficients $B_n$ are exactly the Fourier sine coefficients of the initial temperature profile $u(x,0) = f(x)$. Higher-frequency modes (large $n$) decay exponentially faster — this is why sharp temperature gradients smooth out quickly while broad gradients persist. The Fourier series is not just a tool for computing the answer: it explains the physics.
+
+---
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+---
+
+### Exercise 1: Fourier coefficients of the square wave
+
+Compute all Fourier coefficients for $f(x) = 1$ for $0 < x < \pi$ and $f(x) = -1$ for $-\pi < x < 0$, period $2\pi$. Write out the first four nonzero terms of the series.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Identify symmetry",
+    eq: "f(-x) = -f(x) \\implies f \\text{ is odd} \\implies a_0 = 0,\\; a_n = 0 \\text{ for all } n",
+    note: "Odd × even = odd; the integral of an odd function over a symmetric interval is zero."
+  },
+  {
+    op: "Set up bₙ using symmetry",
+    eq: "b_n = \\frac{1}{\\pi}\\int_{-\\pi}^{\\pi} f(x)\\sin(nx)\\,dx = \\frac{2}{\\pi}\\int_{0}^{\\pi}\\sin(nx)\\,dx",
+    note: "Odd × odd = even, so we double the integral over half the period."
+  },
+  {
+    op: "Evaluate the integral",
+    eq: "b_n = \\frac{2}{\\pi}\\left[-\\frac{\\cos(nx)}{n}\\right]_{0}^{\\pi} = \\frac{2}{n\\pi}\\bigl[1 - \\cos(n\\pi)\\bigr] = \\frac{2}{n\\pi}\\bigl[1 - (-1)^n\\bigr]"
+  },
+  {
+    op: "Separate even and odd n",
+    eq: "b_n = \\begin{cases} \\dfrac{4}{n\\pi} & n \\text{ odd} \\\\ 0 & n \\text{ even} \\end{cases}",
+    note: "For even n, cos(nπ) = 1 so 1 − (−1)ⁿ = 0. For odd n, cos(nπ) = −1 so 1 − (−1)ⁿ = 2."
+  },
+  {
+    op: "Write the Fourier series",
+    eq: "f(x) = \\frac{4}{\\pi}\\left[\\sin x + \\frac{\\sin 3x}{3} + \\frac{\\sin 5x}{5} + \\frac{\\sin 7x}{7} + \\cdots\\right]"
+  }
+])
+```
+
+---
+
+### Exercise 2: Sawtooth wave Fourier coefficients
+
+The function $f(x) = x$ for $-\pi < x < \pi$, extended with period $2\pi$, is the **sawtooth wave**. Compute its Fourier series.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Identify symmetry",
+    eq: "f(-x) = -x = -f(x) \\implies f \\text{ is odd} \\implies a_0 = 0,\\; a_n = 0",
+    note: "All cosine terms vanish."
+  },
+  {
+    op: "Set up bₙ",
+    eq: "b_n = \\frac{2}{\\pi}\\int_{0}^{\\pi} x\\sin(nx)\\,dx",
+    note: "Using the symmetry reduction: odd × odd = even, double the half-period integral."
+  },
+  {
+    op: "Integrate by parts: u = x, dv = sin(nx)dx",
+    eq: "\\int x\\sin(nx)\\,dx = -\\frac{x\\cos(nx)}{n} + \\frac{\\sin(nx)}{n^2} + C"
+  },
+  {
+    op: "Evaluate at limits 0 to π",
+    eq: "\\int_0^\\pi x\\sin(nx)\\,dx = \\left[-\\frac{x\\cos(nx)}{n}\\right]_0^\\pi + \\left[\\frac{\\sin(nx)}{n^2}\\right]_0^\\pi = -\\frac{\\pi\\cos(n\\pi)}{n} = \\frac{(-1)^{n+1}\\pi}{n}",
+    note: "sin(nπ) = 0 for all integer n."
+  },
+  {
+    op: "Compute bₙ",
+    eq: "b_n = \\frac{2}{\\pi}\\cdot\\frac{(-1)^{n+1}\\pi}{n} = \\frac{2(-1)^{n+1}}{n}"
+  },
+  {
+    op: "Write the Fourier series",
+    eq: "f(x) = 2\\left[\\sin x - \\frac{\\sin 2x}{2} + \\frac{\\sin 3x}{3} - \\frac{\\sin 4x}{4} + \\cdots\\right]",
+    note: "At x = π the sawtooth jumps from π to −π. The Fourier series converges to 0 = (π + (−π))/2 there — the midpoint of the jump."
+  }
+])
+```
+
+---
+
+### Exercise 3: Half-range cosine series for $f(x) = x$
+
+Find the half-range Fourier cosine series of $f(x) = x$ on $0 < x < \pi$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Apply cosine series formulas (even extension)",
+    eq: "a_0 = \\frac{2}{\\pi}\\int_0^\\pi x\\,dx = \\frac{2}{\\pi}\\cdot\\frac{\\pi^2}{2} = \\pi"
+  },
+  {
+    op: "Set up aₙ",
+    eq: "a_n = \\frac{2}{\\pi}\\int_0^\\pi x\\cos(nx)\\,dx"
+  },
+  {
+    op: "Integrate by parts: u = x, dv = cos(nx)dx",
+    eq: "\\int_0^\\pi x\\cos(nx)\\,dx = \\left[\\frac{x\\sin(nx)}{n}\\right]_0^\\pi - \\frac{1}{n}\\int_0^\\pi \\sin(nx)\\,dx = 0 + \\frac{1}{n^2}\\bigl[\\cos(nx)\\bigr]_0^\\pi",
+    note: "sin(nπ) = sin(0) = 0."
+  },
+  {
+    op: "Evaluate",
+    eq: "\\int_0^\\pi x\\cos(nx)\\,dx = \\frac{\\cos(n\\pi) - 1}{n^2} = \\frac{(-1)^n - 1}{n^2}",
+    note: "For even n: (−1)ⁿ − 1 = 0, so aₙ = 0. For odd n: (−1)ⁿ − 1 = −2."
+  },
+  {
+    op: "Final coefficient",
+    eq: "a_n = \\frac{2}{\\pi}\\cdot\\frac{(-1)^n - 1}{n^2} = \\begin{cases} -\\dfrac{4}{n^2\\pi} & n \\text{ odd} \\\\ 0 & n \\text{ even} \\end{cases}"
+  },
+  {
+    op: "Write the cosine series",
+    eq: "x = \\frac{\\pi}{2} - \\frac{4}{\\pi}\\left[\\cos x + \\frac{\\cos 3x}{9} + \\frac{\\cos 5x}{25} + \\cdots\\right], \\quad 0 < x < \\pi",
+    note: "Compare with Exercise 2: the sawtooth sine series and this cosine series represent the same function on (0,π) but differ outside."
+  }
+])
+```
+
+---
+
+### Exercise 4: Half-range sine series for $f(x) = 1$
+
+Find the half-range Fourier sine series of $f(x) = 1$ on $0 < x < L$. Interpret the result.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Apply sine series formula (odd extension)",
+    eq: "b_n = \\frac{2}{L}\\int_0^L \\sin\\!\\left(\\frac{n\\pi x}{L}\\right)dx"
+  },
+  {
+    op: "Evaluate the integral",
+    eq: "b_n = \\frac{2}{L}\\left[-\\frac{L}{n\\pi}\\cos\\!\\left(\\frac{n\\pi x}{L}\\right)\\right]_0^L = \\frac{2}{n\\pi}\\bigl[1 - \\cos(n\\pi)\\bigr] = \\frac{2(1 - (-1)^n)}{n\\pi}"
+  },
+  {
+    op: "Separate even and odd n",
+    eq: "b_n = \\begin{cases} \\dfrac{4}{n\\pi} & n \\text{ odd} \\\\ 0 & n \\text{ even} \\end{cases}"
+  },
+  {
+    op: "Write the sine series",
+    eq: "1 = \\frac{4}{\\pi}\\left[\\sin\\!\\left(\\frac{\\pi x}{L}\\right) + \\frac{1}{3}\\sin\\!\\left(\\frac{3\\pi x}{L}\\right) + \\frac{1}{5}\\sin\\!\\left(\\frac{5\\pi x}{L}\\right) + \\cdots\\right]",
+    note: "This is the same coefficient pattern as the square wave — here applied to a constant function on a half-range."
+  },
+  {
+    op: "Physical interpretation",
+    eq: "\\text{Setting } x = L/2: \\quad 1 = \\frac{4}{\\pi}\\left[1 - \\frac{1}{3} + \\frac{1}{5} - \\cdots\\right] \\implies \\frac{\\pi}{4} = 1 - \\frac{1}{3} + \\frac{1}{5} - \\cdots",
+    note: "This is the Leibniz formula for π — a bonus convergent series identity from evaluating the Fourier series at x = L/2."
+  }
+])
+```
+
+---
+
+### Exercise 5: Parseval's theorem and a series sum
+
+Apply Parseval's theorem to the square wave result from Exercise 1 to evaluate $\displaystyle\sum_{k=0}^{\infty}\frac{1}{(2k+1)^2}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write Parseval's theorem for the square wave",
+    eq: "\\frac{1}{\\pi}\\int_{-\\pi}^{\\pi}|f(x)|^2\\,dx = \\frac{a_0^2}{2} + \\sum_{n=1}^{\\infty}(a_n^2 + b_n^2)",
+    note: "Here L = π, so the factor is 1/π."
+  },
+  {
+    op: "Evaluate the left side",
+    eq: "\\frac{1}{\\pi}\\int_{-\\pi}^{\\pi}1^2\\,dx = \\frac{1}{\\pi}\\cdot 2\\pi = 2",
+    note: "|f(x)|² = 1 everywhere on (−π, π)."
+  },
+  {
+    op: "Evaluate the right side using bₙ = 4/(nπ) for odd n, 0 for even n",
+    eq: "\\sum_{n=1}^{\\infty} b_n^2 = \\sum_{k=0}^{\\infty}\\left(\\frac{4}{(2k+1)\\pi}\\right)^2 = \\frac{16}{\\pi^2}\\sum_{k=0}^{\\infty}\\frac{1}{(2k+1)^2}"
+  },
+  {
+    op: "Set left = right and solve",
+    eq: "2 = \\frac{16}{\\pi^2}\\sum_{k=0}^{\\infty}\\frac{1}{(2k+1)^2} \\implies \\sum_{k=0}^{\\infty}\\frac{1}{(2k+1)^2} = \\frac{\\pi^2}{8}"
+  },
+  {
+    op: "Verify the first few terms",
+    eq: "1 + \\frac{1}{9} + \\frac{1}{25} + \\frac{1}{49} + \\cdots \\approx 1.000 + 0.111 + 0.040 + 0.020 + \\cdots \\approx 1.233 \\approx \\frac{\\pi^2}{8}",
+    note: "π²/8 ≈ 1.2337. Convergence is slow but the limit is exact."
+  }
+])
+```
+
+---
+
+### Exercise 6: Heat equation — reading off the solution from a Fourier series
+
+A rod of length $L = \pi$ has initial temperature $u(x,0) = 3\sin(x) - \sin(2x)$ for $0 < x < \pi$. The endpoints are held at zero: $u(0,t) = u(\pi,t) = 0$. The heat equation is $u_t = \alpha^2 u_{xx}$.
+
+Write down the complete solution $u(x,t)$ and identify which component decays faster.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Recall the general solution form",
+    eq: "u(x,t) = \\sum_{n=1}^{\\infty} B_n \\sin(nx)\\,e^{-\\alpha^2 n^2 t}",
+    note: "For L = π, the sine modes are sin(nx) and the decay rates are α²n²."
+  },
+  {
+    op: "Match initial condition to the general form",
+    eq: "u(x,0) = \\sum_{n=1}^{\\infty} B_n \\sin(nx) = 3\\sin(x) - \\sin(2x)",
+    note: "The initial condition is already a finite Fourier sine series — no integration needed."
+  },
+  {
+    op: "Read off the coefficients",
+    eq: "B_1 = 3, \\quad B_2 = -1, \\quad B_n = 0 \\text{ for } n \\geq 3"
+  },
+  {
+    op: "Write the solution",
+    eq: "u(x,t) = 3\\sin(x)\\,e^{-\\alpha^2 t} - \\sin(2x)\\,e^{-4\\alpha^2 t}"
+  },
+  {
+    op: "Compare decay rates",
+    eq: "\\text{Mode } n=2 \\text{ decays at rate } 4\\alpha^2 \\text{ vs } \\alpha^2 \\text{ for } n=1: \\quad \\text{four times faster.}",
+    note: "High-frequency components (sharp features) dissipate faster than low-frequency ones. At large t, u(x,t) ≈ 3 sin(x) e^{−α²t}: only the fundamental mode survives."
+  }
+])
+```
+
+<!-- STUDENT REVIEW
+Reviewed: 2026-04-01
+Layer: engineering
+
+OVERALL VERDICT: READABLE WITH FIXES
+
+ISSUES FOUND
+
+1. T = 2L "makes the coefficient formulas symmetric" — claim made before the formulas appear.
+   Reader cannot verify or understand this. Move or drop.
+
+2. Orthogonality derivation hand-waved in one sentence ("follow from product-to-sum identities").
+   This is the most critical step in the chapter — the mechanism that makes all the coefficient
+   formulas work. Not having even one worked line (e.g. the cos×cos case) leaves the formulas
+   looking like assertions. Most load-bearing gap in the chapter.
+
+3. "Directions in function space… projections" analogy relies on linear algebra (inner products,
+   dot products) that is not listed as a prerequisite. The notation ⟨f,g⟩ is introduced in the
+   front matter but never appears in the body. Either use it with a one-line definition or remove
+   the analogy.
+
+4. cos(nπ) = (−1)^n used silently in the square wave example. First appearance, no explanation.
+   One parenthetical fixes this.
+
+5. Gibbs phenomenon: "adding more terms moves the overshoot closer but does not reduce its size"
+   is counterintuitive and needs one sentence clarifying that accuracy IS improving everywhere
+   *except* at the jump itself.
+
+6. Half-range section: "insulated endpoints ↔ f'(0) = f'(L) = 0" stated without explanation.
+   Forward pointer to the heat equation or one-sentence justification needed.
+
+7. Complex coefficients: the relation c_n = (a_n − ib_n)/2 is asserted without derivation.
+   A student trying to verify it needs Euler's formula and one line of algebra — neither is given.
+
+8. Applications — FFT / O(N log N): the FFT is introduced without any explanation of what it is.
+   The prerequisites for this chapter don't include algorithms. Confusing to a reader who has only
+   done calculus-level series.
+
+EXERCISE CALIBRATION
+   Exercises 1–4: well-calibrated; the stepper covers the same techniques as the worked example.
+   Exercise 5 (Parseval → π²/8): satisfying puzzle with a clean answer — well chosen.
+   Exercise 6 (heat equation from series): appropriately easy for a "reading off" exercise; good.
+   Variety of context (square wave, sawtooth, constant, heat equation): good range.
+
+WAYFINDING
+   "Where this goes" is not a named section — the opens_to field lists targets but no prose
+   section in the body explains where the chapter leads. The Applications section gestures at the
+   heat equation and FFT but does not tell the reader "this chapter is the prerequisite for
+   Fourier transforms and for solving PDEs." The chapter ends without that signpost.
+-->
+
+<!-- MATH-PROF REVIEW
+Reviewed: 2026-04-01
+
+FIXES MADE
+- None required. All formulas, coefficients, and worked examples verified correct.
+
+VERIFIED CORRECT
+- Fourier coefficient formulas (a₀, aₙ, bₙ) with 1/L prefactor: correct for period 2L.
+- Orthogonality integrals (cos/cos, sin/sin, cos/sin): all three cases correct.
+- Square wave example: a₀ = 0, aₙ = 0 (odd function), bₙ = 4/(nπ) for odd n. ✓
+- Half-range cosine series for f(x) = x on (0,π): a₀ = π, aₙ = 2((-1)ⁿ−1)/(n²π). ✓
+- Half-range sine series for f(x) = 1: bₙ = 4/(nπ) for odd n. Leibniz formula derived correctly. ✓
+- Parseval's theorem: (1/L)∫_{-L}^{L}|f|²dx = a₀²/2 + Σ(aₙ²+bₙ²). ✓
+  Complex form (1/(2L))∫|f|²dx = Σ|cₙ|² consistent with cₙ = (aₙ−ibₙ)/2. ✓
+- Exercise 5 (Parseval applied to square wave): sum = π²/8. ✓
+- Complex coefficient relation cₙ = (aₙ−ibₙ)/2 for n≥1, c₋ₙ = c̄ₙ. ✓
+- Topology: prerequisite_ids (trig, seq_series, int_calc) all have enabling edges to fourier_series in topology.yml. ✓
+  opens_to (fourier_transform/enables, pdes/motivates, complex_analysis/enriches) all present as edges in topology.yml. ✓
+
+OPEN ISSUES
+- [NOTE] The Gibbs overshoot is stated as "approximately 8.9% of the jump height". The precise constant is
+  (1/π)∫₀^π sin(t)/t dt − 1/2 ≈ 0.08949 = 8.949%. "8.9%" is a reasonable approximation; author may wish
+  to cite "approximately 9%" to match Kreyszig's phrasing.
+- [NOTE] notation_introduced lists ⟨f,g⟩ as ∫_{-L}^{L} f(x)g(x)dx (no conjugate). This is the real inner
+  product. The complex case would be ∫ f·ḡ dx. Since the chapter introduces the complex series immediately
+  after, it may be worth noting the complex version, though this is editorial discretion.
+
+VERDICT: PASS WITH NOTES
+-->
+
+<!-- ENGINEER-PROF REVIEW
+Reviewed: 2026-04-01
+
+ISSUES FOUND
+
+[NOTE] Applications section — "Signal analysis and filtering": the description "multiply each bₙ by the desired gain at frequency n, and reconstruct" is close but imprecise for engineering readers. FFT-based equalisers operate on DFT coefficients of a finite windowed block, not on Fourier series coefficients of an infinitely periodic signal. The distinction is real: DFT coefficients have a specific frequency resolution (bin spacing = sample_rate/N) that shapes filter design. Recommend adding a one-sentence clarification: "In practice this is applied to finite, windowed signal blocks via the DFT, where the frequency resolution depends on block length."
+
+[NOTE] The chapter uses i for the imaginary unit throughout. Engineering texts (and IEC standards) use j. For a Vol 7 engineering chapter, a single parenthetical on first introduction — "using i (equivalently j in electrical engineering notation)" — would prevent friction when readers cross-reference Kreyszig or circuit-analysis texts that use j exclusively.
+
+DIRECT FIXES MADE
+- None required for engineering accuracy.
+
+ENGINEERING ACCURACY CHECKS
+
+- Vibration engineer / spectrum analyser example: accurate. Rotating machinery fault diagnosis via spectral analysis (order tracking, FFT of vibration signal) is standard practice.
+- "Noise-cancelling headphones subtract the measured noise frequency by frequency": accurate description of feed-forward ANC; the Fourier framing is honest.
+- "MRI scanners reconstruct images from Fourier coefficients of radio-frequency echoes": accurate. k-space data in MRI is the 2D Fourier transform of the magnetisation distribution; reconstruction is an inverse 2D FFT.
+- Heat equation preview in Applications section: physically correct — higher modes decay as n², so sharp gradients smooth first. Good.
+- FFT O(N log N) claim: correct for radix-2 Cooley–Tukey.
+- Kreyszig Ch 11 / Stroud Programmes 7–8: Kreyszig 10th ed Ch 11 covers Fourier series and transforms; Stroud "Engineering Mathematics" Programmes 7–8 cover Fourier series. References check out.
+
+VERDICT: PASS WITH NOTES
+-->
+
+<!-- EDIT LOG
+Editor review: 2026-04-01
+
+- [Orthogonality section, after the three integrals table] Expanded the one-sentence hand-wave into four sentences: worked the cos×cos, m≠n case explicitly using the product-to-sum identity, explained why both resulting frequencies integrate to zero over a full period, and noted why the m=n case gives L rather than zero. The tables now have a derivation the reader can follow rather than a reference they cannot verify.
+
+- [Square wave worked example, Step 3, final formula line] Added one sentence before the even/odd case split: "Here cos(nπ) = (−1)^n for any integer n: the cosine alternates between −1 and 1 at multiples of π." Prevents the reader from stalling at the (−1)^n term appearing without explanation.
+
+- [Applications section, Signal analysis and filtering] Added a three-sentence gloss on the FFT before the heat-equation subsection: names it as an algorithm, gives the O(N log N) vs O(N²) comparison with a concrete example (N=1024, hundredfold speedup), and explains why the speedup matters. Readers whose prerequisites are trig/series/calculus can now follow the claim.
+-->

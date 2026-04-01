@@ -1,6 +1,1097 @@
 ---
 title: "Proof and mathematical reasoning"
-status: "seed"
+subtitle: "Establishing that something must be true"
+
+volume: 5
+chapter: 4
+layer: "bridge"
+status: "review"
+
+axiom: |
+  You know how to compute an answer. You have been accepting results
+  on authority — here is the formula, it works, use it.
+
+rewrite: |
+  Proof is the turn: instead of computing an answer, you establish that
+  something is always true. Not "I've checked ten cases and it seems to
+  hold" — but "here is why it cannot fail." This shift is the entry
+  point to mathematics as a discipline.
+
+opens_to:
+  - id: "v7c5-complex-analysis"
+    label: "Complex analysis"
+    volume: 7
+    relationship: "enriches"
+  - id: "v5c2-differential-calculus"
+    label: "Differential calculus"
+    volume: 5
+    relationship: "enriches"
+    note: "The Fundamental Theorem of Calculus is a theorem — understanding proof is what separates using it from understanding it."
+
+prerequisite_ids:
+  - "linear_eq"
+  - "fractions"
+
+destinations:
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Every algorithm correctness argument, every security proof, and every complexity bound is a mathematical proof."
+    career_example: "Software engineer verifying that an algorithm produces correct output for all valid inputs"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Physical theories are tested by deriving consequences and checking them — the structure of the derivation is proof."
+    career_example: "Physicist deriving a conservation law from first principles"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Safety-critical systems require formal verification — the mathematical core is proof."
+    career_example: "Avionics engineer certifying that flight control software handles every edge case"
+
+hook: |
+  You have used the formula for the sum of an arithmetic series. You have
+  used the quadratic formula. You have been told that $\sqrt{2}$ is
+  irrational. Each time, you accepted the result because it worked on the
+  examples you tried, or because someone authoritative said so.
+
+  That is about to change. This chapter is the moment the game shifts:
+  from computing answers to establishing that something *must always* be
+  true — for every case, including the ones you will never check.
+
+notation_introduced:
+  - symbol: "\\Rightarrow"
+    reads_as: "implies — if the left side is true, so is the right"
+    notation_weight: 2
+  - symbol: "\\Leftrightarrow"
+    reads_as: "if and only if — both sides imply each other"
+    notation_weight: 2
+  - symbol: "\\forall"
+    reads_as: "for all"
+    notation_weight: 2
+  - symbol: "\\exists"
+    reads_as: "there exists"
+    notation_weight: 2
+  - symbol: "\\in"
+    reads_as: "is a member of"
+    notation_weight: 1
+  - symbol: "\\mathbb{Z}, \\mathbb{Q}, \\mathbb{R}"
+    reads_as: "the integers, the rationals, the reals"
+    notation_weight: 1
+  - symbol: "\\square"
+    reads_as: "QED — end of proof"
+    notation_weight: 1
+  - symbol: "\\neg"
+    reads_as: "not — logical negation"
+    notation_weight: 1
+  - symbol: "\\mathbb{N}"
+    reads_as: "the natural numbers — the positive integers 1, 2, 3, …"
+    notation_weight: 1
+
+exercises:
+  type: "investigation"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 12
+  strand: "Reasoning and Proof"
+  outcome: null
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You have used the formula for the sum of an arithmetic series. You have
+used the quadratic formula. You have been told that $\sqrt{2}$ is
+irrational. Each time, you accepted the result because it worked on the
+examples you tried, or because someone authoritative said so.
+
+That is about to change.
+
+The shift from computing to proving is the sharpest turn in mathematics.
+It is the difference between "this has always worked so far" and "this
+cannot fail." Most of the mathematics you have seen up to now has been the
+first kind. This chapter introduces the second.
+
+## A pattern that lies to you
+
+Consider the expression $n^2 - n + 41$. Try a few values:
+
+| $n$ | $n^2 - n + 41$ | Prime? |
+|-----|----------------|--------|
+| 1   | 41             | Yes    |
+| 2   | 43             | Yes    |
+| 3   | 47             | Yes    |
+| 4   | 53             | Yes    |
+| 10  | 131            | Yes    |
+| 20  | 421            | Yes    |
+
+In fact, every value from $n = 1$ to $n = 40$ gives a prime number.
+
+Forty consecutive confirmations. Most people would bet on "always prime."
+
+But try $n = 41$:
+
+$$41^2 - 41 + 41 = 41^2 = 1681 = 41 \times 41$$
+
+Clearly composite. The pattern fails the moment you step past the range
+where you checked it.
+
+This is the central lesson before we write a single proof: **no number of
+confirmed cases constitutes a proof.** Not ten, not a hundred, not a
+trillion. A proof must cover every case, including those that haven't
+been tried.
+
+```{ojs}
+//| echo: false
+
+// ── VIZ 1: Primality checker for n²-n+41 ──────────────────────────────────
+
+function isPrime(n) {
+  if (n < 2) return false;
+  for (let i = 2; i <= Math.sqrt(n); i++) {
+    if (n % i === 0) return false;
+  }
+  return true;
+}
+
+function factorise(n) {
+  const factors = [];
+  let d = 2;
+  let m = n;
+  while (d * d <= m) {
+    while (m % d === 0) {
+      factors.push(d);
+      m = Math.floor(m / d);
+    }
+    d++;
+  }
+  if (m > 1) factors.push(m);
+  return factors;
+}
+
+function formatFactors(n) {
+  const f = factorise(n);
+  if (f.length <= 1) return String(n);
+  // group into exponent notation for display
+  const counts = {};
+  for (const p of f) counts[p] = (counts[p] || 0) + 1;
+  return Object.entries(counts)
+    .map(([p, e]) => e === 1 ? p : `${p}^{${e}}`)
+    .join(" \\times ");
+}
+
+viewof nSlider = Inputs.range([1, 50], {
+  step: 1,
+  value: 1,
+  label: "n"
+})
+```
+
+```{ojs}
+//| echo: false
+
+{
+  const n = nSlider;
+  const p = n * n - n + 41;
+  const prime = isPrime(p);
+
+  const dotColour = prime ? "#22c55e" : "#ef4444";
+  const statusText = prime ? "prime" : "composite";
+  const statusColour = prime ? "#16a34a" : "#dc2626";
+
+  // Factorisation string for composite values
+  let factorHTML = "";
+  if (!prime) {
+    const counts = {};
+    for (const f of factorise(p)) counts[f] = (counts[f] || 0) + 1;
+    const fStr = Object.entries(counts)
+      .map(([f, e]) => e === 1 ? f : `${f}<sup>${e}</sup>`)
+      .join(" × ");
+    factorHTML = `<p style="margin:0.4rem 0 0;font-size:0.9rem;color:#374151;">
+      Factorisation: ${p} = ${fStr}
+    </p>`;
+  }
+
+  // Show a snapshot table of n = 1..current n (up to 10 most recent from 1)
+  const tableStart = Math.max(1, n - 9);
+  const tableRows = Array.from({ length: n - tableStart + 1 }, (_, i) => {
+    const k = tableStart + i;
+    const pk = k * k - k + 41;
+    const primeK = isPrime(pk);
+    const c = primeK ? "#16a34a" : "#dc2626";
+    const lbl = primeK ? "prime" : "composite";
+    const bold = k === n ? "font-weight:700;background:#f5f3ff;" : "";
+    return `<tr style="${bold}">
+      <td style="padding:3px 10px;text-align:center;">${k}</td>
+      <td style="padding:3px 10px;text-align:center;">${pk}</td>
+      <td style="padding:3px 10px;text-align:center;color:${c};">${lbl}</td>
+    </tr>`;
+  }).reverse().join("");
+
+  return htl.html`<div style="font-family:sans-serif;max-width:480px;">
+    <div style="padding:1rem 1.25rem;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:0.75rem;">
+      <p style="margin:0 0 0.35rem;font-size:1rem;"><em>n</em> = <strong>${n}</strong></p>
+      <p style="margin:0 0 0.5rem;font-size:1rem;"><em>n</em>² − <em>n</em> + 41 = <strong>${p}</strong></p>
+      <p style="margin:0;display:flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:${dotColour};flex-shrink:0;"></span>
+        <strong style="color:${statusColour};">${p} is ${statusText}</strong>
+      </p>
+      ${htl.html([factorHTML])}
+    </div>
+    <table style="border-collapse:collapse;width:100%;font-size:0.88rem;">
+      <thead>
+        <tr style="border-bottom:2px solid #d1d5db;">
+          <th style="padding:3px 10px;font-weight:600;">n</th>
+          <th style="padding:3px 10px;font-weight:600;">n²−n+41</th>
+          <th style="padding:3px 10px;font-weight:600;">Status</th>
+        </tr>
+      </thead>
+      <tbody>${htl.html([tableRows])}</tbody>
+    </table>
+  </div>`;
+}
+```
+
+## What a proof is
+
+A **proof** is a sequence of logical deductions from agreed starting
+points — called **axioms** or previously proved **theorems** — leading
+to a conclusion. Each step must follow from the previous ones by a valid
+logical rule. If every step is valid, the conclusion is guaranteed. Not
+likely. Not probably. Guaranteed.
+
+Every proof has the same skeleton:
+
+- **Statement:** what you are claiming is true
+- **Hypothesis:** what you are allowed to assume
+- **Conclusion:** what you need to establish
+- **Proof:** the chain of deductions from hypothesis to conclusion
+
+The hypothesis is given to you. The conclusion is what you must reach.
+Everything in between is your work.
+
+### The notation of logical structure
+
+Two symbols carry most of the logical load:
+
+$P \Rightarrow Q$ means **$P$ implies $Q$**: if $P$ is true, then $Q$
+must be true. Read it as "if $P$, then $Q$." The arrow shows direction —
+$P \Rightarrow Q$ does not automatically mean $Q \Rightarrow P$.
+
+$P \Leftrightarrow Q$ means **$P$ if and only if $Q$**: the implication
+runs both ways. $P$ is true exactly when $Q$ is true, and vice versa.
+
+Two quantifiers say *which* objects you are making claims about:
+
+$\forall x$ means **for all $x$** — the statement holds for every element
+in the domain under discussion.
+
+$\exists x$ means **there exists an $x$** — the statement holds for at
+least one element.
+
+The symbol $x \in S$ means **$x$ is a member of the set $S$**. You will
+see it most often with the standard number sets:
+
+- $\mathbb{N}$ — the natural numbers: $1, 2, 3, \ldots$
+- $\mathbb{Z}$ — the integers: $\ldots, -2, -1, 0, 1, 2, \ldots$
+- $\mathbb{Q}$ — the rationals: all fractions $p/q$ with $p, q \in \mathbb{Z}$, $q \neq 0$
+- $\mathbb{R}$ — the real numbers: everything on the continuous number line
+
+So "$\forall n \in \mathbb{Z}$" reads: "for every integer $n$." A
+typical theorem opens with a phrase like this to tell you exactly what
+kind of object is being discussed.
+
+## Four proof methods
+
+There is no single template. What follows are four approaches that cover
+the vast majority of what you will encounter in the first two years of
+university mathematics.
+
+### 1. Direct proof
+
+The simplest strategy: assume the hypothesis, apply definitions and
+algebra, arrive at the conclusion.
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem.** The sum of two even integers is even.
+
+**Proof.** Let $m$ and $n$ be even integers. By definition of "even,"
+there exist integers $a$ and $b$ such that $m = 2a$ and $n = 2b$. Then:
+
+$$m + n = 2a + 2b = 2(a + b)$$
+
+Since $a + b$ is an integer, $m + n$ is divisible by 2, hence even. $\square$
+:::
+
+Notice the structure: start with the definitions of the objects involved,
+do algebra, end at the conclusion. The key move was unpacking "even" into
+its definition ($m = 2a$) so that the algebra could work.
+
+### 2. Proof by contrapositive
+
+Every statement "if $P$ then $Q$" ($P \Rightarrow Q$) is **logically
+equivalent** (meaning: any proof of one automatically proves the other —
+they make exactly the same claim in different words) to its
+**contrapositive**: "if $\neg Q$ then $\neg P$" ($\neg Q \Rightarrow \neg P$),
+where $\neg Q$ means "not $Q$" — the opposite truth value.
+
+Sometimes the contrapositive is much easier to work with directly.
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem.** If $n^2$ is even, then $n$ is even.
+
+**Proof.** We prove the contrapositive: if $n$ is odd, then $n^2$ is odd.
+
+Suppose $n$ is odd. Then $n = 2k + 1$ for some integer $k$. Squaring:
+
+$$n^2 = (2k+1)^2 = 4k^2 + 4k + 1 = 2(2k^2 + 2k) + 1$$
+
+Since $2k^2 + 2k$ is an integer, $n^2$ has the form $2(\text{integer}) + 1$,
+so $n^2$ is odd.
+
+The contrapositive is proved. Therefore the original statement holds. $\square$
+:::
+
+The reason to choose contrapositive over direct proof here: starting from
+"$n^2$ is even" and trying to work towards "$n$ is even" is awkward —
+you'd have to take a square root, and it isn't obvious that $\sqrt{2k}$
+is an integer. The contrapositive avoids that entirely.
+
+### 3. Proof by contradiction
+
+Assume the conclusion is *false*. Show that this assumption, together with
+the hypothesis, leads to a logical impossibility — a statement that
+contradicts something you know to be true. Since the assumption of
+falseness leads to a contradiction, the conclusion must be true.
+
+The classic example is one you may have seen stated but never seen proved:
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem.** $\sqrt{2}$ is irrational.
+
+**Proof.** Suppose for contradiction that $\sqrt{2}$ is rational. Then
+we can write $\sqrt{2} = p/q$ where $p, q \in \mathbb{Z}$, $q \neq 0$,
+and $p$ and $q$ share no common factor (the fraction is in **lowest terms**).
+
+Squaring both sides: $2 = p^2 / q^2$, so $p^2 = 2q^2$.
+
+This means $p^2$ is even. By the theorem proved above (contrapositive),
+$p$ must be even. So write $p = 2k$ for some integer $k$.
+
+Substituting: $(2k)^2 = 2q^2$, which gives $4k^2 = 2q^2$, so $q^2 = 2k^2$.
+
+This means $q^2$ is even, so $q$ is even (by the same reasoning we used
+for $p$: if a number's square is even, the number itself must be even).
+
+But now both $p$ and $q$ are even — they share a factor of 2. This
+contradicts our assumption that $p/q$ was in lowest terms.
+
+The assumption that $\sqrt{2}$ is rational leads to a contradiction.
+Therefore $\sqrt{2}$ is irrational. $\square$
+:::
+
+Note how the proof assembled earlier results — "if $n^2$ is even then $n$
+is even" was used twice. Proofs are built on top of other proofs. The
+earlier theorem was not an isolated exercise; it was a tool.
+
+### 4. Mathematical induction
+
+Induction proves statements of the form "this holds for every natural
+number $n \geq 1$" (or $n \geq 0$, or from any fixed starting point).
+
+The structure has two parts:
+
+1. **Base case.** Show the statement holds for the starting value (usually $n = 1$).
+2. **Inductive step.** Show that *if* the statement holds for $n = k$
+   (the **inductive hypothesis**), then it holds for $n = k + 1$.
+
+If both hold, the statement holds for all $n$ from the base case onward.
+The logic is a chain: the base case starts the chain, the inductive step
+extends it one link at a time, and there is no upper limit on the chain
+length.
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem.** For all $n \geq 1$:
+
+$$1 + 2 + 3 + \cdots + n = \frac{n(n+1)}{2}$$
+
+**Proof.**
+
+**Base case.** When $n = 1$: the left side is $1$, and $\frac{1 \cdot 2}{2} = 1$. The statement holds.
+
+**Inductive step.** Assume the statement holds for $n = k$, i.e., assume:
+
+$$1 + 2 + \cdots + k = \frac{k(k+1)}{2}$$
+
+We need to show it holds for $n = k + 1$, i.e., that:
+
+$$1 + 2 + \cdots + k + (k+1) = \frac{(k+1)(k+2)}{2}$$
+
+Starting from the left side and using the inductive hypothesis:
+
+$$1 + 2 + \cdots + k + (k+1) = \frac{k(k+1)}{2} + (k+1)$$
+
+Factor out $(k+1)$:
+
+$$= (k+1)\left(\frac{k}{2} + 1\right) = (k+1) \cdot \frac{k+2}{2} = \frac{(k+1)(k+2)}{2}$$
+
+This is exactly what we needed to show.
+
+By induction, the formula holds for all $n \geq 1$. $\square$
+:::
+
+The formula $n(n+1)/2$ is not new to you — it appeared when we studied
+arithmetic series. But now you have not just a formula and some confirming
+examples. You have a proof. It holds for $n = 10^{100}$ as surely as for
+$n = 5$.
+
+```{ojs}
+//| echo: false
+
+// ── VIZ 2: Induction visualiser for Σk = n(n+1)/2 ────────────────────────
+
+viewof nInduct = Inputs.range([1, 20], {
+  step: 1,
+  value: 5,
+  label: "n"
+})
+```
+
+```{ojs}
+//| echo: false
+
+{
+  const n = nInduct;
+
+  // Compute partial sums S_k = k(k+1)/2 for k = 1..n
+  const data = Array.from({ length: n }, (_, i) => {
+    const k = i + 1;
+    const Sk = k * (k + 1) / 2;
+    return { k, Sk };
+  });
+
+  const Sn = n * (n + 1) / 2;
+  const maxS = data[data.length - 1].Sk;
+
+  // SVG dimensions
+  const W = 480, H = 260;
+  const padL = 48, padR = 20, padT = 20, padB = 40;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+
+  const xScale = k => padL + ((k - 1) / Math.max(n - 1, 1)) * chartW;
+  const yScale = v => padT + chartH - (v / maxS) * chartH;
+  const barW = Math.max(4, Math.min(32, (chartW / n) * 0.6));
+
+  // Build bar rects
+  const bars = data.map(({ k, Sk }) => {
+    const x = xScale(k) - barW / 2;
+    const y = yScale(Sk);
+    const h = padT + chartH - y;
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW}" height="${h.toFixed(1)}"
+              fill="#6366f1" opacity="0.75" rx="2"/>`;
+  }).join("\n");
+
+  // Build formula dots + connecting line
+  const pts = data.map(({ k, Sk }) => `${xScale(k).toFixed(1)},${yScale(Sk).toFixed(1)}`).join(" ");
+  const dots = data.map(({ k, Sk }) =>
+    `<circle cx="${xScale(k).toFixed(1)}" cy="${yScale(Sk).toFixed(1)}" r="5" fill="#f97316" stroke="white" stroke-width="1.5"/>`
+  ).join("\n");
+
+  // x-axis tick labels
+  const xTicks = data.map(({ k }) =>
+    `<text x="${xScale(k).toFixed(1)}" y="${(padT + chartH + 18).toFixed(1)}" text-anchor="middle" font-size="11" fill="#6b7280">${k}</text>`
+  ).join("\n");
+
+  // y-axis ticks (3–4 ticks)
+  const yTickCount = 4;
+  const yTicks = Array.from({ length: yTickCount + 1 }, (_, i) => {
+    const v = Math.round((maxS / yTickCount) * i);
+    const y = yScale(v);
+    return `<line x1="${padL - 4}" y1="${y.toFixed(1)}" x2="${padL}" y2="${y.toFixed(1)}" stroke="#9ca3af" stroke-width="1"/>
+<text x="${(padL - 6).toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#9ca3af">${v}</text>`;
+  }).join("\n");
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;display:block;font-family:sans-serif;">
+  <!-- axes -->
+  <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="#d1d5db" stroke-width="1"/>
+  <line x1="${padL}" y1="${padT + chartH}" x2="${padL + chartW}" y2="${padT + chartH}" stroke="#d1d5db" stroke-width="1"/>
+  ${yTicks}
+  ${xTicks}
+  <!-- bars -->
+  ${bars}
+  <!-- formula line -->
+  <polyline points="${pts}" fill="none" stroke="#f97316" stroke-width="2" opacity="0.6"/>
+  <!-- formula dots -->
+  ${dots}
+  <!-- legend -->
+  <rect x="${padL + 4}" y="${padT + 4}" width="12" height="12" fill="#6366f1" opacity="0.75" rx="2"/>
+  <text x="${padL + 20}" y="${padT + 14}" font-size="11" fill="#374151">partial sum</text>
+  <circle cx="${padL + 130}" cy="${padT + 10}" r="5" fill="#f97316"/>
+  <text x="${padL + 140}" y="${padT + 14}" font-size="11" fill="#374151">k(k+1)/2</text>
+  <!-- x-axis label -->
+  <text x="${(padL + chartW / 2).toFixed(1)}" y="${H - 4}" text-anchor="middle" font-size="11" fill="#6b7280">k</text>
+</svg>`;
+
+  const formulaValue = n * (n + 1) / 2;
+
+  return htl.html`<div style="font-family:sans-serif;max-width:500px;">
+    ${htl.html([svg])}
+    <p style="margin:0.75rem 0 0.25rem;font-size:0.95rem;">
+      Sum: <strong>1 + 2 + ⋯ + ${n} = ${Sn}</strong>
+    </p>
+    <p style="margin:0;font-size:0.95rem;">
+      Formula: <strong>${n}(${n}+1)/2 = ${n} × ${n+1} / 2 = ${formulaValue}</strong>
+    </p>
+  </div>`;
+}
+```
+
+## What makes a proof fail
+
+Not every argument that looks like a proof is one. Three failure modes
+appear constantly, and learning to recognise them is half the work.
+
+### 1. Assuming the conclusion
+
+Also called **circular reasoning**: a step in the proof assumes, in some
+form, the very thing you are trying to prove.
+
+Here is a compact example. Suppose someone "proves" that $1 = 2$ like
+this:
+
+> Let $a = b$. Then $a^2 = ab$, so $a^2 - b^2 = ab - b^2$,
+> so $(a+b)(a-b) = b(a-b)$, so $a + b = b$.
+> Since $a = b$, this gives $2b = b$, so $2 = 1$.
+
+The flaw: the step "so $a + b = b$" divides both sides by $(a - b)$.
+But $a = b$, so $a - b = 0$. Division by zero is not a valid algebraic
+step. It is not that the algebra went wrong in a subtle way — the step is
+simply not allowed.
+
+Circular reasoning is harder to spot than hidden division by zero. Watch
+for any step that *uses* the thing you're trying to *establish*.
+
+### 2. Missing a case
+
+A proof that only covers some instances — even most instances — is not a
+proof. The primality of $n^2 - n + 41$ was "verified" for 40 cases and
+failed on the 41st. Missing cases can be more subtle: a proof about
+integers that silently only works for positive ones, a proof about
+triangles that only handles the acute case.
+
+Before finishing a proof, ask: are there configurations I haven't
+considered? Edge cases, boundary values, negative inputs, degenerate
+shapes?
+
+### 3. An invalid step
+
+An algebraic manipulation that is not universally valid. The most common:
+
+- **Dividing by a variable** without confirming it's nonzero (as in the
+  $a = b$ example above)
+- **Taking a square root** and losing the negative case: $x^2 = 4$
+  implies $x = 2$ or $x = -2$, not just $x = 2$
+- **Cancelling factors** that might be zero
+- **Swapping the order** of limits, integrals, or sums without
+  justification (this matters more in later courses)
+
+Every algebraic step has conditions under which it is valid. When those
+conditions aren't met, the step is wrong — even if it gives the right
+answer in specific cases.
+
+::: {.callout-tip}
+## What proofs are actually for
+
+Proofs are not rituals performed for examiners. They are the reason
+mathematicians can trust results for trillions of cases they've never
+checked.
+
+When you prove that an algorithm runs in $O(n \log n)$ time, you're
+not estimating — you're guaranteeing. When a cryptographic security
+proof says the encryption is unbreakable under certain assumptions, the
+logic is auditable. A regulator, a competitor, a court can read every
+step. The proof is the audit trail.
+
+Physical laws are not just patterns observed in experiments. They are
+structures whose consequences can be derived — predicted before they are
+measured. The derivation is a proof. When a prediction matches an
+observation, it confirms the law; when it doesn't, the law is wrong. The
+reliability of science rests on this structure.
+
+Mathematics is the only domain where "I've checked a huge number of
+cases" is explicitly not sufficient, and where a short argument can
+settle a question for every case simultaneously. That is what makes it
+powerful.
+:::
+
+## Worked examples
+
+### Example 1: Direct proof — the product of two odd numbers
+
+**Context.** Two players take turns on a board game. Each player's turn
+takes an odd number of seconds. Prove that no matter how many turns have
+been played, the product of any two turn lengths is always odd.
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem.** The product of two odd integers is odd.
+
+**Proof.** Let $m$ and $n$ be odd integers. By definition, there exist
+integers $a$ and $b$ such that $m = 2a + 1$ and $n = 2b + 1$.
+
+Then:
+$$m \cdot n = (2a+1)(2b+1) = 4ab + 2a + 2b + 1 = 2(2ab + a + b) + 1$$
+
+Since $2ab + a + b$ is an integer, $mn$ has the form $2(\text{integer}) + 1$,
+so $mn$ is odd. $\square$
+:::
+
+**Commentary.** The key move was unpacking the definition of "odd" into
+algebra. Once you write $m = 2a + 1$ and $n = 2b + 1$, the result of
+multiplying them is computable. The only thing left is to recognise that
+the answer has the right form — it is one more than an even number.
+
+The proof doesn't appeal to intuition, examples, or the fact that you've
+tested it. It works because the algebra always produces $2(\ldots) + 1$,
+regardless of what $a$ and $b$ are.
+
+### Example 2: Proof by contradiction — infinitely many primes
+
+**Context.** Public-key cryptography (RSA, used in every HTTPS
+connection) relies on the existence of very large prime numbers. The
+security argument assumes there are infinitely many primes to draw from.
+Euclid proved this over 2000 years ago. The argument has not changed.
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem.** There are infinitely many prime numbers.
+
+**Proof.** Suppose for contradiction that there are only finitely many
+primes. List them all: $p_1, p_2, \ldots, p_k$.
+
+Consider the number:
+$$N = p_1 \cdot p_2 \cdots p_k + 1$$
+
+$N$ is greater than 1, so it has at least one prime factor. Call it $p$.
+Since our list contains all primes, $p$ must be one of $p_1, p_2, \ldots, p_k$.
+
+But $p$ divides $p_1 \cdot p_2 \cdots p_k$ (since $p$ is one of those
+factors). And $p$ divides $N$. So $p$ must divide the difference:
+$$N - p_1 \cdot p_2 \cdots p_k = 1$$
+
+But no prime divides 1. Contradiction.
+
+The assumption that there are finitely many primes leads to a
+contradiction. Therefore there are infinitely many primes. $\square$
+:::
+
+**Commentary.** The number $N$ is not claimed to be prime. It is
+constructed deliberately so that dividing it by any prime on the list
+leaves a remainder of 1. The contradiction is that the prime factor of
+$N$ must be on the list but cannot be on the list.
+
+This is one of the most elegant proofs in mathematics. It uses no
+advanced machinery — only the definition of prime, the fact that every
+integer greater than 1 has a prime factor, and arithmetic. The idea
+(constructing $N$) is the creative step; the logic is then straightforward.
+
+### Example 3: Proof by induction — $2^n > n$ for all $n \geq 1$
+
+**Context.** In digital circuit design, the number of possible states
+in a circuit with $n$ binary switches is $2^n$. Engineers say this
+"grows exponentially." Proving $2^n > n$ is a basic instance of
+establishing that exponential growth outpaces linear growth — relevant
+whenever you're deciding whether a brute-force approach (checking every
+state) is feasible.
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem.** For all integers $n \geq 1$, $2^n > n$.
+
+**Proof.**
+
+**Base case.** When $n = 1$: $2^1 = 2 > 1$. The statement holds.
+
+**Inductive step.** Assume the statement holds for $n = k$, i.e., assume
+$2^k > k$. We need to show $2^{k+1} > k + 1$.
+
+Starting from the inductive hypothesis $2^k > k$, multiply both sides by 2:
+$$2^{k+1} = 2 \cdot 2^k > 2k$$
+
+It suffices to show $2k \geq k + 1$, i.e., $k \geq 1$. Since $k \geq 1$
+by our starting point, this holds.
+
+Therefore $2^{k+1} > 2k \geq k + 1$.
+
+By induction, $2^n > n$ for all $n \geq 1$. $\square$
+:::
+
+**Commentary.** The inductive step needed two pieces: first, using the
+inductive hypothesis to get a bound on $2^{k+1}$; second, connecting
+that bound to $k + 1$. The step "$2k \geq k+1$ because $k \geq 1$" looks
+almost too obvious to write down. Write it down anyway. In a proof,
+"obvious" is not a valid reason — the valid reason is "$k \geq 1$."
+
+## Where this goes
+
+**Throughout this series.** Every other volume has been making claims
+without full justification — the sum formula for arithmetic series, the
+laws of exponents, properties of functions. You now have the tools to
+ask "how do we know that?" and to read the answer. The proofs are in the
+textbooks; you can now follow them.
+
+**Complex analysis (Volume 7).** The central results there — Cauchy's
+integral theorem, the residue theorem — are not computational tricks.
+They are theorems with proofs that depend on precise definitions of
+limits, continuity, and differentiability. Those proofs are accessible
+once you are comfortable with the logical structure introduced here.
+Complex analysis is where proof and computation meet in the most
+surprising way: a function's behaviour on a closed curve can determine
+its behaviour at every point inside.
+
+::: {.callout-tip}
+## Applications
+
+**Algorithm correctness.** Proving that an algorithm produces the right
+output for *every* valid input, not just the test cases you've tried.
+Induction is the standard tool for array algorithms and recursive
+functions.
+
+**Cryptographic security proofs.** RSA's security is reduced to the
+difficulty of factoring large numbers — the reduction is a proof. If
+you could break RSA, you could factor; but factoring appears hard.
+The chain of implication is a formal proof.
+
+**Derivation from physical laws.** The equations governing heat flow,
+electromagnetic fields, and quantum mechanics are not empirical curve
+fits. They are derived — proved — from foundational principles. The
+derivations are proofs.
+
+**Formal verification.** Aviation, medical devices, and nuclear control
+systems are subject to formal verification: software is checked against
+a mathematical model, and the check is a proof. DO-178C (aviation
+software standard) and IEC 62304 (medical software) both recognise
+formal methods. The mathematical core is the logic introduced here.
+:::
+
+## Exercises
+
+```{ojs}
+//| echo: false
+
+// ── Shared stepper infrastructure ──────────────────────────────────────────
+
+katex = require("katex@0.16")
+
+function makeStepperHTML(problem, steps) {
+  let current = -1;
+
+  const problemDiv = document.createElement("div");
+  problemDiv.style.cssText = "margin-bottom:0.75rem;font-weight:600;font-size:0.95rem;";
+  problemDiv.textContent = problem;
+
+  const stepsContainer = document.createElement("div");
+
+  const stepEls = steps.map((s, i) => {
+    const el = document.createElement("div");
+    el.style.cssText = `
+      display:none;
+      margin-top:0.6rem;
+      padding:0.6rem 0.85rem;
+      border-left:3px solid #6366f1;
+      background:#f5f3ff;
+      border-radius:0 6px 6px 0;
+      font-size:0.92rem;
+    `;
+    const opSpan = document.createElement("div");
+    opSpan.style.cssText = "color:#6b7280;font-size:0.82rem;margin-bottom:0.3rem;font-style:italic;";
+    opSpan.textContent = s.op;
+
+    const eqDiv = document.createElement("div");
+    try {
+      eqDiv.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+    } catch(e) {
+      eqDiv.textContent = s.eq;
+    }
+
+    el.appendChild(opSpan);
+    el.appendChild(eqDiv);
+    stepsContainer.appendChild(el);
+    return el;
+  });
+
+  const btnRow = document.createElement("div");
+  btnRow.style.cssText = "display:flex;gap:0.5rem;margin-top:0.75rem;align-items:center;";
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = `
+    padding:0.35rem 0.85rem;
+    background:#6366f1;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:0.88rem;
+  `;
+
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = `
+    padding:0.35rem 0.75rem;
+    background:transparent;
+    color:#6b7280;
+    border:1px solid #d1d5db;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:0.88rem;
+  `;
+
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82rem;color:#9ca3af;margin-left:0.25rem;";
+  counter.textContent = `0 / ${steps.length}`;
+
+  function update() {
+    stepEls.forEach((el, i) => {
+      el.style.display = i <= current ? "block" : "none";
+    });
+    counter.textContent = `${current + 1} / ${steps.length}`;
+    nextBtn.disabled = current >= steps.length - 1;
+    nextBtn.style.opacity = nextBtn.disabled ? "0.45" : "1";
+  }
+
+  nextBtn.addEventListener("click", () => {
+    if (current < steps.length - 1) { current++; update(); }
+  });
+  resetBtn.addEventListener("click", () => {
+    current = -1; update();
+  });
+
+  btnRow.appendChild(nextBtn);
+  btnRow.appendChild(resetBtn);
+  btnRow.appendChild(counter);
+
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = `
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    padding:1rem 1.1rem;
+    max-width:560px;
+    font-family:sans-serif;
+    margin-top:0.75rem;
+  `;
+  wrapper.appendChild(problemDiv);
+  wrapper.appendChild(stepsContainer);
+  wrapper.appendChild(btnRow);
+
+  update();
+  return wrapper;
+}
+```
+
+**Exercise 1.** Prove that if $n$ is divisible by 3, then $n^2$ is
+divisible by 9.
+
+*Hint.* Write $n = 3k$ for some integer $k$, then compute $n^2$.
+
+```{ojs}
+//| echo: false
+
+makeStepperHTML(
+  "If 3 divides n, prove that 9 divides n².",
+  [
+    {
+      op: "Write out the hypothesis in algebraic form",
+      eq: "\\text{Since } 3 \\mid n, \\text{ there exists an integer } k \\text{ such that } n = 3k."
+    },
+    {
+      op: "Compute n²",
+      eq: "n^2 = (3k)^2 = 9k^2"
+    },
+    {
+      op: "Identify the structure of the result",
+      eq: "9k^2 = 9 \\cdot k^2, \\text{ and } k^2 \\in \\mathbb{Z}, \\text{ so } 9 \\mid n^2."
+    },
+    {
+      op: "Conclude",
+      eq: "\\text{Therefore } n^2 \\text{ is divisible by } 9. \\quad \\square"
+    }
+  ]
+)
+```
+
+---
+
+**Exercise 2.** Prove by contradiction that $\log_2 3$ is irrational.
+
+*Hint.* Assume $\log_2 3 = p/q$ in lowest terms and use the definition
+of logarithm: $\log_2 3 = p/q$ means $2^{p/q} = 3$.
+
+```{ojs}
+//| echo: false
+
+makeStepperHTML(
+  "Prove that log₂(3) is irrational.",
+  [
+    {
+      op: "Set up the contradiction",
+      eq: "\\text{Assume } \\log_2 3 = \\tfrac{p}{q} \\text{ where } p, q \\in \\mathbb{N} \\text{ share no common factor.}"
+    },
+    {
+      op: "Use the definition of logarithm",
+      eq: "\\log_2 3 = \\tfrac{p}{q} \\implies 2^{p/q} = 3 \\implies 2^p = 3^q"
+    },
+    {
+      op: "Apply the Fundamental Theorem of Arithmetic",
+      eq: "\\text{Left side: only prime factor is } 2. \\quad \\text{Right side: only prime factor is } 3."
+    },
+    {
+      op: "Derive the contradiction",
+      eq: "2^p = 3^q \\text{ is impossible for positive integers } p, q \\text{ (distinct prime bases)}."
+    },
+    {
+      op: "Conclude",
+      eq: "\\text{The assumption that } \\log_2 3 \\in \\mathbb{Q} \\text{ leads to a contradiction.} \\quad \\square"
+    }
+  ]
+)
+```
+
+---
+
+**Exercise 3.** Prove by induction that $n! > 2^n$ for all $n \geq 4$.
+
+*Instructions.* (a) Check the base case $n = 4$ by computing both sides.
+(b) Write out the inductive step: assuming $k! > 2^k$, show $(k+1)! > 2^{k+1}$.
+
+```{ojs}
+//| echo: false
+
+makeStepperHTML(
+  "Prove n! > 2ⁿ for all n ≥ 4.",
+  [
+    {
+      op: "Base case: n = 4",
+      eq: "4! = 24, \\quad 2^4 = 16, \\quad 24 > 16. \\checkmark"
+    },
+    {
+      op: "State the inductive hypothesis",
+      eq: "\\text{Assume } k! > 2^k \\text{ for some fixed } k \\geq 4."
+    },
+    {
+      op: "Expand the left side of the target",
+      eq: "(k+1)! = (k+1) \\cdot k!"
+    },
+    {
+      op: "Apply the inductive hypothesis",
+      eq: "(k+1)! = (k+1) \\cdot k! > (k+1) \\cdot 2^k"
+    },
+    {
+      op: "Compare with the target 2^(k+1)",
+      eq: "\\text{Need: } (k+1) \\cdot 2^k > 2^{k+1} = 2 \\cdot 2^k, \\text{ i.e., } k+1 > 2. \\text{ True since } k \\geq 4."
+    },
+    {
+      op: "Conclude by induction",
+      eq: "(k+1)! > (k+1) \\cdot 2^k > 2 \\cdot 2^k = 2^{k+1}. \\quad \\therefore\\ n! > 2^n \\ \\forall n \\geq 4. \\quad \\square"
+    }
+  ]
+)
+```
+
+---
+
+**Exercise 4.** Find the flaw in the following "proof" that all horses are
+the same colour.
+
+> **Claim.** In any group of $n$ horses, all horses are the same colour.
+>
+> **Proof.**
+>
+> *Base case.* When $n = 1$: a group of one horse trivially has all
+> horses the same colour (there is only one). ✓
+>
+> *Inductive step.* Assume any group of $k$ horses is the same colour.
+> Consider a group of $k+1$ horses: $H_1, H_2, \ldots, H_k, H_{k+1}$.
+>
+> Look at the first $k$ horses $\{H_1, \ldots, H_k\}$. By the inductive
+> hypothesis, they are all the same colour.
+>
+> Now look at the last $k$ horses $\{H_2, \ldots, H_{k+1}\}$. By the
+> inductive hypothesis, they are all the same colour.
+>
+> These two groups overlap (they share $H_2, \ldots, H_k$), so all
+> $k+1$ horses must be the same colour.
+>
+> By induction, all horses in any group are the same colour. $\square$
+
+The base case is correct. The logic in the inductive step sounds
+plausible. But the conclusion is obviously false. Where does the proof
+break?
+
+*Hint.* What happens to the "overlap" argument when $k = 1$?
+
+```{ojs}
+//| echo: false
+
+makeStepperHTML(
+  "Find the flaw in the horse-colour induction.",
+  [
+    {
+      op: "Accept the base case",
+      eq: "\\text{For } n = 1 \\text{: trivially true. No flaw here.}"
+    },
+    {
+      op: "Examine the inductive step at k = 1 (the step from n=1 to n=2)",
+      eq: "\\text{Groups: } \\{H_1\\} \\text{ and } \\{H_2\\}. \\text{ The claimed overlap is } \\{H_2, \\ldots, H_k\\} = \\{H_2, \\ldots, H_1\\}."
+    },
+    {
+      op: "Identify the flaw: the overlap is empty",
+      eq: "\\text{Indices from } 2 \\text{ to } k = 1 \\text{ form an empty range.} \\quad |\\{H_2,\\ldots,H_1\\}| = 0."
+    },
+    {
+      op: "State why the argument fails",
+      eq: "\\text{An empty overlap tells us nothing: } H_1 \\text{ and } H_2 \\text{ need not share a colour.}"
+    },
+    {
+      op: "Conclude",
+      eq: "\\text{The step } n=1 \\to n=2 \\text{ is not covered. The induction never leaves } n=1. \\quad \\square"
+    }
+  ]
+)
+```
+
+---
+
+**Exercise 5.** *(Harder.)* Prove that between any two distinct real
+numbers, there exists a rational number.
+
+More precisely: prove that for any $a, b \in \mathbb{R}$ with $a < b$,
+there exists $q \in \mathbb{Q}$ with $a < q < b$.
+
+*Hint.* You will need the **Archimedean property**: for any real number
+$x > 0$, there exists a natural number $n$ such that $n > x$. Use it to
+find an integer $n$ large enough that $1/n < b - a$. Then find an integer
+$m$ such that $m/n$ falls in the interval $(a, b)$.
+
+```{ojs}
+//| echo: false
+
+makeStepperHTML(
+  "Prove that between any two real numbers a < b, there is a rational.",
+  [
+    {
+      op: "Find a denominator n such that 1/n is smaller than the gap",
+      eq: "b - a > 0. \\text{ By the Archimedean property, } \\exists\\, n \\in \\mathbb{N} \\text{ with } n > \\tfrac{1}{b-a}, \\text{ so } \\tfrac{1}{n} < b - a."
+    },
+    {
+      op: "Choose numerator m: smallest integer with m > na",
+      eq: "\\text{Let } m = \\lfloor na \\rfloor + 1, \\text{ so } m > na, \\text{ i.e., } \\tfrac{m}{n} > a."
+    },
+    {
+      op: "Show m/n < b",
+      eq: "m \\leq na + 1 \\implies \\tfrac{m}{n} \\leq a + \\tfrac{1}{n} < a + (b - a) = b."
+    },
+    {
+      op: "Conclude",
+      eq: "a < \\tfrac{m}{n} < b, \\quad \\tfrac{m}{n} \\in \\mathbb{Q}. \\quad \\therefore \\text{ a rational exists between } a \\text{ and } b. \\quad \\square"
+    }
+  ]
+)
+```

@@ -41,6 +41,8 @@ If something looks strange, briefly acknowledge it and then explain it. One sent
 
 **engineering:** Direct. The reader is comfortable with notation. Brief definitions. Application-focused.
 
+**discipline:** Upper-year and embedded in practice. The reader may be seeing the mathematics inside a controls, transport, simulation, estimation, or reliability course rather than in a course explicitly called mathematics. Keep the prose concrete and systems-oriented.
+
 ## What you do
 
 1. **Read the chapter in full** before changing anything

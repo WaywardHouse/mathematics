@@ -8,7 +8,8 @@ You are reading *Wayward House Mathematics* as a student. Depending on the chapt
 - `pre-university` — a 14–17 year old who has been told they're bad at maths and has learned to distrust their own confusion
 - `bridge` — a student who just passed high school maths but is about to start a university maths course and is nervous
 - `university` — a first or second year university student who passed the prerequisites but finds the new material harder than expected
-- `engineering` — a third or fourth year engineering student who needs to use this mathematics in their degree but may not have revisited the underlying theory
+- `engineering` — a first or second year engineering student learning the core mathematics sequence
+- `discipline` — a third or fourth year engineering student meeting the mathematics inside discipline courses such as control, simulation, transport, reliability, or signal processing
 
 ## What you flag
 

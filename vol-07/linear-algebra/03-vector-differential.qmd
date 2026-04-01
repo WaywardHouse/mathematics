@@ -1,6 +1,694 @@
 ---
 title: "Vector differential calculus"
-status: "seed"
+subtitle: "Grad, div, curl — the calculus of fields"
+chapter: 3
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: |
+  You know how to differentiate a function of one variable.
+  You know how vectors encode direction and magnitude.
+  Some physical quantities — temperature, pressure, velocity — vary
+  through space. Calculus needs to work on those too.
+
+rewrite: |
+  A field assigns a number or a vector to every point in space.
+  The gradient, divergence, and curl are three ways of asking
+  "how is this field changing?" — each question extracting a
+  different kind of rate of change from the same raw data.
+
+opens_to:
+  - id: vector_integral
+    label: "Vector integral calculus"
+    volume: 7
+    relationship: enables
+  - id: fourier_pdes
+    label: "Fourier series and PDEs"
+    volume: 7
+    relationship: motivates
+
+prerequisite_ids:
+  - diff_calc
+  - int_calc
+  - lin_alg
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Maxwell's equations are four vector differential equations that encode all of classical electromagnetism."
+    career_example: "RF engineer designing antenna radiation patterns using the curl of the electric field"
+  - field: sci
+    label: Hard sciences
+    hook: "The heat equation, the wave equation, and Schrödinger's equation all involve the Laplacian operator."
+    career_example: "Computational physicist modelling heat flow through materials using the divergence of the flux"
+  - field: geo
+    label: Geography and geoscience
+    hook: "Terrain slope and aspect — the direction of steepest descent — are the gradient of the elevation field."
+    career_example: "GIS analyst computing watershed boundaries from a digital elevation model"
+
+notation_introduced:
+  - symbol: "\\nabla f"
+    reads_as: "grad f"
+    meaning: "Gradient of scalar field f — a vector pointing in the direction of steepest increase"
+    notation_weight: 4
+  - symbol: "\\nabla \\cdot \\mathbf{F}"
+    reads_as: "div F"
+    meaning: "Divergence of vector field F — a scalar measuring net outflow per unit volume"
+    notation_weight: 4
+  - symbol: "\\nabla \\times \\mathbf{F}"
+    reads_as: "curl F"
+    meaning: "Curl of vector field F — a vector measuring rotation density"
+    notation_weight: 4
+  - symbol: "\\nabla^2 f"
+    reads_as: "del squared f, or the Laplacian of f"
+    meaning: "Divergence of the gradient — measures how f differs from its local average"
+    notation_weight: 3
+  - symbol: "D_\\mathbf{u} f"
+    reads_as: "directional derivative of f in the direction u"
+    meaning: "Rate of change of f as you move in direction u"
+    notation_weight: 2
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  Hold a weather map. The isotherms — lines of equal temperature — curve
+  across it. At any point, one direction makes the temperature climb fastest;
+  the gradient tells you which direction that is and how steep the climb is.
+  Perpendicular to that direction, the temperature doesn't change at all.
+
+  Now picture a pipe carrying fluid. At some cross-sections the fluid spreads
+  out; at others it converges. Divergence measures the net outflow at each
+  point — positive where fluid is being created (a source), negative where it
+  drains away (a sink). Curl measures something different: whether the fluid
+  rotates. Stick a tiny paddle wheel in the flow; if it spins, the curl is
+  non-zero.
+
+  Three operators — gradient, divergence, curl — encode the geometry of how
+  any field varies through space. Every major equation in physics is written
+  in terms of them.
+
+kreyszig_chapter: "Ch 9"
+stroud_programme: null
+uofa_course: "MATH 209"
 ---
 
-*Seed — front matter to be completed before content is written.*
+Hold a weather map. The isotherms — lines of equal temperature — curve
+across it. At any point, one direction makes the temperature climb fastest;
+the gradient tells you which direction that is and how steep the climb is.
+Perpendicular to that direction, the temperature doesn't change at all.
+
+Now picture a pipe carrying fluid. At some cross-sections the fluid spreads
+out; at others it converges. Divergence measures the net outflow at each
+point — positive where fluid is being created (a source), negative where it
+drains away (a sink). Curl measures something different: whether the fluid
+rotates. Stick a tiny paddle wheel in the flow; if it spins, the curl is
+non-zero.
+
+Three operators — gradient, divergence, curl — encode the geometry of how
+any field varies through space. Every major equation in physics is written
+in terms of them.
+
+## Vectors: dot and cross products
+
+A vector in three dimensions is a triple of numbers, written
+$\mathbf{u} = (u_1, u_2, u_3)$ or in column form. Its magnitude is
+$|\mathbf{u}| = \sqrt{u_1^2 + u_2^2 + u_3^2}$.
+
+Two operations link a pair of vectors to useful scalars and vectors.
+
+### The dot product
+
+$$\mathbf{u} \cdot \mathbf{v} = u_1 v_1 + u_2 v_2 + u_3 v_3$$
+
+Geometrically: $\mathbf{u} \cdot \mathbf{v} = |\mathbf{u}||\mathbf{v}|\cos\theta$,
+where $\theta$ is the angle between them. This means:
+
+- $\mathbf{u} \cdot \mathbf{v} = 0$ if and only if $\mathbf{u}$ and $\mathbf{v}$ are perpendicular.
+- $\text{proj}_{\mathbf{v}} \mathbf{u} = \dfrac{\mathbf{u} \cdot \mathbf{v}}{|\mathbf{v}|}$ is the scalar projection of $\mathbf{u}$ onto $\mathbf{v}$ — how much of $\mathbf{u}$ lies in the direction of $\mathbf{v}$.
+
+**Example.** $\mathbf{u} = (1, 2, 3)$, $\mathbf{v} = (4, 0, -1)$.
+
+$$\mathbf{u} \cdot \mathbf{v} = (1)(4) + (2)(0) + (3)(-1) = 4 + 0 - 3 = 1$$
+
+The angle between them: $\cos\theta = \dfrac{1}{\sqrt{14}\,\sqrt{17}} \approx 0.065$, so $\theta \approx 86°$ — nearly perpendicular.
+
+### The cross product
+
+$$\mathbf{u} \times \mathbf{v} = \begin{vmatrix} \mathbf{i} & \mathbf{j} & \mathbf{k} \\ u_1 & u_2 & u_3 \\ v_1 & v_2 & v_3 \end{vmatrix} = (u_2 v_3 - u_3 v_2,\; u_3 v_1 - u_1 v_3,\; u_1 v_2 - u_2 v_1)$$
+
+The result is a vector perpendicular to both $\mathbf{u}$ and $\mathbf{v}$, with magnitude
+$|\mathbf{u} \times \mathbf{v}| = |\mathbf{u}||\mathbf{v}|\sin\theta$ — equal to the area of the parallelogram
+spanned by $\mathbf{u}$ and $\mathbf{v}$. Direction follows the right-hand rule: curl the fingers of
+your right hand from $\mathbf{u}$ toward $\mathbf{v}$; your thumb points in the direction of $\mathbf{u} \times \mathbf{v}$.
+
+Note that $\mathbf{u} \times \mathbf{v} = -\mathbf{v} \times \mathbf{u}$ — order matters. The cross product is
+anti-commutative.
+
+**Example.** $\mathbf{u} = (1, 0, 0)$, $\mathbf{v} = (0, 1, 0)$ (the standard basis vectors $\mathbf{i}$ and $\mathbf{j}$).
+
+$$\mathbf{u} \times \mathbf{v} = (0 \cdot 0 - 0 \cdot 1,\; 0 \cdot 0 - 1 \cdot 0,\; 1 \cdot 1 - 0 \cdot 0) = (0, 0, 1) = \mathbf{k}$$
+
+This is correct: the right-hand rule applied to $\mathbf{i} \times \mathbf{j}$ gives $\mathbf{k}$, pointing out of the $xy$-plane.
+
+## Scalar and vector fields
+
+A **scalar field** assigns a single number to each point in space:
+$f : \mathbb{R}^3 \to \mathbb{R}$. Examples:
+
+- Temperature $T(x,y,z)$ — one number at each location
+- Pressure $p(x,y,z)$ — one number at each location
+- Voltage $V(x,y,z)$ — one number at each location
+
+A **vector field** assigns a vector to each point in space:
+$\mathbf{F} : \mathbb{R}^3 \to \mathbb{R}^3$. Examples:
+
+- Wind velocity $\mathbf{v}(x,y,z)$ — a direction and speed at each location
+- Gravitational field $\mathbf{g}(x,y,z)$ — pointing toward the Earth's centre, weakening with distance
+- Electric field $\mathbf{E}(x,y,z)$ — direction a positive test charge would accelerate
+
+Both are functions. The difference is only in what they return. All of single-variable
+calculus was about functions $f : \mathbb{R} \to \mathbb{R}$. Vector differential calculus
+extends differentiation to these richer domains.
+
+## The gradient
+
+### Partial derivatives
+
+Before defining the gradient, we need partial derivatives. Given $f(x, y, z)$,
+the partial derivative with respect to $x$ is:
+
+$$\frac{\partial f}{\partial x} = \lim_{h \to 0} \frac{f(x+h, y, z) - f(x, y, z)}{h}$$
+
+Compute it by differentiating $f$ with respect to $x$ while treating $y$ and $z$ as
+constants. The partial with respect to $y$ treats $x$ and $z$ as constants, and so on.
+
+**Example.** $f(x, y, z) = x^2 y + yz^3$.
+
+$$\frac{\partial f}{\partial x} = 2xy, \qquad \frac{\partial f}{\partial y} = x^2 + z^3, \qquad \frac{\partial f}{\partial z} = 3yz^2$$
+
+Each partial derivative measures the rate of change as you move in exactly one
+coordinate direction while holding the others fixed.
+
+### Definition
+
+The **gradient** of a scalar field $f$ is the vector field formed by collecting all
+three partial derivatives:
+
+$$\nabla f = \left(\frac{\partial f}{\partial x},\; \frac{\partial f}{\partial y},\; \frac{\partial f}{\partial z}\right)$$
+
+The symbol $\nabla$ (nabla) is the **del operator** — an instruction to differentiate.
+Applied to a scalar, it produces a vector.
+
+### Geometric meaning
+
+The gradient $\nabla f$ at any point:
+
+1. **Points in the direction of steepest increase** of $f$.
+2. **Is perpendicular to the level surface** $f = c$ passing through that point.
+3. Has magnitude $|\nabla f|$ equal to the rate of change of $f$ in that steepest direction.
+
+Think of contour lines on a topographic map. The gradient at any point is an arrow
+pointing directly uphill — perpendicular to the contour through that point, and
+longer where the slope is steeper.
+
+**Example.** $f(x, y, z) = x^2 + y^2 + z^2$ (the squared distance from the origin).
+
+$$\nabla f = (2x,\; 2y,\; 2z) = 2(x, y, z) = 2\mathbf{r}$$
+
+The gradient points radially outward — away from the origin, in the direction of
+increasing distance. This makes geometric sense: the level surfaces of $f$ are
+spheres centred at the origin, and the gradient is perpendicular to them, i.e. radially
+outward.
+
+<!-- VIZ: Gradient field visualiser — enter a scalar function f(x,y), display the scalar field as a heatmap and overlay gradient arrows -->
+
+### Directional derivative
+
+The rate of change of $f$ as you move in an arbitrary direction $\mathbf{u}$
+(a unit vector) is called the **directional derivative**:
+
+$$D_{\mathbf{u}} f = \nabla f \cdot \mathbf{u}$$
+
+This is the projection of the gradient onto the direction you're moving. When
+$\mathbf{u}$ aligns with $\nabla f$, the directional derivative is maximised. When
+$\mathbf{u}$ is perpendicular to $\nabla f$, the directional derivative is zero —
+you're moving along a level surface.
+
+**Example.** $f(x, y, z) = x^2 y + yz^3$ at point $(1, 2, -1)$. Find the rate of change
+in the direction $\mathbf{u} = \frac{1}{\sqrt{3}}(1, 1, 1)$.
+
+First, the gradient at $(1, 2, -1)$:
+
+$$\nabla f\big|_{(1,2,-1)} = \bigl(2(1)(2),\; (1)^2 + (-1)^3,\; 3(2)(-1)^2\bigr) = (4, 0, 6)$$
+
+Then:
+
+$$D_{\mathbf{u}} f = (4, 0, 6) \cdot \frac{1}{\sqrt{3}}(1, 1, 1) = \frac{4 + 0 + 6}{\sqrt{3}} = \frac{10}{\sqrt{3}} \approx 5.77$$
+
+### Total differential
+
+For small displacements $(dx, dy, dz)$ from a point, the change in $f$ is
+approximated by the **total differential**:
+
+$$df = \frac{\partial f}{\partial x}\,dx + \frac{\partial f}{\partial y}\,dy + \frac{\partial f}{\partial z}\,dz = \nabla f \cdot d\mathbf{r}$$
+
+This is the multi-variable chain rule in compact form. If $x$, $y$, $z$ are themselves
+functions of a parameter $t$, the chain rule becomes:
+
+$$\frac{df}{dt} = \frac{\partial f}{\partial x}\frac{dx}{dt} + \frac{\partial f}{\partial y}\frac{dy}{dt} + \frac{\partial f}{\partial z}\frac{dz}{dt} = \nabla f \cdot \frac{d\mathbf{r}}{dt}$$
+
+## Divergence
+
+### Definition
+
+Given a vector field $\mathbf{F} = (F_1, F_2, F_3)$, the **divergence** is:
+
+$$\nabla \cdot \mathbf{F} = \frac{\partial F_1}{\partial x} + \frac{\partial F_2}{\partial y} + \frac{\partial F_3}{\partial z}$$
+
+The del operator $\nabla$ is now being "dotted" with the vector field — hence the dot
+product notation. The result is a scalar field: one number at each point.
+
+**Example.** $\mathbf{F}(x, y, z) = (x^2, 2xy, z^2)$.
+
+$$\nabla \cdot \mathbf{F} = \frac{\partial}{\partial x}(x^2) + \frac{\partial}{\partial y}(2xy) + \frac{\partial}{\partial z}(z^2) = 2x + 2x + 2z = 4x + 2z$$
+
+At the point $(1, 0, 1)$: $\nabla \cdot \mathbf{F} = 4(1) + 2(1) = 6$.
+
+### Physical meaning
+
+Imagine $\mathbf{F}$ is a fluid velocity field. Enclose a tiny box around a point. The
+divergence measures the **net rate of fluid flowing out** of that box per unit volume:
+
+- $\nabla \cdot \mathbf{F} > 0$: more fluid leaving than entering — a **source**. (Think: water spraying from a sprinkler head.)
+- $\nabla \cdot \mathbf{F} < 0$: more fluid entering than leaving — a **sink**. (Think: water draining into a drain.)
+- $\nabla \cdot \mathbf{F} = 0$: perfectly balanced inflow and outflow — the fluid is **incompressible** at that point.
+
+The continuity equation in fluid mechanics captures this precisely:
+
+$$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) = 0$$
+
+This says: the rate of change of density at a point equals the negative divergence of
+the mass flux. Mass neither appears nor disappears.
+
+::: {.callout-note appearance="simple"}
+**Preview: Divergence theorem**
+
+Gauss's divergence theorem connects the divergence over a volume $V$ to the flux
+through its bounding surface $S$:
+
+$$\iiint_V \nabla \cdot \mathbf{F}\, dV = \oiint_S \mathbf{F} \cdot d\mathbf{A}$$
+
+The integral of all the local sources inside equals the total outflow through the
+boundary. This is covered in full in the next chapter on vector integral calculus.
+:::
+
+## Curl
+
+### Definition
+
+Given a vector field $\mathbf{F} = (F_1, F_2, F_3)$, the **curl** is:
+
+$$\nabla \times \mathbf{F} = \begin{vmatrix} \mathbf{i} & \mathbf{j} & \mathbf{k} \\ \dfrac{\partial}{\partial x} & \dfrac{\partial}{\partial y} & \dfrac{\partial}{\partial z} \\[6pt] F_1 & F_2 & F_3 \end{vmatrix}$$
+
+Expanding the determinant:
+
+$$\nabla \times \mathbf{F} = \left(\frac{\partial F_3}{\partial y} - \frac{\partial F_2}{\partial z},\; \frac{\partial F_1}{\partial z} - \frac{\partial F_3}{\partial x},\; \frac{\partial F_2}{\partial x} - \frac{\partial F_1}{\partial y}\right)$$
+
+The del operator is now being "crossed" with the vector field. The result is itself a
+vector field.
+
+**Example.** $\mathbf{F}(x, y, z) = (-y, x, 0)$. This is a 2D field that rotates counterclockwise.
+
+$$\frac{\partial F_3}{\partial y} - \frac{\partial F_2}{\partial z} = 0 - 0 = 0$$
+$$\frac{\partial F_1}{\partial z} - \frac{\partial F_3}{\partial x} = 0 - 0 = 0$$
+$$\frac{\partial F_2}{\partial x} - \frac{\partial F_1}{\partial y} = 1 - (-1) = 2$$
+
+So $\nabla \times \mathbf{F} = (0, 0, 2)$ — a uniform curl pointing in the $z$-direction. The
+rotation is uniform everywhere, which makes sense: this is solid-body rotation.
+
+### Physical meaning
+
+Imagine dropping a tiny paddle wheel into a fluid flow. If the paddle wheel spins,
+the curl is non-zero at that point; if it doesn't spin, the curl is zero. The direction
+of the curl vector is the axis of rotation (by the right-hand rule); its magnitude
+measures the rotation speed.
+
+- **Irrotational field:** $\nabla \times \mathbf{F} = \mathbf{0}$ everywhere. The field has no local rotation — no paddle wheel anywhere would spin.
+- **Rotational field:** $\nabla \times \mathbf{F} \neq \mathbf{0}$ somewhere.
+
+An irrotational field for which $\nabla \times \mathbf{F} = \mathbf{0}$ throughout a
+simply-connected region can be written as the gradient of a scalar potential:
+$\mathbf{F} = \nabla \phi$. Gravity and electrostatics are irrotational outside their sources.
+
+**Key identity:** For any twice-differentiable scalar field $f$,
+
+$$\nabla \times (\nabla f) = \mathbf{0}$$
+
+The curl of a gradient is always zero. Geometrically: gradient fields have no rotation.
+This identity will appear repeatedly — it is a test for whether a vector field can
+be expressed as a gradient.
+
+<!-- VIZ: Div and curl demo — 2D vector field with radio buttons for "source", "sink", "rotation", "shear"; display div and curl values -->
+
+::: {.callout-note appearance="simple"}
+**Preview: Stokes' theorem**
+
+Stokes' theorem connects the curl over a surface $S$ to the line integral around its
+boundary curve $C$:
+
+$$\iint_S (\nabla \times \mathbf{F}) \cdot d\mathbf{A} = \oint_C \mathbf{F} \cdot d\mathbf{r}$$
+
+The total rotation through a surface equals the circulation around its edge.
+:::
+
+## The Laplacian
+
+### Definition
+
+Apply the gradient to a scalar field $f$ to get $\nabla f$. Then take the divergence of
+that result. The outcome is the **Laplacian**:
+
+$$\nabla^2 f = \nabla \cdot (\nabla f) = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2}$$
+
+The Laplacian is a scalar field. It is a single operator that combines second-order
+partial derivatives in all directions.
+
+**Example.** $f(x, y, z) = x^2 + y^2 + z^2$.
+
+$$\frac{\partial^2 f}{\partial x^2} = 2, \qquad \frac{\partial^2 f}{\partial y^2} = 2, \qquad \frac{\partial^2 f}{\partial z^2} = 2$$
+
+$$\nabla^2 f = 2 + 2 + 2 = 6$$
+
+**Example.** $f(x, y, z) = \frac{1}{r}$ where $r = \sqrt{x^2 + y^2 + z^2}$ (the electrostatic potential
+of a point charge). A careful calculation shows $\nabla^2\!\left(\frac{1}{r}\right) = 0$ for
+$r \neq 0$. This is Laplace's equation, and functions satisfying it are called harmonic.
+
+### Physical meaning
+
+The Laplacian $\nabla^2 f$ at a point measures how $f$ at that point differs from the
+average value of $f$ in a small sphere around it. Specifically:
+
+- $\nabla^2 f > 0$: $f$ is below the local average — the field is concave up, like the bottom of a bowl.
+- $\nabla^2 f < 0$: $f$ is above the local average — a local maximum relative to its surroundings.
+- $\nabla^2 f = 0$: $f$ exactly equals its local average everywhere — this is Laplace's equation, and its solutions are smooth without local extrema in the interior.
+
+The Laplacian appears in every major equation of mathematical physics:
+
+| Equation | Form | What it models |
+|---|---|---|
+| Laplace's equation | $\nabla^2 f = 0$ | Steady-state electrostatics, incompressible flow |
+| Poisson's equation | $\nabla^2 f = g$ | Electrostatics with charges, gravity with mass |
+| Heat equation | $\frac{\partial u}{\partial t} = k\,\nabla^2 u$ | Heat diffusion through a material |
+| Wave equation | $\frac{\partial^2 u}{\partial t^2} = c^2\,\nabla^2 u$ | Sound, light, water waves |
+
+## Applications
+
+### Gradient descent and optimisation
+
+In machine learning, a loss function $L(\mathbf{w})$ measures how wrong a model is,
+where $\mathbf{w}$ is a vector of model parameters. The gradient $\nabla_\mathbf{w} L$
+points in the direction of steepest increase of the loss. To reduce the loss, move in
+the opposite direction:
+
+$$\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \eta\,\nabla_\mathbf{w} L$$
+
+The scalar $\eta$ is the **learning rate** — how large a step to take. This is gradient
+descent. In high-dimensional spaces (modern neural networks have billions of parameters),
+computing the gradient efficiently is the central computational challenge. The mathematics
+is exactly what this chapter covers, lifted to millions of dimensions.
+
+### Electric field from voltage potential
+
+In electrostatics, the voltage $V(x, y, z)$ is a scalar field. The electric field is
+its negative gradient:
+
+$$\mathbf{E} = -\nabla V$$
+
+The minus sign is physical convention: the electric field points from high to low voltage,
+not from low to high. Positive charges accelerate down the voltage hill.
+
+If $V = x^2 + y^2 + z^2$ (a simple quadratic potential), then:
+
+$$\nabla V = (2x, 2y, 2z), \qquad \mathbf{E} = (-2x, -2y, -2z)$$
+
+The field points radially inward — toward the origin, toward lower potential. Taking the
+divergence:
+
+$$\nabla \cdot \mathbf{E} = -2 - 2 - 2 = -6$$
+
+Gauss's law in differential form states $\nabla \cdot \mathbf{E} = \rho/\varepsilon_0$,
+where $\rho$ is the charge density. A uniform $\nabla \cdot \mathbf{E} = -6$ means a
+uniform negative charge density — a medium with uniform charge throughout.
+
+### Continuity equation in fluid mechanics
+
+For a fluid with density $\rho(x, y, z, t)$ and velocity field $\mathbf{v}(x, y, z, t)$,
+conservation of mass requires:
+
+$$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho\,\mathbf{v}) = 0$$
+
+This says: the rate at which mass density increases at a point equals the negative
+divergence of mass flux. Mass flows in from regions where $\nabla \cdot (\rho\mathbf{v}) < 0$
+and flows out where it is positive. If the fluid is incompressible ($\rho = $ const),
+this simplifies to $\nabla \cdot \mathbf{v} = 0$.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- An **electrical engineer** designs antenna patterns using the curl and divergence of
+  Maxwell's equations: $\nabla \times \mathbf{E} = -\partial\mathbf{B}/\partial t$ and
+  $\nabla \cdot \mathbf{B} = 0$.
+- A **meteorologist** reads wind fields as vector fields and uses divergence to locate
+  areas of rising air (positive divergence near the surface means air is being pulled up).
+- A **robotics engineer** computing the configuration-space gradient of a potential
+  function is doing gradient descent in the exact sense of this chapter.
+- A **GIS analyst** computing watershed flow directions is applying the gradient of the
+  elevation field: water flows opposite to $\nabla h$.
+
+The operators are the same in every case. The domain changes.
+:::
+
+## Exercises
+
+These exercises progress from component calculation through applied interpretation.
+In each, start with the definition before writing any formula.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+1. A temperature field on a heated plate is modelled by
+   $f(x, y, z) = x^2 y + yz^3$. Find $\nabla f$ and evaluate it at
+   the point $(1, 2, -1)$. Which coordinate direction gives the greatest
+   rate of temperature increase at that point?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Partial derivative w.r.t. x",
+    eq: "\\frac{\\partial f}{\\partial x} = 2xy",
+    note: "Treat y and z as constants; differentiate x² y with respect to x." },
+  { op: "Partial derivative w.r.t. y",
+    eq: "\\frac{\\partial f}{\\partial y} = x^2 + z^3",
+    note: "Differentiate x²y + yz³ with respect to y; both terms contribute." },
+  { op: "Partial derivative w.r.t. z",
+    eq: "\\frac{\\partial f}{\\partial z} = 3yz^2",
+    note: "Only yz³ depends on z." },
+  { op: "Assemble the gradient",
+    eq: "\\nabla f = \\bigl(2xy,\\; x^2 + z^3,\\; 3yz^2\\bigr)" },
+  { op: "Evaluate at (1, 2, -1)",
+    eq: "\\nabla f\\big|_{(1,2,-1)} = \\bigl(2(1)(2),\\; (1)^2 + (-1)^3,\\; 3(2)(-1)^2\\bigr) = (4,\\; 0,\\; 6)",
+    note: "Substitute x = 1, y = 2, z = -1 into each component." },
+  { op: "Greatest rate of increase",
+    eq: "\\text{The z-component is 6, the x-component is 4, the y-component is 0.}",
+    note: "The z-direction has the largest partial derivative at this point, so temperature increases fastest in the z-direction there." }
+])
+```
+
+2. A pressure field is given by $p(x, y, z) = 3x^2 - 2y^2 + xyz$. At
+   the point $(2, 1, 3)$, find the rate of change of pressure in the
+   direction $\mathbf{u} = \frac{1}{\sqrt{2}}(1, 0, 1)$ — the diagonal
+   direction in the $xz$-plane.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Compute partial derivatives",
+    eq: "\\frac{\\partial p}{\\partial x} = 6x + yz,\\quad \\frac{\\partial p}{\\partial y} = -4y + xz,\\quad \\frac{\\partial p}{\\partial z} = xy" },
+  { op: "Evaluate at (2, 1, 3)",
+    eq: "\\nabla p = \\bigl(6(2) + (1)(3),\\; -4(1) + (2)(3),\\; (2)(1)\\bigr) = (15,\\; 2,\\; 2)",
+    note: "Substitute x = 2, y = 1, z = 3." },
+  { op: "Confirm u is a unit vector",
+    eq: "|\\mathbf{u}| = \\sqrt{\\tfrac{1}{2} + 0 + \\tfrac{1}{2}} = 1 \\checkmark" },
+  { op: "Compute directional derivative",
+    eq: "D_{\\mathbf{u}}\\, p = \\nabla p \\cdot \\mathbf{u} = (15, 2, 2) \\cdot \\tfrac{1}{\\sqrt{2}}(1, 0, 1) = \\frac{15 + 0 + 2}{\\sqrt{2}} = \\frac{17}{\\sqrt{2}} \\approx 12.0",
+    note: "The dot product selects the component of the gradient in the direction u." }
+])
+```
+
+3. A fluid velocity field is given by $\mathbf{F}(x, y, z) = (x^2, 2xy, z^2)$.
+   Compute $\nabla \cdot \mathbf{F}$. Identify the regions where the fluid
+   acts as a source (positive divergence) and where it acts as a sink
+   (negative divergence).
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Identify components",
+    eq: "F_1 = x^2,\\quad F_2 = 2xy,\\quad F_3 = z^2" },
+  { op: "Partial derivative of F₁ w.r.t. x",
+    eq: "\\frac{\\partial F_1}{\\partial x} = 2x" },
+  { op: "Partial derivative of F₂ w.r.t. y",
+    eq: "\\frac{\\partial F_2}{\\partial y} = 2x",
+    note: "Differentiate 2xy with respect to y; x is treated as a constant." },
+  { op: "Partial derivative of F₃ w.r.t. z",
+    eq: "\\frac{\\partial F_3}{\\partial z} = 2z" },
+  { op: "Assemble divergence",
+    eq: "\\nabla \\cdot \\mathbf{F} = 2x + 2x + 2z = 4x + 2z" },
+  { op: "Interpret",
+    eq: "\\nabla \\cdot \\mathbf{F} > 0 \\text{ when } 4x + 2z > 0,\\text{ i.e. when } 2x + z > 0",
+    note: "The field is a source (net outflow) in the half-space 2x + z > 0, and a sink where 2x + z < 0." }
+])
+```
+
+4. Verify that $\mathbf{F}(x, y, z) = (-y, x, 0)$ represents a purely
+   rotational flow — it should have non-zero curl and zero divergence.
+   Compute both.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Identify components",
+    eq: "F_1 = -y,\\quad F_2 = x,\\quad F_3 = 0" },
+  { op: "Compute divergence",
+    eq: "\\nabla \\cdot \\mathbf{F} = \\frac{\\partial(-y)}{\\partial x} + \\frac{\\partial(x)}{\\partial y} + \\frac{\\partial(0)}{\\partial z} = 0 + 0 + 0 = 0",
+    note: "No sources or sinks — the fluid is incompressible." },
+  { op: "Curl: z-component",
+    eq: "\\frac{\\partial F_2}{\\partial x} - \\frac{\\partial F_1}{\\partial y} = 1 - (-1) = 2",
+    note: "This is the dominant term for a rotation in the xy-plane." },
+  { op: "Curl: x and y components",
+    eq: "\\frac{\\partial F_3}{\\partial y} - \\frac{\\partial F_2}{\\partial z} = 0,\\quad \\frac{\\partial F_1}{\\partial z} - \\frac{\\partial F_3}{\\partial x} = 0" },
+  { op: "Assemble curl",
+    eq: "\\nabla \\times \\mathbf{F} = (0,\\; 0,\\; 2)",
+    note: "Constant curl pointing in the z-direction: uniform counterclockwise rotation everywhere in the xy-plane, at rate 2." }
+])
+```
+
+5. Let $f(x, y, z) = x^2 y^2 z$. Verify the identity $\nabla \times (\nabla f) = \mathbf{0}$ —
+   the curl of a gradient is always zero. This confirms that gradient fields
+   are irrotational (conservative).
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Compute gradient",
+    eq: "\\nabla f = \\bigl(2xy^2z,\\; 2x^2yz,\\; x^2y^2\\bigr)" },
+  { op: "Curl x-component",
+    eq: "\\frac{\\partial(x^2y^2)}{\\partial y} - \\frac{\\partial(2x^2yz)}{\\partial z} = 2x^2y - 2x^2y = 0",
+    note: "Each term differentiates a component of ∇f." },
+  { op: "Curl y-component",
+    eq: "\\frac{\\partial(2xy^2z)}{\\partial z} - \\frac{\\partial(x^2y^2)}{\\partial x} = 2xy^2 - 2xy^2 = 0" },
+  { op: "Curl z-component",
+    eq: "\\frac{\\partial(2x^2yz)}{\\partial x} - \\frac{\\partial(2xy^2z)}{\\partial y} = 4xyz - 4xyz = 0" },
+  { op: "Conclusion",
+    eq: "\\nabla \\times (\\nabla f) = (0,\\; 0,\\; 0) = \\mathbf{0} \\checkmark",
+    note: "This holds for any twice-differentiable f — the cancellations come from the symmetry of mixed partial derivatives (Clairaut's theorem)." }
+])
+```
+
+6. The electric potential in free space is $V(x, y, z) = x^2 + y^2 + z^2$.
+   Find the electric field $\mathbf{E} = -\nabla V$, then compute
+   $\nabla \cdot \mathbf{E}$ and identify what Gauss's law says about the
+   charge distribution.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Compute gradient of V",
+    eq: "\\nabla V = \\left(\\frac{\\partial V}{\\partial x},\\frac{\\partial V}{\\partial y},\\frac{\\partial V}{\\partial z}\\right) = (2x,\\; 2y,\\; 2z)" },
+  { op: "Electric field E = -∇V",
+    eq: "\\mathbf{E} = -\\nabla V = (-2x,\\; -2y,\\; -2z)",
+    note: "The field points toward the origin — inward, toward lower potential." },
+  { op: "Compute divergence of E",
+    eq: "\\nabla \\cdot \\mathbf{E} = \\frac{\\partial(-2x)}{\\partial x} + \\frac{\\partial(-2y)}{\\partial y} + \\frac{\\partial(-2z)}{\\partial z} = -2 - 2 - 2 = -6" },
+  { op: "Apply Gauss's law",
+    eq: "\\nabla \\cdot \\mathbf{E} = \\frac{\\rho}{\\varepsilon_0} \\implies \\rho = -6\\varepsilon_0",
+    note: "Gauss's law in differential form: the divergence of E equals charge density over permittivity." },
+  { op: "Interpret",
+    eq: "\\rho = -6\\varepsilon_0 = \\text{const}",
+    note: "A uniform negative charge density fills all space. The electric field converges inward everywhere because negative charges attract positive test charges inward." }
+])
+```

@@ -1,6 +1,20 @@
 ---
 title: "Volume 3 — Shape and measure"
-status: "seed"
 ---
 
-*Seed — front matter to be completed before content is written.*
+The central move of this volume is giving coordinates to space.
+
+You already know how to calculate and balance equations. This volume shows you how algebraic tools can be used to describe the physical world and how the world, in turn, can give meaning to abstract math.
+
+By the end of this volume, you will be able to map distances, relate angles to side lengths, understand the structures behind non-linear relationships, and formally describe how different parameters interact.
+
+This is the bridge where algebra stops being just letters on a page and starts becoming a map of reality.
+
+## Chapters
+
+| Chapter | Title | Core move |
+|---------|-------|-----------|
+| 1 | Geometry and measurement | Quantifying physical space |
+| 2 | Trigonometry | Relating angles to side lengths |
+| 3 | Polynomials and factoring | Deconstructing complex equations |
+| 4 | Functions and relations | Mapping inputs to outputs |

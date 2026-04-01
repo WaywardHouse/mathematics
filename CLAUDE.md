@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-*Wayward House Mathematics* is a seven-volume Quarto book — arithmetic foundations through engineering mathematics — built for people who want to understand mathematics, not just pass it. Every chapter is driven by a formal front matter schema that encodes its place in the mathematical topology before any prose is written.
+*Wayward House Mathematics* is an eight-volume Quarto book — arithmetic foundations through upper-year engineering mathematics — built for people who want to understand mathematics, not just pass it. Every chapter is driven by a formal front matter schema that encodes its place in the mathematical topology before any prose is written.
 
 ### Reader mandate
 
@@ -52,9 +52,11 @@ bash scripts/scaffold-stubs.sh   # Create seed stubs for any missing chapter fil
 | 4 | Functions and change | Alberta Gr 10–11 |
 | 5 | Analysis and proof | Alberta Gr 11–12 |
 | 6 | Probability and data | Alberta Gr 11–12 |
-| 7 | Engineering mathematics | Kreyszig + Stroud (university) |
+| 7 | Engineering mathematics | U of A first- and second-year engineering mathematics |
+| 8 | Upper-year engineering mathematics | U of A years 3–4 mathematical methods across disciplines |
 
 Vol 7 is subdivided into sections: `odes/`, `linear-algebra/`, `fourier-pdes/`, `complex-analysis/`, `numerics/`, `optimisation/`, `probability/`.
+Vol 8 extends that core into control, discrete systems, continuum models, computational methods, estimation, reliability, and nonlinear optimisation, with optional domain viewpoints for science, computing, finance, and geography/environment.
 
 ### Front matter schema
 
@@ -73,7 +75,7 @@ Every chapter `.qmd` file must conform to `_templates/chapter-schema.yml`. Key f
 
 ## Publishing agents
 
-Eight agents live in `.claude/agents/`. Invoke them by name in Claude Code. They are designed to work in sequence when moving a chapter from `seed` → `final`.
+Nine agents live in `.claude/agents/`. Invoke them by name in Claude Code. They are designed to work in sequence when moving a chapter from `seed` → `final`.
 
 ### Typical chapter workflow
 
@@ -86,7 +88,9 @@ author       →  math-prof  →  engineer-prof / data-cs-prof
                                      ↓
                               editor (voice + language)
                                      ↓
-                              viz-artist (interactive elements — runs on every chapter)
+                              senior-designer (visual design audit + viz briefs)
+                                     ↓
+                              viz-artist (implements interactives from senior-designer briefs)
 ```
 
 ### Agent responsibilities
@@ -100,9 +104,18 @@ author       →  math-prof  →  engineer-prof / data-cs-prof
 | `tester-qa` | Front matter schema compliance, topology cross-references, build integrity |
 | `student` | Readability check at the chapter's target layer |
 | `editor` | Voice consistency and prose quality |
-| `viz-artist` | Interactive figures for every chapter — number lines, sliders, animated concept demos, topology bloom (OJS/D3) |
+| `senior-designer` | Visual design audit — concept geometry, missed opportunities, cross-chapter visual threads, VIZ brief quality; outputs directed briefs for viz-artist |
+| `viz-artist` | Implements interactives from senior-designer briefs — number lines, sliders, animated concept demos, topology bloom (OJS/D3); exercise steppers |
 
-`tester-qa` must run before `review` status is set. `math-prof` must run before `final`. `viz-artist` runs on every chapter — interactivity is not optional.
+`tester-qa` must run before `review` status is set. `math-prof` must run before `final`. `senior-designer` runs on every chapter — visual richness is not optional. `viz-artist` runs after `senior-designer` and implements the resulting briefs.
+
+### Exercise steppers
+
+Every exercise gets a stepwise OJS reveal. The author writes a `<!-- STEPPER -->` comment after each exercise; the viz-artist converts it to working OJS.
+
+The stepper shows the problem, then a "Next step →" button that reveals one step at a time — operation label, KaTeX-rendered equation, optional one-sentence note explaining why the step works.
+
+`<!-- VIZ: ... -->` placeholders flag concept interactives (sliders, animations). `<!-- STEPPER -->` blocks flag exercise steppers. Both are converted by the viz-artist agent.
 
 ### Voice (enforced by editor)
 

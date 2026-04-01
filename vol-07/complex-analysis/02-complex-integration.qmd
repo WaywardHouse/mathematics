@@ -1,6 +1,842 @@
 ---
 title: "Complex integration"
-status: "seed"
+subtitle: "Cauchy's theorem, the integral formula, and their consequences"
+chapter: 2
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: "Integration in the real plane is along an interval. Integration in the complex plane is along a curve — a contour. The value generally depends on which path you take. Except when the integrand is analytic: then the path does not matter, and the integral around any closed curve is exactly zero."
+
+rewrite: "The integral of an analytic function along any closed curve in a simply connected domain is zero (Cauchy-Goursat theorem). This implies that two paths with the same endpoints give the same integral, and — most powerfully — that knowing an analytic function on a closed contour determines its values everywhere inside (Cauchy's integral formula). The formula also gives all derivatives: f^(n)(z₀) = (n!/2πi) ∮ f(z)/(z−z₀)^{n+1} dz. This means every analytic function is automatically infinitely differentiable."
+
+prerequisite_ids:
+  - complex_seed
+  - diff_calc
+  - int_calc
+
+opens_to:
+  - id: complex_analysis
+    label: "Laurent series and residues"
+    volume: 7
+    relationship: enables
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "The inverse Laplace transform is a contour integral in the complex s-plane — computing it via the residue theorem is the standard method for solving initial-value problems by Laplace techniques."
+    career_example: "Signal processing engineer computing the inverse Laplace transform of a filter's transfer function"
+  - field: sci
+    label: Hard sciences
+    hook: "The Green's function for a quantum system is a contour integral; the poles of the Green's function are the energy eigenvalues — finding them is finding the spectrum."
+    career_example: "Condensed matter theorist computing the density of states from the imaginary part of the retarded Green's function"
+  - field: comp
+    label: Computing and data
+    hook: "Numerical contour integration (for analytic functions) converges exponentially with path length — far faster than real-line methods — making it the method of choice for computing special functions."
+    career_example: "Numerical analyst implementing a Gauss-Legendre integrator for evaluating the Gamma function at complex arguments"
+
+notation_introduced:
+  - symbol: "\\oint_C f(z)\\,dz"
+    reads_as: "contour integral of f along C"
+    meaning: "∫_a^b f(z(t)) z'(t) dt where z(t) parametrises the curve C"
+  - symbol: "\\text{ML inequality}"
+    reads_as: "M-L inequality"
+    meaning: "|∮_C f dz| ≤ M · L where M = max|f| on C and L = length of C"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  In 1825 Cauchy proved that the integral of an analytic function around
+  any closed curve is zero. To anyone trained on real integrals, this
+  seems impossible: surely the integral depends on the path. And for
+  non-analytic functions it does. But for analytic functions the
+  cancellation is exact — the positive and negative contributions from
+  opposite sides of the path perfectly cancel. The Cauchy-Riemann
+  equations force u_y + v_x = 0: the real-plane curl of the field
+  (u, −v) is zero, and Green's theorem converts the loop integral to
+  that surface integral — which vanishes identically.
+
+  The consequences are remarkable. Knowing an analytic function on a
+  circle completely determines its values at every interior point — an
+  explicit formula (Cauchy's integral formula) delivers f(z₀) from an
+  integral around the boundary. Differentiating that formula gives all
+  higher derivatives for free. An analytic function, differentiable once,
+  is automatically differentiable infinitely many times.
+
+  These results make complex integration the engine of classical
+  engineering mathematics. The inverse Laplace transform is a contour
+  integral. The residue theorem — the subject of the next chapter —
+  converts difficult real integrals to residue calculations in seconds.
+
+kreyszig_chapter: "Ch 14"
+stroud_programme: null
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+## Contours and contour integrals
+
+A **contour** (or path) in the complex plane is a **piecewise smooth** curve $C$: $z = z(t)$, $a \leq t \leq b$, where $z(t) = x(t) + iy(t)$ and $z'(t)$ is piecewise continuous. Piecewise smooth means the curve can have finitely many corners, but no cusps or fractal wiggles — at each smooth piece the tangent direction is well-defined.
+
+<!-- STUDENT: "Piecewise smooth" and "piecewise continuous" are used here without definition. A reader who has seen real line integrals will have a rough intuition, but for someone new to complex analysis it would help to know: "piecewise smooth means the curve can have finitely many corners but no cusps or fractal wiggles." -->
+
+The **contour integral** of $f$ along $C$ is:
+
+$$\int_C f(z)\,dz = \int_a^b f(z(t))\,z'(t)\,dt$$
+
+This is just a real line integral in disguise. Writing $f = u + iv$ and $dz = dx + idy$, multiply out the product:
+$$(u + iv)(dx + i\,dy) = u\,dx + iu\,dy + iv\,dx + i^2 v\,dy = (u\,dx - v\,dy) + i(v\,dx + u\,dy)$$
+
+Separating real and imaginary parts:
+
+<!-- STUDENT: The expansion from ∫f dz to the two real line integrals is given as a result without showing the multiplication (u+iv)(dx+idy) being split into real and imaginary parts. For a reader who has not done this before, a single line of algebra expanding the product would make the "disguise" visible. -->
+
+$$\int_C f\,dz = \int_C(u\,dx - v\,dy) + i\int_C(v\,dx + u\,dy)$$
+
+**Properties.**
+- Linearity: $\int_C (\alpha f + \beta g)\,dz = \alpha\int_C f\,dz + \beta\int_C g\,dz$.
+- Reversal: $\int_{-C}f\,dz = -\int_C f\,dz$ (reversing the direction negates the integral).
+- Additivity: if $C = C_1 + C_2$, then $\int_C = \int_{C_1} + \int_{C_2}$.
+
+### The ML inequality
+
+The most useful estimate for contour integrals:
+
+$$\left|\int_C f(z)\,dz\right| \leq M \cdot L$$
+
+where $M = \max_{z \in C}|f(z)|$ and $L$ is the arc length of $C$. This is the complex analogue of $|\int_a^b f\,dx| \leq \max|f| \cdot (b-a)$.
+
+### A fundamental example
+
+$$\oint_{|z|=r} \frac{dz}{z^{n+1}} = \begin{cases} 2\pi i & n = 0 \\ 0 & n \neq 0 \end{cases}$$
+
+*Proof for $n=0$:* parametrise $z = re^{i\theta}$, $dz = ire^{i\theta}d\theta$:
+$$\int_0^{2\pi}\frac{ire^{i\theta}}{re^{i\theta}}\,d\theta = \int_0^{2\pi}i\,d\theta = 2\pi i$$
+
+This single result — that the integral of $1/z$ around the origin is $2\pi i$ — is the seed from which the residue theorem grows.
+
+---
+
+## Cauchy's theorem
+
+**Cauchy-Goursat theorem.** If $f$ is analytic throughout a simply connected domain $D$ (no holes — defined in Chapter 1), then for every closed contour $C$ in $D$:
+
+$$\oint_C f(z)\,dz = 0$$
+
+<!-- STUDENT: "Simply connected" appears here for the second time (also used in Ch01 Harmonic functions) and is still only described via informal intuition. If Chapter 1 does not add a definition, this chapter needs one. The informal "no holes" description is here but it isn't set apart as a definition — a reader might not realise it is the formal criterion. -->
+
+*Intuition.* Because the domain has no holes, any closed curve can be continuously shrunk to a point. The integral shrinks with it — to zero.
+
+**Consequence: path independence.** If $f$ is analytic in a simply connected domain and $C_1$, $C_2$ are two paths from $z_1$ to $z_2$ in that domain, then $\int_{C_1}f\,dz = \int_{C_2}f\,dz$. The integral depends only on the endpoints, not the path.
+
+**Deformation principle.** If $f$ is analytic everywhere between two contours $C_1$ and $C_2$ (with the same orientation), then $\int_{C_1}f\,dz = \int_{C_2}f\,dz$. Contours can be freely deformed through regions where $f$ is analytic, without changing the integral.
+
+---
+
+## Cauchy's integral formula
+
+**Cauchy's integral formula.** Let $f$ be analytic in and on a simple closed contour $C$ (traversed counterclockwise). Then for any $z_0$ interior to $C$:
+
+$$f(z_0) = \frac{1}{2\pi i}\oint_C \frac{f(z)}{z - z_0}\,dz$$
+
+Equivalently:
+
+$$\oint_C \frac{f(z)}{z - z_0}\,dz = 2\pi i\,f(z_0)$$
+
+*Proof sketch.* Because $f$ is analytic everywhere inside $C$ except at $z_0$, the deformation principle applies to the annular region between $C$ and any circle around $z_0$: the integrand $f(z)/(z-z_0)$ is analytic there. Shrink $C$ to a small circle $C_\varepsilon$ of radius $\varepsilon$ around $z_0$ without changing the integral. As $\varepsilon \to 0$, $f(z) \to f(z_0)$ uniformly on $C_\varepsilon$, and $\oint_{C_\varepsilon} dz/(z-z_0) = 2\pi i$.
+
+<!-- STUDENT: The deformation principle is invoked here but its precondition — that f must be analytic in the region between C and C_ε — is not restated. A reader might wonder: can we always deform to a tiny circle? The answer is yes provided f is analytic between the two contours, which it is here (f is analytic everywhere inside C except at z₀), but this should be said explicitly. -->
+
+**Significance.** The value of an analytic function at any interior point is completely determined by its values on the boundary. This has no analogue in real analysis.
+
+### Derivatives of all orders
+
+Differentiating the integral formula under the integral sign (justified by uniform convergence):
+
+$$f^{(n)}(z_0) = \frac{n!}{2\pi i}\oint_C \frac{f(z)}{(z-z_0)^{n+1}}\,dz$$
+
+**Consequence.** An analytic function has derivatives of all orders, all of which are themselves analytic. In real analysis, once-differentiable functions need not be twice differentiable. In complex analysis, once differentiable means infinitely differentiable — a qualitative difference.
+
+---
+
+## Major consequences
+
+### Liouville's theorem
+
+A **bounded** entire function is constant.
+
+*Proof.* If $|f(z)| \leq M$ everywhere, the ML inequality applied to the derivative formula gives $|f'(z_0)| \leq M/R$ for any circle of radius $R$. Letting $R \to \infty$ gives $f'(z_0) = 0$.
+
+### Fundamental theorem of algebra
+
+Every non-constant polynomial $p(z)$ of degree $n \geq 1$ has exactly $n$ complex roots (counting multiplicity).
+
+*Proof sketch.* If $p$ had no roots, $1/p(z)$ would be entire and bounded (since $|p(z)| \to \infty$), contradicting Liouville's theorem.
+
+### Morera's theorem
+
+If $f$ is continuous on a domain $D$ and $\oint_C f\,dz = 0$ for every closed triangle $C$ in $D$, then $f$ is analytic in $D$. (The converse of Cauchy's theorem.)
+
+---
+
+## Application: real integrals via contour integration
+
+The tools developed so far can already evaluate some real integrals. The general strategy — closing a real integral with a contour in the complex plane and applying Cauchy's theorem — will be developed fully in the next chapter. The key example here:
+
+**Example.** $\displaystyle\int_{-\infty}^{\infty} \frac{dx}{1+x^2}$.
+
+The integrand $f(z) = 1/(1+z^2)$ has poles at $z = \pm i$. Close the real-line integral with a large semicircle $\Gamma_R$ of radius $R$ in the upper half-plane, forming a closed contour $C = [-R,R] + \Gamma_R$.
+
+**The semicircle contribution vanishes.** On $\Gamma_R$, $|z| = R$, so $|1+z^2| \geq R^2 - 1$ for large $R$. The ML inequality gives:
+$$\left|\int_{\Gamma_R}\frac{dz}{1+z^2}\right| \leq \frac{1}{R^2-1}\cdot \pi R \to 0 \quad\text{as } R\to\infty$$
+
+**Applying Cauchy's integral formula.** Factor the denominator: $1/(1+z^2) = [1/(z+i)]/(z-i)$. This has the form $f(z)/(z-z_0)$ with $f(z) = 1/(z+i)$ and $z_0 = i$. Since $z_0 = i$ lies inside the upper half-plane contour and $f(z) = 1/(z+i)$ is analytic there:
+
+<!-- STUDENT: Two steps are elided here. First: why does the semicircle's contribution vanish? This is asserted without justification — an ML-inequality argument is needed, and this is the first time that technique appears in a worked example. Second: applying Cauchy's integral formula to get 2πi/(2i) requires rewriting 1/(1+z²) as [1/(z+i)] / (z−i), identifying f(z) = 1/(z+i) and z₀ = i, and evaluating f(i) = 1/(2i). These steps are collapsed into a single equality. This is the chapter's only full worked example and it deserves a bit more scaffold. -->
+
+$$\oint_C \frac{dz}{1+z^2} = \oint_C \frac{dz}{(z-i)(z+i)} = 2\pi i \cdot f(i) = 2\pi i \cdot \frac{1}{2i} = \pi$$
+
+Since the semicircle contributes nothing, the real-line integral equals $\pi$ — confirming the known result $\arctan(x)\big|_{-\infty}^{\infty} = \pi$.
+
+<!-- VIZ 1 REWRITTEN: Cauchy integral formula — pole inside vs outside. Domain coloured left panel; pole draggable. Right panel shows computed integral. Winding number counter. Consistent with Ch01 domain colouring vocabulary. -->
+
+```{ojs}
+//| echo: false
+{
+  const W = 320, H = 290, CX = W/2, CY = H/2, SCALE = 70;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const radiusSlider = Inputs.range([0.5, 2.5], {value: 1.2, step: 0.05, label: "Contour radius R"});
+  const funcSelector = Inputs.select(["f(z) = e^z", "f(z) = cos z", "f(z) = 1/(z+2)"], {
+    value: "f(z) = e^z", label: "f(z) (numerator)"
+  });
+
+  // z₀ position: interactive via preset buttons for simplicity
+  const polePresets = Inputs.select([
+    "z₀ = 0.5+0.3i (inside)",
+    "z₀ = 0+0i (inside)",
+    "z₀ = 2+0i (outside)",
+    "z₀ = 1.5+1.0i (outside)"
+  ], {value: "z₀ = 0.5+0.3i (inside)", label: "Pole position z₀"});
+
+  function getPolePos(preset) {
+    switch(preset) {
+      case "z₀ = 0.5+0.3i (inside)": return [0.5, 0.3];
+      case "z₀ = 0+0i (inside)": return [0, 0];
+      case "z₀ = 2+0i (outside)": return [2.0, 0];
+      case "z₀ = 1.5+1.0i (outside)": return [1.5, 1.0];
+      default: return [0.5, 0.3];
+    }
+  }
+
+  function evalF(fname, re, im) {
+    switch(fname) {
+      case "f(z) = e^z": return [Math.exp(re)*Math.cos(im), Math.exp(re)*Math.sin(im)];
+      case "f(z) = cos z": return [Math.cos(re)*Math.cosh(im), -Math.sin(re)*Math.sinh(im)];
+      case "f(z) = 1/(z+2)": {
+        const dr = re+2, di = im, d = dr*dr+di*di;
+        if (d<1e-10) return [NaN,NaN];
+        return [dr/d, -di/d];
+      }
+      default: return [1, 0];
+    }
+  }
+
+  function hslToRgb(h,s,l) {
+    h=((h%1)+1)%1;
+    const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h*6)%2-1)), m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
+    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function toScreen(re, im) { return [CX + re*SCALE, CY - im*SCALE]; }
+
+  function render(R, polePreset, fname) {
+    const [z0re, z0im] = getPolePos(polePreset);
+    const inside = Math.sqrt(z0re*z0re + z0im*z0im) < R;
+    const onContour = Math.abs(Math.sqrt(z0re*z0re + z0im*z0im) - R) < 0.15;
+
+    // Canvas for domain colouring
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const img = ctx.createImageData(W, H);
+    const data = img.data;
+
+    for (let px=0; px<W; px++) {
+      for (let py=0; py<H; py++) {
+        const re = (px-CX)/SCALE, im = -(py-CY)/SCALE;
+        const dr = re-z0re, di = im-z0im;
+        const d2 = dr*dr+di*di;
+        if (d2 < 1e-6) {
+          const idx=(py*W+px)*4;
+          data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255;
+          continue;
+        }
+        // 1/(z-z0) coloured
+        const wr = dr/d2, wi = -di/d2;
+        const arg = Math.atan2(wi, wr);
+        const mag = Math.sqrt(wr*wr+wi*wi);
+        const hue = (arg/(2*Math.PI)+1)%1;
+        const logmag = Math.log(mag+0.001);
+        const brightness = 0.5 + 0.35*Math.tanh(logmag/2);
+        const [r,g,b] = hslToRgb(hue, 0.75, brightness);
+        const idx=(py*W+px)*4;
+        data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+
+    // Contour circle
+    const [cx0, cy0] = toScreen(0, 0);
+    ctx.strokeStyle = onContour ? "#ef4444" : "#fff";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(cx0, cy0, R*SCALE, 0, 2*Math.PI);
+    ctx.stroke();
+
+    // Contour label
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = "11px sans-serif";
+    ctx.fillText(`C: |z| = ${R.toFixed(1)}`, 5, 14);
+
+    // Pole marker (×)
+    const [psx, psy] = toScreen(z0re, z0im);
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(psx-7,psy-7); ctx.lineTo(psx+7,psy+7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(psx+7,psy-7); ctx.lineTo(psx-7,psy+7); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.font = "10px sans-serif";
+    ctx.fillText("z₀", psx+9, psy+4);
+
+    // Winding number box
+    const winding = inside ? 1 : 0;
+    ctx.fillStyle = "#1e40af"; ctx.beginPath();
+    ctx.roundRect(W-90, 5, 84, 42, 5); ctx.fill();
+    ctx.fillStyle="white"; ctx.font="10px sans-serif"; ctx.textAlign="center";
+    ctx.fillText("winding n(C,z₀)", W-48, 19);
+    ctx.font="bold 18px sans-serif";
+    ctx.fillText(winding.toString(), W-48, 38);
+    ctx.textAlign="left";
+
+    // Result panel (right side info)
+    const infoDiv = document.createElement("div");
+    infoDiv.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.88em;";
+
+    if (onContour) {
+      infoDiv.innerHTML = `<div style="color:#ef4444; font-weight:600;">Pole on contour — integral undefined</div>
+        <div style="color:#6b7280; font-size:0.85em; margin-top:0.3rem;">The integrand blows up on the integration path.</div>`;
+    } else if (inside) {
+      const [fre, fim] = evalF(fname, z0re, z0im);
+      const twopiIfre = (-2*Math.PI*fim).toFixed(4);
+      const twopiIfim = (2*Math.PI*fre).toFixed(4);
+      infoDiv.innerHTML = `<div style="color:#059669; font-weight:600;">z₀ inside C: integral = 2\u03c0i\u00b7f(z₀)</div>
+        <div style="margin-top:0.3rem;">f(z₀) = ${fre.toFixed(4)} + ${fim.toFixed(4)}i</div>
+        <div>2\u03c0i\u00b7f(z₀) = ${twopiIfre} + ${twopiIfim}i</div>
+        <div style="color:#6b7280; font-size:0.85em; margin-top:0.3rem;">The pole is captured by the contour.</div>`;
+    } else {
+      infoDiv.innerHTML = `<div style="color:#6b7280; font-weight:600;">z₀ outside C: integral = 0</div>
+        <div style="color:#6b7280; font-size:0.85em; margin-top:0.3rem;">The integrand is analytic everywhere inside C — Cauchy's theorem gives zero.</div>`;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(canvas);
+    wrap.appendChild(infoDiv);
+    return wrap;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const title = document.createElement("div");
+  title.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title.textContent = "Cauchy integral formula: pole inside vs outside";
+  container.appendChild(title);
+
+  container.appendChild(radiusSlider);
+  container.appendChild(polePresets);
+  container.appendChild(funcSelector);
+
+  const vizDiv = document.createElement("div");
+  container.appendChild(vizDiv);
+
+  const note = document.createElement("div");
+  note.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note.textContent = "Domain colouring shows 1/(z−z₀): the pole at z₀ appears as a white bloom. When z₀ is inside the contour C, the integral = 2πi·f(z₀). When outside, the integral = 0. The winding number n(C,z₀) records this: 1 inside, 0 outside.";
+  container.appendChild(note);
+
+  function update() {
+    vizDiv.innerHTML = "";
+    vizDiv.appendChild(render(radiusSlider.value, polePresets.value, funcSelector.value));
+  }
+  radiusSlider.addEventListener("input", update);
+  polePresets.addEventListener("input", update);
+  funcSelector.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
+
+<!-- VIZ OPPORTUNITY 5: Winding number = contour integral of dz/z. Series thread continuation from Ch01. Same visual style as Ch01 winding interactive. -->
+
+```{ojs}
+//| echo: false
+{
+  const W = 420, H = 380, CX = 190, CY = 185, SCALE = 65;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const pathSelector2 = Inputs.select([
+    "Circle around origin (n=1)",
+    "Circle not around origin (n=0)",
+    "Two loops around origin (n=2)"
+  ], {value: "Circle around origin (n=1)", label: "Path"});
+
+  const tSlider2 = Inputs.range([0, 1], {value: 0, step: 0.005, label: "Progress t"});
+
+  const pathDefs = {
+    "Circle around origin (n=1)": {
+      pts: (t) => [1.5*Math.cos(2*Math.PI*t), 1.5*Math.sin(2*Math.PI*t)],
+      nWinding: 1
+    },
+    "Circle not around origin (n=0)": {
+      pts: (t) => [1.8 + 0.8*Math.cos(2*Math.PI*t), 0.8*Math.sin(2*Math.PI*t)],
+      nWinding: 0
+    },
+    "Two loops around origin (n=2)": {
+      pts: (t) => [1.5*Math.cos(4*Math.PI*t), 1.5*Math.sin(4*Math.PI*t)],
+      nWinding: 2
+    }
+  };
+
+  function getPathPoint(def, t) { return def.pts(t); }
+
+  function computeIntegral(def, upToT, STEPS) {
+    // Numerically integrate dz/z from 0 to upToT
+    // Result is a complex number (Re, Im)
+    let sumRe = 0, sumIm = 0;
+    const steps = Math.round(upToT * STEPS);
+    const dt = upToT / Math.max(steps, 1);
+
+    for (let s=0; s<steps; s++) {
+      const t = s / STEPS;
+      const tn = (s+1) / STEPS;
+      const [re1, im1] = def.pts(t);
+      const [re2, im2] = def.pts(tn < 1 ? tn : 1);
+      // midpoint
+      const mre = (re1+re2)/2, mim = (im1+im2)/2;
+      const dre = re2-re1, dim = im2-im1;
+      const dz_over_z_re = (mre*dre + mim*dim)/(mre*mre+mim*mim);
+      const dz_over_z_im = (mim*dre - mre*dim)/(mre*mre+mim*mim);
+      sumRe += dz_over_z_re;
+      sumIm += dz_over_z_im;
+    }
+    return [sumRe, sumIm];
+  }
+
+  function toScreen(re, im) { return [CX + re*SCALE, CY - im*SCALE]; }
+
+  function render2(pathName, tVal) {
+    const def = pathDefs[pathName];
+    const STEPS = 400;
+
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    svg.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Grid + axes
+    const gridG = document.createElementNS(svgNS,"g");
+    gridG.setAttribute("stroke","#e5e7eb"); gridG.setAttribute("stroke-width","0.5");
+    for (let i=-3; i<=3; i++) {
+      const xl=document.createElementNS(svgNS,"line"); const [lx]=toScreen(i,0); const [,ly1]=toScreen(0,-2.6); const [,ly2]=toScreen(0,2.6);
+      xl.setAttribute("x1",lx); xl.setAttribute("y1",ly1); xl.setAttribute("x2",lx); xl.setAttribute("y2",ly2); gridG.appendChild(xl);
+      const yl=document.createElementNS(svgNS,"line"); const [lx1]=toScreen(-3,0); const [lx2]=toScreen(3,0); const [,ly]=toScreen(0,i);
+      yl.setAttribute("x1",lx1); yl.setAttribute("y1",ly); yl.setAttribute("x2",lx2); yl.setAttribute("y2",ly); gridG.appendChild(yl);
+    }
+    svg.appendChild(gridG);
+
+    const [ox,oy]=toScreen(0,0);
+    const axG=document.createElementNS(svgNS,"g"); axG.setAttribute("stroke","#9ca3af"); axG.setAttribute("stroke-width","1");
+    const xa=document.createElementNS(svgNS,"line"); const [ax1]=toScreen(-2.8,0); const [ax2]=toScreen(2.8,0);
+    xa.setAttribute("x1",ax1); xa.setAttribute("y1",oy); xa.setAttribute("x2",ax2); xa.setAttribute("y2",oy);
+    const ya=document.createElementNS(svgNS,"line"); const [,ay1]=toScreen(0,-2.5); const [,ay2]=toScreen(0,2.5);
+    ya.setAttribute("x1",ox); ya.setAttribute("y1",ay1); ya.setAttribute("x2",ox); ya.setAttribute("y2",ay2);
+    axG.appendChild(xa); axG.appendChild(ya); svg.appendChild(axG);
+
+    // Full path outline
+    let pathD = "";
+    for (let s=0; s<=STEPS; s++) {
+      const t = s/STEPS;
+      const [re,im] = def.pts(t);
+      const [px,py] = toScreen(re,im);
+      pathD += (s===0 ? `M ${px} ${py}` : ` L ${px} ${py}`);
+    }
+    const pathOutline = document.createElementNS(svgNS,"path");
+    pathOutline.setAttribute("d",pathD); pathOutline.setAttribute("fill","none");
+    pathOutline.setAttribute("stroke","rgba(249,115,22,0.25)"); pathOutline.setAttribute("stroke-width","2");
+    svg.appendChild(pathOutline);
+
+    // Traced portion
+    let traceD = "";
+    const traceSteps = Math.round(tVal * STEPS);
+    for (let s=0; s<=traceSteps; s++) {
+      const t = s/STEPS;
+      const [re,im] = def.pts(t);
+      const [px,py] = toScreen(re,im);
+      traceD += (s===0 ? `M ${px} ${py}` : ` L ${px} ${py}`);
+    }
+    const traceEl = document.createElementNS(svgNS,"path");
+    traceEl.setAttribute("d",traceD); traceEl.setAttribute("fill","none");
+    traceEl.setAttribute("stroke","#f97316"); traceEl.setAttribute("stroke-width","2.5");
+    svg.appendChild(traceEl);
+
+    // Current point
+    const [cre,cim] = def.pts(tVal);
+    const [cpx,cpy] = toScreen(cre,cim);
+    const ptEl = document.createElementNS(svgNS,"circle");
+    ptEl.setAttribute("cx",cpx); ptEl.setAttribute("cy",cpy); ptEl.setAttribute("r","6");
+    ptEl.setAttribute("fill","#3b82f6"); ptEl.setAttribute("stroke","#fff"); ptEl.setAttribute("stroke-width","2");
+    svg.appendChild(ptEl);
+
+    // Origin × mark (the singularity 1/z)
+    const xSize = 5;
+    const x1m=document.createElementNS(svgNS,"line"); x1m.setAttribute("x1",ox-xSize); x1m.setAttribute("y1",oy-xSize);
+    x1m.setAttribute("x2",ox+xSize); x1m.setAttribute("y2",oy+xSize);
+    x1m.setAttribute("stroke","#ef4444"); x1m.setAttribute("stroke-width","2.5"); svg.appendChild(x1m);
+    const x2m=document.createElementNS(svgNS,"line"); x2m.setAttribute("x1",ox+xSize); x2m.setAttribute("y1",oy-xSize);
+    x2m.setAttribute("x2",ox-xSize); x2m.setAttribute("y2",oy+xSize);
+    x2m.setAttribute("stroke","#ef4444"); x2m.setAttribute("stroke-width","2.5"); svg.appendChild(x2m);
+    const origLbl=document.createElementNS(svgNS,"text"); origLbl.setAttribute("x",ox+8); origLbl.setAttribute("y",oy-6);
+    origLbl.setAttribute("fill","#ef4444"); origLbl.setAttribute("font-size","10"); origLbl.setAttribute("font-family","sans-serif");
+    origLbl.textContent="singularity of 1/z"; svg.appendChild(origLbl);
+
+    // Winding box
+    const windBox = document.createElementNS(svgNS,"rect"); windBox.setAttribute("x",W-92); windBox.setAttribute("y",5);
+    windBox.setAttribute("width",85); windBox.setAttribute("height",44); windBox.setAttribute("fill","#1e40af"); windBox.setAttribute("rx","5");
+    svg.appendChild(windBox);
+    const wl=document.createElementNS(svgNS,"text"); wl.setAttribute("x",W-49); wl.setAttribute("y",22);
+    wl.setAttribute("fill","white"); wl.setAttribute("font-size","10"); wl.setAttribute("text-anchor","middle"); wl.setAttribute("font-family","sans-serif");
+    wl.textContent="winding n"; svg.appendChild(wl);
+    const wn=document.createElementNS(svgNS,"text"); wn.setAttribute("x",W-49); wn.setAttribute("y",41);
+    wn.setAttribute("fill","white"); wn.setAttribute("font-size","18"); wn.setAttribute("text-anchor","middle");
+    wn.setAttribute("font-family","sans-serif"); wn.setAttribute("font-weight","bold");
+    wn.textContent=(tVal>0.98)?def.nWinding.toString():"..."; svg.appendChild(wn);
+
+    // Integral running display
+    const [intRe, intIm] = computeIntegral(def, tVal, STEPS);
+    const finalIntRe = 0;
+    const finalIntIm = 2*Math.PI*def.nWinding;
+
+    const intDiv = document.createElement("div");
+    intDiv.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.88em; padding:0.5rem; background:#f0f9ff; border-radius:4px;";
+    const intStr = tVal > 0.98
+      ? `∮ dz/z = ${finalIntIm > 0 ? "+" : ""}${finalIntIm.toFixed(2)}i = 2\u03c0i × ${def.nWinding}`
+      : `Running: ${intRe.toFixed(3)} + ${intIm.toFixed(3)}i`;
+    intDiv.innerHTML = `<strong>Contour integral:</strong> <span style="color:#1e40af">${intStr}</span>`;
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(svg);
+    wrap.appendChild(intDiv);
+    return wrap;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const title = document.createElement("div");
+  title.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title.textContent = "Winding number = contour integral: \u222e dz/z = 2\u03c0i \xd7 n";
+  container.appendChild(title);
+  container.appendChild(pathSelector2);
+  container.appendChild(tSlider2);
+
+  const vizDiv2 = document.createElement("div");
+  container.appendChild(vizDiv2);
+
+  const note = document.createElement("div");
+  note.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note.textContent = "Move the slider to trace the path. When the loop closes: \u222e dz/z = 2\u03c0i times the winding number. The red \u00d7 marks the singularity at the origin. This is the seed from which the residue theorem grows.";
+  container.appendChild(note);
+
+  function update2() {
+    vizDiv2.innerHTML = "";
+    vizDiv2.appendChild(render2(pathSelector2.value, tSlider2.value));
+  }
+  pathSelector2.addEventListener("input", update2);
+  tSlider2.addEventListener("input", update2);
+  update2();
+
+  return container;
+}
+```
+
+---
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell); row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn); controls.appendChild(resetBtn); controls.appendChild(counter);
+  container.appendChild(stepsDiv); container.appendChild(controls);
+  renderSteps(); updateButtons();
+  return container;
+}
+```
+
+---
+
+### Exercise 1: Direct computation of a contour integral
+
+Compute $\displaystyle\int_C \bar{z}\,dz$ where $C$ is the straight line from $0$ to $1+i$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Parametrise C: z(t) = t(1+i), 0 ≤ t ≤ 1",
+    eq: "z(t) = t + it, \\quad dz = (1+i)\\,dt, \\quad \\bar{z}(t) = t - it = t(1-i)"
+  },
+  {
+    op: "Substitute into the integral",
+    eq: "\\int_C \\bar{z}\\,dz = \\int_0^1 t(1-i)(1+i)\\,dt = \\int_0^1 t(1-i^2)\\,dt = \\int_0^1 2t\\,dt"
+  },
+  {
+    op: "Evaluate",
+    eq: "\\int_C \\bar{z}\\,dz = 2\\cdot\\frac{1}{2} = 1"
+  },
+  {
+    op: "Compare with ∫_C z dz (which IS path-independent)",
+    eq: "\\int_C z\\,dz = \\left[\\frac{z^2}{2}\\right]_0^{1+i} = \\frac{(1+i)^2}{2} = \\frac{2i}{2} = i",
+    note: "z dz = d(z²/2) since z² is analytic. But z̄ is not analytic, so z̄ dz is path-dependent and gives a real answer 1 here."
+  }
+])
+```
+
+---
+
+### Exercise 2: Cauchy's theorem — zero integral
+
+Show that $\displaystyle\oint_C \frac{e^z}{z^2+4}\,dz = 0$ where $C$ is the circle $|z| = 1$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Locate the singularities of the integrand",
+    eq: "z^2 + 4 = 0 \\implies z = \\pm 2i"
+  },
+  {
+    op: "Check whether singularities lie inside |z| = 1",
+    eq: "|2i| = 2 > 1 \\quad \\text{and} \\quad |-2i| = 2 > 1",
+    note: "Both poles are outside the contour C."
+  },
+  {
+    op: "Apply Cauchy-Goursat theorem",
+    eq: "f(z) = \\frac{e^z}{z^2+4} \\text{ is analytic everywhere inside } |z|=1",
+    note: "No singularities inside C, so the domain enclosed is simply connected and f is analytic there."
+  },
+  {
+    op: "Conclude",
+    eq: "\\oint_{|z|=1}\\frac{e^z}{z^2+4}\\,dz = 0"
+  }
+])
+```
+
+---
+
+### Exercise 3: Cauchy's integral formula
+
+Evaluate $\displaystyle\oint_C \frac{e^z}{z - 1}\,dz$ where $C$ is the circle $|z| = 2$ (counterclockwise).
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Identify z₀ and check it is inside C",
+    eq: "\\text{Integrand} = \\frac{f(z)}{z-z_0} \\text{ with } f(z) = e^z,\\; z_0 = 1",
+    note: "|z₀| = 1 < 2, so z₀ = 1 is inside |z| = 2. f(z) = e^z is analytic everywhere."
+  },
+  {
+    op: "Apply Cauchy's integral formula",
+    eq: "\\oint_C \\frac{e^z}{z-1}\\,dz = 2\\pi i\\,f(1) = 2\\pi i\\,e"
+  }
+])
+```
+
+---
+
+### Exercise 4: Derivative formula
+
+Evaluate $\displaystyle\oint_C \frac{\cos z}{(z - \pi)^2}\,dz$ where $C: |z| = 4$ (counterclockwise).
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Recognise the derivative formula with n=1",
+    eq: "\\oint_C \\frac{f(z)}{(z-z_0)^{n+1}}\\,dz = \\frac{2\\pi i}{n!}\\,f^{(n)}(z_0)"
+  },
+  {
+    op: "Identify f(z) = cos z, z₀ = π, n = 1",
+    eq: "\\text{Need } f'(\\pi) = -\\sin(\\pi) = 0"
+  },
+  {
+    op: "Apply the formula",
+    eq: "\\oint_C \\frac{\\cos z}{(z-\\pi)^2}\\,dz = \\frac{2\\pi i}{1!}\\,f'(\\pi) = 2\\pi i \\cdot 0 = 0",
+    note: "The integral is zero not because the integrand is analytic inside C (it has a pole at π), but because the numerator's derivative vanishes at the pole."
+  }
+])
+```
+
+---
+
+### Exercise 5: ML inequality estimate
+
+Without evaluating it exactly, show that $\displaystyle\left|\oint_C \frac{dz}{z^3}\right| \leq \frac{\pi}{4}$, where $C$ is the upper semicircle $|z| = 2$ from $z = 2$ to $z = -2$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Identify M = max|f(z)| on C",
+    eq: "f(z) = z^{-3}, \\quad |f(z)| = |z|^{-3} = 2^{-3} = \\tfrac{1}{8} \\text{ on } |z|=2"
+  },
+  {
+    op: "Compute the arc length L",
+    eq: "C \\text{ is a semicircle of radius } 2 \\implies L = \\pi\\cdot 2 = 2\\pi"
+  },
+  {
+    op: "Apply the ML inequality",
+    eq: "\\left|\\oint_C \\frac{dz}{z^3}\\right| \\leq M\\cdot L = \\frac{1}{8}\\cdot 2\\pi = \\frac{\\pi}{4}",
+    note: "The actual value (by a direct computation or the residue theorem) is 0, since z^{−3} = d(−z^{−2}/2)/dz is analytic away from the origin and the origin is not enclosed."
+  }
+])
+```
+
+<!-- MATH-PROF REVIEW
+## Fixes applied
+None — all calculations verified correct.
+
+## Open issues
+- [NOTE] Exercise 5 note: the phrasing "z^{−3} = d(−z^{−2}/2)/dz" is logically backwards. It means "z^{-3} has antiderivative −z^{-2}/2", which is true, but writing it as an equality of z^{-3} with a derivative expression is confusing. A cleaner phrasing would be: "z^{-3} has an antiderivative −1/(2z²), which is analytic on the contour and whose domain includes the contour (origin not enclosed), so the integral is exactly 0." Author's call.
+- [NOTE] The application example (§ "Application: real integrals") correctly evaluates the integral as π via Cauchy's integral formula. The technique is presented as Cauchy's formula, but it is more naturally framed as a residue calculation (residue of 1/(1+z²) at z=i is 1/(2i)); both give the same result. The framing is not wrong but may confuse readers who expect residue machinery. Consider a one-sentence cross-reference to Ch03.
+- [NOTE] `notation_introduced` lists the ML inequality as a "symbol" entry. The ML inequality is a theorem/estimate, not a notation. Consider moving it to a `key_results` field if the schema supports one, or leaving it — it is harmless as-is.
+
+## Verdict: PASS WITH NOTES
+-->
+
+<!-- ENGINEER-PROF REVIEW
+## Chapter 02 — Complex integration
+
+### Fixes applied
+- [WARN] Added inline comment on the hook's use of 'curl'. The phrase "the function has no 'curl' in the complex sense" will mislead engineers who associate curl with the vector-calculus quantity ∇×F. What actually cancels is the real-plane curl of (u, −v) — a consequence of the C-R equations — which is the Green's theorem perspective. The comment flags this for author revision; the hook prose has not been changed (editor's territory) but the engineering accuracy concern is recorded.
+
+### Open issues
+- [NOTE] `destinations.eng.hook` — "The inverse Laplace transform is a contour integral in the complex s-plane — computing it via the residue theorem is the standard method for solving initial-value problems by Laplace techniques." This is accurate. The Bromwich contour integral is exactly this. Well-framed.
+- [NOTE] `destinations.eng.career_example` — "Signal processing engineer computing the inverse Laplace transform of a filter's transfer function." Accurate and realistic. Signal processing engineers do use inverse Laplace to recover time-domain impulse responses.
+- [NOTE] `stroud_programme: null` — Stroud covers contour integration in Programme 14–15 (depending on edition). Cross-reference would help readers using Stroud in parallel.
+- [NOTE] The application example (§ Application: real integrals via contour integration) is framed as Cauchy's integral formula but is more naturally a residue calculation. This is flagged in the math-prof review. From an engineering perspective, framing this as "Cauchy formula" is slightly odd since engineers encounter this type of calculation via the residue theorem. The cross-reference to Ch03 suggested by math-prof would resolve this.
+
+## Verdict: PASS WITH NOTES
+-->
+
+<!-- STUDENT REVIEW
+## Chapter 02 — Complex integration
+Layer: engineering
+
+### Confusion points
+
+1. **"Piecewise smooth" undefined** (§ Contours and contour integrals). The term appears in the first definition in the chapter and is not explained. Engineers who've seen real line integrals will guess the meaning but it should be stated once.
+
+2. **Product expansion from ∫f dz to two real line integrals is skipped** (§ Contours and contour integrals). The chapter says the contour integral is a "real line integral in disguise" and then immediately displays the expanded form. Showing the multiplication (u+iv)(dx+idy) explicitly, even in one line, would make this genuinely transparent.
+
+3. **Deformation principle: precondition not restated at point of use** (§ Cauchy's integral formula, proof sketch). The proof shrinks C to C_ε "by the deformation principle" without noting that f must be analytic in the annular region between them. A reader might wonder whether deformation always works.
+
+4. **Worked example: two key steps compressed** (§ Application: real integrals via contour integration). The single worked example in the chapter skips both the ML-inequality argument for the semicircle vanishing and the intermediate algebra for applying the integral formula. This is the only example and it's doing a lot of work.
+
+5. **Hook: "the real-plane curl of the field (u, −v) is zero"** (§ hook). An engineering student reading this will reach for the vector-calculus curl ∇×F. The connection to the C-R equations via Green's theorem is non-obvious without more setup. The engineer-prof already flagged this; from a student perspective it creates confusion before the chapter has begun.
+
+### Reassurance gaps
+
+- Liouville's theorem and the fundamental theorem of algebra appear as consequences with proof sketches but without any worked example. After deriving powerful tools, a reader wants to see them used. The section stops short.
+
+- The ML inequality is stated and its real analogue cited, but there is no brief example showing it being applied in the body — it only appears in Exercise 5. A one-line application in the body would confirm the reader knows how to use it.
+
+### Exercise calibration
+
+- Exercises 1–5 are well-matched to the chapter material and the engineering layer.
+- Exercise 1 (direct computation of ∫z̄ dz) is a good first exercise — concrete and instructive.
+- Exercise 4 (derivative formula) is the hardest; the note about "the integral is zero not because the integrand is analytic" is a potential confusion point. A reader might be puzzled that a zero result from the derivative formula looks identical to a zero result from Cauchy's theorem — the note addresses this but it's at the end of the stepper, after the result is already given.
+
+### Wayfinding
+
+- The hook opens by announcing the residue theorem is "the subject of the next chapter" but does not mention Chapter 4 (conformal mapping). Fine — but worth confirming this chapter's `opens_to` is accurate (it only lists one downstream node).
+
+## Verdict: READABLE WITH FIXES
+
+The chapter's conceptual structure is sound and the exercises are well-calibrated. The main friction points are the elided algebra in the "disguise" expansion and the thin worked example that compresses the two most important techniques (ML inequality and Cauchy formula) into a single paragraph. For a first-time reader, these are the moments most likely to cause loss of thread.
+-->
+
+<!-- EDIT LOG
+- [§ Contours and contour integrals, definition] Defined "piecewise smooth" inline on first use: "the curve can have finitely many corners, but no cusps or fractal wiggles — at each smooth piece the tangent direction is well-defined." Previously used without definition.
+- [§ Contours and contour integrals, "real line integral in disguise"] Added the explicit product expansion (u+iv)(dx+idy) = (u dx − v dy) + i(v dx + u dy) before the displayed result. The algebra that makes the "disguise" transparent is now shown, not asserted.
+- [§ Cauchy's theorem, Cauchy-Goursat theorem statement] Added "(no holes — defined in Chapter 1)" after "simply connected domain" to give a back-reference to the Chapter 1 definition rather than repeating it. Intuition paragraph lightly trimmed ("Because the domain has no holes, ...") to match.
+- [§ Cauchy's integral formula, proof sketch] Restated the deformation principle's precondition before invoking it: "because f is analytic everywhere inside C except at z₀, the deformation principle applies to the annular region between C and any circle around z₀." Previously the principle was invoked without explaining why it was applicable.
+- [§ Application: real integrals, worked example] Expanded the single-paragraph worked example into three steps: (1) ML-inequality argument showing the semicircle contribution vanishes, with explicit bound; (2) factoring the denominator and identifying f(z) = 1/(z+i), z₀ = i; (3) applying Cauchy's formula and evaluating f(i) = 1/(2i). The previous version collapsed these into one line.
+-->

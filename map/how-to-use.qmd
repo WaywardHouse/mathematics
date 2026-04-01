@@ -16,7 +16,8 @@ If you are not sure where that is, a rough guide:
 | Struggled with high school maths | Volume 1 or 2 |
 | Passed high school, never felt sure why | Volume 3 or 4 |
 | About to start university maths | Volume 5 |
-| In an engineering degree, finding the maths hard | Volume 7 |
+| In first- or second-year engineering, finding the maths hard | Volume 7 |
+| In third- or fourth-year engineering, the maths has become embedded in discipline courses | Volume 8 |
 
 ## How chapters are structured
 

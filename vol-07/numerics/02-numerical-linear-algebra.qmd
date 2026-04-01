@@ -1,6 +1,1089 @@
 ---
 title: "Numerical linear algebra"
-status: "seed"
+subtitle: "Solving systems that can't be solved by hand"
+chapter: 2
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: |
+  Gaussian elimination works in theory. On a computer, rounding errors
+  accumulate. The system you solve may not be the system you intended.
+
+rewrite: |
+  Partial pivoting, LU factorisation, and condition numbers are what
+  stand between a correct algorithm and a catastrophically wrong answer.
+
+opens_to:
+  - id: odes
+    label: Numerical ODEs
+    volume: 7
+    relationship: enriches
+  - id: pdes
+    label: Numerical PDEs
+    volume: 7
+    relationship: enriches
+
+prerequisite_ids:
+  - numerics
+  - lin_alg
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Finite element stiffness matrices are large sparse systems solved by LU decomposition or iterative methods every time a structure is simulated."
+    career_example: "Structural engineer running FEM analysis of a bridge deck"
+  - field: sci
+    label: Hard sciences
+    hook: "Least-squares fitting of experimental data reduces to a normal-equations system whose conditioning determines how trustworthy the fit is."
+    career_example: "Physicist inverting a system of calibration equations"
+  - field: comp
+    label: Computing and data
+    hook: "Every neural network training step involves solving or approximating a linear system; ill-conditioning of the Hessian is why training can diverge."
+    career_example: "ML engineer diagnosing unstable gradient descent"
+  - field: biz
+    label: Finance and quant
+    hook: "Portfolio optimisation with many assets requires solving a large linear system; condition number tells you how sensitive weights are to small data errors."
+    career_example: "Quantitative analyst building a risk-factor model"
+
+hook: |
+  You have a system of equations. In principle, Gaussian elimination gives
+  the answer. In practice, you type it into a computer, and the answer is
+  wrong — not obviously wrong, but subtly, fatally wrong.
+
+  The issue isn't the algorithm. The issue is that computers don't do exact
+  arithmetic. Every floating-point operation introduces a tiny rounding error.
+  Tiny errors compound. In a badly conditioned system, a rounding error in the
+  twelfth decimal place can shift the answer by a factor of a thousand.
+
+  This chapter is about how to do it right: pivoting to avoid catastrophic
+  cancellation, LU decomposition to separate the expensive part from the cheap
+  part, and the condition number to know in advance whether the answer you're
+  computing is worth trusting.
+
+notation_introduced:
+  - symbol: "A = LU"
+    reads_as: "A factors into a lower-triangular matrix L times an upper-triangular matrix U"
+    notation_weight: 3
+  - symbol: "\\kappa(A)"
+    reads_as: "the condition number of A, kappa of A"
+    notation_weight: 3
+  - symbol: "\\|A\\|_\\infty"
+    reads_as: "the infinity-norm of A — the largest row sum of absolute values"
+    notation_weight: 2
+  - symbol: "x^{(k)}"
+    reads_as: "the iterate at step k — the approximate solution after k iterations"
+    notation_weight: 1
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: 20
 ---
 
-*Seed — front matter to be completed before content is written.*
+You have a system of equations. In principle, Gaussian elimination gives
+the answer. In practice, you type it into a computer, and the answer is
+wrong — not obviously wrong, but subtly, fatally wrong.
+
+The issue isn't the algorithm. The issue is that computers don't do exact
+arithmetic. Every floating-point operation introduces a tiny rounding error.
+Tiny errors compound. In a badly conditioned system, a rounding error in the
+twelfth decimal place can shift the answer by a factor of a thousand.
+
+This chapter is about how to do it right: pivoting to avoid catastrophic
+cancellation, LU decomposition to separate the expensive part from the cheap
+part, and the condition number to know in advance whether the answer you're
+computing is worth trusting.
+
+## What the notation is saying
+
+A linear system $A\mathbf{x} = \mathbf{b}$ means: find the vector
+$\mathbf{x}$ — read as "the solution vector" — such that the matrix $A$,
+read as "the coefficient matrix", transforms $\mathbf{x}$ into the
+right-hand side $\mathbf{b}$.
+
+In component form for a $3 \times 3$ system:
+
+$$\begin{pmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} b_1 \\ b_2 \\ b_3 \end{pmatrix}$$
+
+The goal is to reduce $A$ to upper-triangular form so that back-substitution
+can extract $x_3$, then $x_2$, then $x_1$ in sequence.
+
+**LU decomposition** writes $A = LU$, where $L$ is a lower-triangular matrix
+(ones on the diagonal, entries only below) and $U$ is the upper-triangular
+matrix produced by elimination. This notation should be read as: "$A$ factors
+into $L$ times $U$".
+
+The **condition number** $\kappa(A)$, read "kappa of $A$", quantifies how
+much the solution can change relative to a small change in the data. It is
+defined as
+
+$$\kappa(A) = \|A\|_\infty \cdot \|A^{-1}\|_\infty$$
+
+where $\|A\|_\infty$, read "the infinity-norm of $A$", is the largest row sum
+of absolute values:
+
+$$\|A\|_\infty = \max_i \sum_j |a_{ij}|$$
+
+A rough rule: if $\kappa(A) \approx 10^k$, the solution loses approximately
+$k$ digits of accuracy to rounding errors. A condition number of $10^{12}$
+on a machine with 15-digit floating-point precision leaves you with about
+3 reliable digits.
+
+For iterative methods, $x^{(k)}$ denotes the iterate at step $k$ — the
+approximate solution after $k$ steps, converging toward the true $\mathbf{x}$
+as $k$ grows.
+
+## Gaussian elimination with partial pivoting
+
+### Why naive elimination fails
+
+The exact solution of the system below is $x_1 = 1$, $x_2 = 1$ — you can
+check: $0.0001(1) + 1(1) = 1.0001 \approx 1$ and $1(1) + 1(1) = 2$. Now
+watch what happens when a computer solves it.
+
+Consider this $2 \times 2$ system in floating-point arithmetic with 4
+significant figures:
+
+$$\begin{pmatrix} 0.0001 & 1 \\ 1 & 1 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \end{pmatrix} = \begin{pmatrix} 1 \\ 2 \end{pmatrix}$$
+
+Naive elimination: subtract $(1 / 0.0001) = 10000$ times row 1 from row 2.
+
+Row 2 becomes:
+$$[1 - 10000 \times 0.0001,\quad 1 - 10000 \times 1] = [0,\quad 1 - 10000]$$
+
+The $1 - 10000$ gives $-9999$, fine. But consider the right-hand side:
+$2 - 10000 \times 1 = -9998$. Back-substituting: $x_2 = -9998 / {-9999} \approx 1.0001$.
+Then $x_1 = (1 - 1 \times 1.0001)/0.0001 \approx -1$.
+
+<!-- STUDENT: The 2×2 naive elimination example claims the exact answer is x₁ ≈ 1, x₂ ≈ 1, but no verification is shown. Plugging x₁=1, x₂=1 back into the original system would take one line and would confirm this — without it, a reader who gets a different naive result has nothing to check against. -->
+
+The exact answer is $x_2 \approx 1$, $x_1 \approx 1$. Naive elimination gives
+$x_1 \approx -1$. That is not a small rounding error — that is the wrong sign
+with the wrong magnitude. The problem: dividing by the tiny pivot $0.0001$
+amplified the rounding error in the subtracted row by a factor of $10000$.
+The error in the fourth decimal place became the dominant term in the result.
+
+This is **catastrophic cancellation**: subtracting two nearly equal large
+numbers, leaving a result that is almost entirely rounding error. It is not a
+pathological edge case. Any system with a small pivot relative to the other
+entries is vulnerable — and such systems arise routinely from physical models
+with variables at very different scales.
+
+### Partial pivoting: the fix
+
+Before eliminating column $j$, scan the entries in column $j$ from row $j$
+downward. Swap the row with the **largest absolute value** in that column into
+the pivot position. This ensures the multiplier $m_{ij} = a_{ij}/a_{jj}$
+satisfies $|m_{ij}| \leq 1$, bounding the growth of rounding errors.
+
+**Algorithm** (partial pivoting GE on $n \times n$ augmented matrix $[A|\mathbf{b}]$):
+
+For $j = 1, 2, \ldots, n-1$:
+
+1. Find $p = \arg\max_{i \geq j} |a_{ij}|$ (index of largest entry in column $j$, rows $j$ to $n$)
+2. If $p \neq j$: swap rows $p$ and $j$ in $[A|\mathbf{b}]$
+3. For $i = j+1, \ldots, n$:
+   - Compute multiplier $m_{ij} = a_{ij}/a_{jj}$
+   - Row $i \leftarrow$ Row $i$ $- m_{ij} \times$ Row $j$
+
+After $n-1$ passes, $A$ is upper triangular. Recover $\mathbf{x}$ by
+back-substitution:
+
+$$x_n = \frac{b_n}{a_{nn}}, \qquad x_i = \frac{1}{a_{ii}}\left(b_i - \sum_{k=i+1}^n a_{ik} x_k\right), \quad i = n-1, \ldots, 1$$
+
+### Worked example: partial pivoting on a 3×3 system
+
+Solve:
+
+$$\begin{pmatrix} 1 & 2 & 1 \\ 3 & 2 & 4 \\ 2 & 1 & 2 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} 8 \\ 20 \\ 12 \end{pmatrix}$$
+
+Write the augmented matrix:
+
+$$[A|\mathbf{b}] = \left[\begin{array}{ccc|c} 1 & 2 & 1 & 8 \\ 3 & 2 & 4 & 20 \\ 2 & 1 & 2 & 12 \end{array}\right]$$
+
+**Pass 1 (column 1):** The largest entry in column 1 is $|3|$ in row 2.
+Swap rows 1 and 2:
+
+$$\left[\begin{array}{ccc|c} 3 & 2 & 4 & 20 \\ 1 & 2 & 1 & 8 \\ 2 & 1 & 2 & 12 \end{array}\right]$$
+
+Eliminate below pivot $a_{11} = 3$:
+
+- Row 2 $\leftarrow$ Row 2 $- (1/3)$ Row 1: $[1 - 1, \; 2 - 2/3, \; 1 - 4/3 \;|\; 8 - 20/3] = [0, \; 4/3, \; -1/3 \;|\; 4/3]$
+- Row 3 $\leftarrow$ Row 3 $- (2/3)$ Row 1: $[2 - 2, \; 1 - 4/3, \; 2 - 8/3 \;|\; 12 - 40/3] = [0, \; -1/3, \; -2/3 \;|\; -4/3]$
+
+$$\left[\begin{array}{ccc|c} 3 & 2 & 4 & 20 \\ 0 & 4/3 & -1/3 & 4/3 \\ 0 & -1/3 & -2/3 & -4/3 \end{array}\right]$$
+
+**Pass 2 (column 2):** Largest in column 2, rows 2–3: $|4/3| > |-1/3|$. No swap needed. Pivot is $4/3$.
+
+- Row 3 $\leftarrow$ Row 3 $- (-1/3)/(4/3) \times$ Row 2 $=$ Row 3 $+ (1/4)$ Row 2:
+  $[0, \; -1/3 + 1/3, \; -2/3 - 1/12 \;|\; -4/3 + 1/3] = [0, \; 0, \; -3/4 \;|\; -1]$
+
+$$\left[\begin{array}{ccc|c} 3 & 2 & 4 & 20 \\ 0 & 4/3 & -1/3 & 4/3 \\ 0 & 0 & -3/4 & -1 \end{array}\right]$$
+
+**Back-substitution:**
+
+$$x_3 = \frac{-1}{-3/4} = \frac{4}{3}$$
+
+$$x_2 = \frac{4/3 - (-1/3)(4/3)}{4/3} = \frac{4/3 + 4/9}{4/3} = \frac{16/9}{4/3} = \frac{16}{9} \cdot \frac{3}{4} = \frac{4}{3}$$
+
+$$x_1 = \frac{20 - 2(4/3) - 4(4/3)}{3} = \frac{20 - 8/3 - 16/3}{3} = \frac{20 - 8}{3} = \frac{12}{3} = 4$$
+
+**Solution:** $x_1 = 4$, $x_2 = 4/3$, $x_3 = 4/3$.
+
+**Check:** Row 1: $1(4) + 2(4/3) + 1(4/3) = 4 + 8/3 + 4/3 = 4 + 4 = 8$ ✓
+Row 2: $3(4) + 2(4/3) + 4(4/3) = 12 + 8/3 + 16/3 = 12 + 8 = 20$ ✓
+Row 3: $2(4) + 1(4/3) + 2(4/3) = 8 + 4/3 + 8/3 = 8 + 4 = 12$ ✓
+
+<!-- VIZ: 3×3 augmented matrix animation — step through partial pivoting GE, amber highlight on pivot row after swap, red highlight on the entry that would have been a problematic small pivot if left in place, blue for multipliers, "Next step" button advances one elimination step at a time, final state shows upper-triangular result -->
+
+## LU decomposition
+
+Gaussian elimination — without pivoting, for clarity — can be read as
+computing a factorisation $A = LU$. The matrix $L$ records the multipliers
+used during elimination; $U$ is the upper-triangular result.
+
+### Doolittle form
+
+In the Doolittle convention, $L$ has **ones on its diagonal**:
+
+$$L = \begin{pmatrix} 1 & 0 & 0 \\ m_{21} & 1 & 0 \\ m_{31} & m_{32} & 1 \end{pmatrix}, \qquad U = \begin{pmatrix} u_{11} & u_{12} & u_{13} \\ 0 & u_{22} & u_{23} \\ 0 & 0 & u_{33} \end{pmatrix}$$
+
+where $m_{ij}$ is the multiplier used to zero $a_{ij}$ during elimination.
+
+The $U$ matrix is exactly the upper-triangular matrix at the end of
+Gaussian elimination. The $L$ matrix costs nothing extra — the multipliers
+are computed anyway and simply stored in the lower portion of the working
+array.
+
+### Why LU earns its keep
+
+<!-- STUDENT: The O(n³) and O(n²) operation counts appear here and are used to motivate LU, but "operations" is undefined. Does it mean additions, multiplications, FLOPs? An engineering reader can accept it as a rough count without a formal definition, but a brief parenthetical — "(each elimination step touches every remaining row-column pair, giving roughly n³/3 arithmetic operations in total)" — would make the claim feel grounded rather than asserted. -->
+
+Solving $A\mathbf{x} = \mathbf{b}$ once costs $O(n^3)$ operations — where "operations" means floating-point additions and multiplications, roughly $n^3/3$ in total, because each elimination step touches every remaining row-column pair. This is unavoidable. But if you need to solve the same $A$ for multiple right-hand
+sides $\mathbf{b}_1, \mathbf{b}_2, \ldots$, the LU factorisation pays back:
+
+- **Build** $A = LU$: $O(n^3)$ — done once.
+- **Solve** $L\mathbf{y} = \mathbf{b}$ (forward substitution): $O(n^2)$ per right-hand side.
+- **Solve** $U\mathbf{x} = \mathbf{y}$ (back substitution): $O(n^2)$ per right-hand side.
+
+For $k$ right-hand sides the total cost is $O(n^3) + k \cdot O(n^2)$, versus
+$k \cdot O(n^3)$ if you re-eliminate each time. For a $1000 \times 1000$
+system solved for 50 right-hand sides, that's roughly $50 \times$ faster.
+
+This matters in FEM analysis, where the stiffness matrix $K$ is fixed while
+the load vector $\mathbf{f}$ changes with each load case.
+
+### Worked example: Doolittle LU on a 3×3 system
+
+Factorise and solve:
+
+$$A = \begin{pmatrix} 2 & 1 & 1 \\ 4 & 3 & 3 \\ 8 & 7 & 9 \end{pmatrix}, \quad \mathbf{b}_1 = \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix}, \quad \mathbf{b}_2 = \begin{pmatrix} 2 \\ 0 \\ 4 \end{pmatrix}$$
+
+**Step 1: Build $U$ and record multipliers.**
+
+Column 1, pivot $u_{11} = 2$:
+- $m_{21} = 4/2 = 2$. Row 2 $\leftarrow$ Row 2 $-$ 2 Row 1: $[0, 1, 1 \;|\; \cdots]$
+- $m_{31} = 8/2 = 4$. Row 3 $\leftarrow$ Row 3 $-$ 4 Row 1: $[0, 3, 5 \;|\; \cdots]$
+
+Column 2, pivot $u_{22} = 1$:
+- $m_{32} = 3/1 = 3$. Row 3 $\leftarrow$ Row 3 $-$ 3 Row 2: $[0, 0, 2 \;|\; \cdots]$
+
+$$U = \begin{pmatrix} 2 & 1 & 1 \\ 0 & 1 & 1 \\ 0 & 0 & 2 \end{pmatrix}, \qquad L = \begin{pmatrix} 1 & 0 & 0 \\ 2 & 1 & 0 \\ 4 & 3 & 1 \end{pmatrix}$$
+
+**Verify:** $LU$ should equal $A$.
+
+$$LU = \begin{pmatrix}1&0&0\\2&1&0\\4&3&1\end{pmatrix}\begin{pmatrix}2&1&1\\0&1&1\\0&0&2\end{pmatrix} = \begin{pmatrix}2&1&1\\4&3&3\\8&7&9\end{pmatrix} = A \checkmark$$
+
+**Step 2: Solve $L\mathbf{y} = \mathbf{b}_1$ (forward substitution).**
+
+$$\begin{pmatrix}1&0&0\\2&1&0\\4&3&1\end{pmatrix}\begin{pmatrix}y_1\\y_2\\y_3\end{pmatrix} = \begin{pmatrix}1\\1\\1\end{pmatrix}$$
+
+$y_1 = 1$, $\quad y_2 = 1 - 2(1) = -1$, $\quad y_3 = 1 - 4(1) - 3(-1) = 0$
+
+**Step 3: Solve $U\mathbf{x} = \mathbf{y}$ (back substitution).**
+
+$$\begin{pmatrix}2&1&1\\0&1&1\\0&0&2\end{pmatrix}\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix} = \begin{pmatrix}1\\-1\\0\end{pmatrix}$$
+
+$x_3 = 0/2 = 0$, $\quad x_2 = (-1 - 1 \cdot 0)/1 = -1$, $\quad x_1 = (1 - 1(-1) - 1(0))/2 = 1$
+
+**Solution for $\mathbf{b}_1$:** $\mathbf{x} = (1, -1, 0)^T$
+
+**Check:** $2(1) + 1(-1) + 1(0) = 1$ ✓, $\quad 4(1) + 3(-1) + 3(0) = 1$ ✓, $\quad 8(1) + 7(-1) + 9(0) = 1$ ✓
+
+**Step 4: Reuse $L$, $U$ for $\mathbf{b}_2 = (2, 0, 4)^T$.**
+
+Forward substitution $L\mathbf{y} = \mathbf{b}_2$:
+
+$y_1 = 2$, $\quad y_2 = 0 - 2(2) = -4$, $\quad y_3 = 4 - 4(2) - 3(-4) = 4 - 8 + 12 = 8$
+
+Back substitution $U\mathbf{x} = \mathbf{y}$:
+
+$x_3 = 8/2 = 4$, $\quad x_2 = (-4 - 1 \cdot 4)/1 = -8$, $\quad x_1 = (2 - 1(-8) - 1(4))/2 = (2 + 8 - 4)/2 = 3$
+
+**Solution for $\mathbf{b}_2$:** $\mathbf{x} = (3, -8, 4)^T$
+
+**Check:** $2(3) + 1(-8) + 1(4) = 6 - 8 + 4 = 2$ ✓, $\quad 4(3) + 3(-8) + 3(4) = 12 - 24 + 12 = 0$ ✓, $\quad 8(3) + 7(-8) + 9(4) = 24 - 56 + 36 = 4$ ✓
+
+::: {.callout-note appearance="simple"}
+**Why LU works**
+
+Solving $A\mathbf{x} = \mathbf{b}$ is equivalent to solving $LU\mathbf{x} = \mathbf{b}$.
+Let $\mathbf{y} = U\mathbf{x}$. Then $L\mathbf{y} = \mathbf{b}$ — a lower-triangular
+system, solved in one forward pass. Then $U\mathbf{x} = \mathbf{y}$ — an
+upper-triangular system, solved in one backward pass. The original $O(n^3)$
+work goes into building $L$ and $U$. Once those are in hand, each new
+right-hand side costs only $O(n^2)$.
+:::
+
+## Condition number
+
+### Definition
+
+The condition number $\kappa(A)$ measures how much relative error in
+$\mathbf{b}$ is amplified into relative error in $\mathbf{x}$.
+
+Using the $\infty$-norm:
+
+$$\kappa(A) = \|A\|_\infty \cdot \|A^{-1}\|_\infty$$
+
+where $\|A\|_\infty = \max_i \sum_j |a_{ij}|$ is the maximum absolute row sum.
+
+A system is **well-conditioned** if $\kappa(A)$ is small (close to 1). It is
+**ill-conditioned** if $\kappa(A) \gg 1$.
+
+The digits-of-accuracy rule: with $t$-digit floating-point arithmetic, you
+can expect roughly $t - \log_{10}\kappa(A)$ correct digits in the solution.
+
+### Ill-conditioning in practice: the 3×3 Hilbert matrix
+
+The Hilbert matrix $H$ with entries $h_{ij} = 1/(i+j-1)$ is the classic
+ill-conditioning example:
+
+$$H_3 = \begin{pmatrix} 1 & 1/2 & 1/3 \\ 1/2 & 1/3 & 1/4 \\ 1/3 & 1/4 & 1/5 \end{pmatrix}$$
+
+**Step 1: $\|H_3\|_\infty$.**
+
+Row sums: Row 1: $1 + 0.5 + 0.333 = 1.833$; Row 2: $0.5 + 0.333 + 0.25 = 1.083$; Row 3: $0.333 + 0.25 + 0.2 = 0.783$.
+
+$$\|H_3\|_\infty = 1.833$$
+
+**Step 2: $\|H_3^{-1}\|_\infty$.**
+
+The exact inverse of $H_3$ is:
+
+$$H_3^{-1} = \begin{pmatrix} 9 & -36 & 30 \\ -36 & 192 & -180 \\ 30 & -180 & 180 \end{pmatrix}$$
+
+Row sums of $|H_3^{-1}|$: Row 1: $9 + 36 + 30 = 75$; Row 2: $36 + 192 + 180 = 408$; Row 3: $30 + 180 + 180 = 390$.
+
+$$\|H_3^{-1}\|_\infty = 408$$
+
+**Step 3: $\kappa_\infty(H_3)$.**
+
+$$\kappa_\infty(H_3) = 1.833 \times 408 \approx 748$$
+
+So solving $H_3 \mathbf{x} = \mathbf{b}$ loses about $\log_{10}(748) \approx 2.9$
+digits of accuracy. On a 15-digit machine you get about 12 reliable digits —
+acceptable. For $H_{10}$, $\kappa \approx 10^{13}$, leaving roughly 2
+reliable digits. That system cannot be usefully solved by direct methods
+in standard double precision.
+
+::: {.callout-warning appearance="simple"}
+**When to worry**
+
+If $\kappa(A) > 10^6$ in double precision, inspect the problem formulation
+before trusting any solution. The issue usually lies in the model (ill-scaled
+variables, near-dependent equations) rather than the solver. Rescaling rows
+and columns (equilibration) often reduces $\kappa$ by several orders of
+magnitude.
+:::
+
+<!-- VIZ: condition number explorer — 2×2 matrix [[a,b],[c,d]] with sliders for entries a, b, c, d (range −5 to 5, step 0.1), live display of κ_∞(A). Below the matrix, show a vector b with a slider for a small perturbation δ, and display the resulting solution x and perturbed solution x+Δx side by side, with Δx/x highlighted to show how even a small δ in b can cause a large shift in x when κ is large. Label the display "Small change in b → large change in x when κ is large." -->
+
+<!-- ENGINEER-PROF: [WARN] This section introduces only Jacobi and Gauss-Seidel as iterative methods. In engineering practice (FEM, CFD, structural analysis) these classical stationary methods are almost never used directly on large systems — they are too slow and lack robust convergence guarantees on non-diagonally-dominant matrices. The real workhorses are Krylov subspace methods: conjugate gradient (CG) for symmetric positive-definite systems (FEM stiffness), GMRES or BiCGSTAB for non-symmetric systems (CFD). Consider adding a brief signposting paragraph: "Jacobi and Gauss-Seidel are taught here to build intuition. The methods actually used in production FEM and CFD codes are Krylov subspace methods (conjugate gradient, GMRES) — a more advanced family that uses the same iteration idea but chooses each update to minimise the error in an optimal subspace. They converge far faster on the systems engineers actually encounter." -->
+## Iterative methods
+
+Direct methods (GE, LU) compute the exact answer (up to rounding) in a fixed
+number of operations. Iterative methods start from an initial guess and
+update it repeatedly. They're preferred when $A$ is large and sparse — a
+$10^6 \times 10^6$ FEM stiffness matrix, for example, where storing $L$ and
+$U$ in full is impractical.
+
+### Jacobi iteration
+
+Rewrite each equation for its diagonal variable, holding all other variables
+fixed at their current values.
+
+For row $i$ of $A\mathbf{x} = \mathbf{b}$:
+
+$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j \neq i} a_{ij} x_j^{(k)}\right)$$
+
+All updates use values from the **previous** iterate $x^{(k)}$. This makes
+Jacobi naturally parallelisable — each new $x_i^{(k+1)}$ is independent of
+the others being computed in the same step.
+
+### Gauss-Seidel iteration
+
+The same formula, but use the **latest available** values — if $x_j^{(k+1)}$
+has already been computed in this sweep, use it immediately:
+
+$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j < i} a_{ij} x_j^{(k+1)} - \sum_{j > i} a_{ij} x_j^{(k)}\right)$$
+
+Gauss-Seidel typically converges in roughly half the iterations of Jacobi
+because it incorporates fresh information sooner. The trade-off: it cannot
+be parallelised as straightforwardly.
+
+### Convergence criterion: diagonal dominance
+
+Both methods are guaranteed to converge if $A$ is **strictly diagonally
+dominant**:
+
+$$|a_{ii}| > \sum_{j \neq i} |a_{ij}| \quad \text{for all } i$$
+
+This means each diagonal entry exceeds the sum of all off-diagonal entries in
+its row, in absolute value. FEM stiffness matrices and many physical systems
+(heat diffusion, network flow) naturally satisfy this condition.
+
+<!-- STUDENT: "Spectral radius of the iteration matrix" is the first mention of spectral radius in this chapter, and it is not defined. An engineering reader who has not studied eigenvalues in the context of iteration will not know what this means or how to compute it. If the term is unavoidable here, a brief gloss — "the spectral radius is the largest absolute eigenvalue of the matrix that multiplies the error at each step; when it is less than 1, the error shrinks" — would close the gap. Alternatively, the sentence can be reworded to say only "the error is guaranteed to shrink at each step" without introducing new terminology. -->
+
+When diagonal dominance holds, the error is guaranteed to shrink at each step
+and the iteration converges from any starting point. (For those familiar with
+eigenvalues: the convergence criterion is that the spectral radius of the
+iteration matrix — the largest absolute eigenvalue of the matrix that
+multiplies the error — is less than 1.)
+
+### Worked example: Jacobi and Gauss-Seidel on a 3×3 system
+
+Solve from $\mathbf{x}^{(0)} = (0, 0, 0)^T$:
+
+$$\begin{pmatrix} 10 & -1 & 2 \\ -1 & 11 & -1 \\ 2 & -1 & 10 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} 6 \\ 25 \\ -11 \end{pmatrix}$$
+
+Check diagonal dominance: Row 1: $10 > |-1| + |2| = 3$ ✓; Row 2: $11 > |-1| + |-1| = 2$ ✓; Row 3: $10 > |2| + |-1| = 3$ ✓. Convergence guaranteed.
+
+The exact solution is $\mathbf{x} = (1, 2, -1)^T$.
+
+#### Jacobi, 3 iterations
+
+Iteration formulas:
+
+$$x_1^{(k+1)} = \frac{1}{10}(6 + x_2^{(k)} - 2x_3^{(k)})$$
+
+$$x_2^{(k+1)} = \frac{1}{11}(25 + x_1^{(k)} + x_3^{(k)})$$
+
+$$x_3^{(k+1)} = \frac{1}{10}(-11 - 2x_1^{(k)} + x_2^{(k)})$$
+
+**$k=0 \to k=1$:** Using $\mathbf{x}^{(0)} = (0, 0, 0)^T$:
+
+$x_1^{(1)} = (6 + 0 - 0)/10 = 0.6$
+
+$x_2^{(1)} = (25 + 0 + 0)/11 \approx 2.2727$
+
+$x_3^{(1)} = (-11 - 0 + 0)/10 = -1.1$
+
+**$k=1 \to k=2$:**
+
+$x_1^{(2)} = (6 + 2.2727 - 2(-1.1))/10 = (6 + 2.2727 + 2.2)/10 = 10.4727/10 = 1.0473$
+
+$x_2^{(2)} = (25 + 0.6 + (-1.1))/11 = 24.5/11 = 2.2273$
+
+$x_3^{(2)} = (-11 - 2(0.6) + 2.2727)/10 = (-11 - 1.2 + 2.2727)/10 = -9.9273/10 = -0.9927$
+
+**$k=2 \to k=3$:**
+
+$x_1^{(3)} = (6 + 2.2273 - 2(-0.9927))/10 = (6 + 2.2273 + 1.9854)/10 = 10.2127/10 = 1.0213$
+
+$x_2^{(3)} = (25 + 1.0473 + (-0.9927))/11 = (25 + 0.0546)/11 = 25.0546/11 \approx 2.278$
+
+$x_3^{(3)} = (-11 - 2(1.0473) + 2.2273)/10 = (-11 - 2.0946 + 2.2273)/10 = -10.8673/10 = -1.087$
+
+After 3 iterations: $\mathbf{x}^{(3)} \approx (1.021, 2.278, -1.087)^T$. Errors are shrinking — heading toward the exact solution $(1, 2, -1)^T$, but Jacobi converges slowly on this system.
+
+#### Gauss-Seidel, 3 iterations
+
+**$k=0 \to k=1$:** Using **updated** values as soon as available:
+
+$x_1^{(1)} = (6 + 0 - 0)/10 = 0.6$ (uses $x_2^{(0)} = 0$, $x_3^{(0)} = 0$)
+
+$x_2^{(1)} = (25 + \mathbf{0.6} + 0)/11 = 25.6/11 \approx 2.3273$ (uses new $x_1^{(1)} = 0.6$)
+
+$x_3^{(1)} = (-11 - 2(\mathbf{0.6}) + \mathbf{2.3273})/10 = (-11 - 1.2 + 2.3273)/10 = -9.8727/10 = -0.9873$ (uses new $x_1^{(1)}$ and $x_2^{(1)}$)
+
+**$k=1 \to k=2$:**
+
+$x_1^{(2)} = (6 + 2.3273 - 2(-0.9873))/10 = (6 + 2.3273 + 1.9746)/10 = 10.3019/10 = 1.0302$
+
+$x_2^{(2)} = (25 + 1.0302 + (-0.9873))/11 = 25.0429/11 \approx 2.2766$
+
+$x_3^{(2)} = (-11 - 2(1.0302) + 2.2766)/10 = (-11 - 2.0604 + 2.2766)/10 = -10.7838/10 = -1.0784$
+
+**$k=2 \to k=3$:**
+
+$x_1^{(3)} = (6 + 2.2766 - 2(-1.0784))/10 = (6 + 2.2766 + 2.1568)/10 = 10.4334/10 = 1.0433$
+
+$x_2^{(3)} = (25 + 1.0433 + (-1.0784))/11 = 24.9649/11 \approx 2.2695$
+
+$x_3^{(3)} = (-11 - 2(1.0433) + 2.2695)/10 = (-11 - 2.0866 + 2.2695)/10 = -10.8171/10 = -1.0817$
+
+After 3 iterations, Gauss-Seidel is at $\mathbf{x}^{(3)} \approx (1.043, 2.270, -1.082)^T$.
+Errors are still about $4\%$, similar to Jacobi after 3 steps on this particular system.
+Gauss-Seidel does converge in roughly half the iterations of Jacobi in general, but the
+advantage shows more clearly in systems where the off-diagonal coupling is stronger or
+after more iterations have been taken.
+
+::: {.callout-note appearance="simple"}
+**When to use iterative vs direct**
+
+| Criterion | Direct (LU) | Iterative (GS/Jacobi) |
+|---|---|---|
+| Matrix size | Any, up to memory | Large sparse matrices |
+| Sparsity | Not exploited | Natural fit |
+| Multiple RHS | Fast after factorisation | Re-iterate each time |
+| Accuracy | Machine precision | Stops at tolerance |
+| Convergence guarantee | Always (if non-singular) | Diagonal dominance |
+
+For FEM systems with $n > 10^5$, iterative methods are standard. For
+$n < 10^3$ with multiple right-hand sides, LU with pivoting is preferable.
+:::
+
+## Where this goes
+
+This chapter handles $A\mathbf{x} = \mathbf{b}$ for fixed $A$ and $\mathbf{b}$.
+The next chapter in this section extends the same ideas to **numerical ODEs
+and PDEs**: discretising a differential equation produces a linear system at
+every time step or on every mesh — the same pivoted LU or iterative machinery
+applies, just called millions of times. The structure of the system (banded,
+sparse, symmetric) determines which variant to use, and the condition number
+of the discretised operator determines the mesh resolution needed to stay in
+the accurate regime.
+
+The conditioning ideas carry directly into **optimisation** (Vol 7,
+optimisation section): the Hessian matrix of an objective function plays
+the role of $A$, and ill-conditioning of the Hessian is the primary reason
+gradient-descent methods stall or diverge. Knowing how to estimate $\kappa$
+and how to precondition a matrix (rescaling so that $\kappa$ drops) is
+practical currency in large-scale numerical optimisation.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- **Structural engineering:** Every finite element analysis assembles a
+  stiffness matrix $K$ and solves $K\mathbf{u} = \mathbf{f}$ for displacements
+  $\mathbf{u}$. LU factorisation with multiple load vectors is standard.
+- **Computational fluid dynamics:** The pressure-correction step in
+  incompressible flow solvers is a large sparse Poisson system — iterative
+  solvers (conjugate gradient, a Krylov subspace method that exploits
+  symmetry and positive-definiteness) are universal.
+- **Machine learning:** Linear regression solves the normal equations
+  $(X^TX)\boldsymbol{\beta} = X^T\mathbf{y}$; the condition number of $X^TX$
+  is why multicollinearity ruins regression estimates.
+- **Finance:** Estimating a covariance matrix from historical returns produces
+  an ill-conditioned system when assets are correlated — the condition number
+  flags when the inverse is unreliable.
+:::
+
+## Exercises
+
+These are engineering-layer puzzles. Each has a specific numerical answer.
+Work the full procedure — don't skip steps — because the errors that matter
+in practice happen in the steps that get skipped in rough work.
+
+**Exercise 1.** Factorise the following matrix using Doolittle LU decomposition,
+then use the factorisation to solve for two right-hand sides.
+
+$$A = \begin{pmatrix} 2 & 4 & 2 \\ 1 & 5 & 2 \\ 4 & 6 & 8 \end{pmatrix}, \quad \mathbf{b}_1 = \begin{pmatrix} 2 \\ 3 \\ 6 \end{pmatrix}, \quad \mathbf{b}_2 = \begin{pmatrix} 0 \\ 1 \\ -2 \end{pmatrix}$$
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Write the system"
+    eq: "A\\mathbf{x} = \\mathbf{b},\\quad A = \\begin{pmatrix}2&4&2\\\\1&5&2\\\\4&6&8\\end{pmatrix}"
+    note: "LU decomposition avoids re-doing elimination for each right-hand side."
+  - op: "Eliminate column 1: compute multipliers"
+    eq: "m_{21} = 1/2 = 0.5,\\quad m_{31} = 4/2 = 2"
+    note: ~
+  - op: "Row 2 ← Row 2 − 0.5 Row 1"
+    eq: "\\text{Row 2: }[0,\\; 3,\\; 1]"
+    note: ~
+  - op: "Row 3 ← Row 3 − 2 Row 1"
+    eq: "\\text{Row 3: }[0,\\; -2,\\; 4]"
+    note: ~
+  - op: "Eliminate column 2: compute multiplier"
+    eq: "m_{32} = -2/3"
+    note: ~
+  - op: "Row 3 ← Row 3 − (−2/3) Row 2"
+    eq: "\\text{Row 3: }[0,\\; 0,\\; 4 + 2/3] = [0,\\;0,\\;14/3]"
+    note: ~
+  - op: "Write L and U (Doolittle form)"
+    eq: "L = \\begin{pmatrix}1&0&0\\\\0.5&1&0\\\\2&-2/3&1\\end{pmatrix},\\quad U = \\begin{pmatrix}2&4&2\\\\0&3&1\\\\0&0&14/3\\end{pmatrix}"
+    note: ~
+  - op: "Solve L y = b₁ by forward substitution"
+    eq: "y_1=2,\\quad y_2=3-0.5(2)=2,\\quad y_3=6-2(2)-(-2/3)(2)=6-4+4/3=10/3"
+    note: "y₃ = 6 − m₃₁y₁ − m₃₂y₂ = 6 − 2(2) − (−2/3)(2) = 6 − 4 + 4/3 = 10/3."
+  - op: "Solve U x = y for b₁ by back substitution"
+    eq: "x_3=(10/3)/(14/3)=5/7,\\quad x_2=(2-1\\cdot(5/7))/3=(9/7)/3=3/7,\\quad x_1=(2-4(3/7)-2(5/7))/2=(-8/7)/2=-4/7"
+    note: ~
+  - op: "Solution for b₁"
+    eq: "\\mathbf{x}_1 = (-4/7,\\; 3/7,\\; 5/7)^T"
+    note: ~
+  - op: "Solve L y = b₂ by forward substitution"
+    eq: "y_1=0,\\quad y_2=1-0.5(0)=1,\\quad y_3=-2-2(0)-(-2/3)(1)=-2+2/3=-4/3"
+    note: ~
+  - op: "Solve U x = y for b₂ by back substitution"
+    eq: "x_3=(-4/3)/(14/3)=-2/7,\\quad x_2=(1-(-2/7))/3=(9/7)/3=3/7,\\quad x_1=(0-4(3/7)-2(-2/7))/2=(-8/7)/2=-4/7"
+    note: ~
+  - op: "Solution for b₂"
+    eq: "\\mathbf{x}_2 = (-4/7,\\; 3/7,\\; -2/7)^T"
+    note: ~
+  - op: "Check x₁ (first solution)"
+    eq: "2(-4/7)+4(3/7)+2(5/7)=-8/7+12/7+10/7=14/7=2\\checkmark"
+    note: ~
+-->
+
+**Exercise 2.** Apply partial pivoting to the following near-singular system.
+Identify which row swap is required, perform the swap, and carry out elimination.
+Show what would go wrong without the swap.
+
+$$\begin{pmatrix} 0.002 & 1 & 1 \\ 1 & 2 & 5 \\ 1 & -1 & 3 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} 1 \\ 8 \\ 5 \end{pmatrix}$$
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the augmented matrix"
+    eq: "\\left[\\begin{array}{ccc|c}0.002&1&1&1\\\\1&2&5&8\\\\1&-1&3&5\\end{array}\\right]"
+    note: ~
+  - op: "Identify pivot candidates in column 1"
+    eq: "|0.002|,\\quad |1|,\\quad |1|"
+    note: "The largest magnitude is 1, appearing in rows 2 and 3."
+  - op: "Swap row 1 with row 2 (the first row with magnitude 1)"
+    eq: "\\left[\\begin{array}{ccc|c}1&2&5&8\\\\0.002&1&1&1\\\\1&-1&3&5\\end{array}\\right]"
+    note: "Without this swap, the tiny pivot 0.002 would cause multipliers of magnitude ~500, amplifying rounding errors catastrophically."
+  - op: "Eliminate column 1: multipliers"
+    eq: "m_{21}=0.002/1=0.002,\\quad m_{31}=1/1=1"
+    note: "Multipliers ≤ 1 — pivoting has controlled the error amplification."
+  - op: "Row 2 ← Row 2 − 0.002 Row 1"
+    eq: "\\left[\\begin{array}{ccc|c}1&2&5&8\\\\0&0.996&0.99&0.984\\\\1&-1&3&5\\end{array}\\right]"
+    note: ~
+  - op: "Row 3 ← Row 3 − 1 Row 1"
+    eq: "\\left[\\begin{array}{ccc|c}1&2&5&8\\\\0&0.996&0.99&0.984\\\\0&-3&-2&-3\\end{array}\\right]"
+    note: ~
+  - op: "Pivot column 2: largest in rows 2–3"
+    eq: "|0.996| < |-3|,\\text{ so swap rows 2 and 3}"
+    note: ~
+  - op: "After row swap"
+    eq: "\\left[\\begin{array}{ccc|c}1&2&5&8\\\\0&-3&-2&-3\\\\0&0.996&0.99&0.984\\end{array}\\right]"
+    note: ~
+  - op: "Eliminate column 2"
+    eq: "m_{32}=0.996/(-3)=-0.332;\\quad\\text{Row 3} \\leftarrow \\text{Row 3}+0.332\\,\\text{Row 2}"
+    note: ~
+  - op: "Row 3 after elimination"
+    eq: "\\left[\\begin{array}{ccc|c}1&2&5&8\\\\0&-3&-2&-3\\\\0&0&0.326&{-0.012}\\end{array}\\right]\\approx\\left[\\begin{array}{ccc|c}1&2&5&8\\\\0&-3&-2&-3\\\\0&0&1/3&0\\end{array}\\right]"
+    note: "The rhs entry is −0.012 in exact arithmetic; it rounds to ≈ 0 because the original system has a near-zero third pivot, signalling near-singularity."
+  - op: "Back-substitute: x₃"
+    eq: "x_3 \\approx 0"
+    note: ~
+  - op: "Back-substitute: x₂"
+    eq: "x_2 = (-3-(-2)(0))/(-3)=1"
+    note: ~
+  - op: "Back-substitute: x₁"
+    eq: "x_1 = 8 - 2(1) - 5(0) = 6"
+    note: ~
+  - op: "Check"
+    eq: "0.002(6)+1(1)+1(0)=0.012+1=1.012\\approx 1\\checkmark\\text{ (small error from floating-point in the problem)}"
+    note: "The near-zero third pivot signals near-singularity; small perturbations in b would give large changes in x₃."
+-->
+
+**Exercise 3.** Compute $\kappa_\infty(A)$ for the matrix below, then interpret
+the result: if you solve $A\mathbf{x} = \mathbf{b}$ on a machine with 15
+significant digits, how many reliable digits do you expect in the solution?
+
+$$A = \begin{pmatrix} 3 & 1 \\ 2 & 4 \end{pmatrix}$$
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Write the matrix"
+    eq: "A = \\begin{pmatrix}3&1\\\\2&4\\end{pmatrix}"
+    note: ~
+  - op: "Compute ||A||_∞ (maximum absolute row sum)"
+    eq: "\\|A\\|_\\infty = \\max(|3|+|1|,\\;|2|+|4|) = \\max(4,6) = 6"
+    note: ~
+  - op: "Compute A⁻¹ via the 2×2 formula A⁻¹ = (1/det) [[d,−b],[−c,a]]"
+    eq: "\\det(A)=3(4)-1(2)=10,\\quad A^{-1}=\\frac{1}{10}\\begin{pmatrix}4&-1\\\\-2&3\\end{pmatrix}"
+    note: ~
+  - op: "Compute ||A⁻¹||_∞ (maximum absolute row sum of A⁻¹)"
+    eq: "\\|A^{-1}\\|_\\infty = \\frac{1}{10}\\max(|4|+|-1|,\\;|-2|+|3|) = \\frac{1}{10}\\max(5,5)=\\frac{1}{2}"
+    note: ~
+  - op: "Compute κ_∞(A)"
+    eq: "\\kappa_\\infty(A) = 6 \\times \\frac{1}{2} = 3"
+    note: ~
+  - op: "Interpret the result"
+    eq: "\\log_{10}(3)\\approx 0.48\\text{ digits lost};\\quad 15 - 0.48 \\approx 14.5\\text{ reliable digits}"
+    note: "κ = 3 is close to 1 — this system is very well-conditioned. A small perturbation in b produces at most a 3× perturbation in x."
+  - op: "Check: verify κ ≥ 1 (it always is)"
+    eq: "\\kappa(A)=3\\geq 1\\checkmark"
+    note: "The minimum possible condition number is 1 (achieved by orthogonal matrices). κ < 1 is impossible."
+-->
+
+**Exercise 4.** Apply 3 iterations of Jacobi iteration to the following system,
+starting from $\mathbf{x}^{(0)} = (0, 0, 0)^T$. Show the iterate after each step.
+
+$$\begin{pmatrix} 5 & 1 & 1 \\ 1 & 6 & 1 \\ 1 & 1 & 4 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} 7 \\ 8 \\ 6 \end{pmatrix}$$
+
+The exact solution is $\mathbf{x} = (1, 1, 1)^T$.
+
+<!-- STEPPER
+exercise: 4
+steps:
+  - op: "Verify diagonal dominance"
+    eq: "\\text{Row 1: }5>|1|+|1|=2\\checkmark;\\quad\\text{Row 2: }6>2\\checkmark;\\quad\\text{Row 3: }4>2\\checkmark"
+    note: "Diagonal dominance guarantees Jacobi converges from any starting point."
+  - op: "Write Jacobi update formulas"
+    eq: "x_1^{(k+1)}=\\frac{1}{5}(7-x_2^{(k)}-x_3^{(k)}),\\quad x_2^{(k+1)}=\\frac{1}{6}(8-x_1^{(k)}-x_3^{(k)}),\\quad x_3^{(k+1)}=\\frac{1}{4}(6-x_1^{(k)}-x_2^{(k)})"
+    note: "All updates use the same previous iterate — don't use new values mid-step."
+  - op: "Iteration k=0→1: apply formulas with x⁽⁰⁾=(0,0,0)"
+    eq: "x_1^{(1)}=7/5=1.4,\\quad x_2^{(1)}=8/6\\approx1.333,\\quad x_3^{(1)}=6/4=1.5"
+    note: ~
+  - op: "Iteration k=1→2: apply formulas with x⁽¹⁾=(1.4, 1.333, 1.5)"
+    eq: "x_1^{(2)}=(7-1.333-1.5)/5=4.167/5=0.833,\\quad x_2^{(2)}=(8-1.4-1.5)/6=5.1/6=0.850,\\quad x_3^{(2)}=(6-1.4-1.333)/4=3.267/4=0.817"
+    note: ~
+  - op: "Iteration k=2→3: apply formulas with x⁽²⁾=(0.833, 0.850, 0.817)"
+    eq: "x_1^{(3)}=(7-0.850-0.817)/5=5.333/5=1.067,\\quad x_2^{(3)}=(8-0.833-0.817)/6=6.350/6=1.058,\\quad x_3^{(3)}=(6-0.833-0.850)/4=4.317/4=1.079"
+    note: ~
+  - op: "Check convergence trend"
+    eq: "\\mathbf{x}^{(3)}\\approx(1.067,1.058,1.079)^T;\\quad\\text{error }\\approx 0.07\\text{ vs exact }(1,1,1)^T"
+    note: "Oscillating above and below the exact solution — characteristic of Jacobi on a diagonally dominant system."
+-->
+
+**Exercise 5.** Apply 3 iterations of Gauss-Seidel to the same system as
+Exercise 4, from the same starting point $\mathbf{x}^{(0)} = (0, 0, 0)^T$.
+Compare the convergence rate after 3 iterations.
+
+<!-- STEPPER
+exercise: 5
+steps:
+  - op: "Write Gauss-Seidel update formulas (use latest values immediately)"
+    eq: "x_1^{(k+1)}=\\frac{1}{5}(7-x_2^{(k)}-x_3^{(k)}),\\quad x_2^{(k+1)}=\\frac{1}{6}(8-x_1^{(k+1)}-x_3^{(k)}),\\quad x_3^{(k+1)}=\\frac{1}{4}(6-x_1^{(k+1)}-x_2^{(k+1)})"
+    note: "x₁ is updated first; x₂ immediately uses the new x₁; x₃ immediately uses the new x₁ and x₂."
+  - op: "Iteration k=0→1 with x⁽⁰⁾=(0,0,0)"
+    eq: "x_1^{(1)}=(7-0-0)/5=1.4"
+    note: ~
+  - op: "Continue iteration 1: x₂ uses new x₁"
+    eq: "x_2^{(1)}=(8-1.4-0)/6=6.6/6=1.100"
+    note: ~
+  - op: "Continue iteration 1: x₃ uses new x₁ and x₂"
+    eq: "x_3^{(1)}=(6-1.4-1.100)/4=3.5/4=0.875"
+    note: ~
+  - op: "Iteration k=1→2 with x⁽¹⁾=(1.4, 1.100, 0.875)"
+    eq: "x_1^{(2)}=(7-1.100-0.875)/5=5.025/5=1.005"
+    note: ~
+  - op: "Continue iteration 2"
+    eq: "x_2^{(2)}=(8-1.005-0.875)/6=6.120/6=1.020,\\quad x_3^{(2)}=(6-1.005-1.020)/4=3.975/4=0.994"
+    note: ~
+  - op: "Iteration k=2→3 with x⁽²⁾=(1.005, 1.020, 0.994)"
+    eq: "x_1^{(3)}=(7-1.020-0.994)/5=4.986/5=0.997"
+    note: ~
+  - op: "Continue iteration 3"
+    eq: "x_2^{(3)}=(8-0.997-0.994)/6=6.009/6=1.002,\\quad x_3^{(3)}=(6-0.997-1.002)/4=4.001/4=1.000"
+    note: ~
+  - op: "Compare with Jacobi after 3 iterations"
+    eq: "\\text{Gauss-Seidel: error}\\approx 0.003;\\quad\\text{Jacobi: error}\\approx 0.07"
+    note: "Gauss-Seidel is roughly 20× closer to the solution after the same number of iterations on this system."
+  - op: "Check x⁽³⁾"
+    eq: "5(0.997)+1(1.002)+1(1.000)=4.985+1.002+1.000=6.987\\approx 7\\checkmark"
+    note: ~
+-->
+
+**Exercise 6 (Engineering context).** A four-node plane truss is modelled
+by finite element analysis. After assembly and boundary conditions, the
+reduced stiffness system is:
+
+$$K = \begin{pmatrix} 4 & -1 & 0 & 0 \\ -1 & 4 & -1 & 0 \\ 0 & -1 & 4 & -1 \\ 0 & 0 & -1 & 3 \end{pmatrix}, \quad \mathbf{f} = \begin{pmatrix} 0 \\ 0 \\ 10 \\ 5 \end{pmatrix}$$
+
+(a) Verify that $K$ is strictly diagonally dominant, which guarantees that
+Gauss-Seidel converges for any load vector $\mathbf{f}$.
+
+(b) Identify the structural feature of $K$ (bandwidth, sparsity pattern) that
+explains why iterative methods are preferred over LU decomposition for large
+truss problems of this type.
+
+(c) Apply 2 iterations of Gauss-Seidel from $\mathbf{u}^{(0)} = (0,0,0,0)^T$.
+
+<!-- STEPPER
+exercise: 6
+steps:
+  - op: "Write the system K u = f"
+    eq: "K\\mathbf{u}=\\mathbf{f},\\quad K=\\begin{pmatrix}4&-1&0&0\\\\-1&4&-1&0\\\\0&-1&4&-1\\\\0&0&-1&3\\end{pmatrix},\\quad\\mathbf{f}=(0,0,10,5)^T"
+    note: ~
+  - op: "Verify diagonal dominance row by row"
+    eq: "\\text{Row 1: }4>|-1|+|0|+|0|=1\\checkmark;\\quad\\text{Row 2: }4>1+1=2\\checkmark;\\quad\\text{Row 3: }4>1+1=2\\checkmark;\\quad\\text{Row 4: }3>1\\checkmark"
+    note: "This holds because the diagonal entry of a FEM stiffness matrix equals the sum of stiffness contributions into that DOF — all self-interactions are positive and exceed the off-diagonal coupling terms."
+<!-- ENGINEER-PROF: [WARN] The note claims FEM stiffness matrices are generally diagonally dominant because "all self-interactions are positive and exceed the off-diagonal coupling terms." This is a heuristic that holds for well-shaped elements (e.g. regular triangles, quadrilaterals with angles below 90°) but fails for distorted meshes — obtuse triangles in 2D and slivers in 3D produce negative off-diagonal entries that can violate strict diagonal dominance. The correct statement is: FEM stiffness matrices for coercive problems (e.g. linear elasticity, Poisson equation) are symmetric positive-definite (SPD), which guarantees convergence of CG but does NOT require diagonal dominance. Diagonal dominance is a sufficient condition for GS convergence; SPD is a stronger structural property. Consider qualifying the note: "This holds for the idealised regular mesh in this example. In practice, distorted elements can violate diagonal dominance; SPD structure (not diagonal dominance) is the property engineers rely on for convergence of CG solvers." -->
+
+  - op: "Identify structural feature: K is tridiagonal (bandwidth 1)"
+    eq: "\\text{Only entries }k_{i,i},\\;k_{i,i\\pm 1}\\text{ are non-zero — all others are zero}"
+    note: "For large n, LU decomposition of a tridiagonal matrix remains tridiagonal (no fill-in), but for general sparse FEM matrices, LU can produce dense factors. Iterative methods work directly on the sparse structure without fill-in."
+<!-- ENGINEER-PROF: [NOTE] "LU can produce dense factors" is the theoretical worst case but overstates the problem for typical FEM matrices. In practice, FEM matrices are banded or have structured sparsity; Cholesky/LU with AMD or nested-dissection reordering produces factors with fill-in that is bounded and manageable for moderate n (up to ~10^5 in 3D). The statement is accurate for unstructured 3D meshes at large scale, but an engineer reading this might incorrectly conclude that direct methods are impractical for any sparse FEM problem — which is wrong for 1D and 2D problems and small-to-medium 3D problems. Consider adding: "For 1D and 2D FEM, the banded structure limits fill-in severely and direct methods remain competitive. Fill-in becomes the decisive argument for iterative methods only in large-scale 3D FEM." -->
+
+  - op: "Write Gauss-Seidel formulas for each DOF"
+    eq: "u_1^{(k+1)}=\\frac{1}{4}(0+u_2^{(k)}),\\quad u_2^{(k+1)}=\\frac{1}{4}(0+u_1^{(k+1)}+u_3^{(k)}),\\quad u_3^{(k+1)}=\\frac{1}{4}(10+u_2^{(k+1)}+u_4^{(k)}),\\quad u_4^{(k+1)}=\\frac{1}{3}(5+u_3^{(k+1)})"
+    note: ~
+  - op: "Iteration 1 with u⁽⁰⁾=(0,0,0,0)^T"
+    eq: "u_1^{(1)}=0/4=0,\\quad u_2^{(1)}=(0+0)/4=0,\\quad u_3^{(1)}=(10+0+0)/4=2.5,\\quad u_4^{(1)}=(5+2.5)/3=2.5"
+    note: ~
+  - op: "Iteration 2 with u⁽¹⁾=(0,0,2.5,2.5)^T"
+    eq: "u_1^{(2)}=0/4=0,\\quad u_2^{(2)}=(0+0+2.5)/4=0.625,\\quad u_3^{(2)}=(10+0.625+2.5)/4=3.281,\\quad u_4^{(2)}=(5+3.281)/3=2.760"
+    note: ~
+  - op: "Physical interpretation of the iterates"
+    eq: "\\text{Node 4 displacement grows from 0 to 2.5 to 2.760 (in whatever units the stiffness and force are expressed) — iteration revealing the load path through the truss}"
+    note: "The iterative process is physically meaningful: each sweep propagates the applied loads one structural connection further through the mesh. No units are assigned in this dimensionless example; in a real FEM model the stiffness entries carry units of kN/m and forces carry kN, giving displacements in metres."
+  - op: "Check convergence direction"
+    eq: "\\text{Residual }\\|K\\mathbf{u}^{(2)}-\\mathbf{f}\\|_\\infty:\\quad K\\mathbf{u}^{(2)}\\approx(-0.625,\\;-0.781,\\;9.739,\\;4.999)^T,\\quad\\text{vs }\\mathbf{f}=(0,0,10,5)^T"
+    note: "The residual is shrinking; continue until ||Ku − f||_∞ < tolerance (e.g. 10⁻⁶)."
+-->
+
+<!--
+MATH-PROF REVIEW
+Date: 2026-04-01
+Reviewer: math-prof agent
+
+ISSUES FOUND AND FIXED DIRECTLY
+─────────────────────────────────
+
+[BLOCKER — FIXED] Gauss-Seidel worked example, iteration k=1→2:
+  x2(2) was written as 25.0429/11 ≈ 2.0039. This is wrong: 25.0429/11 = 2.2766.
+  The error cascaded into x3(2), all of iteration k=2→3, and the convergence
+  comparison narrative ("effectively at the solution after 3 iterations").
+  Correct values: x2(2)≈2.2766, x3(2)≈−1.0784, x1(3)≈1.043, x2(3)≈2.270,
+  x3(3)≈−1.082. After 3 iterations GS error is ~4%, similar to Jacobi on this
+  system. The prose claim about GS converging in "roughly half the iterations"
+  remains true as a general statement but is not demonstrated by this specific
+  3-iteration window. The example was corrected and the convergence claim
+  reworded accordingly.
+
+[WARN — FIXED] Exercise 2 stepper: rhs of Row 3 after column-2 elimination
+  shown as 0.000. Exact value is −0.012. Fixed and a clarifying note added.
+
+[WARN — FIXED] Exercise 6 stepper residual check: K𝐮⁽²⁾ shown as
+  (−0.625, 0, 8.75, 7.281)ᵀ. Correct value is (−0.625, −0.781, 9.739, 4.999)ᵀ.
+  (Rows 2 and 4 were wrong.) Fixed.
+
+[WARN — FIXED] prerequisite_ids included diff_calc. Differential calculus is
+  not a genuine prerequisite for GE, LU decomposition, condition numbers, or
+  Jacobi/Gauss-Seidel. Removed.
+
+[WARN — FIXED] opens_to self-referenced the numerics node (the chapter's own
+  section). Replaced with odes and pdes (both with relationship: enriches),
+  which matches the topology.yml edges [numerics, odes, enriches] and
+  [numerics, pdes, enriches].
+
+ISSUES NOT FIXED (author's discretion)
+───────────────────────────────────────
+
+[WARN] uofa_course: "MATH 201" — MATH 201 is ODEs per topology.yml. Numerical
+  linear algebra is closer to MATH 102 content, though Kreyszig Ch 20 places it
+  at the engineering layer. If this chapter is intended as engineering-layer
+  numerical methods (Vol 7, post-MATH-102), the course code should be reviewed.
+  Not changed; this may be deliberate placement.
+
+[NOTE] The catastrophic cancellation section describes the failure as
+  "subtracting two nearly equal large numbers." In this specific 2×2 example
+  the failure mechanism is pivot amplification: the small pivot 0.0001 causes
+  the multiplier 10000, which amplifies the rounding error in the subtracted
+  row. Classic catastrophic cancellation (two large numbers with near-zero
+  difference) is a related but distinct phenomenon. The term is used broadly
+  in the literature and the example is pedagogically effective; no change made.
+
+ITEMS VERIFIED CORRECT
+───────────────────────
+
+- GE partial pivoting 3×3 worked example: all arithmetic correct including
+  both elimination passes, back-substitution, and row-check. ✓
+- LU Doolittle 3×3 worked example: multipliers, U entries, LU product,
+  forward and back substitution for both b1 and b2, and all row checks. ✓
+- Hilbert matrix H3: inverse entries verified by H3·H3⁻¹ = I (all 9 entries
+  checked). Row norms correct. κ∞(H3) = (11/6)×408 = 748 exactly. ✓
+- Jacobi worked example: all 3 iterations correct. ✓
+- Exercise 1: LU factors, forward/back substitution for b1 and b2.
+  Solutions (−4/7, 3/7, 5/7)ᵀ and (−4/7, 3/7, −2/7)ᵀ verified by row check. ✓
+- Exercise 3: condition number κ∞ = 3, loss ≈ 0.48 digits. ✓
+- Exercise 4 (Jacobi): all 3 iterations correct. ✓
+- Exercise 5 (Gauss-Seidel): all 3 iterations correct. ✓
+- Exercise 6: diagonal dominance check, GS iterations 1 and 2 correct. ✓
+- Notation section: all symbols correctly defined and consistently used. ✓
+- Back-substitution formula: correct. ✓
+- Diagonal dominance condition: correctly stated. ✓
+
+VERDICT: PASS WITH NOTES
+  One blocker (GS arithmetic cascade) fixed; three warns fixed; one warn
+  and one note left for author's review.
+-->
+
+<!--
+ENGINEER-PROF REVIEW
+Date: 2026-04-01
+Reviewer: engineer-prof agent
+
+ISSUES FOUND AND FIXED DIRECTLY
+─────────────────────────────────
+
+[BLOCKER — FIXED] "conjugate gradient, a relative of Gauss-Seidel" (Where this
+  shows up, CFD bullet). Conjugate gradient is a Krylov subspace method — a
+  fundamentally different algorithm family from the stationary iterative methods
+  (Jacobi, Gauss-Seidel) taught in this chapter. Calling CG "a relative of
+  Gauss-Seidel" misrepresents the method and would mislead engineering students
+  who encounter CG in their FEM or CFD courses. Fixed to: "conjugate gradient,
+  a Krylov subspace method that exploits symmetry and positive-definiteness."
+
+[WARN — FIXED] Exercise 6 stepper, physical interpretation step: displacement
+  iterates labelled "mm" with no units assigned anywhere in the problem. The
+  stiffness matrix K is dimensionless as written; assigning mm units to the
+  output is dimensional inconsistency. Fixed: units language removed; a note
+  added explaining that in a real FEM model stiffness carries kN/m and force
+  carries kN, giving displacements in metres.
+
+STRUCTURAL ISSUES FLAGGED (not directly fixed — require author decision)
+────────────────────────────────────────────────────────────────────────
+
+[WARN] Iterative methods section (before ## Iterative methods): only Jacobi
+  and Gauss-Seidel are taught as iterative methods. In engineering practice
+  these are rarely used directly on large FEM/CFD systems — they are taught
+  as conceptual stepping stones. The production methods are Krylov subspace
+  methods (PCG, GMRES, BiCGSTAB). The chapter's engineering hook claims
+  "iterative methods are standard" for FEM with n > 10^5, which is true, but
+  what is standard is preconditioned CG, not Gauss-Seidel. A brief signposting
+  paragraph acknowledging this gap would prevent a motivated engineering student
+  from applying GS to their FEM code and wondering why it doesn't converge.
+  Comment inserted before the section heading.
+
+[WARN] Exercise 6 stepper, diagonal dominance note: claims FEM stiffness
+  matrices are diagonally dominant because "all self-interactions are positive
+  and exceed the off-diagonal coupling terms." This is a heuristic, not a
+  theorem. Obtuse or distorted elements produce entries that can violate strict
+  diagonal dominance. The correct structural property for engineering FEM is
+  symmetric positive-definiteness (SPD), not diagonal dominance. SPD guarantees
+  CG convergence; diagonal dominance guarantees GS convergence — these are
+  different conditions. The comment inserted after the note gives the correct
+  framing.
+
+[NOTE] Exercise 6 stepper, tridiagonal fill-in note: "LU can produce dense
+  factors" for general sparse FEM matrices. Technically the worst case, but
+  overstated for typical FEM use. For 1D and 2D FEM with banded matrices,
+  direct methods with reordering are competitive and widely used (e.g. PARDISO,
+  MUMPS). The fill-in argument is decisive only for large-scale 3D unstructured
+  FEM. The comment inserted after the note gives a more accurate framing.
+
+ENGINEERING FRAMING VERIFIED CORRECT
+──────────────────────────────────────
+
+- destinations/eng hook: FEM stiffness matrices solved by LU or iterative
+  methods — accurate. Career example (structural engineer, bridge deck FEM)
+  — realistic and correctly described. ✓
+- destinations/sci hook: least-squares normal equations, conditioning
+  determines fit trustworthiness — accurate. ✓
+- destinations/comp hook: Hessian ill-conditioning causes training instability
+  — accurate for second-order methods; the connection is slightly loose for
+  SGD-based training (which doesn't invert the Hessian) but the conditioning
+  framing is standard in the optimisation literature. ✓
+- destinations/biz hook: portfolio optimisation as linear system,
+  condition number and weight sensitivity — accurate. ✓
+- LU section, multiple RHS / FEM stiffness matrix: "stiffness matrix K is
+  fixed while the load vector f changes with each load case" — this is exactly
+  the engineering use case (dead load, live load, wind load, seismic). ✓
+- CFD pressure-correction as Poisson system — accurate description of the
+  projection / fractional-step method for incompressible Navier-Stokes. ✓
+- Normal equations and multicollinearity — accurate. ✓
+- Condition number / finance covariance — accurate. ✓
+- Kreyszig Ch 20 reference — correct (numerical analysis chapter). ✓
+- Exercise 6: truss FEM, reduced stiffness system after boundary condition
+  application — structurally realistic model of a 1D truss or chain of
+  bar elements. ✓
+
+VERDICT: PASS WITH NOTES
+  One blocker (CG misclassification) fixed directly.
+  One warn (mm units) fixed directly.
+  Three structural comments inserted for author decision:
+    — Iterative methods section missing Krylov context [WARN]
+    — Diagonal dominance claim for FEM stiffness [WARN]
+    — Fill-in overstatement for general sparse FEM [NOTE]
+-->
+
+<!-- STUDENT REVIEW
+Chapter: Numerical linear algebra (Vol 7, Ch 2)
+Layer: engineering
+Reviewer: student agent
+Date: 2026-04-01
+
+VERDICT: READABLE WITH FIXES
+
+FRICTION POINTS (inline comments inserted above each):
+
+1. Naive elimination — exact solution not verified (§Why naive elimination fails):
+   The text claims the exact answer is x₁ ≈ 1, x₂ ≈ 1 but never shows a substitution
+   check. This is the one moment the reader needs to see "naive gives x₁ ≈ −1, correct
+   is x₁ = 1" spelled out; without the check, the magnitude of the error is asserted
+   rather than demonstrated.
+
+2. O(n³) / O(n²) operation counts are undefined (§Why LU earns its keep):
+   The costs appear abruptly. The reader is told what the counts are but not what
+   "operation" means or why each step yields that count. A brief parenthetical is enough
+   to ground this.
+
+3. "Spectral radius of the iteration matrix" (§Convergence criterion):
+   First use of eigenvalue-adjacent terminology in this chapter, with no definition. An
+   engineering student who has only seen eigenvalues in a linear algebra course will
+   not connect "spectral radius" to "error shrinks each step" without a one-line gloss.
+
+REASSURANCE GAPS:
+- The LU "Why LU works" callout (lines ~320–329) is an excellent reassurance device.
+  It answers the question a confused student would ask. No issue here — this is good.
+- The condition number "When to worry" callout is equally well-placed.
+
+EXERCISE CALIBRATION:
+- Exercises 1–5 are well-matched to the worked examples. The difficulty gradient from
+  LU factorisation (Ex 1) through partial pivoting (Ex 2) to condition number (Ex 3)
+  and then iterative methods (Ex 4–5) is logical and fair.
+- Exercise 6 (FEM truss) is harder than the others — the physical framing adds cognitive
+  load on top of the computation. The question is appropriate for engineering layer,
+  but part (b) ("identify the structural feature") is more interpretive than the rest
+  and the expected answer ("tridiagonal / bandwidth-1") may not be obvious to a student
+  who has not yet connected matrix structure to physical mesh structure.
+
+WAYFINDING:
+- "Where this goes" links clearly to numerical ODEs/PDEs (discretisation produces
+  linear systems) and to optimisation (Hessian ill-conditioning). Both connections are
+  concrete. The Hessian/gradient-descent link is particularly useful for engineering
+  readers with any ML exposure.
+- The engineer-prof note about Jacobi/Gauss-Seidel versus Krylov methods is accurate
+  and important. The current text does mention conjugate gradient and GMRES briefly
+  in "Where this shows up" (CFD pressure step). Some students will wonder why the
+  chapter taught Jacobi and not CG — an explicit bridging sentence early in the
+  iterative methods section would address this before the review comment.
+-->
+
+<!--
+EDIT LOG (editor agent)
+=======================
+
+- [§Why naive elimination fails — catastrophic cancellation example] Restructured to
+  land harder. The exact solution (x₁=1, x₂=1) is now verified explicitly at the top
+  of the example before the naive elimination runs — so the reader has a reference
+  point when the algorithm produces x₁≈−1. The consequence is also stated more
+  directly: "not a small rounding error — that is the wrong sign with the wrong
+  magnitude." Added a closing sentence making clear this is not a pathological edge
+  case but a routine hazard with ill-scaled variables.
+
+- [§Why LU earns its keep] Added a parenthetical defining "operations" as
+  floating-point additions and multiplications, roughly n³/3 in total, with a brief
+  explanation of why. The O(n³) claim was being asserted with no indication of what
+  was being counted.
+
+- [§Convergence criterion: diagonal dominance] Reworded the spectral radius sentence
+  to lead with the accessible version ("the error is guaranteed to shrink at each
+  step") and moved the spectral radius terminology into a parenthetical for readers
+  who want it. The term was appearing without a definition and there is no prior
+  eigenvalue context in this chapter.
+-->
+

@@ -1,6 +1,832 @@
 ---
 title: "Exponents and logarithms"
-status: "seed"
+subtitle: "Growth, decay, and the scale of things"
+
+volume: 4
+chapter: 1
+layer: "pre-university"
+status: "review"
+
+axiom: |
+  You already know that repeated multiplication produces patterns.
+  Some of those patterns grow fast, others shrink fast, and you
+  need a way to describe them precisely — and undo them.
+
+rewrite: |
+  An exponential function describes any quantity that grows or shrinks
+  by a constant factor. A logarithm is the operation that undoes that —
+  it asks "what power was used?" Knowing both, you can model the world's
+  fastest processes and solve for time.
+
+opens_to:
+  - id: "v3c4-functions"
+    label: "Functions and relations"
+    volume: 3
+    relationship: "enriches"
+  - id: "v5c2-differential-calculus"
+    label: "Differential calculus"
+    volume: 5
+    relationship: "motivates"
+  - id: "v7c1-first-order-odes"
+    label: "First-order differential equations"
+    volume: 7
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "func"
+  - "patterns"
+
+destinations:
+  - field: "sci"
+    label: "Sciences"
+    hook: "Radioactive decay, bacterial growth, and drug concentration all follow exponential models."
+    career_example: "Physicist modelling isotope decay for carbon dating"
+  - field: "biz"
+    label: "Finance"
+    hook: "Compound interest is exponential growth. The time value of money lives here."
+    career_example: "Financial analyst calculating investment doubling time"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Signal attenuation in cables follows a logarithmic scale. The decibel is a logarithm."
+    career_example: "Audio engineer specifying amplifier gain in decibels"
+  - field: "comp"
+    label: "Computing"
+    hook: "Algorithm complexity uses logarithms — binary search is O(log n) because each step halves the search space."
+    career_example: "Software engineer analysing search algorithm performance"
+
+hook: |
+  You put £500 in a savings account. Each year it grows by 6%. After one
+  year you have £530. After two years, £561.80. After twenty years,
+  something like £1604. That's not 20 × £30 = £600 added — it's the
+  interest compounding on itself, quietly doubling your money while you
+  sleep.
+
+  A phone battery starts fully charged. Every hour it drains by half.
+  An hour in: 50%. Two hours: 25%. Three: 12.5%. That's the same
+  structure as the savings account, just running backward.
+
+  An earthquake measuring 6 on the Richter scale releases ten times more
+  energy than one measuring 5, and a hundred times more than one measuring
+  4. The scale compresses a range from "barely felt" to "levels cities"
+  into ten manageable numbers.
+
+  These are not three different ideas. They're the same mathematical
+  structure — exponential growth, exponential decay, and the logarithm
+  that reads off what power was used.
+
+notation_introduced:
+  - symbol: "aˣ"
+    reads_as: "a to the power x — a multiplied by itself x times"
+    notation_weight: 2
+  - symbol: "eˣ"
+    reads_as: "e to the power x — the natural exponential"
+    notation_weight: 3
+  - symbol: "log_a(x)"
+    reads_as: "log base a of x — the power you raise a to in order to get x"
+    notation_weight: 3
+  - symbol: "ln(x)"
+    reads_as: "the natural logarithm of x — log base e"
+    notation_weight: 2
+  - symbol: "log(x)"
+    reads_as: "common logarithm — log base 10; the subscript 10 is omitted by convention"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 11
+  strand: "Relations and Functions"
+  outcome: "RF1–RF3"
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You put £500 in a savings account. Each year it grows by 6%. After one
+year you have £530. After two years, £561.80. After twenty years,
+something like £1604. That's not 20 × £30 = £600 added — it's the
+interest compounding on itself, quietly doubling your money while you
+sleep.
+
+A phone battery starts fully charged. Every hour it drains by half.
+An hour in: 50%. Two hours: 25%. Three: 12.5%. That's the same
+structure as the savings account, just running backward.
+
+An earthquake measuring 6 on the Richter scale releases ten times more
+energy than one measuring 5, and a hundred times more than one measuring
+4. The scale compresses a range from "barely felt" to "levels cities"
+into ten manageable numbers.
+
+These are not three different ideas. They're the same mathematical
+structure — exponential growth, exponential decay, and the logarithm
+that reads off what power was used.
+
+## What the notation is saying
+
+### The exponent laws
+
+Start with what you already know: $2^3$ means $2 \times 2 \times 2 = 8$.
+The $3$ is the **exponent** — it counts how many copies of 2 you multiply.
+The $2$ is the **base**.
+
+The notation $a^x$ — read "a to the power x" — means the base $a$
+multiplied by itself $x$ times. When you multiply two of these together
+with the same base, the exponents add:
+
+$$a^m \times a^n = a^{m+n}$$
+
+because you're just running $m$ copies followed by $n$ copies. Four
+laws cover everything you need:
+
+| Law | What it says | Example |
+|-----|-------------|---------|
+| $a^m \times a^n = a^{m+n}$ | Multiplying: add exponents | $2^3 \times 2^4 = 2^7 = 128$ |
+| $a^m \div a^n = a^{m-n}$ | Dividing: subtract exponents | $2^5 \div 2^2 = 2^3 = 8$ |
+| $(a^m)^n = a^{mn}$ | Power of a power: multiply exponents | $(2^3)^2 = 2^6 = 64$ |
+| $a^0 = 1$ | Zero power: always one | $17^0 = 1$ |
+
+Two more for completeness:
+
+$$a^{-n} = \frac{1}{a^n} \qquad a^{1/n} = \sqrt[n]{a}$$
+
+A negative exponent means "divide by" instead of "multiply by" — $2^{-3} = \frac{1}{8}$.
+A fractional exponent means a root — $8^{1/3} = \sqrt[3]{8} = 2$.
+These look odd until you see that they follow directly from the first law above:
+$a^3 \times a^{-3} = a^0 = 1$, so $a^{-3}$ must equal $\frac{1}{a^3}$.
+
+### The exponential function
+
+When the exponent is a variable, you have a function:
+
+$$f(x) = a^x$$
+
+Read it as: "the output is the base $a$ raised to the power $x$."
+
+- If $a > 1$: the function grows as $x$ increases. Larger $a$ means faster growth.
+- If $0 < a < 1$: the function decays — same shape but reflected.
+- The y-intercept is always 1: $f(0) = a^0 = 1$ for any base.
+
+The battery example: $f(t) = (0.5)^t$ gives the fraction of charge
+remaining after $t$ hours. The savings example: $f(t) = 1.06^t$ gives
+the growth factor after $t$ years (multiply by the initial amount to
+get the actual balance).
+
+### The natural base $e$
+
+You can build an exponential function with any base. But there is one
+base that is special.
+
+Consider this question: if a quantity grows at a rate exactly equal to
+its current size — so the bigger it gets, the faster it grows, and the
+growth rate is always exactly the current amount — what is the base?
+
+The answer is $e \approx 2.718$. This number arises whenever a process
+is described by its own rate of change. You can't deduce its exact value
+without calculus, but you can use it freely right now. The function
+$f(x) = e^x$ is called the **natural exponential**. It obeys all the
+same exponent laws, with $e$ as the base.
+
+$e$ is not arbitrary. It's not a convenient approximation. When you
+reach differential calculus (Volume 5), you'll see that $e^x$ is the
+only function that is its own derivative — the only curve whose slope
+at every point equals its own height. That property is what makes it
+turn up everywhere in science and engineering.
+
+```{ojs}
+//| echo: false
+{
+  const div = document.createElement("div");
+  div.style.cssText = "font-family:inherit; padding:0.5rem 0;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.75rem;";
+
+  function makeSlider(label, min, max, step, val) {
+    const wrap = document.createElement("div");
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "font-size:0.85rem; color:#374151; display:block; margin-bottom:0.25rem;";
+    const span = document.createElement("span");
+    span.textContent = val;
+    lbl.appendChild(document.createTextNode(label + " = "));
+    lbl.appendChild(span);
+    const input = document.createElement("input");
+    input.type = "range"; input.min = min; input.max = max; input.step = step; input.value = val;
+    input.style.cssText = "width:180px; display:block;";
+    wrap.appendChild(lbl); wrap.appendChild(input);
+    return {wrap, input, span};
+  }
+
+  const aS = makeSlider("base a", 0.5, 3.0, 0.1, 2.0);
+  const AS = makeSlider("initial value A", 1, 100, 1, 1);
+  controls.appendChild(aS.wrap); controls.appendChild(AS.wrap);
+
+  const labelEl = document.createElement("div");
+  labelEl.style.cssText = "font-size:0.9rem; font-weight:600; margin-bottom:0.5rem; color:#1d4ed8;";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 500; canvas.height = 300;
+  canvas.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; width:100%; max-width:500px; display:block;";
+
+  div.appendChild(controls); div.appendChild(labelEl); div.appendChild(canvas);
+
+  function draw() {
+    const a = parseFloat(aS.input.value);
+    const A = parseFloat(AS.input.value);
+    aS.span.textContent = a.toFixed(1);
+    AS.span.textContent = A;
+    const trend = a > 1 ? "growth" : a < 1 ? "decay" : "constant";
+    labelEl.textContent = "f(x) = " + A + " · " + a.toFixed(1) + "ˣ  — exponential " + trend;
+
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const xMin = -5, xMax = 5;
+    const yMax = Math.max(A * Math.pow(a, 5), A * Math.pow(a, -5), 10) * 1.2;
+    const yMin = 0;
+
+    function px(x) { return (x - xMin) / (xMax - xMin) * W; }
+    function py(y) { return H - (y - yMin) / (yMax - yMin) * H; }
+
+    // Axes
+    ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px(xMin), py(0)); ctx.lineTo(px(xMax), py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), H); ctx.stroke();
+
+    // Curve
+    const isSpecial = Math.abs(a - Math.E) < 0.05;
+    ctx.strokeStyle = isSpecial ? "#7c3aed" : "#2563eb";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first = true;
+    for (let px_ = 0; px_ <= W; px_++) {
+      const x = xMin + (px_ / W) * (xMax - xMin);
+      const y = A * Math.pow(a, x);
+      if (y < 0 || y > yMax * 1.1) { first = true; continue; }
+      if (first) { ctx.moveTo(px_, py(y)); first = false; }
+      else ctx.lineTo(px_, py(y));
+    }
+    ctx.stroke();
+
+    // y-intercept
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath(); ctx.arc(px(0), py(A), 5, 0, 2*Math.PI); ctx.fill();
+    ctx.fillStyle = "#374151"; ctx.font = "12px sans-serif";
+    ctx.fillText("(0, " + A + ")", px(0) + 7, py(A) - 5);
+
+    // Point at x=1
+    const y1 = A * a;
+    if (y1 <= yMax) {
+      ctx.fillStyle = "#059669";
+      ctx.beginPath(); ctx.arc(px(1), py(y1), 5, 0, 2*Math.PI); ctx.fill();
+      ctx.fillStyle = "#374151";
+      ctx.fillText("(1, " + y1.toFixed(1) + ")", px(1) + 7, py(y1) - 5);
+    }
+
+    if (isSpecial) {
+      ctx.fillStyle = "#7c3aed"; ctx.font = "bold 12px sans-serif";
+      ctx.fillText("a = e ≈ 2.718", px(1.5), py(A * Math.E) + 15);
+    }
+  }
+
+  aS.input.addEventListener("input", draw);
+  AS.input.addEventListener("input", draw);
+  draw();
+  return div;
+}
+```
+
+## The method
+
+### Part 1: Working with exponent laws
+
+The laws in the table above are the full toolkit. A typical simplification
+chains two or three of them together.
+
+**Simplify $\dfrac{x^5 \cdot x^{-2}}{x^3}$.**
+
+Top: $x^5 \cdot x^{-2} = x^{5 + (-2)} = x^3$.
+
+Then: $x^3 \div x^3 = x^{3-3} = x^0 = 1$.
+
+**Simplify $(2a^3)^4$.**
+
+The power applies to everything inside the bracket:
+$(2)^4 \cdot (a^3)^4 = 16 \cdot a^{12} = 16a^{12}$.
+
+### Part 2: Solving exponential equations by inspection
+
+Some equations can be solved by rewriting both sides as powers of
+the same base.
+
+**Solve $2^x = 16$.**
+
+Rewrite 16 as a power of 2: $16 = 2^4$.
+
+So $2^x = 2^4$, which means $x = 4$.
+
+**Solve $9^x = 27$.**
+
+Both 9 and 27 are powers of 3: $9 = 3^2$ and $27 = 3^3$.
+
+So $(3^2)^x = 3^3$, giving $3^{2x} = 3^3$, so $2x = 3$, and $x = \frac{3}{2}$.
+
+This only works when you can express both sides with the same base.
+For $2^x = 10$, you can't. That's where logarithms come in.
+
+### Part 3: Logarithms
+
+A logarithm is the inverse of an exponential. It answers the question:
+"what power do I need?"
+
+$$\log_a(b) = c \quad \text{means} \quad a^c = b$$
+
+Read it aloud: "log base $a$ of $b$ equals $c$" means "$a$ raised to
+the power $c$ gives $b$."
+
+Three examples to fix this:
+
+$$\log_2(8) = 3 \quad \text{because} \quad 2^3 = 8$$
+
+$$\log_{10}(1000) = 3 \quad \text{because} \quad 10^3 = 1000$$
+
+$$\log_3(9) = 2 \quad \text{because} \quad 3^2 = 9$$
+
+Two special bases appear so often they have short names:
+
+- $\log_{10}(x)$ is often written $\log(x)$ — the **common logarithm**
+- $\log_e(x)$ is written $\ln(x)$ — the **natural logarithm**, read "ell-en of x"
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+Logarithms are the inverse of exponentials the same way division undoes
+multiplication. If $2^3 = 8$, then $\log_2(8) = 3$. One statement, two
+ways of writing it. The exponential says "start with the power, get the
+result." The logarithm says "start with the result, get the power." They
+are the same relationship read in opposite directions.
+:::
+
+```{ojs}
+//| echo: false
+{
+  const div = document.createElement("div");
+  div.style.cssText = "font-family:inherit; padding:0.5rem 0;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; flex-wrap:wrap;";
+  const lbl = document.createElement("label");
+  lbl.style.cssText = "font-size:0.85rem; color:#374151;";
+  const spanVal = document.createElement("span"); spanVal.textContent = "2";
+  lbl.appendChild(document.createTextNode("base a = ")); lbl.appendChild(spanVal);
+  const sl = document.createElement("input");
+  sl.type = "range"; sl.min = 2; sl.max = 10; sl.step = 1; sl.value = 2;
+  sl.style.width = "160px";
+  controls.appendChild(lbl); controls.appendChild(sl);
+
+  const infoEl = document.createElement("div");
+  infoEl.id = "viz2_info";
+  infoEl.style.cssText = "font-size:0.88rem; color:#1d4ed8; margin-bottom:0.5rem; min-height:1.4em;";
+
+  const container = document.createElement("div");
+  container.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap;";
+  const c1 = document.createElement("canvas"); c1.width = 220; c1.height = 220;
+  c1.style.cssText = "border:1px solid #e5e7eb; border-radius:6px;";
+  const c2 = document.createElement("canvas"); c2.width = 220; c2.height = 220;
+  c2.style.cssText = "border:1px solid #e5e7eb; border-radius:6px;";
+  container.appendChild(c1); container.appendChild(c2);
+
+  div.appendChild(controls); div.appendChild(infoEl); div.appendChild(container);
+
+  function drawPanel(canvas, xMin, xMax, yMin, yMax, fn, color, ptX) {
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    function px(x) { return (x - xMin) / (xMax - xMin) * W; }
+    function py(y) { return H - (y - yMin) / (yMax - yMin) * H; }
+
+    // Reflection line y=x
+    ctx.strokeStyle = "#d1d5db"; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(px(xMin), py(yMin)); ctx.lineTo(px(xMax), py(yMax)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Axes
+    ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px(xMin), py(0)); ctx.lineTo(px(xMax), py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), H); ctx.stroke();
+
+    // Curve
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath();
+    let first = true;
+    for (let xi = 0; xi <= W; xi++) {
+      const x = xMin + (xi / W) * (xMax - xMin);
+      const y = fn(x);
+      if (isNaN(y) || !isFinite(y) || y < yMin - 0.5 || y > yMax + 0.5) { first = true; continue; }
+      if (first) { ctx.moveTo(xi, py(y)); first = false; }
+      else ctx.lineTo(xi, py(y));
+    }
+    ctx.stroke();
+
+    // Highlight point
+    if (ptX !== null) {
+      const ptY = fn(ptX);
+      if (!isNaN(ptY) && isFinite(ptY) && ptY >= yMin && ptY <= yMax) {
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath(); ctx.arc(px(ptX), py(ptY), 5, 0, 2*Math.PI); ctx.fill();
+        ctx.fillStyle = "#374151"; ctx.font = "11px sans-serif";
+        ctx.fillText("(" + ptX.toFixed(0) + ", " + ptY.toFixed(1) + ")", px(ptX)+7, py(ptY)-5);
+      }
+    }
+  }
+
+  function update() {
+    const b = parseInt(sl.value);
+    spanVal.textContent = b;
+    const ptX = b; // highlight x=b on the exp curve
+    drawPanel(c1, -2, 4, -1, Math.pow(b, 4)+1, x => Math.pow(b, x), "#2563eb", ptX);
+    const logPtX = Math.pow(b, ptX);
+    drawPanel(c2, 0.01, Math.pow(b,4)+1, -2, 4, x => Math.log(x)/Math.log(b), "#059669", logPtX > 0 ? logPtX : null);
+    infoEl.textContent = b + "^" + ptX + " = " + Math.pow(b, ptX).toFixed(0) + "  ↔  log_" + b + "(" + Math.pow(b, ptX).toFixed(0) + ") = " + ptX;
+  }
+
+  sl.addEventListener("input", update);
+  update();
+  return div;
+}
+```
+
+### Part 4: Log laws and solving logarithmic equations
+
+Logarithms inherit structure from the exponent laws. The three log laws:
+
+| Log law | What it says | Example |
+|---------|-------------|---------|
+| $\log_a(mn) = \log_a(m) + \log_a(n)$ | Log of a product: add logs | $\log_2(4 \times 8) = \log_2(4) + \log_2(8) = 2 + 3 = 5$ |
+| $\log_a\!\left(\dfrac{m}{n}\right) = \log_a(m) - \log_a(n)$ | Log of a quotient: subtract logs | $\log_{10}(1000/10) = 3 - 1 = 2$ |
+| $\log_a(m^n) = n \cdot \log_a(m)$ | Log of a power: bring down the exponent | $\log_2(8^4) = 4 \cdot \log_2(8) = 4 \times 3 = 12$ |
+
+One more, needed for calculators — the **change of base formula**:
+
+$$\log_a(x) = \frac{\ln(x)}{\ln(a)} = \frac{\log(x)}{\log(a)}$$
+
+Your calculator has $\ln$ and $\log_{10}$ buttons. This formula lets
+you compute any log from them.
+
+**Solving $2^x = 10$.**
+
+Take $\log_{10}$ (or $\ln$) of both sides:
+
+$$\log(2^x) = \log(10)$$
+
+Use the power law to bring $x$ down:
+
+$$x \cdot \log(2) = 1$$
+
+Divide:
+
+$$x = \frac{1}{\log(2)} = \frac{1}{0.3010\ldots} \approx 3.32$$
+
+Check: $2^{3.32} \approx 9.97 \approx 10$. Yes.
+
+**Solving $\log_3(x) + \log_3(x - 2) = 1$.**
+
+Use the product law to combine the left side:
+
+$$\log_3\bigl(x(x-2)\bigr) = 1$$
+
+Convert back to exponential form ($3^1 = x(x-2)$):
+
+$$x^2 - 2x = 3$$
+
+$$x^2 - 2x - 3 = 0$$
+
+$$(x-3)(x+1) = 0$$
+
+So $x = 3$ or $x = -1$. But $\log_3(-1)$ is not defined — you can't
+take the log of a negative number. Discard $x = -1$.
+
+Answer: $x = 3$. Check: $\log_3(3) + \log_3(1) = 1 + 0 = 1$. Yes.
+
+## Worked examples
+
+**Example 1 — Science: radioactive half-life.**
+
+Carbon-14 has a half-life of 5730 years — meaning every 5730 years,
+half the remaining carbon-14 decays. An organic sample contains 1.0 g
+of carbon-14 today. How much will remain after 17 190 years?
+
+17 190 years = 3 × 5730, so three half-lives have passed.
+
+$$\text{Remaining} = 1.0 \times \left(\frac{1}{2}\right)^3 = \frac{1}{8} = 0.125 \text{ g}$$
+
+If instead you need to find *when* the sample drops to 0.10 g, set up
+the equation:
+
+$$0.10 = 1.0 \times \left(\frac{1}{2}\right)^{t/5730}$$
+
+Divide both sides by 1.0 to isolate the exponential:
+
+$$0.10 = (0.5)^{t/5730}$$
+
+Take $\ln$ of both sides:
+
+$$\ln(0.10) = \ln\!\left((0.5)^{t/5730}\right)$$
+
+Apply the power law — bring the exponent down:
+
+$$\ln(0.10) = \frac{t}{5730} \cdot \ln(0.5)$$
+
+$$t = 5730 \times \frac{\ln(0.10)}{\ln(0.5)} = 5730 \times \frac{-2.3026}{-0.6931} \approx 5730 \times 3.322 \approx 19\,030 \text{ years}$$
+
+---
+
+**Example 2 — Finance: compound interest doubling time.**
+
+An investment earns 7% per year, compounded annually. How long until it
+doubles?
+
+Let the initial amount be $P$. You want the time $t$ when $P \times 1.07^t = 2P$.
+
+Divide both sides by $P$:
+
+$$1.07^t = 2$$
+
+Take $\ln$ of both sides and bring $t$ down:
+
+$$t \cdot \ln(1.07) = \ln(2)$$
+
+$$t = \frac{\ln(2)}{\ln(1.07)} = \frac{0.6931}{0.06766} \approx 10.2 \text{ years}$$
+
+The Rule of 72 is a quick mental estimate: divide 72 by the interest
+rate. $72 / 7 \approx 10.3$ — very close. That rule is a log approximation.
+
+---
+
+**Example 3 — Engineering: the decibel.**
+
+Sound intensity is measured on a logarithmic scale. The decibel (dB)
+level is:
+
+$$L = 10 \cdot \log_{10}\!\left(\frac{I}{I_0}\right)$$
+
+where $I$ is the intensity of the sound and $I_0 = 10^{-12}$ W/m² is
+the reference intensity. The reference intensity $I_0 = 10^{-12}$ W/m²
+is the quietest sound a human ear can detect — it is the standard
+baseline from which decibels are measured.
+
+Normal conversation is about $I = 10^{-6}$ W/m². What is that in dB?
+
+$$L = 10 \cdot \log_{10}\!\left(\frac{10^{-6}}{10^{-12}}\right) = 10 \cdot \log_{10}(10^6) = 10 \times 6 = 60 \text{ dB}$$
+
+A sound at 70 dB has what intensity ratio compared to 60 dB?
+
+The difference is 10 dB, which corresponds to a factor of $10^{10/10} = 10^1 = 10$.
+A 70 dB sound is 10 times as intense as a 60 dB sound. The logarithm
+compresses very large ratios into small, manageable numbers.
+
+---
+
+**Example 4 — Computing: binary search step count.**
+
+Binary search finds a target in a sorted list by repeatedly halving the
+search space. How many steps to search a list of $n = 1{,}000{,}000$ items?
+
+After $k$ steps, the search space has been halved $k$ times, leaving at
+most $n / 2^k$ items. The search ends when $n / 2^k = 1$:
+
+$$2^k = n \implies k = \log_2(n)$$
+
+For one million items: $k = \log_2(1{,}000{,}000) \approx 19.93$, so at
+most 20 steps. That's why $O(\log n)$ algorithms are fast — doubling the
+input adds only one more step.
+
+## Where this goes
+
+The derivative of $e^x$ is $e^x$ — the only function that is its own
+slope. That property, which you can only properly state and prove in
+differential calculus (Volume 5), is why $e$ appears in every model of
+continuous growth and decay. You already have the function; calculus will
+explain what makes it uniquely suited to describe rates of change.
+
+From there, ordinary differential equations (Volume 7) make the
+connection concrete. The simplest ODE — "a quantity grows proportionally
+to itself" — has $e^{kt}$ as its solution. Radioactive decay, population
+growth, cooling, charging capacitors: all of them are that one equation
+in different physical clothes. This chapter is the front end of that pipeline.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A physicist uses exponential decay to date ancient organic material
+  via carbon-14 ratios.
+- A financial analyst uses logarithms to find how long an investment
+  takes to reach a target value.
+- An audio engineer specifies amplifier gain and speaker sensitivity
+  in decibels — a logarithmic unit.
+- A software engineer analyses why binary search handles a billion
+  records in about 30 comparisons, while linear search needs a billion.
+
+The base changes. The structure does not.
+:::
+
+## Exercises
+
+These are puzzles. Each has a clean answer. The interesting part is
+identifying whether you're working with an exponential, a log, or both —
+and setting up the equation before you solve it.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opEl = document.createElement("span");
+      opEl.style.cssText = "font-size:0.8rem; color:#6b7280; font-style:italic;";
+      opEl.textContent = s.op;
+      const eqEl = document.createElement("span");
+      eqEl.innerHTML = katex.renderToString(s.eq, {throwOnError: false, displayMode: false});
+      row.appendChild(opEl);
+      row.appendChild(eqEl);
+      container.appendChild(row);
+      if (s.note) {
+        const noteEl = document.createElement("p");
+        noteEl.style.cssText = "margin:0.2rem 0 0.5rem 200px; font-size:0.82rem; color:#374151;";
+        noteEl.textContent = s.note;
+        container.appendChild(noteEl);
+      }
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("p");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.85rem; color:#059669; font-weight:600;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; align-items:center; gap:0.75rem; margin-top:0.5rem;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.85rem; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.8rem; color:#6b7280;";
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); counter.textContent = current + " / " + totalSteps; if (current === totalSteps) nextBtn.disabled = true; } };
+  resetBtn.onclick = () => { current = 0; nextBtn.disabled = false; renderSteps(); counter.textContent = "0 / " + totalSteps; };
+  counter.textContent = "0 / " + totalSteps;
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  return container;
+}
+```
+
+**1.** Simplify, writing your answer as a single power:
+
+$$\frac{3^8 \times 3^{-3}}{3^2}$$
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(1, [
+    { op: "Write as an equation", eq: "\\frac{3^8 \\times 3^{-3}}{3^2}", note: null },
+    { op: "Multiply in the numerator — add exponents", eq: "\\frac{3^{8 + (-3)}}{3^2} = \\frac{3^5}{3^2}", note: "Product law: same base, so add the exponents." },
+    { op: "Divide — subtract exponents", eq: "3^{5 - 2} = 3^3", note: "Quotient law: same base, so subtract the exponents." },
+    { op: "Evaluate", eq: "3^3 = 27", note: null },
+    { op: "Check", eq: "\\frac{3^8 \\times 3^{-3}}{3^2} = \\frac{6561 \\times (1/27)}{9} = \\frac{243}{9} = 27 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**2.** Solve for $x$:
+
+$$4^x = 128$$
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(2, [
+    { op: "Write as an equation", eq: "4^x = 128", note: null },
+    { op: "Express both sides as powers of 2", eq: "(2^2)^x = 2^7", note: "4 = 2² and 128 = 2⁷, so rewrite with a common base." },
+    { op: "Use the power-of-a-power law", eq: "2^{2x} = 2^7", note: null },
+    { op: "Match exponents — same base, so the powers must be equal", eq: "2x = 7", note: null },
+    { op: "Divide both sides by 2", eq: "x = \\frac{7}{2} = 3.5", note: null },
+    { op: "Check", eq: "4^{3.5} = 4^3 \\times 4^{0.5} = 64 \\times 2 = 128 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**3.** A population of bacteria doubles every 3 hours. You start with
+400 bacteria. How many hours until there are more than 25 600?
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(3, [
+    { op: "Write as an equation", eq: "400 \\times 2^{t/3} > 25600", note: "Every 3 hours is one doubling cycle, so the exponent is t/3." },
+    { op: "Divide both sides by 400", eq: "2^{t/3} > 64", note: null },
+    { op: "Express 64 as a power of 2", eq: "2^{t/3} > 2^6", note: null },
+    { op: "Match exponents", eq: "\\frac{t}{3} > 6", note: null },
+    { op: "Multiply both sides by 3", eq: "t > 18 \\text{ hours}", note: null },
+    { op: "Check", eq: "400 \\times 2^{18/3} = 400 \\times 2^6 = 400 \\times 64 = 25600 \\checkmark \\text{ (exactly at 18 h, so >25600 means after 18 h)}", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**4.** Use logarithms to solve for $t$:
+
+$$5^t = 200$$
+
+Give your answer to two decimal places.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(4, [
+    { op: "Write as an equation", eq: "5^t = 200", note: null },
+    { op: "Take ln of both sides", eq: "\\ln(5^t) = \\ln(200)", note: "You can use log base 10 equally well — the ratio will be the same." },
+    { op: "Use the power law — bring t down", eq: "t \\cdot \\ln(5) = \\ln(200)", note: "\\ln(m^n) = n \\cdot \\ln(m)" },
+    { op: "Divide both sides by ln(5)", eq: "t = \\frac{\\ln(200)}{\\ln(5)} = \\frac{5.2983}{1.6094}", note: null },
+    { op: "Evaluate", eq: "t \\approx 3.29", note: null },
+    { op: "Check", eq: "5^{3.29} \\approx 5^3 \\times 5^{0.29} \\approx 125 \\times 1.60 \\approx 200 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**5.** Solve the logarithmic equation:
+
+$$\log_2(x+4) + \log_2(x-4) = 5$$
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(5, [
+    { op: "Write as an equation", eq: "\\log_2(x+4) + \\log_2(x-4) = 5", note: null },
+    { op: "Use the product law — combine the two logs", eq: "\\log_2\\bigl((x+4)(x-4)\\bigr) = 5", note: "\\log_a(m) + \\log_a(n) = \\log_a(mn)" },
+    { op: "Expand the bracket", eq: "\\log_2(x^2 - 16) = 5", note: "(x+4)(x-4) = x^2 - 16. This uses the difference of two squares shortcut: (a + b)(a − b) = a² − b². You may have seen this in Vol 3 Ch 3." },
+    { op: "Convert to exponential form", eq: "x^2 - 16 = 2^5 = 32", note: "\\log_2(k) = 5 \\text{ means } 2^5 = k" },
+    { op: "Solve the quadratic", eq: "x^2 = 48 \\implies x = \\pm\\sqrt{48} = \\pm 4\\sqrt{3} \\approx \\pm 6.93", note: null },
+    { op: "Reject the negative solution", eq: "x = 4\\sqrt{3} \\approx 6.93", note: "x = -4\\sqrt{3} gives \\log_2(-4\\sqrt{3}+4), which is log of a negative — undefined." },
+    { op: "Check", eq: "\\log_2(4\\sqrt{3}+4) + \\log_2(4\\sqrt{3}-4) = \\log_2\\bigl((4\\sqrt{3})^2 - 16\\bigr) = \\log_2(48-16) = \\log_2(32) = 5 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**6.** The pH of a solution is defined as $\text{pH} = -\log_{10}[\text{H}^+]$,
+where $[\text{H}^+]$ denotes the concentration of hydrogen ions in moles
+per litre — this is standard chemistry notation. Pure water has
+$[\text{H}^+] = 10^{-7}$ mol/L, giving a pH of 7. A lemon juice sample
+has $[\text{H}^+] = 10^{-2.4}$ mol/L. What is its pH, and how many times
+more acidic is it than pure water?
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(6, [
+    { op: "Write as an equation", eq: "\\text{pH} = -\\log_{10}(10^{-2.4})", note: null },
+    { op: "Evaluate the log", eq: "\\text{pH} = -(-2.4) = 2.4", note: "\\log_{10}(10^k) = k" },
+    { op: "Find the ratio of hydrogen ion concentrations", eq: "\\frac{[\\text{H}^+]_{\\text{lemon}}}{[\\text{H}^+]_{\\text{water}}} = \\frac{10^{-2.4}}{10^{-7}}", note: null },
+    { op: "Subtract exponents — dividing with the same base", eq: "= 10^{-2.4 - (-7)} = 10^{4.6}", note: null },
+    { op: "Evaluate", eq: "10^{4.6} \\approx 39\\,811", note: null },
+    { op: "Check", eq: "\\text{pH of lemon} = 2.4;\\ 10^{7 - 2.4} = 10^{4.6} \\approx 39\\,811 \\text{ times more acidic than water} \\checkmark", note: null },
+  ]);
+  return el;
+}
+```

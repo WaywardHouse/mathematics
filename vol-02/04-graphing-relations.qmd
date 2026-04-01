@@ -1,6 +1,922 @@
 ---
 title: "Graphing relations"
-status: "seed"
+subtitle: "Seeing equations as pictures"
+
+volume: 2
+chapter: 4
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know how to solve a linear equation — find the value
+  that makes the relationship hold. But an equation can hold for
+  more than one pair of values at once.
+
+rewrite: |
+  A graph is the equation made visible. Every point on the line
+  satisfies the equation; every point off it doesn't. The picture
+  and the algebra are the same thing in two different languages.
+
+opens_to:
+  - id: "v3c4-functions"
+    label: "Functions and relations"
+    volume: 3
+    relationship: "enables"
+  - id: "v3c3-polynomials"
+    label: "Polynomials and factoring"
+    volume: 3
+    relationship: "motivates"
+  - id: "v5c2-diff-calc"
+    label: "Differential calculus"
+    volume: 5
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "linear_eq"
+  - "num"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Road gradients and ramp angles are slopes read directly off a distance-height graph."
+    career_example: "Civil engineer checking that a proposed road grade meets safety limits"
+  - field: "sci"
+    label: "Sciences"
+    hook: "A distance-time graph's slope is speed — the core tool of kinematics."
+    career_example: "Physics student reading acceleration from a velocity-time graph"
+  - field: "biz"
+    label: "Finance"
+    hook: "A cost-revenue graph shows break-even as the point where two lines cross."
+    career_example: "Small business owner graphing fixed and variable costs against units sold"
+  - field: "comp"
+    label: "Computing"
+    hook: "Screen coordinates are a Cartesian plane — every pixel has an (x, y) address."
+    career_example: "Game developer placing objects and tracking movement in 2D space"
+
+hook: |
+  You've checked a mobile data plan: £10 a month fixed, then £2 per
+  extra GB. You want to know, at a glance, what you'd pay for 0, 1,
+  3, 5 gigabytes. You could solve an equation for each value — or
+  you could draw a line and read off every answer at once.
+
+  That line is the graph of the equation. It doesn't replace the
+  algebra. It shows you the whole relationship in one picture.
+
+notation_introduced:
+  - symbol: "(x, y)"
+    reads_as: "the point x across, y up"
+    notation_weight: 2
+  - symbol: "y = mx + b"
+    reads_as: "y equals m times x, plus b"
+    notation_weight: 3
+  - symbol: "m"
+    reads_as: "slope — the rise divided by the run"
+    notation_weight: 2
+  - symbol: "b"
+    reads_as: "y-intercept — where the line crosses the vertical axis"
+    notation_weight: 1
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 9
+  strand: "Patterns and Relations (Variables & Equations)"
+  outcome: "4.3"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You've checked a mobile data plan: £10 a month fixed, then £2 per
+extra GB. You want to know, at a glance, what you'd pay for 0, 1,
+3, 5 gigabytes. You could solve an equation for each value — or
+you could draw a line and read off every answer at once.
+
+That line is the graph of the equation. It doesn't replace the
+algebra. It shows you the whole relationship in one picture.
+
+## What the notation is saying
+
+### The coordinate plane
+
+Draw two number lines crossing at right angles. The horizontal one
+is the **x-axis**. The vertical one is the **y-axis**. The point
+where they cross is the **origin** — the zero of both axes.
+
+Any point in the plane has an address: $(x, y)$, read "x across,
+y up". The $x$ tells you how far to move left or right from the
+origin. The $y$ tells you how far to move up or down.
+
+So $(3, 2)$ means: go 3 to the right, then 2 up.
+And $(-1, 4)$ means: go 1 to the left, then 4 up.
+And $(0, -3)$ means: stay on the vertical axis, go 3 down.
+
+The two axes divide the plane into four regions, called **quadrants**.
+Top-right is Quadrant I (both $x$ and $y$ positive). Top-left is
+Quadrant II ($x$ negative, $y$ positive). Bottom-left is Quadrant III
+(both negative). Bottom-right is Quadrant IV ($x$ positive, $y$
+negative). Most of the graphs in this chapter live in Quadrant I,
+where both values are positive — because most real-world quantities
+like cost, distance, and time don't go negative.
+
+**Interactive: Coordinate plane explorer.** Click anywhere on the grid to place a point. Watch the $(x, y)$ coordinates update and animated arrows trace the "go right, then up" path from the origin.
+
+```{ojs}
+//| echo: false
+{
+  const W = 500, H = 500;
+  const ORIGIN_X = W / 2, ORIGIN_Y = H / 2;
+  const GRID_STEP = 40; // pixels per unit
+  const UNITS = 5;      // axis runs from -5 to +5 in each direction (but we'll clip at W/H)
+
+  let pointX = null, pointY = null;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit; cursor:crosshair;`);
+
+  const toSvg = (mathX, mathY) => ({
+    sx: ORIGIN_X + mathX * GRID_STEP,
+    sy: ORIGIN_Y - mathY * GRID_STEP
+  });
+  const toMath = (sx, sy) => ({
+    mx: (sx - ORIGIN_X) / GRID_STEP,
+    my: (ORIGIN_Y - sy) / GRID_STEP
+  });
+
+  // Quadrant labels
+  const quadrants = [
+    { label: "I", mx: 3, my: 3 },
+    { label: "II", mx: -3, my: 3 },
+    { label: "III", mx: -3, my: -3 },
+    { label: "IV", mx: 3, my: -3 }
+  ];
+  quadrants.forEach(q => {
+    const { sx, sy } = toSvg(q.mx, q.my);
+    svg.append("text")
+      .attr("x", sx).attr("y", sy)
+      .attr("text-anchor", "middle").attr("dominant-baseline", "middle")
+      .attr("font-size", "13px").attr("fill", "#e5e7eb").attr("font-weight", "600")
+      .text(`Q${q.label}`);
+  });
+
+  // Grid lines
+  for (let i = -UNITS; i <= UNITS; i++) {
+    const { sx } = toSvg(i, 0);
+    const { sy } = toSvg(0, i);
+    svg.append("line")
+      .attr("x1", sx).attr("y1", 0).attr("x2", sx).attr("y2", H)
+      .attr("stroke", i === 0 ? "#6b7280" : "#f3f4f6").attr("stroke-width", i === 0 ? 2 : 1);
+    svg.append("line")
+      .attr("x1", 0).attr("y1", sy).attr("x2", W).attr("y2", sy)
+      .attr("stroke", i === 0 ? "#6b7280" : "#f3f4f6").attr("stroke-width", i === 0 ? 2 : 1);
+  }
+
+  // Axis tick labels
+  for (let i = -UNITS; i <= UNITS; i++) {
+    if (i === 0) continue;
+    const { sx } = toSvg(i, 0);
+    const { sy } = toSvg(0, i);
+    svg.append("text")
+      .attr("x", sx).attr("y", ORIGIN_Y + 16)
+      .attr("text-anchor", "middle").attr("font-size", "10px").attr("fill", "#9ca3af")
+      .text(i);
+    svg.append("text")
+      .attr("x", ORIGIN_X - 14).attr("y", sy + 4)
+      .attr("text-anchor", "end").attr("font-size", "10px").attr("fill", "#9ca3af")
+      .text(i);
+  }
+
+  // Axis labels
+  svg.append("text").attr("x", W - 8).attr("y", ORIGIN_Y - 8)
+    .attr("font-size", "13px").attr("fill", "#6b7280").attr("font-weight", "600").text("x");
+  svg.append("text").attr("x", ORIGIN_X + 8).attr("y", 14)
+    .attr("font-size", "13px").attr("fill", "#6b7280").attr("font-weight", "600").text("y");
+
+  // Arrow group (updated on click)
+  const arrowGroup = svg.append("g").attr("class", "arrows");
+  const pointGroup = svg.append("g").attr("class", "point");
+  const labelGroup = svg.append("g").attr("class", "label");
+
+  // Instruction text
+  const instrText = svg.append("text")
+    .attr("x", W / 2).attr("y", H - 10)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#9ca3af")
+    .text("Click anywhere on the grid to place a point");
+
+  svg.on("click", function(event) {
+    const [sx, sy] = d3.pointer(event, svg.node());
+    const { mx, my } = toMath(sx, sy);
+    const rx = Math.round(mx * 2) / 2;
+    const ry = Math.round(my * 2) / 2;
+
+    const { sx: px, sy: py } = toSvg(rx, ry);
+    const { sy: axisY } = toSvg(0, 0);
+    const { sx: axisX } = toSvg(0, 0);
+
+    arrowGroup.selectAll("*").remove();
+    pointGroup.selectAll("*").remove();
+    labelGroup.selectAll("*").remove();
+    instrText.text("");
+
+    // Horizontal arrow from origin to (rx, axisY)
+    if (Math.abs(rx) > 0.1) {
+      arrowGroup.append("line")
+        .attr("x1", ORIGIN_X).attr("y1", ORIGIN_Y)
+        .attr("x2", px).attr("y2", ORIGIN_Y)
+        .attr("stroke", "#0d9488").attr("stroke-width", 2).attr("stroke-dasharray", "5 3");
+      arrowGroup.append("text")
+        .attr("x", (ORIGIN_X + px) / 2).attr("y", ORIGIN_Y - 8)
+        .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#0d9488")
+        .text(rx > 0 ? `→ ${rx}` : `← ${Math.abs(rx)}`);
+    }
+
+    // Vertical arrow from (rx, 0) to (rx, ry)
+    if (Math.abs(ry) > 0.1) {
+      arrowGroup.append("line")
+        .attr("x1", px).attr("y1", ORIGIN_Y)
+        .attr("x2", px).attr("y2", py)
+        .attr("stroke", "#7c3aed").attr("stroke-width", 2).attr("stroke-dasharray", "5 3");
+      arrowGroup.append("text")
+        .attr("x", px + 10).attr("y", (ORIGIN_Y + py) / 2)
+        .attr("font-size", "11px").attr("fill", "#7c3aed")
+        .text(ry > 0 ? `↑ ${ry}` : `↓ ${Math.abs(ry)}`);
+    }
+
+    // Point
+    pointGroup.append("circle")
+      .attr("cx", px).attr("cy", py).attr("r", 7)
+      .attr("fill", "#f59e0b").attr("stroke", "#fff").attr("stroke-width", 2);
+
+    // Coordinate label
+    const labelX = px + (rx > 3 ? -60 : 12);
+    const labelY = py + (ry < -3 ? 20 : -12);
+    labelGroup.append("rect")
+      .attr("x", labelX - 4).attr("y", labelY - 14)
+      .attr("width", 68).attr("height", 20).attr("rx", 4)
+      .attr("fill", "#fff").attr("stroke", "#e5e7eb").attr("stroke-width", 1);
+    labelGroup.append("text")
+      .attr("x", labelX).attr("y", labelY)
+      .attr("font-size", "12px").attr("fill", "#1f2937").attr("font-weight", "600")
+      .text(`(${rx}, ${ry})`);
+  });
+
+  return svg.node();
+}
+```
+
+### A relation as a table of pairs
+
+A **relation** is any set of input-output pairs. You give it an
+input value, it gives back an output value.
+
+The phone plan from the opening is a relation. Call the number
+of extra GB the input $x$, and the monthly cost in pounds the
+output $y$. The rule is:
+
+$$y = 2x + 10$$
+
+Read it as: "y equals 2 times x, plus 10." Plug in $x = 0$: you
+get $y = 10$. Plug in $x = 3$: you get $y = 16$. That pair of
+values is the point $(3, 16)$.
+
+Here's the table for a few values:
+
+| $x$ (extra GB) | $y$ (cost, £) | Point |
+|:--------------:|:-------------:|:-----:|
+| 0 | 10 | $(0, 10)$ |
+| 1 | 12 | $(1, 12)$ |
+| 2 | 14 | $(2, 14)$ |
+| 3 | 16 | $(3, 16)$ |
+| 5 | 20 | $(5, 20)$ |
+
+Plot those five points on the coordinate plane and they fall in a
+straight line. Every point on that line satisfies the equation.
+Every point off it doesn't.
+
+That's the key idea: the graph and the equation are the same
+relationship in two different languages.
+
+## The method
+
+### Reading slope: rise over run
+
+The equation $y = 2x + 10$ has the form $y = mx + b$.
+
+The letter $m$ is the **slope** — how steeply the line rises or
+falls. Read it as: for every 1 step to the right, the line goes
+$m$ steps up (or down, if $m$ is negative).
+
+To measure slope from any two points on the line, count:
+
+$$m = \frac{\text{rise}}{\text{run}} = \frac{\text{change in } y}{\text{change in } x}$$
+
+For the phone plan: pick $(1, 12)$ and $(3, 16)$.
+Rise = $16 - 12 = 4$. Run = $3 - 1 = 2$.
+Slope = $4 \div 2 = 2$. That matches the $2$ in front of $x$.
+
+**Positive slope** means the line goes up left-to-right — the
+quantity grows as $x$ increases.
+
+**Negative slope** means the line goes down left-to-right — the
+quantity shrinks as $x$ increases. For a negative slope like $-3$,
+the number of units down for each unit across is 3 — the size of
+the slope ignoring the sign. The sign tells you the direction; the
+number tells you how steep.
+
+**Zero slope** means a flat horizontal line — the output doesn't
+change no matter what the input is.
+
+The letter $b$ is the **y-intercept** — where the line crosses the
+y-axis. Substitute $x = 0$ into any linear equation and you get
+$y = b$. For the phone plan, $b = 10$: the line crosses the y-axis
+at $(0, 10)$, meaning you pay £10 even with zero extra data. That's
+the standing charge.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+Every point on a line satisfies its equation — that's the definition
+of the line. So if you want to draw the line, you only need two
+points: the equation holds at both, and a straight line through
+two points is determined completely. The y-intercept $(0, b)$ is
+almost always the easiest first point. From there, the slope tells
+you how to find the next one.
+:::
+
+### Method 1: Graphing from a table of values
+
+1. Choose three or four values of $x$ — spread them out.
+2. Substitute each into the equation to get the matching $y$.
+3. Write down the $(x, y)$ pairs.
+4. Plot the points on the coordinate plane.
+5. Draw a straight line through them.
+
+Use at least three points. If the third one doesn't fall on the
+line through the first two, you've made an arithmetic error somewhere.
+
+### Method 2: Graphing from slope-intercept form
+
+When the equation is written as $y = mx + b$, you can graph it
+without a table:
+
+1. Plot the y-intercept $(0, b)$ — that's your starting point.
+2. From that point, apply the slope: go 1 unit right, go $m$ units
+   up (or, if $m$ is negative, go that many units down).
+3. Mark that second point.
+4. Draw the line through both points.
+5. Extend the line in both directions.
+
+This is faster than a table once you're comfortable with it.
+
+### Method 3: Finding the equation from a point and a slope
+
+Sometimes you know the slope and a point on the line, but not
+the y-intercept. To find $b$, substitute the known point into
+$y = mx + b$ and solve.
+
+For example: slope $m = 2$, and the line passes through $(3, 11)$.
+Substitute into $y = mx + b$:
+
+$$11 = 2(3) + b$$
+$$11 = 6 + b$$
+$$b = 5$$
+
+So the equation is $y = 2x + 5$. Check: does $(3, 11)$ satisfy it?
+$2(3) + 5 = 11$. Yes.
+
+The same method works when you're given two points instead of a
+point and a slope — first calculate the slope from the two points
+using rise over run, then substitute one of the points to find $b$.
+
+**Interactive: Linear graph builder.** Drag the sliders to change slope $m$ and y-intercept $b$. The line $y = mx + b$ redraws live. The slope triangle shows the rise and run. The equation updates above the graph.
+
+```{ojs}
+//| echo: false
+viewof graphM = Inputs.range([-3, 3], { label: "Slope m", step: 0.5, value: 1 })
+```
+
+```{ojs}
+//| echo: false
+viewof graphB = Inputs.range([-5, 5], { label: "y-intercept b", step: 0.5, value: 2 })
+```
+
+```{ojs}
+//| echo: false
+{
+  const m = graphM;
+  const b = graphB;
+
+  const W = 500, H = 500;
+  const X_MIN = -5, X_MAX = 10, Y_MIN = -5, Y_MAX = 10;
+  const PAD_L = 48, PAD_R = 20, PAD_T = 48, PAD_B = 40;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+
+  const xScale = (v) => PAD_L + (v - X_MIN) / (X_MAX - X_MIN) * plotW;
+  const yScale = (v) => PAD_T + plotH - (v - Y_MIN) / (Y_MAX - Y_MIN) * plotH;
+
+  const d3local = await require("d3@7");
+  const svg = d3local.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // Background
+  svg.append("rect")
+    .attr("x", PAD_L).attr("y", PAD_T)
+    .attr("width", plotW).attr("height", plotH)
+    .attr("fill", "#f9fafb");
+
+  // Grid
+  for (let x = X_MIN; x <= X_MAX; x++) {
+    svg.append("line")
+      .attr("x1", xScale(x)).attr("y1", PAD_T)
+      .attr("x2", xScale(x)).attr("y2", PAD_T + plotH)
+      .attr("stroke", x === 0 ? "#9ca3af" : "#e5e7eb")
+      .attr("stroke-width", x === 0 ? 2 : 1);
+  }
+  for (let y = Y_MIN; y <= Y_MAX; y++) {
+    svg.append("line")
+      .attr("x1", PAD_L).attr("y1", yScale(y))
+      .attr("x2", PAD_L + plotW).attr("y2", yScale(y))
+      .attr("stroke", y === 0 ? "#9ca3af" : "#e5e7eb")
+      .attr("stroke-width", y === 0 ? 2 : 1);
+  }
+
+  // Axis tick labels
+  for (let x = X_MIN; x <= X_MAX; x += 2) {
+    if (x === 0) continue;
+    svg.append("text")
+      .attr("x", xScale(x)).attr("y", yScale(0) + 16)
+      .attr("text-anchor", "middle").attr("font-size", "10px").attr("fill", "#9ca3af")
+      .text(x);
+  }
+  for (let y = Y_MIN; y <= Y_MAX; y += 2) {
+    if (y === 0) continue;
+    svg.append("text")
+      .attr("x", xScale(0) - 8).attr("y", yScale(y) + 4)
+      .attr("text-anchor", "end").attr("font-size", "10px").attr("fill", "#9ca3af")
+      .text(y);
+  }
+  // Axis labels
+  svg.append("text").attr("x", PAD_L + plotW - 4).attr("y", yScale(0) - 6)
+    .attr("font-size", "12px").attr("fill", "#6b7280").attr("font-weight", "600").text("x");
+  svg.append("text").attr("x", xScale(0) + 6).attr("y", PAD_T + 10)
+    .attr("font-size", "12px").attr("fill", "#6b7280").attr("font-weight", "600").text("y");
+
+  // Clip the line to the plot area
+  const lineY = (x) => m * x + b;
+  // Find x values where line enters/exits the plot area
+  const candidates = [
+    { x: X_MIN, y: lineY(X_MIN) },
+    { x: X_MAX, y: lineY(X_MAX) },
+    m !== 0 ? { x: (Y_MIN - b) / m, y: Y_MIN } : null,
+    m !== 0 ? { x: (Y_MAX - b) / m, y: Y_MAX } : null
+  ].filter(p => p && p.x >= X_MIN - 0.01 && p.x <= X_MAX + 0.01 && p.y >= Y_MIN - 0.01 && p.y <= Y_MAX + 0.01);
+  candidates.sort((a, c) => a.x - c.x);
+
+  if (candidates.length >= 2) {
+    const p1 = candidates[0], p2 = candidates[candidates.length - 1];
+    svg.append("line")
+      .attr("x1", xScale(p1.x)).attr("y1", yScale(p1.y))
+      .attr("x2", xScale(p2.x)).attr("y2", yScale(p2.y))
+      .attr("stroke", "#0d9488").attr("stroke-width", 2.5);
+  }
+
+  // y-intercept point
+  const bInView = b >= Y_MIN && b <= Y_MAX;
+  if (bInView) {
+    svg.append("circle")
+      .attr("cx", xScale(0)).attr("cy", yScale(b))
+      .attr("r", 6).attr("fill", "#0d9488").attr("stroke", "#fff").attr("stroke-width", 2);
+    svg.append("text")
+      .attr("x", xScale(0) + 10).attr("y", yScale(b) - 8)
+      .attr("font-size", "11px").attr("fill", "#0d9488")
+      .text(`(0, ${b})`);
+  }
+
+  // Slope triangle — drawn from (1, b+m) showing rise and run
+  const triX0 = 1, triY0 = m * triX0 + b, triX1 = triX0 + 1, triY1 = m * triX1 + b;
+  const triVisible = triX0 >= X_MIN && triX1 <= X_MAX &&
+    Math.min(triY0, triY1) >= Y_MIN && Math.max(triY0, triY1) <= Y_MAX;
+
+  if (triVisible && m !== 0) {
+    // Horizontal leg (run = 1)
+    svg.append("line")
+      .attr("x1", xScale(triX0)).attr("y1", yScale(triY0))
+      .attr("x2", xScale(triX1)).attr("y2", yScale(triY0))
+      .attr("stroke", "#f59e0b").attr("stroke-width", 2).attr("stroke-dasharray", "3 2");
+    svg.append("text")
+      .attr("x", xScale(triX0 + 0.5)).attr("y", yScale(triY0) + 14)
+      .attr("text-anchor", "middle").attr("font-size", "10px").attr("fill", "#f59e0b")
+      .text("run = 1");
+    // Vertical leg (rise = m)
+    svg.append("line")
+      .attr("x1", xScale(triX1)).attr("y1", yScale(triY0))
+      .attr("x2", xScale(triX1)).attr("y2", yScale(triY1))
+      .attr("stroke", "#7c3aed").attr("stroke-width", 2).attr("stroke-dasharray", "3 2");
+    svg.append("text")
+      .attr("x", xScale(triX1) + (m < 0 ? -48 : 10)).attr("y", yScale((triY0 + triY1) / 2) + 4)
+      .attr("font-size", "10px").attr("fill", "#7c3aed")
+      .text(`rise = ${m}`);
+  }
+
+  // Equation label
+  const mStr = m === 1 ? "" : m === -1 ? "-" : `${m}`;
+  const bStr = b === 0 ? "" : b > 0 ? ` + ${b}` : ` − ${Math.abs(b)}`;
+  const eqStr = `y = ${mStr}x${bStr}`;
+  svg.append("text")
+    .attr("x", W / 2).attr("y", 28)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "16px").attr("fill", "#0d9488").attr("font-weight", "700")
+    .text(eqStr);
+
+  return svg.node();
+}
+```
+
+## Why this works
+
+::: {.callout-note appearance="simple"}
+**The graph is the equation**
+
+Every pair $(x, y)$ that satisfies $y = mx + b$ lies on the line.
+Every pair that doesn't satisfy it lies off the line. The line
+isn't a picture of the equation — it *is* the equation, drawn in
+space. This means you can read information off the graph the same
+way you'd get it from the algebra: find an $x$ on the horizontal
+axis, trace up to the line, and read the matching $y$ on the
+vertical axis. Or go the other way: find a $y$, trace across to
+the line, read the $x$.
+
+This two-way reading becomes powerful when you have two lines on
+the same graph. Where they cross, both equations are satisfied at
+once — that intersection point is the solution to a system of two
+equations.
+:::
+
+## Worked examples
+
+**Example 1 — Distance and time (Sciences).**
+
+You cycle to school at a steady 12 km/h. Your school is 6 km away.
+Write an equation for your distance from school, and graph it.
+
+Let $x$ = time in hours since you left home.
+Let $y$ = distance from home, in kilometres.
+
+At a steady speed:
+
+$$y = 12x$$
+
+This is $y = mx + b$ with $m = 12$ and $b = 0$.
+
+| $x$ (hours) | $y$ (km from home) |
+|:-----------:|:------------------:|
+| 0 | 0 |
+| 0.25 | 3 |
+| 0.5 | 6 |
+
+The slope is 12 — for every hour, you cover 12 km. The y-intercept
+is 0 — at time zero you're still at home. The graph is a line from
+the origin, rising steeply. Reading from the graph: after 0.25
+hours (15 minutes) you're 3 km along.
+
+You arrive at school when $y = 6$. Solve: $12x = 6$, so $x = 0.5$
+hours. That's 30 minutes. Confirmed by the table.
+
+**Slope = speed** in a distance-time graph. This is not a
+coincidence — it's exactly what slope means physically.
+
+---
+
+**Example 2 — Phone plan (Finance).**
+
+Your data plan costs £8 per month fixed, plus £3 for each extra GB
+you use. Write and graph the monthly cost equation.
+
+$$y = 3x + 8$$
+
+where $x$ = extra GB used, $y$ = total cost in £.
+
+Method 2 (slope-intercept): Plot $(0, 8)$ — that's the standing
+charge. Slope is 3, so from $(0, 8)$ go 1 right and 3 up to
+$(1, 11)$. Draw the line.
+
+| $x$ (extra GB) | $y$ (cost, £) |
+|:--------------:|:-------------:|
+| 0 | 8 |
+| 1 | 11 |
+| 2 | 14 |
+| 4 | 20 |
+
+Reading from the graph: 3 extra GB costs £17. When does the bill
+hit £26? Set $y = 26$: $3x + 8 = 26$, so $3x = 18$, $x = 6$ GB.
+The algebra and the graph tell the same story.
+
+---
+
+**Example 3 — Points scored (Sport).**
+
+A basketball player scores an average of 18 points per game. She
+has already played 4 games. Write a formula for her total points,
+and find when she'll have 144 total.
+
+$$y = 18x + 72$$
+
+Wait — where does the 72 come from? She already has $18 \times 4 = 72$
+points from those 4 games. So $b = 72$ (her running total at the
+start of tracking), and $m = 18$ (she adds 18 each game).
+
+Plot: start at $(0, 72)$ — that's game zero from now, 72 points
+already. Each game adds 18. From the graph, you can see she hits
+144 points after 4 more games.
+
+Check: $18x + 72 = 144$, so $18x = 72$, $x = 4$. Yes.
+
+**Slope = rate** — in any graph where the y-axis tracks a total
+and the x-axis tracks time or count, slope is the rate of change.
+How fast the total grows.
+
+---
+
+**Example 4 — Computing: screen coordinates.**
+
+One thing worth knowing before this example: in maths, $y$ increases
+upward. On a screen — in game engines, browser graphics, and most
+image software — $y$ increases *downward*, so $(0, 0)$ is the top-left
+corner. This example uses mathematical coordinates. If you're writing
+actual game code, a character "moving up" would have a *decreasing* $y$
+value in the engine's system.
+
+A character starts at position $(x, y) = (50, 80)$ in mathematical
+coordinates and moves right at 5 pixels per frame and down at 3 pixels
+per frame.
+
+After $t$ frames:
+$$x = 50 + 5t \qquad y = 80 + 3t$$
+
+These are two separate linear equations, one for each axis. After
+10 frames: $x = 100$, $y = 110$. After 20 frames: $x = 150$,
+$y = 140$. The path is a straight line, and its slope (in these
+coordinates) is $\frac{3}{5}$ — 3 units down for every 5 across.
+
+## A note on curves
+
+All the examples above produce straight lines. But not all
+relationships are linear.
+
+If you track your savings when you're earning interest on interest,
+the graph curves upward — it gets steeper as time goes on. If you
+track how a hot drink cools, it curves downward and flattens out.
+A ball thrown in the air traces a curve that dips back down.
+
+A curve on a graph means the rate of change isn't constant.
+The slope isn't fixed — it depends on where you are. That's a
+very different situation from a straight line, where the slope
+is the same everywhere.
+
+You'll meet curved graphs properly when we reach polynomials and
+functions in Volume 3. For now, notice the difference: a straight
+line means a constant rate. A curve means the rate is changing.
+
+## Where this goes
+
+The slope of a line is a constant — pick any two points and you
+get the same number. In Volume 3, **Functions and relations**
+makes this more precise: you'll define a function formally, think
+about domain and range, and meet graphs that aren't lines. From
+there, in Volume 5, **Differential calculus** asks a harder
+question: if the slope of a curve isn't constant, what is the
+slope *at a single point*? The answer — the derivative — is built
+on exactly the rise-over-run idea from this chapter. You're already
+holding the seed of calculus in the phrase "change in $y$ over
+change in $x$."
+
+The second direction is **systems of equations**. You've already
+seen that a linear equation graphs as a line. Two linear equations
+graph as two lines. If they cross, the crossing point solves both
+equations at once — you can read the answer off the graph, or
+find it algebraically. That's the foundation of linear algebra,
+which appears in Volume 4 and underpins nearly everything in
+engineering and data science.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A civil engineer plots a road's vertical profile as a
+  distance-height graph. Slope is gradient, measured in percent.
+  Regulations specify maximum gradients for different road types.
+- A physicist reads the slope of a velocity-time graph to find
+  acceleration. The area under the graph gives distance — a
+  preview of integration.
+- A business analyst draws cost and revenue lines on the same graph.
+  The crossing point is break-even: the number of units where
+  cost equals revenue.
+- A game developer uses $(x, y)$ coordinates to position every
+  object on screen. Movement is addition; rotation involves trig
+  — which also starts with the coordinate plane.
+:::
+
+## Exercises
+
+These are puzzles. Each one has a clean answer. The work is
+reading the situation carefully, building the equation, and
+deciding whether the graph or the algebra gives you what you need
+faster.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+1. A streaming service costs £6 per month. A rival service costs
+   £2 per month plus £1 per film watched. Write equations for both
+   costs and find how many films per month makes them equal. Which
+   service is cheaper if you watch 5 films a month?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write as an equation: Service A",  eq: "y = 6" },
+  { op: "Write as an equation: Service B",  eq: "y = x + 2" },
+  { op: "Set them equal",                   eq: "6 = x + 2" },
+  { op: "Solve for x",                      eq: "x = 4 \\text{ films}" },
+  { op: "Compare at 5 films",               eq: "A: £6,\\quad B: 5 + 2 = £7", note: "Service A is cheaper above 4 films per month." },
+  { op: "Check",                            eq: "x=4:\\; 4+2=6 \\checkmark" }
+])
+```
+
+2. A delivery driver starts a shift with a full tank holding
+   60 litres. She uses fuel at 0.08 litres per kilometre. Write
+   an equation for fuel remaining after $x$ km. What is the slope,
+   and what does it mean in context? How far can she drive before
+   the tank is empty?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Write as an equation",           eq: "y = 60 - 0.08x" },
+  { op: "Identify the slope",             eq: "m = -0.08 \\text{ litres per km}", note: "Negative slope means the fuel decreases as distance increases." },
+  { op: "Set y = 0 (tank empty)",         eq: "0 = 60 - 0.08x" },
+  { op: "Solve for x",                    eq: "0.08x = 60 \\Rightarrow x = 750 \\text{ km}" },
+  { op: "Check",                          eq: "60 - 0.08 \\times 750 = 60 - 60 = 0 \\checkmark" }
+])
+```
+
+3. Two friends start at the same place and walk in opposite
+   directions. Priya walks at 5 km/h; Jordan walks at 4 km/h.
+   Write an equation for the distance between them after $t$ hours.
+   What is the slope? After how long are they 13.5 km apart?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Write as an equation",           eq: "d = 5t + 4t = 9t", note: "They move away from each other, so total distance grows at 9 km/h." },
+  { op: "Identify the slope",             eq: "m = 9 \\text{ km/h (the rate at which they separate)}" },
+  { op: "Set d = 13.5",                   eq: "9t = 13.5" },
+  { op: "Solve for t",                    eq: "t = 1.5 \\text{ hours}" },
+  { op: "Check",                          eq: "9 \\times 1.5 = 13.5 \\checkmark" }
+])
+```
+
+4. A runner's training log shows she ran 15 km in week 1 and
+   increases her distance by 2 km each week. Write an equation
+   for total distance run after $w$ weeks of training (not counting
+   week 1 as week 0 — let week 1 be $w = 1$). Plot the first six
+   weeks. In which week does she first exceed 100 km total?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write the weekly distance",       eq: "d_w = 15 + (w-1) \\times 2 = 2w + 13" },
+  { op: "Sum the first w weeks",           eq: "T_w = \\sum_{k=1}^{w}(2k+13) = w^2 + 14w", note: "Sum of 2k+13 for k=1 to w equals w²+14w using the arithmetic series formula." },
+  { op: "Set T_w > 100",                   eq: "w^2 + 14w > 100" },
+  { op: "Try w = 6",                       eq: "36 + 84 = 120 > 100 \\checkmark" },
+  { op: "Try w = 5",                       eq: "25 + 70 = 95 < 100" },
+  { op: "Answer",                          eq: "\\text{She first exceeds 100 km total in week 6}" }
+])
+```
+
+5. A line passes through the points $(2, 7)$ and $(5, 13)$.
+   Find the slope. Then substitute one of the points into
+   $y = mx + b$ to solve for the y-intercept $b$, and write the
+   full equation. Check your equation works for both original points.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Calculate slope",                eq: "m = \\frac{13-7}{5-2} = \\frac{6}{3} = 2" },
+  { op: "Substitute (2, 7) into y=mx+b", eq: "7 = 2(2) + b \\Rightarrow 7 = 4 + b \\Rightarrow b = 3" },
+  { op: "Write the equation",             eq: "y = 2x + 3" },
+  { op: "Check point (2, 7)",             eq: "2(2)+3 = 7 \\checkmark" },
+  { op: "Check point (5, 13)",            eq: "2(5)+3 = 13 \\checkmark" }
+])
+```
+
+6. A line has slope $-2$ and passes through $(3, 4)$. Substitute
+   the point into $y = mx + b$ to find $b$, then write the full
+   equation. Find where the line crosses the x-axis (the point
+   where $y = 0$).
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Substitute into y = mx + b",    eq: "4 = -2(3) + b \\Rightarrow 4 = -6 + b \\Rightarrow b = 10" },
+  { op: "Write the equation",             eq: "y = -2x + 10" },
+  { op: "Find x-intercept (set y = 0)",  eq: "0 = -2x + 10 \\Rightarrow 2x = 10 \\Rightarrow x = 5" },
+  { op: "x-intercept",                   eq: "(5,\\, 0)" },
+  { op: "Check",                          eq: "-2(5)+10 = 0 \\checkmark;\\quad -2(3)+10 = 4 \\checkmark" }
+])
+```
+
+7. Two phone plans are graphed below — but the graph has been
+   removed. Plan A: $y = 4x + 5$. Plan B: $y = 2x + 15$. Without
+   drawing the graph, find the value of $x$ where the plans cost
+   the same. Which plan is cheaper for someone using 4 units?
+   Which for someone using 8 units?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(7, [
+  { op: "Write as an equation",           eq: "4x + 5 = 2x + 15" },
+  { op: "Subtract 2x from both sides",    eq: "2x + 5 = 15" },
+  { op: "Subtract 5 from both sides",     eq: "2x = 10 \\Rightarrow x = 5" },
+  { op: "Compare at x = 4",              eq: "A: 4(4)+5=21,\\quad B: 2(4)+15=23 \\Rightarrow \\text{Plan A cheaper}" },
+  { op: "Compare at x = 8",              eq: "A: 4(8)+5=37,\\quad B: 2(8)+15=31 \\Rightarrow \\text{Plan B cheaper}" },
+  { op: "Check crossover at x = 5",      eq: "A: 4(5)+5=25,\\quad B: 2(5)+15=25 \\checkmark" }
+])
+```

@@ -1,6 +1,982 @@
 ---
 title: "First-order ODEs"
-status: "seed"
+subtitle: "When the rate of change depends on the state"
+chapter: 1
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: "You know how to differentiate and integrate. An ODE is an equation that relates a function to its own derivative — you are solving for the function itself, not a number."
+
+rewrite: "Separating variables or finding an integrating factor turns the ODE into a standard integral. The solution is a family of curves; an initial condition picks one."
+
+prerequisite_ids:
+  - diff_calc
+  - int_calc
+
+opens_to:
+  - id: odes
+    label: "Second-order ODEs"
+    volume: 7
+    relationship: enables
+  - id: laplace
+    label: "Laplace transforms"
+    volume: 7
+    relationship: motivates
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Every circuit, mechanical system, and control loop is governed by an ODE. First-order equations describe the transient response of RC circuits and the decay of radioactive tracers in medical imaging."
+    career_example: "Electrical engineer modelling RC filter transient response"
+  - field: sci
+    label: Hard sciences
+    hook: "Radioactive decay, chemical reaction rates, and population dynamics with harvesting are all first-order ODEs. The form y' = ky is the mathematical backbone of exponential change."
+    career_example: "Environmental scientist modelling pollutant decay in a lake"
+  - field: biz
+    label: Finance and quant
+    hook: "Continuous-time interest accumulation and the Black-Scholes hedging argument both reduce to first-order linear ODEs in their simplest forms."
+    career_example: "Quantitative analyst building continuous-time interest rate models"
+  - field: comp
+    label: Computing and data
+    hook: "Numerical ODE solvers (Euler's method, Runge-Kutta) are used in physics simulations, game engines, and neural ODE research. Understanding the analytic solution calibrates the numerics."
+    career_example: "Game engine developer implementing rigid-body dynamics integration"
+
+notation_introduced:
+  - symbol: "y'"
+    reads_as: "y prime"
+    meaning: "Derivative of y with respect to x (or t)"
+  - symbol: "\\frac{dy}{dx}"
+    reads_as: "dy by dx"
+    meaning: "Leibniz notation for the derivative"
+  - symbol: "y(x_0) = y_0"
+    reads_as: "initial condition"
+    meaning: "The value of y at the starting point x₀"
+  - symbol: "\\mu(x)"
+    reads_as: "mu of x"
+    meaning: "Integrating factor: $\\mu = e^{\\int P(x)\\,dx}$"
+  - symbol: "C"
+    reads_as: "C"
+    meaning: "Arbitrary constant of integration — absorbed into the general solution"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  An RC circuit charges up, then you disconnect the source. The voltage
+  across the capacitor starts dropping — but how, exactly? Not linearly,
+  not as a step: the answer is a function, and the shape of that function
+  depends on the values of resistance and capacitance in a precise way.
+  Solving the differential equation that governs the voltage tells you
+  the function, not just a single number — and once you have it, every
+  question about the circuit's behaviour is answerable.
+
+kreyszig_chapter: "Ch 1–2"
+stroud_programme: null
+uofa_course: "MATH 201"
 ---
 
-*Seed — front matter to be completed before content is written.*
+An RC circuit: a resistor and capacitor in series, connected to a voltage source. The capacitor charges up. At $t = 0$ you disconnect the source. The voltage across the capacitor starts dropping.
+
+The question is not "what is the voltage after 1 second?" You could measure that with a multimeter. The question is: what *function* describes the voltage at every instant? How does it fall — linearly, exponentially, as a step? Does it depend on $R$ and $C$ individually or only on their product? What happens if you double the capacitance?
+
+To answer those questions you need an equation that the voltage function must satisfy. That equation involves the derivative of the voltage — it is an ordinary differential equation. Solving it means finding the function, not a number.
+
+This chapter develops two techniques — separation of variables and the integrating factor — that between them handle a large fraction of first-order ODEs encountered in engineering. The chapter closes with the existence and uniqueness theorem, which tells you something crucial: you should check that a solution exists before spending time looking for one.
+
+---
+
+## The ODE problem
+
+A function $y(x)$ satisfies an **ordinary differential equation** when substituting $y$ and its derivatives into the equation produces an identity. The simplest possible example:
+
+$$y' = y$$
+
+This asks: for which functions does the derivative equal the function itself? The answer is $y = Ce^x$ for any constant $C$. There is not one solution — there is a family of them, one curve for each value of $C$.
+
+This is the fundamental shift from algebra. In algebra you solve for a number. In an ODE you solve for a function.
+
+### Order and linearity
+
+The **order** of an ODE is the order of the highest derivative that appears. This chapter covers first-order ODEs: equations involving $y$ and $y'$, but not $y''$ or higher.
+
+An ODE is **linear** if it can be written in the form
+
+$$a_n(x)\,y^{(n)} + a_{n-1}(x)\,y^{(n-1)} + \cdots + a_1(x)\,y' + a_0(x)\,y = f(x)$$
+
+where all coefficients depend only on $x$, not on $y$. For first-order:
+
+$$a_1(x)\,y' + a_0(x)\,y = f(x)$$
+
+If $y$ or $y'$ appear raised to a power, inside a trig function, multiplied together, or otherwise nonlinearly, the equation is **nonlinear**. Nonlinear first-order ODEs are harder; two important special cases (separable equations and the logistic equation) are tractable analytically, but most require numerical methods.
+
+### General and particular solutions
+
+The **general solution** of a first-order ODE contains one arbitrary constant $C$. Geometrically it is a one-parameter family of curves — every value of $C$ gives one solution curve.
+
+A **particular solution** is obtained by applying an **initial condition**: a specified value $y(x_0) = y_0$. This pins one curve from the family.
+
+For example, $y' = 2x$ has general solution $y = x^2 + C$. The initial condition $y(0) = 3$ gives $C = 3$, so the particular solution is $y = x^2 + 3$.
+
+### Why existence and uniqueness matters
+
+Before solving an ODE, it is worth knowing whether a solution exists and, if it does, whether it is unique. If uniqueness fails, a numerical solver that finds *a* solution may not find *the* solution relevant to your physical problem. The Picard-Lindelöf theorem (stated precisely at the end of this chapter) gives sufficient conditions for both. In practice: check the theorem first, solve second.
+
+---
+
+## Separable ODEs
+
+A first-order ODE is **separable** if it can be written in the form
+
+$$\frac{dy}{dx} = g(x)\,h(y)$$
+
+The method is to separate all $y$-dependence to the left and all $x$-dependence to the right, then integrate both sides.
+
+**Method.** Divide both sides by $h(y)$ (assuming $h(y) \neq 0$):
+
+$$\frac{1}{h(y)}\,\frac{dy}{dx} = g(x)$$
+
+Interpret $\frac{dy}{dx}\,dx = dy$ and integrate. This is shorthand for a substitution — treating $dy/dx$ as a ratio is a notational convenience that can be made rigorous via the substitution rule for integrals; the result is always valid for separable ODEs.
+
+$$\int \frac{dy}{h(y)} = \int g(x)\,dx + C$$
+
+The constant of integration appears once — it is conventional to write it on the right. The initial condition then determines $C$.
+
+### Worked example 1: exponential growth and decay
+
+Solve $\dfrac{dy}{dt} = ky$, with $y(0) = y_0$.
+
+This is separable. Divide by $y$ (assuming $y \neq 0$):
+
+$$\frac{dy}{y} = k\,dt$$
+
+Integrate both sides:
+
+$$\ln|y| = kt + C_1$$
+
+Exponentiate:
+
+$$|y| = e^{C_1} e^{kt}$$
+
+Three sub-steps are compressed here: (1) remove the absolute value signs by introducing a $\pm$ — so $|y| = e^{C_1}e^{kt}$ becomes $y = \pm e^{C_1}e^{kt}$; (2) rename $\pm e^{C_1}$ as $A$, which is still a nonzero constant since $e^{C_1} > 0$ always; (3) check whether $y = 0$ is also a solution — substituting gives $0 = k \cdot 0$, which is true, so $y = 0$ is valid and we extend $A$ to allow zero as well. Collecting these observations:
+
+$$y(t) = A e^{kt}$$
+
+Apply the initial condition $y(0) = y_0$:
+
+$$y_0 = A e^0 = A$$
+
+Particular solution:
+
+$$\boxed{y(t) = y_0\,e^{kt}}$$
+
+The constant $k$ controls the behaviour. If $k > 0$ the function grows without bound — radioactive build-up, compound interest, early-stage epidemic spread. If $k < 0$ (write $k = -\lambda$, $\lambda > 0$) the function decays to zero — radioactive decay, drug clearance, capacitor discharge. The quantity $\tau = 1/|\lambda|$ is the **time constant**: the time for the function to fall to $e^{-1} \approx 36.8\%$ of its initial value, or equivalently, the time at which the tangent at $t = 0$ would reach zero.
+
+### Worked example 2: Newton's law of cooling
+
+A body at temperature $T$ loses heat to an environment at constant temperature $T_{\text{env}}$. Newton's law of cooling states that the rate of heat loss is proportional to the temperature difference:
+
+$$\frac{dT}{dt} = -k(T - T_{\text{env}}), \qquad k > 0$$
+
+The negative sign ensures cooling: if $T > T_{\text{env}}$, the right side is negative, so $T$ decreases. The equation is separable, but a substitution makes it cleaner. Let $u = T - T_{\text{env}}$. Then $\frac{du}{dt} = \frac{dT}{dt}$ (since $T_{\text{env}}$ is constant), and the equation becomes:
+
+$$\frac{du}{dt} = -ku$$
+
+This is $y' = ky$ with $k \to -k$. By the previous example:
+
+$$u(t) = u_0\,e^{-kt}$$
+
+where $u_0 = T(0) - T_{\text{env}}$. Substituting back:
+
+$$\boxed{T(t) = T_{\text{env}} + (T_0 - T_{\text{env}})\,e^{-kt}}$$
+
+The temperature difference decays exponentially. As $t \to \infty$, $T \to T_{\text{env}}$: the body equilibrates with its surroundings, as expected. The constant $k$ depends on the thermal properties of the body and the medium — a copper block cools faster than a ceramic mug of the same mass (larger $k$).
+
+---
+
+```{ojs}
+//| echo: false
+viewof vizEq1 = Inputs.select(["y' = ky", "y' = y(1−y)"], {label: "Equation"})
+viewof vizK   = Inputs.range([-2, 2], {step: 0.1, value: -0.5, label: "k (for y′ = ky)"})
+viewof vizY0  = Inputs.range([0.1, 3], {step: 0.05, value: 1, label: "Initial condition y(0)"})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const W = 560, H = 320;
+  const margin = {top: 20, right: 120, bottom: 40, left: 50};
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top  - margin.bottom;
+
+  const tMin = 0, tMax = 5;
+  const yMin = -0.5, yMax = 3;
+
+  const xScale = d3.scaleLinear([tMin, tMax], [0, w]);
+  const yScale = d3.scaleLinear([yMin, yMax], [h, 0]);
+
+  const svg = d3.create("svg")
+      .attr("width",  W)
+      .attr("height", H)
+      .style("font-family", "sans-serif")
+      .style("font-size", "12px");
+
+  const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // axes
+  g.append("g").attr("transform", `translate(0,${h})`).call(d3.axisBottom(xScale).ticks(5));
+  g.append("g").call(d3.axisLeft(yScale).ticks(6));
+
+  // axis labels
+  g.append("text")
+      .attr("x", w / 2).attr("y", h + 34)
+      .attr("text-anchor", "middle").text("t");
+  g.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -h / 2).attr("y", -38)
+      .attr("text-anchor", "middle").text("y");
+
+  // slope function
+  const isLogistic = vizEq1 === "y' = y(1−y)";
+  const slope = (t, y) => isLogistic ? y * (1 - y) : vizK * y;
+
+  // direction field
+  const nT = 20, nY = 18;
+  const arrowLen = 0.18;
+  for (let i = 0; i <= nT; i++) {
+    for (let j = 0; j <= nY; j++) {
+      const t = tMin + (i / nT) * (tMax - tMin);
+      const y = yMin + (j / nY) * (yMax - yMin);
+      const s = slope(t, y);
+      const mag = Math.sqrt(1 + s * s);
+      const dt = arrowLen / mag;
+      const dy = s * arrowLen / mag;
+      const x1 = xScale(t - dt / 2);
+      const y1 = yScale(y - dy / 2);
+      const x2 = xScale(t + dt / 2);
+      const y2 = yScale(y + dy / 2);
+      g.append("line")
+          .attr("x1", x1).attr("y1", y1)
+          .attr("x2", x2).attr("y2", y2)
+          .attr("stroke", "#ccc").attr("stroke-width", 1.2);
+    }
+  }
+
+  // equilibrium line for logistic
+  if (isLogistic) {
+    g.append("line")
+        .attr("x1", xScale(tMin)).attr("y1", yScale(1))
+        .attr("x2", xScale(tMax)).attr("y2", yScale(1))
+        .attr("stroke", "#e67e22").attr("stroke-width", 1.5)
+        .attr("stroke-dasharray", "5,4");
+    g.append("text")
+        .attr("x", xScale(tMax) + 4).attr("y", yScale(1) + 4)
+        .attr("fill", "#e67e22").text("y=1 (equilibrium)");
+  }
+
+  // Euler trajectory
+  const dt = 0.05;
+  const steps = 100;
+  const pts = [];
+  let ty = vizY0;
+  for (let i = 0; i <= steps; i++) {
+    const t = i * dt;
+    pts.push([t, ty]);
+    ty = ty + dt * slope(t, ty);
+    if (ty > yMax + 1 || ty < yMin - 1) break;
+  }
+
+  const line = d3.line()
+      .x(d => xScale(d[0]))
+      .y(d => yScale(d[1]))
+      .defined(d => d[1] >= yMin - 0.5 && d[1] <= yMax + 0.5);
+
+  g.append("path")
+      .datum(pts)
+      .attr("fill", "none")
+      .attr("stroke", "#2980b9")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+  // formula label top-right
+  const formulaLabel = isLogistic ? "y′ = y(1−y)" : `y′ = ${vizK.toFixed(1)}y`;
+  g.append("text")
+      .attr("x", w - 4).attr("y", 12)
+      .attr("text-anchor", "end")
+      .attr("fill", "#333")
+      .style("font-size", "13px")
+      .text(formulaLabel);
+
+  return svg.node();
+}
+```
+
+---
+
+## Linear first-order ODEs
+
+Not every first-order ODE is separable. Consider:
+
+$$y' + 2xy = e^{-x^2}$$
+
+The right side prevents simple separation. But the equation is linear — it has the form
+
+$$y' + P(x)\,y = Q(x)$$
+
+This is the **standard form** of a first-order linear ODE.
+
+### The integrating factor
+
+The key idea: multiply both sides by a function $\mu(x)$, chosen so that the left side becomes the derivative of a product. If
+
+$$\mu(x)\,y' + \mu(x)\,P(x)\,y = \frac{d}{dx}[\mu(x)\,y]$$
+
+then by the product rule the right side expands as $\mu\,y' + \mu'\,y$. Matching:
+
+$$\mu(x)\,P(x) = \mu'(x)$$
+
+This is a separable ODE for $\mu$:
+
+$$\frac{d\mu}{\mu} = P(x)\,dx \implies \ln\mu = \int P(x)\,dx \implies \mu(x) = e^{\int P(x)\,dx}$$
+
+No constant of integration is needed — any $\mu$ that works is sufficient, and the simplest choice sets the constant to zero.
+
+**Why this is the key step.** After multiplying by $\mu$, the ODE becomes:
+
+$$\frac{d}{dx}[\mu(x)\,y] = \mu(x)\,Q(x)$$
+
+The left side is a perfect derivative. Integrate both sides:
+
+$$\mu(x)\,y = \int \mu(x)\,Q(x)\,dx + C$$
+
+$$y = \frac{1}{\mu(x)}\left[\int \mu(x)\,Q(x)\,dx + C\right]$$
+
+The integrating factor converts the ODE into a straightforward integration problem.
+
+**Summary of the method:**
+
+1. Write in standard form: $y' + P(x)\,y = Q(x)$
+2. Compute $\mu(x) = e^{\int P(x)\,dx}$
+3. Multiply both sides by $\mu$: left side becomes $\frac{d}{dx}[\mu y]$
+4. Integrate both sides
+5. Solve for $y$; apply initial condition to find $C$
+
+### Worked example: RC circuit
+
+A series RC circuit connected to a constant voltage source $V_s$ satisfies Kirchhoff's voltage law:
+
+$$V_R + V_C = V_s$$
+
+The resistor voltage is $V_R = Ri = RC\,\frac{dV_C}{dt}$ (using $i = C\,\frac{dV_C}{dt}$). Writing $V = V_C$:
+
+$$RC\,\frac{dV}{dt} + V = V_s$$
+
+Divide by $RC$ to reach standard form:
+
+$$\frac{dV}{dt} + \frac{1}{RC}\,V = \frac{V_s}{RC}$$
+
+Here $P(t) = \frac{1}{RC}$ and $Q(t) = \frac{V_s}{RC}$.
+
+**Step 2.** Integrating factor:
+
+$$\mu(t) = e^{\int \frac{1}{RC}\,dt} = e^{t/RC}$$
+
+**Step 3.** Multiply through:
+
+$$\frac{d}{dt}\left[e^{t/RC}\,V\right] = \frac{V_s}{RC}\,e^{t/RC}$$
+
+**Step 4.** Integrate both sides:
+
+$$e^{t/RC}\,V = V_s\,e^{t/RC} + C$$
+
+**Step 5.** Divide by $e^{t/RC}$:
+
+$$V(t) = V_s + C\,e^{-t/RC}$$
+
+Apply $V(0) = V_0$:
+
+$$V_0 = V_s + C \implies C = V_0 - V_s$$
+
+Particular solution:
+
+$$\boxed{V(t) = V_s + (V_0 - V_s)\,e^{-t/RC}}$$
+
+Reading the solution physically: the voltage starts at $V_0$ and approaches $V_s$ exponentially with time constant $\tau = RC$. If $V_0 = 0$ (capacitor initially uncharged), the voltage rises from zero to $V_s$. If $V_0 > V_s$ (capacitor initially overcharged), it decays down. The product $\tau = RC$ — measured in seconds when $R$ is in ohms and $C$ in farads — governs how fast the transient dies. After $5\tau$ the transient is below 1% of its initial magnitude; engineers call this "essentially complete."
+
+---
+
+```{ojs}
+//| echo: false
+viewof vizR  = Inputs.range([1, 100],   {step: 1,    value: 10,   label: "R (Ω)"})
+viewof vizC  = Inputs.range([100, 10000], {step: 100, value: 1000, label: "C (μF)"})
+viewof vizV0 = Inputs.range([0, 20],    {step: 0.5,  value: 10,   label: "V₀ (initial voltage, V)"})
+viewof vizVs = Inputs.range([0, 20],    {step: 0.5,  value: 0,    label: "Vₛ (source voltage, V)"})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const W = 560, H = 300;
+  const margin = {top: 20, right: 140, bottom: 40, left: 55};
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top  - margin.bottom;
+
+  // τ in seconds  (C is in μF → convert to F)
+  const tau = vizR * vizC * 1e-6;
+  const tMax = 5 * tau;
+
+  const vMin = Math.min(vizVs, vizV0) - 0.5;
+  const vMax = Math.max(vizVs, vizV0) + 0.5;
+
+  const xScale = d3.scaleLinear([0, tMax], [0, w]);
+  const yScale = d3.scaleLinear([vMin, vMax], [h, 0]);
+
+  const svg = d3.create("svg")
+      .attr("width",  W)
+      .attr("height", H)
+      .style("font-family", "sans-serif")
+      .style("font-size", "12px");
+
+  const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // axes
+  g.append("g").attr("transform", `translate(0,${h})`)
+      .call(d3.axisBottom(xScale).ticks(5).tickFormat(v => d3.format(".3g")(v)));
+  g.append("g").call(d3.axisLeft(yScale).ticks(6));
+
+  // axis labels
+  g.append("text")
+      .attr("x", w / 2).attr("y", h + 34)
+      .attr("text-anchor", "middle").text("t (s)");
+  g.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -h / 2).attr("y", -44)
+      .attr("text-anchor", "middle").text("V(t) (V)");
+
+  // V∞ horizontal dashed line
+  g.append("line")
+      .attr("x1", 0).attr("y1", yScale(vizVs))
+      .attr("x2", w).attr("y2", yScale(vizVs))
+      .attr("stroke", "#27ae60").attr("stroke-width", 1.4)
+      .attr("stroke-dasharray", "5,4");
+  g.append("text")
+      .attr("x", w + 4).attr("y", yScale(vizVs) + 4)
+      .attr("fill", "#27ae60")
+      .style("font-size", "11px")
+      .text(`V∞ = Vₛ = ${vizVs.toFixed(1)} V`);
+
+  // τ vertical dashed line
+  g.append("line")
+      .attr("x1", xScale(tau)).attr("y1", 0)
+      .attr("x2", xScale(tau)).attr("y2", h)
+      .attr("stroke", "#8e44ad").attr("stroke-width", 1.4)
+      .attr("stroke-dasharray", "5,4");
+  g.append("text")
+      .attr("x", xScale(tau) + 4).attr("y", 14)
+      .attr("fill", "#8e44ad")
+      .style("font-size", "11px")
+      .text("τ = RC");
+
+  // V(τ) annotation dot + label
+  const vAtTau = vizVs + (vizV0 - vizVs) * Math.exp(-1);
+  g.append("circle")
+      .attr("cx", xScale(tau)).attr("cy", yScale(vAtTau))
+      .attr("r", 4).attr("fill", "#8e44ad");
+  g.append("text")
+      .attr("x", xScale(tau) + 6).attr("y", yScale(vAtTau) - 6)
+      .attr("fill", "#8e44ad")
+      .style("font-size", "11px")
+      .text(`V(τ) ≈ ${vAtTau.toFixed(2)} V`);
+
+  // V(t) curve
+  const nPts = 300;
+  const pts = d3.range(nPts + 1).map(i => {
+    const t = (i / nPts) * tMax;
+    const v = vizVs + (vizV0 - vizVs) * Math.exp(-t / tau);
+    return [t, v];
+  });
+
+  const line = d3.line()
+      .x(d => xScale(d[0]))
+      .y(d => yScale(d[1]));
+
+  g.append("path")
+      .datum(pts)
+      .attr("fill", "none")
+      .attr("stroke", "#2980b9")
+      .attr("stroke-width", 2.2)
+      .attr("d", line);
+
+  // τ value label top-right
+  const tauMs = (tau * 1000).toFixed(1);
+  g.append("text")
+      .attr("x", w - 4).attr("y", 14)
+      .attr("text-anchor", "end")
+      .attr("fill", "#333")
+      .style("font-size", "12px")
+      .text(`τ = ${tauMs} ms`);
+
+  return svg.node();
+}
+```
+
+---
+
+## Applications
+
+### Mixing problem
+
+A 100 L tank initially contains fresh water. Brine at concentration 2 g/L flows in at 4 L/min. The well-mixed solution flows out at 4 L/min, so the volume stays constant at 100 L.
+
+Let $S(t)$ be the salt content in grams at time $t$. The rate of change is:
+
+$$\frac{dS}{dt} = \underbrace{2 \times 4}_{\text{in}} - \underbrace{\frac{S}{100} \times 4}_{\text{out}} = 8 - \frac{S}{25}$$
+
+Rearranging to standard form:
+
+$$\frac{dS}{dt} + \frac{1}{25}\,S = 8$$
+
+Integrating factor: $\mu = e^{t/25}$.
+
+$$\frac{d}{dt}\left[e^{t/25}\,S\right] = 8\,e^{t/25}$$
+
+$$e^{t/25}\,S = 200\,e^{t/25} + C$$
+
+$$S(t) = 200 + C\,e^{-t/25}$$
+
+Initial condition $S(0) = 0$ gives $C = -200$:
+
+$$\boxed{S(t) = 200\!\left(1 - e^{-t/25}\right)}$$
+
+As $t \to \infty$, $S \to 200$ g — this is the equilibrium: 2 g/L in 100 L. The approach is exponential with time constant $\tau = 25$ min. The tank is at 99% of equilibrium after $5\tau = 125$ min. The form of this solution is identical to the RC circuit: a system driven toward equilibrium by a constant input, with exponential relaxation.
+
+### Drug pharmacokinetics: one-compartment model
+
+A drug is injected as a bolus (instantaneous dose) of $D_0$ mg into the bloodstream. The drug is cleared by the kidneys at a rate proportional to the blood concentration $C(t)$ (mg/L), with elimination rate constant $k_e$ (min⁻¹). The volume of distribution is $V_d$ (L).
+
+The ODE for the amount $A(t) = C(t)\,V_d$ in the body is:
+
+$$\frac{dA}{dt} = -k_e\,A, \qquad A(0) = D_0$$
+
+This is $y' = ky$ with $k = -k_e$. Solution:
+
+$$A(t) = D_0\,e^{-k_e t}$$
+
+The blood concentration is $C(t) = A(t)/V_d = (D_0/V_d)\,e^{-k_e t}$.
+
+The **half-life** of the drug is the time for the concentration to halve:
+
+$$C(t_{1/2}) = \frac{C_0}{2} \implies e^{-k_e t_{1/2}} = \frac{1}{2} \implies t_{1/2} = \frac{\ln 2}{k_e}$$
+
+This is the number quoted on drug package inserts. A drug with $t_{1/2} = 4$ hours requires dosing every 4–8 hours to maintain therapeutic levels. The simplicity of this model makes it foundational in pharmacology — more realistic models add compartments (tissue, fat, CSF) but the same ODE structure applies to each.
+
+---
+
+## Existence and uniqueness
+
+Before investing effort in solving an ODE, it is worth asking whether a solution exists and whether it is unique. The **Picard-Lindelöf theorem** gives a sufficient condition.
+
+**Theorem (Picard-Lindelöf).** Consider the initial value problem
+
+$$y' = f(x, y), \qquad y(x_0) = y_0$$
+
+If $f$ and $\partial f / \partial y$ are both continuous on some open rectangle $R = \{(x,y) : |x - x_0| < a,\; |y - y_0| < b\}$ containing $(x_0, y_0)$, then there exists an interval $|x - x_0| < h$ (for some $h > 0$) on which the IVP has a **unique** solution.
+
+The theorem does not tell you the size of $h$ — the solution may only exist locally, not for all $x$. But it does guarantee that on some interval, exactly one solution passes through the given initial point.
+
+**What failure looks like.** Consider $y' = y^{2/3}$ with $y(0) = 0$.
+
+Here $f(x,y) = y^{2/3}$, which is continuous everywhere. But $\partial f / \partial y = \frac{2}{3} y^{-1/3}$, which is *not* continuous at $y = 0$ — the theorem's hypothesis fails. And indeed, uniqueness fails: both
+
+$$y_1(x) = 0 \qquad \text{and} \qquad y_2(x) = \left(\frac{x}{3}\right)^3$$
+
+satisfy $y' = y^{2/3}$ and $y(0) = 0$. There is not a unique solution through the origin.
+
+**Engineering consequence.** When the theorem applies, you know that any reasonable numerical method converges to the same solution — there is no ambiguity about which solution you are approximating. When it fails, a numerical solver may track different solution branches depending on the step size or starting perturbation, and the results can be misleading. Check the theorem first.
+
+---
+
+## Exercises
+
+These exercises are puzzles with physical content. The interesting part is identifying the method (separable or integrating factor) and setting up the solution correctly.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+---
+
+**Exercise 1.** Solve $\dfrac{dy}{dx} = \dfrac{x}{y}$. Find the general solution and the particular solution satisfying $y(0) = 2$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Separate variables",
+    eq: "y\\,dy = x\\,dx",
+    note: "Multiply both sides by y and by dx."
+  },
+  {
+    op: "Integrate both sides",
+    eq: "\\int y\\,dy = \\int x\\,dx \\implies \\frac{y^2}{2} = \\frac{x^2}{2} + C_1"
+  },
+  {
+    op: "Multiply through by 2, absorb constant",
+    eq: "y^2 = x^2 + C \\quad \\text{(general solution, family of hyperbolas)}"
+  },
+  {
+    op: "Apply initial condition y(0) = 2",
+    eq: "4 = 0 + C \\implies C = 4"
+  },
+  {
+    op: "Particular solution",
+    eq: "y^2 = x^2 + 4 \\implies y = \\sqrt{x^2 + 4}",
+    note: "Take the positive root because y(0) = 2 > 0."
+  }
+])
+```
+
+<!-- STEPPER -->
+Step 1 | Separate variables | $y\,dy = x\,dx$
+Step 2 | Integrate both sides | $\frac{y^2}{2} = \frac{x^2}{2} + C_1$
+Step 3 | Absorb constant | $y^2 = x^2 + C$ (general solution)
+Step 4 | Apply $y(0) = 2$ | $4 = 0 + C \Rightarrow C = 4$
+Step 5 | Particular solution | $y = \sqrt{x^2 + 4}$
+<!-- END STEPPER -->
+
+---
+
+**Exercise 2.** Solve $\dfrac{dy}{dt} = -0.1y$ with $y(0) = 500$. Find $y(t)$, then find the time at which $y = 100$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Recognise form y' = ky",
+    eq: "k = -0.1, \\quad y_0 = 500"
+  },
+  {
+    op: "Write general solution",
+    eq: "y(t) = 500\\,e^{-0.1t}"
+  },
+  {
+    op: "Set y = 100, solve for t",
+    eq: "500\\,e^{-0.1t} = 100 \\implies e^{-0.1t} = 0.2"
+  },
+  {
+    op: "Take natural log",
+    eq: "-0.1t = \\ln(0.2) = -\\ln 5"
+  },
+  {
+    op: "Solve for t",
+    eq: "t = \\frac{\\ln 5}{0.1} = 10\\ln 5 \\approx 16.09",
+    note: "ln 5 ≈ 1.609."
+  }
+])
+```
+
+<!-- STEPPER -->
+Step 1 | Identify $k = -0.1$, $y_0 = 500$ | $y(t) = 500\,e^{-0.1t}$
+Step 2 | Set $y = 100$ | $500\,e^{-0.1t} = 100$
+Step 3 | Divide | $e^{-0.1t} = 0.2$
+Step 4 | Take $\ln$ | $-0.1t = \ln(0.2)$
+Step 5 | Solve | $t = 10\ln 5 \approx 16.09$
+<!-- END STEPPER -->
+
+---
+
+**Exercise 3.** Coffee at 90°C sits in a 20°C room. The cooling constant is $k = 0.05$ min⁻¹. Find $T(t)$. How long until the coffee reaches 60°C?
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write Newton's law of cooling",
+    eq: "\\frac{dT}{dt} = -0.05(T - 20), \\quad T(0) = 90"
+  },
+  {
+    op: "Apply earlier result",
+    eq: "T(t) = 20 + (90 - 20)\\,e^{-0.05t} = 20 + 70\\,e^{-0.05t}"
+  },
+  {
+    op: "Set T = 60",
+    eq: "20 + 70\\,e^{-0.05t} = 60 \\implies 70\\,e^{-0.05t} = 40"
+  },
+  {
+    op: "Divide and take ln",
+    eq: "e^{-0.05t} = \\tfrac{4}{7} \\implies -0.05t = \\ln\\tfrac{4}{7}"
+  },
+  {
+    op: "Solve for t",
+    eq: "t = \\frac{-\\ln(4/7)}{0.05} = 20\\ln\\tfrac{7}{4} \\approx 11.2 \\text{ min}",
+    note: "ln(7/4) ≈ 0.5596."
+  }
+])
+```
+
+<!-- STEPPER -->
+Step 1 | Newton's law, known result | $T(t) = 20 + 70\,e^{-0.05t}$
+Step 2 | Set $T = 60$ | $70\,e^{-0.05t} = 40$
+Step 3 | Divide | $e^{-0.05t} = 4/7$
+Step 4 | Take $\ln$ | $-0.05t = \ln(4/7)$
+Step 5 | Solve | $t = 20\ln(7/4) \approx 11.2$ min
+<!-- END STEPPER -->
+
+---
+
+**Exercise 4.** Solve $y' + 2y = 4$ using the integrating factor method. Find the general solution, then the particular solution with $y(0) = 1$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Already in standard form",
+    eq: "P(x) = 2, \\quad Q(x) = 4"
+  },
+  {
+    op: "Compute integrating factor",
+    eq: "\\mu = e^{\\int 2\\,dx} = e^{2x}"
+  },
+  {
+    op: "Multiply through; left side is a perfect derivative",
+    eq: "\\frac{d}{dx}\\!\\left[e^{2x}y\\right] = 4e^{2x}"
+  },
+  {
+    op: "Integrate both sides",
+    eq: "e^{2x}y = 2e^{2x} + C"
+  },
+  {
+    op: "Divide by integrating factor",
+    eq: "y = 2 + Ce^{-2x} \\quad \\text{(general solution)}"
+  },
+  {
+    op: "Apply y(0) = 1",
+    eq: "1 = 2 + C \\implies C = -1",
+    note: "As x → ∞, y → 2: the steady state driven by Q = 4."
+  },
+  {
+    op: "Particular solution",
+    eq: "y = 2 - e^{-2x}"
+  }
+])
+```
+
+<!-- STEPPER -->
+Step 1 | Standard form confirmed | $P = 2$, $Q = 4$
+Step 2 | Integrating factor | $\mu = e^{2x}$
+Step 3 | Multiply; perfect derivative | $\frac{d}{dx}[e^{2x}y] = 4e^{2x}$
+Step 4 | Integrate | $e^{2x}y = 2e^{2x} + C$
+Step 5 | General solution | $y = 2 + Ce^{-2x}$
+Step 6 | Apply $y(0) = 1$ | $C = -1$
+Step 7 | Particular solution | $y = 2 - e^{-2x}$
+<!-- END STEPPER -->
+
+---
+
+**Exercise 5.** An RC circuit satisfies $V' + V = 12$ (taking $RC = 1$ s). The capacitor is initially uncharged: $V(0) = 0$. Find $V(t)$. What does $V(t)$ approach as $t \to \infty$, and why?
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Standard form: P = 1, Q = 12",
+    eq: "V' + V = 12"
+  },
+  {
+    op: "Integrating factor",
+    eq: "\\mu = e^{\\int 1\\,dt} = e^t"
+  },
+  {
+    op: "Multiply through",
+    eq: "\\frac{d}{dt}\\!\\left[e^t V\\right] = 12\\,e^t"
+  },
+  {
+    op: "Integrate",
+    eq: "e^t V = 12\\,e^t + C"
+  },
+  {
+    op: "General solution",
+    eq: "V(t) = 12 + Ce^{-t}"
+  },
+  {
+    op: "Apply V(0) = 0",
+    eq: "0 = 12 + C \\implies C = -12"
+  },
+  {
+    op: "Particular solution",
+    eq: "V(t) = 12\\!\\left(1 - e^{-t}\\right)",
+    note: "As t → ∞, V → 12 V. The capacitor charges to the source voltage — the exponential transient dies out and only the steady state driven by Q = 12 remains."
+  }
+])
+```
+
+<!-- STEPPER -->
+Step 1 | Integrating factor | $\mu = e^t$
+Step 2 | Multiply; perfect derivative | $\frac{d}{dt}[e^t V] = 12e^t$
+Step 3 | Integrate | $e^t V = 12e^t + C$
+Step 4 | General solution | $V = 12 + Ce^{-t}$
+Step 5 | Apply $V(0) = 0$ | $C = -12$
+Step 6 | Particular solution | $V(t) = 12(1 - e^{-t})$
+Step 7 | Limiting behaviour | $V \to 12$ as $t \to \infty$: the transient $-12e^{-t}$ decays; the steady state $V = V_s = 12$ remains.
+<!-- END STEPPER -->
+
+---
+
+**Exercise 6.** A 100 L tank initially contains 10 g of salt. Brine at 0.5 g/L flows in at 2 L/min; the well-mixed solution flows out at 2 L/min. Set up and solve the ODE for total salt $S(t)$ (grams). Find $S(t)$ and the long-run salt content.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Rate of salt in",
+    eq: "\\text{rate in} = 0.5 \\times 2 = 1 \\text{ g/min}"
+  },
+  {
+    op: "Rate of salt out (concentration S/100 times flow 2)",
+    eq: "\\text{rate out} = \\frac{S}{100} \\times 2 = \\frac{S}{50} \\text{ g/min}"
+  },
+  {
+    op: "ODE",
+    eq: "\\frac{dS}{dt} = 1 - \\frac{S}{50}"
+  },
+  {
+    op: "Standard form",
+    eq: "\\frac{dS}{dt} + \\frac{1}{50}S = 1"
+  },
+  {
+    op: "Integrating factor",
+    eq: "\\mu = e^{t/50}"
+  },
+  {
+    op: "Multiply; integrate",
+    eq: "e^{t/50}S = 50\\,e^{t/50} + C"
+  },
+  {
+    op: "General solution",
+    eq: "S(t) = 50 + Ce^{-t/50}"
+  },
+  {
+    op: "Apply S(0) = 10",
+    eq: "10 = 50 + C \\implies C = -40"
+  },
+  {
+    op: "Particular solution",
+    eq: "S(t) = 50 - 40\\,e^{-t/50}",
+    note: "As t → ∞, S → 50 g = 0.5 g/L × 100 L. The tank equilibrates to the incoming concentration."
+  }
+])
+```
+
+<!-- STEPPER -->
+Step 1 | Rate in | $0.5 \times 2 = 1$ g/min
+Step 2 | Rate out | $\frac{S}{100} \times 2 = \frac{S}{50}$ g/min
+Step 3 | ODE | $\frac{dS}{dt} = 1 - \frac{S}{50}$
+Step 4 | Standard form | $\frac{dS}{dt} + \frac{1}{50}S = 1$
+Step 5 | Integrating factor | $\mu = e^{t/50}$
+Step 6 | Integrate | $e^{t/50}S = 50\,e^{t/50} + C$
+Step 7 | General solution | $S(t) = 50 + Ce^{-t/50}$
+Step 8 | Apply $S(0) = 10$ | $C = -40$
+Step 9 | Particular solution | $S(t) = 50 - 40\,e^{-t/50}$; long-run $S \to 50$ g
+<!-- END STEPPER -->
+
+---
+
+## Where this goes
+
+This chapter covered first-order ODEs. The two methods here — separation of variables and the integrating factor — handle a large class of single first-order equations. They are not the whole story.
+
+**Second-order ODEs** (Chapter 2) introduce new phenomena: oscillation, resonance, and damping. A mass on a spring, an LC circuit, a building subject to seismic loading — these all require second-order equations and the concept of complementary and particular solutions.
+
+**Systems of ODEs** (Chapter 3) handle multiple interdependent quantities: two species in competition, currents in a multi-loop circuit, the position and velocity of a mechanical system as coupled first-order equations. The phase plane — a picture in state space rather than time — provides geometric insight that algebraic solutions alone cannot.
+
+**Laplace transforms** (Chapter 4) convert ODEs to algebraic equations in a new variable, solve them there, and invert the transform. The technique handles discontinuous forcing (switches, impulses) cleanly and connects naturally to control system design.
+
+The techniques of this chapter will reappear in all three. The RC circuit solution you derived here is the building block for understanding filter transients, step responses, and feedback systems.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- An electrical engineer designing an RC filter needs the time constant $\tau = RC$ to set the cutoff frequency — it comes directly from the ODE solution.
+- A pharmacokineticist calculating a dosing interval needs the drug half-life $t_{1/2} = (\ln 2)/k_e$ — from the same exponential decay formula.
+- A chemical engineer sizing a mixing tank needs to know how long before the outlet concentration reaches 99% of the inlet — a mixing problem of exactly the form in Exercise 6.
+- A control engineer specifying a first-order lag in a block diagram is working with $\tau\,\dot{y} + y = u$ — the RC circuit equation in disguise.
+
+The ODE changes labels. The mathematics does not.
+:::

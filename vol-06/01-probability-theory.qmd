@@ -1,6 +1,934 @@
 ---
 title: "Probability theory"
-status: "seed"
+subtitle: "Reasoning precisely about uncertainty"
+volume: 6
+chapter: 1
+layer: "pre-university"
+status: "review"
+
+hook: |
+  A medical test comes back positive. A factory flags a part as defective.
+  A weather model says rain. In every case, the number on its own is not
+  enough — you also need to know how common the underlying condition is
+  before you can say what the result actually means. Probability gives you
+  the framework to answer that question precisely.
+
+axiom: |
+  You know that probability is a number between 0 and 1, and that more
+  likely events have higher probability. You can compute simple
+  probabilities by counting outcomes.
+
+rewrite: |
+  This chapter gives probability a structure. Events have complements,
+  unions, and intersections. Conditional probability asks: given that
+  one thing happened, how does that change the probability of another?
+  Bayes' theorem runs that reasoning in reverse — the most practically
+  useful result in this volume.
+
+opens_to:
+  - id: "v6c2-distributions"
+    label: "Probability distributions"
+    volume: 6
+    relationship: "enables"
+
+prerequisite_ids:
+  - "stat_basic"
+  - "fractions"
+
+destinations:
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Genetic inheritance, particle decay, and clinical trial design all require conditional probability."
+    career_example: "Epidemiologist designing disease screening programmes"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Insurance pricing, credit risk, and fraud detection all rest on conditional probability models."
+    career_example: "Actuary modelling risk for an insurance portfolio"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Spam filters, recommendation engines, and medical AI all use Bayesian probability reasoning."
+    career_example: "Machine learning engineer building a classification model"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "Flood return periods, earthquake hazard maps, and weather forecasting are all probability statements."
+    career_example: "Environmental scientist modelling extreme weather risk"
+
+notation_introduced:
+  - symbol: "P(A)"
+    reads_as: "the probability of event A"
+    notation_weight: 3
+  - symbol: "P(A^c)"
+    reads_as: "the probability of the complement of A — the probability A does not occur"
+    notation_weight: 2
+  - symbol: "P(A \\cup B)"
+    reads_as: "the probability of A union B — A or B or both"
+    notation_weight: 2
+  - symbol: "P(A \\cap B)"
+    reads_as: "the probability of A intersection B — both A and B"
+    notation_weight: 2
+  - symbol: "P(A \\mid B)"
+    reads_as: "the probability of A given B — the conditional probability"
+    notation_weight: 3
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 11
+  strand: "Probability"
+  outcome: "P1"
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A medical test is 99% accurate. You test positive. How worried should you be?
+
+Most people say: very — 99% accurate means there's only a 1% chance this
+is wrong. But the actual answer depends almost entirely on something the
+test result doesn't tell you: how common the disease is in the first place.
+If only one person in a thousand has the disease, a positive result is more
+likely to be a false alarm than a true positive, even with a 99% accurate
+test. The maths will show you exactly why — and it's not complicated once
+you have the right framework.
+
+Here's a second trap. You toss a fair coin five times and get five heads in
+a row. What's the probability the next toss is tails — higher than usual, to
+"balance things out"? No. It's still 50%. The coin has no memory. Each toss
+is independent of every toss before it. The belief that a run of heads makes
+tails "overdue" is called the gambler's fallacy, and it has emptied a great
+many wallets.
+
+Third trap. Two events each have probability 0.5. What's the probability
+they both happen? Surely 0.25 — half of half? Only if the events have
+nothing to do with each other. If knowing that one happened changes the
+probability of the other, the calculation is different.
+
+Probability has real structure. Intuition is not enough to navigate it.
+This chapter gives you the rules that make the structure precise — and with
+those rules, the three problems above all have clean, computable answers.
+
+## What the notation is saying
+
+### Sample spaces and events
+
+Before you can write $P(\text{anything})$, you need to know what the full
+set of possibilities is.
+
+The **sample space** $\Omega$ (the capital Greek letter omega) is the set of
+all possible outcomes of an experiment. Roll a standard die: $\Omega = \{1,
+2, 3, 4, 5, 6\}$. Toss a coin: $\Omega = \{\text{H}, \text{T}\}$. These
+are the complete lists — every outcome that could happen.
+
+An **event** is any subset of the sample space — any collection of outcomes
+you're interested in. "Roll an even number" is the event $\{2, 4, 6\}$.
+"Roll a number greater than 4" is $\{5, 6\}$. Events are usually labelled
+with capital letters: $A$, $B$, $C$.
+
+Now the five symbols:
+
+**$P(A)$** — read "the probability of $A$." This is a number between 0 and 1
+that measures how likely event $A$ is. $P(A) = 0$ means impossible;
+$P(A) = 1$ means certain.
+
+*Example:* Let $A$ = "roll a 3." On a fair die, $P(A) = \frac{1}{6}$.
+
+**$P(A^c)$** — read "the probability of the complement of $A$." The
+complement $A^c$ (also written $\bar{A}$ or $A'$) is the event "A does
+not happen" — every outcome in $\Omega$ that is not in $A$.
+
+*Example:* Let $A$ = "roll a 3." Then $A^c$ = "roll anything but 3" =
+$\{1, 2, 4, 5, 6\}$. Since one of the two must happen: $P(A^c) = \frac{5}{6}$.
+
+**$P(A \cup B)$** — read "the probability of $A$ union $B$." The union
+$A \cup B$ is the event "$A$ or $B$ or both" — any outcome in at least
+one of $A$ and $B$.
+
+*Example:* Let $A$ = "roll an even number" = $\{2, 4, 6\}$ and $B$ = "roll
+a number greater than 4" = $\{5, 6\}$. Then $A \cup B$ = $\{2, 4, 5, 6\}$,
+so $P(A \cup B) = \frac{4}{6} = \frac{2}{3}$.
+
+**$P(A \cap B)$** — read "the probability of $A$ intersection $B$."
+The intersection $A \cap B$ is the event "both $A$ and $B$" — only the
+outcomes that are in $A$ and also in $B$.
+
+*Example:* With $A = \{2, 4, 6\}$ and $B = \{5, 6\}$: $A \cap B = \{6\}$,
+so $P(A \cap B) = \frac{1}{6}$.
+
+**$P(A \mid B)$** — read "the probability of $A$ given $B$." This is
+the conditional probability — the probability that $A$ happens, given
+that you already know $B$ happened. The vertical bar is read "given."
+
+*Example:* You roll a die and someone tells you the result was greater than
+4 (so $B$ happened, and you know the outcome is in $\{5, 6\}$). What's the
+probability it was a 6? You're now working in a smaller world — only two
+outcomes are possible, and one of them is 6. So $P(\text{roll 6} \mid B)
+= \frac{1}{2}$.
+
+Those five symbols are the entire vocabulary you need. Everything else in
+this chapter is built from combinations of them.
+
+## The rules
+
+### Rule 1: Complement
+
+$$P(A^c) = 1 - P(A)$$
+
+Read it as: the probability that $A$ does not happen equals one minus the
+probability that it does.
+
+This is simple, but it earns its place in every calculation where it's
+easier to ask "what are the chances this doesn't happen?" than "what are
+the chances it does?" — which turns out to be surprisingly often.
+
+*Example:* What's the probability of rolling at least one six when you roll
+a die four times? Computing directly means listing every combination that
+includes at least one six. Computing via the complement means one step:
+$P(\text{at least one six}) = 1 - P(\text{no sixes}) = 1 - (5/6)^4
+\approx 1 - 0.482 = 0.518$ (we're getting ahead slightly — since each roll
+is independent, P(no six on all four rolls) = (5/6)×(5/6)×(5/6)×(5/6) =
+(5/6)⁴; we'll see this rule formally in Rule 4 below).
+
+### Rule 2: Addition rule
+
+$$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+
+Read it as: the probability of $A$ or $B$ equals the probability of $A$
+plus the probability of $B$, minus the probability of both.
+
+Why subtract the intersection? Because if you add $P(A)$ and $P(B)$
+separately, any outcome that falls in both $A$ and $B$ gets counted twice
+— once for $A$ and once for $B$. Subtracting $P(A \cap B)$ corrects that
+double-count.
+
+*Example:* Back to the die. $P(\text{even}) = \frac{3}{6}$,
+$P(\text{greater than 4}) = \frac{2}{6}$,
+$P(\text{even and greater than 4}) = P(\{6\}) = \frac{1}{6}$.
+
+$$P(\text{even or greater than 4}) = \frac{3}{6} + \frac{2}{6} - \frac{1}{6} = \frac{4}{6} = \frac{2}{3}$$
+
+**Special case — mutually exclusive events:** If $A$ and $B$ cannot both
+happen at the same time — if $A \cap B$ is empty — then $P(A \cap B) = 0$,
+and the rule simplifies to:
+
+$$P(A \cup B) = P(A) + P(B) \qquad (\text{mutually exclusive only})$$
+
+Rolling a 2 and rolling a 5 on the same single die toss are mutually
+exclusive. Rolling an even and rolling a 6 are not — 6 satisfies both.
+
+### Rule 3: Conditional probability
+
+$$P(A \mid B) = \frac{P(A \cap B)}{P(B)}$$
+
+Read it as: the probability of $A$ given $B$ equals the probability of
+both divided by the probability of $B$.
+
+The intuition: when you learn that $B$ happened, you've narrowed down the
+sample space. You're no longer considering all of $\Omega$ — only the part
+of $\Omega$ where $B$ is true. Within that restricted space, how often
+does $A$ also happen? That fraction is $P(A \mid B)$.
+
+A concrete picture makes this clearer than any formula. Imagine a group of
+1000 people:
+
+|                      | Disease positive | Disease negative | Total |
+|----------------------|-----------------|-----------------|-------|
+| **Test positive**    | 95              | 49              | 144   |
+| **Test negative**    | 5               | 851             | 856   |
+| **Total**            | 100             | 900             | 1000  |
+
+Here disease prevalence is 10% (100 of 1000 have the disease), test
+sensitivity is 95% (catches 95 of the 100 cases), and specificity
+(the probability of a negative result given no disease) is roughly
+94.6% (misses 49 of 900 healthy people).
+
+If you test positive, you're in the top row: 144 people. Of those 144,
+only 95 actually have the disease.
+$P(\text{disease} \mid \text{positive}) = \frac{95}{144} \approx 0.66$.
+
+But what happens when the disease is rarer? That's what the interactive
+below explores — and the numbers become surprising.
+
+```{ojs}
+//| echo: false
+{
+  // Sliders
+  const popSlider = Inputs.range([100, 10000], {value: 1000, step: 100, label: "Population size"});
+  const prevSlider = Inputs.range([0.1, 20], {value: 10, step: 0.1, label: "Disease prevalence (%)"});
+  const sensSlider = Inputs.range([50, 99.9], {value: 95, step: 0.1, label: "Test sensitivity (%)"});
+  const specSlider = Inputs.range([50, 99.9], {value: 94.6, step: 0.1, label: "Test specificity (%)"});
+
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:640px;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; gap:0.5rem; margin-bottom:1.25rem;";
+  controls.appendChild(popSlider);
+  controls.appendChild(prevSlider);
+  controls.appendChild(sensSlider);
+  controls.appendChild(specSlider);
+
+  const tableWrap = document.createElement("div");
+  tableWrap.style.cssText = "margin-bottom:1rem;";
+
+  const ppvDisplay = document.createElement("div");
+  ppvDisplay.style.cssText = "font-size:1.35rem; font-weight:600; margin-bottom:0.5rem; padding:0.75rem 1rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; color:#15803d;";
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "font-size:0.88em; color:#b45309; background:#fffbeb; border:1px solid #fde68a; border-radius:4px; padding:0.5rem 0.75rem; margin-top:0.5rem; display:none;";
+  noteEl.textContent = "Low prevalence warning: when the disease is rare, even a good test produces more false positives than true positives. A positive result is not a diagnosis.";
+
+  function update() {
+    const N   = popSlider.value;
+    const prev = prevSlider.value / 100;
+    const sens = sensSlider.value / 100;
+    const spec = specSlider.value / 100;
+
+    const diseased   = Math.round(N * prev);
+    const healthy    = N - diseased;
+    const tp = Math.round(diseased * sens);
+    const fn = diseased - tp;
+    const tn = Math.round(healthy * spec);
+    const fp = healthy - tn;
+
+    const testPos = tp + fp;
+    const testNeg = fn + tn;
+    const ppv = testPos > 0 ? tp / testPos : 0;
+
+    ppvDisplay.textContent = `P(disease | positive test) = ${(ppv * 100).toFixed(1)}%  (${tp} true positives out of ${testPos} positive tests)`;
+    noteEl.style.display = prev < 0.05 ? "block" : "none";
+
+    tableWrap.innerHTML = "";
+    const tbl = document.createElement("table");
+    tbl.style.cssText = "border-collapse:collapse; width:100%; font-size:0.92em;";
+
+    const headerRow = tbl.insertRow();
+    ["", "Test positive", "Test negative", "Total"].forEach((h, i) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      th.style.cssText = "padding:0.4rem 0.75rem; border:1px solid #d1d5db; background:#f9fafb; text-align:" + (i === 0 ? "left" : "right") + ";";
+      headerRow.appendChild(th);
+    });
+
+    const rows = [
+      ["Disease positive", tp, fn, diseased],
+      ["Disease negative", fp, tn, healthy],
+      ["Total", testPos, testNeg, N],
+    ];
+    rows.forEach((r, ri) => {
+      const tr = tbl.insertRow();
+      r.forEach((cell, ci) => {
+        const td = tr.insertCell();
+        td.textContent = cell;
+        const isTp = ri === 0 && ci === 1;
+        td.style.cssText = "padding:0.4rem 0.75rem; border:1px solid #d1d5db; text-align:" + (ci === 0 ? "left" : "right") + ";" + (isTp ? " background:#dcfce7; font-weight:600;" : "");
+      });
+    });
+
+    tableWrap.appendChild(tbl);
+  }
+
+  popSlider.addEventListener("input", update);
+  prevSlider.addEventListener("input", update);
+  sensSlider.addEventListener("input", update);
+  specSlider.addEventListener("input", update);
+
+  update();
+
+  container.appendChild(controls);
+  container.appendChild(ppvDisplay);
+  container.appendChild(tableWrap);
+  container.appendChild(noteEl);
+  return container;
+}
+```
+
+### Rule 4: Multiplication rule
+
+$$P(A \cap B) = P(A \mid B) \cdot P(B)$$
+
+This is just the conditional probability definition rearranged. Solve for
+$P(A \cap B)$ and you get: to find the probability that both $A$ and $B$
+happen, multiply the probability that $B$ happens by the probability that
+$A$ happens given $B$ already happened.
+
+*Example:* A bag has 5 red and 3 blue marbles. You draw one without looking,
+then draw a second without replacing the first. What's the probability both
+are red?
+
+- $P(\text{first is red}) = \frac{5}{8}$
+- $P(\text{second is red} \mid \text{first was red}) = \frac{4}{7}$ (only 4 red left, only 7 total left)
+- $P(\text{both red}) = \frac{5}{8} \times \frac{4}{7} = \frac{20}{56} = \frac{5}{14}$
+
+### Rule 5: Independence
+
+Events $A$ and $B$ are **independent** if:
+
+$$P(A \mid B) = P(A)$$
+
+Read it as: knowing that $B$ happened does not change the probability of
+$A$ at all. $B$ carries no information about $A$.
+
+An equivalent (and often more useful) form comes directly from substituting
+into the multiplication rule:
+
+$$P(A \cap B) = P(A) \cdot P(B) \qquad (\text{independent events only})$$
+
+This is the definition of independence — not something you prove from
+intuition, but a precise property you can check. Two coin tosses are
+independent. Drawing a card from a shuffled deck and then rolling a die are
+independent. Drawing two cards without replacement are not — what you get
+first changes what's available for the second.
+
+The gambler's fallacy is exactly the mistake of believing that independent
+events are somehow dependent — that after five heads, the coin "owes" you
+a tail. The coin's next outcome has probability $\frac{1}{2}$ regardless of
+any previous results, because each toss is independent of every other.
+
+```{ojs}
+//| echo: false
+{
+  const pASlider = Inputs.range([0.01, 0.99], {value: 0.5, step: 0.01, label: "P(A)"});
+  const pBSlider = Inputs.range([0.01, 0.99], {value: 0.5, step: 0.01, label: "P(B)"});
+  const corrSelect = Inputs.radio(["Independent", "Positively correlated", "Negatively correlated"], {value: "Independent", label: "Relationship"});
+
+  const container = document.createElement("div");
+  container.style.cssText = "font-family:inherit; max-width:640px;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; gap:0.5rem; margin-bottom:1.25rem;";
+  controls.appendChild(pASlider);
+  controls.appendChild(pBSlider);
+  controls.appendChild(corrSelect);
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "margin-bottom:1rem;";
+
+  const gridWrap = document.createElement("div");
+  gridWrap.style.cssText = "margin-bottom:0.5rem;";
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function jointProbs(pA, pB, mode) {
+    let pAB;
+    if (mode === "Independent") {
+      pAB = pA * pB;
+    } else if (mode === "Positively correlated") {
+      const maxAB = Math.min(pA, pB);
+      pAB = clamp(pA * pB + 0.15 * Math.min(pA, pB, 1 - pA, 1 - pB), 0, maxAB);
+    } else {
+      const minAB = Math.max(0, pA + pB - 1);
+      pAB = clamp(pA * pB - 0.15 * Math.min(pA, pB, 1 - pA, 1 - pB), minAB, Math.min(pA, pB));
+    }
+    return {
+      pAB:      pAB,
+      pAnotB:   pA - pAB,
+      pBnotA:   pB - pAB,
+      pNeither: 1 - pA - pB + pAB,
+    };
+  }
+
+  function fmtPct(v) { return (v * 100).toFixed(1) + "%"; }
+
+  function renderGrid(pA, pB, mode) {
+    const j = jointProbs(pA, pB, mode);
+    const indepAB = pA * pB;
+
+    summary.innerHTML = "";
+    const cases = [
+      { label: "Independent",            pab: indepAB },
+      { label: "Positively correlated",  pab: jointProbs(pA, pB, "Positively correlated").pAB },
+      { label: "Negatively correlated",  pab: jointProbs(pA, pB, "Negatively correlated").pAB },
+    ];
+    const sumDiv = document.createElement("div");
+    sumDiv.style.cssText = "display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; margin-bottom:1rem;";
+    cases.forEach(c => {
+      const card = document.createElement("div");
+      const isActive = c.label === mode;
+      card.style.cssText = "border:1px solid " + (isActive ? "#3b82f6" : "#e5e7eb") + "; border-radius:6px; padding:0.5rem 0.75rem; background:" + (isActive ? "#eff6ff" : "#f9fafb") + ";";
+      card.innerHTML = `<div style="font-size:0.8em;color:#6b7280;">${c.label}</div><div style="font-weight:600;font-size:1.05em;">P(A∩B) = ${fmtPct(c.pab)}</div>`;
+      sumDiv.appendChild(card);
+    });
+    summary.appendChild(sumDiv);
+
+    gridWrap.innerHTML = "";
+    const tbl = document.createElement("table");
+    tbl.style.cssText = "border-collapse:collapse; width:100%; font-size:0.9em;";
+
+    const hdr = tbl.insertRow();
+    ["", "B occurs", "B does not occur", "Total"].forEach((h, i) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      th.style.cssText = "padding:0.4rem 0.7rem; border:1px solid #d1d5db; background:#f9fafb; text-align:" + (i === 0 ? "left" : "right") + ";";
+      hdr.appendChild(th);
+    });
+
+    const dataRows = [
+      ["A occurs",         j.pAB,      j.pAnotB,   pA],
+      ["A does not occur", j.pBnotA,   j.pNeither, 1 - pA],
+      ["Total",            pB,         1 - pB,     1.0],
+    ];
+    dataRows.forEach(r => {
+      const tr = tbl.insertRow();
+      r.forEach((cell, ci) => {
+        const td = tr.insertCell();
+        td.textContent = ci === 0 ? cell : fmtPct(cell);
+        td.style.cssText = "padding:0.4rem 0.7rem; border:1px solid #d1d5db; text-align:" + (ci === 0 ? "left" : "right") + ";";
+      });
+    });
+
+    gridWrap.appendChild(tbl);
+
+    const note = document.createElement("div");
+    note.style.cssText = "font-size:0.85em; color:#6b7280; margin-top:0.5rem;";
+    const diff = j.pAB - indepAB;
+    if (Math.abs(diff) < 0.001) {
+      note.textContent = "The joint probability equals P(A) × P(B) = " + fmtPct(indepAB) + " — the events are independent.";
+    } else if (diff > 0) {
+      note.textContent = "P(A∩B) = " + fmtPct(j.pAB) + " > P(A)×P(B) = " + fmtPct(indepAB) + " — knowing A occurred makes B more likely.";
+    } else {
+      note.textContent = "P(A∩B) = " + fmtPct(j.pAB) + " < P(A)×P(B) = " + fmtPct(indepAB) + " — knowing A occurred makes B less likely.";
+    }
+    gridWrap.appendChild(note);
+  }
+
+  function update() {
+    renderGrid(pASlider.value, pBSlider.value, corrSelect.value);
+  }
+
+  pASlider.addEventListener("input", update);
+  pBSlider.addEventListener("input", update);
+  corrSelect.addEventListener("change", update);
+
+  update();
+
+  container.appendChild(controls);
+  container.appendChild(summary);
+  container.appendChild(gridWrap);
+  return container;
+}
+```
+
+### Bayes' theorem
+
+Everything so far has been building to this. Start with the multiplication
+rule written two ways:
+
+$$P(A \cap B) = P(A \mid B) \cdot P(B)$$
+$$P(A \cap B) = P(B \mid A) \cdot P(A)$$
+
+The left-hand sides are equal, so the right-hand sides are too. Divide
+both sides by $P(B)$:
+
+$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
+
+This is **Bayes' theorem**. Read each part:
+
+- $P(A)$ — the **prior**: what you believed about $A$ before any new information.
+- $P(B \mid A)$ — the **likelihood**: how probable was this new evidence $B$, assuming $A$ is true?
+- $P(A \mid B)$ — the **posterior**: what you now believe about $A$, having seen $B$.
+- $P(B)$ — the **normalising constant**: the total probability of seeing $B$, regardless of whether $A$ is true or not.
+
+The theorem tells you how to update a belief in the light of new evidence.
+That is, precisely, what reasoning under uncertainty requires.
+
+Now the medical test problem from the opening has a clean solution.
+
+## Worked examples
+
+### Example 1 — Medical testing (sciences)
+
+A disease affects 1% of the population. A test for it has sensitivity 95%
+(correctly identifies 95% of people who have the disease) and specificity
+95% (correctly identifies 95% of people who don't have the disease).
+
+You test positive. What is the probability you actually have the disease?
+
+**Set up the events:**
+
+- $A$ = "you have the disease"
+- $B$ = "you test positive"
+
+**What you know:**
+
+- $P(A) = 0.01$ — disease prevalence (the prior)
+- $P(B \mid A) = 0.95$ — sensitivity (probability of a positive test given disease)
+- $P(B \mid A^c) = 0.05$ — false positive rate (probability of a positive test given no disease; this is $1 - \text{specificity}$)
+
+**Find $P(B)$** — to find P(positive test) we use the **total probability law**: since every person either has the disease or doesn't, we can compute P(positive) by considering both groups separately and adding. Split by whether you have the disease or not:
+
+$$P(B) = P(B \mid A) \cdot P(A) + P(B \mid A^c) \cdot P(A^c)$$
+$$P(B) = (0.95)(0.01) + (0.05)(0.99) = 0.0095 + 0.0495 = 0.059$$
+
+**Apply Bayes' theorem:**
+
+$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)} = \frac{0.95 \times 0.01}{0.059} = \frac{0.0095}{0.059} \approx 0.161$$
+
+**The result:** If you test positive for a disease that affects 1% of the
+population, even with a 95% accurate test, the probability you actually
+have it is about 16%.
+
+Why so low? Because the disease is rare. In a population of 10 000 people:
+100 have the disease and 9900 do not. The test correctly flags about 95 of
+the 100 sick people. But it also incorrectly flags about 495 of the 9900
+healthy people. Of the 590 positive results in total, only 95 are true
+positives — about 16%.
+
+A positive result is not a diagnosis. It's information that should prompt
+further testing. This is why medical screening programmes track
+*positive predictive value* — the probability a positive test reflects
+a true positive — and not just test accuracy.
+
+---
+
+### Example 2 — Cards without replacement (finance)
+
+A standard deck has 52 cards, including 4 aces. You draw two cards without
+replacing the first. What is the probability that both are aces?
+
+**Using the multiplication rule for dependent events:**
+
+$$P(\text{both aces}) = P(\text{first is ace}) \times P(\text{second is ace} \mid \text{first was ace})$$
+
+$$= \frac{4}{52} \times \frac{3}{51} = \frac{12}{2652} = \frac{1}{221} \approx 0.0045$$
+
+About 0.45% — less than half a percent.
+
+Note the dependence: the second draw depends on the first because the first
+card is not returned to the deck. If you replaced the card between draws
+(sampling with replacement), the draws would be independent:
+$P(\text{both aces}) = \frac{4}{52} \times \frac{4}{52} = \frac{16}{2704}
+\approx 0.0059$ — a slightly higher probability because you haven't reduced
+the pool of aces.
+
+This distinction between sampling with and without replacement appears
+constantly in actuarial and financial modelling, where the question is
+whether one event (e.g. one bond defaulting) affects the probability of
+another.
+
+---
+
+### Example 3 — Spam filter (computing)
+
+A word appears in 80% of spam emails and in 10% of legitimate emails.
+Overall, 30% of incoming email is spam.
+
+A new message contains this word. What is the probability it is spam?
+
+**Set up the events:**
+
+- $A$ = "email is spam"
+- $B$ = "email contains the word"
+
+**What you know:**
+
+- $P(A) = 0.30$ — prior probability that email is spam
+- $P(B \mid A) = 0.80$ — probability the word appears in spam
+- $P(B \mid A^c) = 0.10$ — probability the word appears in legitimate email
+
+**Find $P(B)$:**
+
+$$P(B) = P(B \mid A) \cdot P(A) + P(B \mid A^c) \cdot P(A^c)$$
+$$= (0.80)(0.30) + (0.10)(0.70) = 0.24 + 0.07 = 0.31$$
+
+**Apply Bayes' theorem:**
+
+$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)} = \frac{0.80 \times 0.30}{0.31} = \frac{0.24}{0.31} \approx 0.774$$
+
+**The result:** Given that the email contains this word, the probability it
+is spam is about 77%.
+
+A real spam filter does this for dozens or hundreds of words simultaneously,
+multiplying the contributions of each word (under an independence assumption
+that is not strictly true but works well in practice). That extension is
+called a Naive Bayes classifier — and it was one of the most effective spam
+filters ever built.
+
+---
+
+### Example 4 — Weather (geography and environment)
+
+A weather station records the following over a year:
+
+- 20% of days are rainy.
+- 40% of days have cloudy mornings.
+- Of all rainy days, 70% were preceded by a cloudy morning.
+
+Given that today's morning is cloudy, what is the probability of rain?
+
+**Set up the events:**
+
+- $A$ = "today is rainy"
+- $B$ = "this morning is cloudy"
+
+**What you know:**
+
+- $P(A) = 0.20$
+- $P(B) = 0.40$
+- $P(B \mid A) = 0.70$
+
+**Apply Bayes' theorem directly:**
+
+$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)} = \frac{0.70 \times 0.20}{0.40} = \frac{0.14}{0.40} = 0.35$$
+
+**The result:** A cloudy morning raises the probability of rain from the
+baseline 20% to 35%.
+
+Environmental scientists and meteorologists work with probability statements
+like this constantly — flood return periods, drought likelihoods, and
+extreme precipitation events are all expressed as conditional probabilities,
+updated as new observations come in.
+
+## Where this goes
+
+### Probability distributions
+
+You now have a framework for reasoning about individual events and pairs of
+events. The next natural question is: what if a random process can produce
+many different numerical outcomes — not just "heads/tails" or "disease/no
+disease" but any integer from 0 to 20, or any real number in an interval?
+How do probabilities distribute across all those possible values?
+
+That question leads directly to **probability distributions** (chapter 2).
+A distribution is a complete description of the probabilities attached to
+every possible outcome of a random quantity. The binomial distribution
+(counting successes in repeated trials), the normal distribution (the
+bell curve that appears everywhere in nature and statistics), and others
+all build on the conditional probability and independence machinery you've
+just learned.
+
+### Bayesian reasoning in computing and machine learning
+
+The spam filter example above is a stripped-down version of a **Naive Bayes
+classifier** — one of the fundamental algorithms in machine learning. The
+same structure extends to any classification problem: given a collection of
+observed features, compute the probability that the observation belongs to
+each possible class, and predict the most probable one.
+
+Medical diagnosis, document classification, image labelling, and fraud
+detection all use variants of Bayesian reasoning. The conditional probability
+machinery from this chapter is the mathematical core of each of them. What
+changes when you move to a full ML course is scale (thousands of features,
+not one word) and the methods for estimating the prior and likelihood from
+data.
+
+## Applications
+
+::: {.callout-note appearance="minimal"}
+**Where this chapter turns up in practice**
+
+- **Disease screening programmes** — a test's positive predictive value
+  depends on prevalence, not just accuracy. Screening for rare diseases
+  requires high specificity to avoid swamping clinicians with false positives.
+
+- **Forensic evidence** — DNA evidence in court is often misread. The
+  probability that a match occurs by chance (1 in a billion) is not the
+  same as the probability that the accused is innocent given the match.
+  Getting this wrong is called the prosecutor's fallacy, and it has
+  contributed to wrongful convictions.
+
+- **Spam and content filters** — Naive Bayes classifiers were the first
+  practical spam filters and remain in use today. The same structure
+  underlies content moderation systems.
+
+- **Flood return periods** — a "1-in-100-year flood" means a flood of
+  that size has a 1% probability of occurring in any given year —
+  not that you get one every hundred years and can relax afterward.
+  It can occur two years in a row.
+:::
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.5rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+### Exercise 1
+
+The probability that a flight departs on time is 0.78. What is the
+probability it does not depart on time?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Identify the complement rule", eq: "P(\\text{on time}^c) = 1 - P(\\text{on time})" },
+  { op: "Substitute", eq: "P(\\text{not on time}) = 1 - 0.78 = 0.22", note: "The probability the flight is delayed is 0.22." }
+])
+```
+
+---
+
+### Exercise 2
+
+In a group of students: 45% play a sport, 30% play a musical instrument,
+and 15% do both. What is the probability that a randomly chosen student
+plays a sport or a musical instrument (or both)?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Identify the addition rule", eq: "P(A \\cup B) = P(A) + P(B) - P(A \\cap B)" },
+  { op: "Label the events", eq: "P(A) = 0.45,\\; P(B) = 0.30,\\; P(A \\cap B) = 0.15", note: "A = plays sport, B = plays instrument." },
+  { op: "Substitute", eq: "P(A \\cup B) = 0.45 + 0.30 - 0.15 = 0.60", note: "The probability that a student plays a sport or an instrument is 0.60." }
+])
+```
+
+---
+
+### Exercise 3
+
+*This exercise uses the full Bayes machinery — prior, likelihood, total probability, and posterior — as in the medical test example above. Work through each piece in turn.*
+
+In a factory, 3% of parts are defective. A quality inspector catches 90%
+of defective parts and incorrectly flags 4% of good parts as defective.
+
+A part is flagged by the inspector. What is the probability it is actually
+defective?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Set up events and knowns", eq: "P(A) = 0.03,\\; P(A^c) = 0.97,\\; P(B \\mid A) = 0.90,\\; P(B \\mid A^c) = 0.04", note: "A = part is defective, B = part is flagged." },
+  { op: "Total probability for P(B)", eq: "P(B) = (0.90)(0.03) + (0.04)(0.97) = 0.027 + 0.0388 = 0.0658" },
+  { op: "Apply Bayes' theorem", eq: "P(A \\mid B) = \\frac{0.90 \\times 0.03}{0.0658} = \\frac{0.027}{0.0658} \\approx 0.410", note: "A flagged part has about a 41% chance of being genuinely defective. The other 59% of flags are false alarms on good parts." }
+])
+```
+
+---
+
+### Exercise 4
+
+A bag contains 6 red and 4 blue counters. Two counters are drawn one at a
+time without replacement. What is the probability of drawing a red counter
+followed by a blue counter?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Identify dependent draws", eq: "P(\\text{red then blue}) = P(\\text{first red}) \\times P(\\text{second blue} \\mid \\text{first red})", note: "The first counter is not replaced, so the draws are dependent." },
+  { op: "First draw probability", eq: "P(\\text{first is red}) = \\frac{6}{10} = \\frac{3}{5}" },
+  { op: "Conditional probability of second draw", eq: "P(\\text{second is blue} \\mid \\text{first was red}) = \\frac{4}{9}", note: "After drawing red: 9 counters remain, 4 of which are blue." },
+  { op: "Multiply", eq: "P(\\text{red then blue}) = \\frac{3}{5} \\times \\frac{4}{9} = \\frac{12}{45} = \\frac{4}{15} \\approx 0.267" }
+])
+```
+
+---
+
+### Exercise 5
+
+A card is drawn at random from a standard 52-card deck.
+
+Event $A$: the card is a heart. $P(A) = \frac{13}{52} = \frac{1}{4}$
+
+Event $B$: the card is a face card (jack, queen, or king). $P(B) = \frac{12}{52} = \frac{3}{13}$
+
+There are 3 face cards that are also hearts (jack, queen, and king of hearts).
+
+Are events $A$ and $B$ independent? Show your reasoning.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "State the independence criterion", eq: "\\text{Independent iff } P(A \\cap B) = P(A) \\cdot P(B)" },
+  { op: "Find P(A ∩ B)", eq: "P(A \\cap B) = \\frac{3}{52}", note: "A ∩ B = card is a heart and a face card = 3 cards (J, Q, K of hearts)." },
+  { op: "Compute P(A) · P(B)", eq: "P(A) \\cdot P(B) = \\frac{1}{4} \\times \\frac{3}{13} = \\frac{3}{52}" },
+  { op: "Compare", eq: "P(A \\cap B) = \\frac{3}{52} = P(A) \\cdot P(B) \\implies \\text{independent}", note: "Knowing a card is a heart tells you nothing about whether it is a face card, and vice versa." }
+])
+```
+
+---
+
+### Exercise 6 — Multi-step problem
+
+A university entrance exam has two papers. Based on historical data:
+
+- 60% of students pass Paper 1.
+- Of students who pass Paper 1, 80% also pass Paper 2.
+- Of students who fail Paper 1, 25% still pass Paper 2.
+
+To be admitted, a student must pass at least one paper.
+
+(a) What is the probability that a student passes both papers?
+
+(b) What is the probability that a student passes at least one paper?
+
+(c) Given that a student passes Paper 2, what is the probability they also passed Paper 1?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Part (a) — both papers", eq: "P(A \\cap B) = P(B \\mid A) \\cdot P(A) = 0.80 \\times 0.60 = 0.48", note: "A = passes Paper 1, B = passes Paper 2." },
+  { op: "Part (b) — find P(fails both)", eq: "P(B^c \\cap A^c) = P(B^c \\mid A^c) \\cdot P(A^c) = 0.75 \\times 0.40 = 0.30" },
+  { op: "Part (b) — at least one paper", eq: "P(\\text{at least one}) = 1 - 0.30 = 0.70", note: "Using the complement rule on the 'fails both' probability." },
+  { op: "Part (c) — find P(B) by total probability", eq: "P(B) = (0.80)(0.60) + (0.25)(0.40) = 0.48 + 0.10 = 0.58" },
+  { op: "Part (c) — apply Bayes' theorem", eq: "P(A \\mid B) = \\frac{0.80 \\times 0.60}{0.58} = \\frac{0.48}{0.58} \\approx 0.828", note: "Given passing Paper 2, there is about an 83% chance the student also passed Paper 1." }
+])
+```

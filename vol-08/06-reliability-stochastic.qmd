@@ -1,0 +1,388 @@
+---
+title: "Reliability, stochastic systems, and quality"
+subtitle: "Failure, variability, and risk over time"
+chapter: 6
+volume: 8
+layer: "discipline"
+status: "draft"
+
+axiom: |
+  Variability is not noise to be ignored. In engineering it changes safety,
+  maintenance, and decision quality.
+
+rewrite: |
+  Stochastic models connect randomness to lifetime, throughput, defects,
+  queues, and operational risk.
+
+opens_to:
+  - id: nonlinear_optim
+    label: "Nonlinear optimisation for design and operations"
+    volume: 8
+    relationship: enriches
+
+prerequisite_ids:
+  - prob_stats
+  - estimation_inverse
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Reliability and quality methods turn distributions into maintenance, safety, and tolerance decisions."
+    career_example: "Reliability engineer deciding inspection intervals from lifetime and defect data"
+  - field: biz
+    label: Finance and quant
+    hook: "Queueing, survival, and risk models share the same stochastic backbone."
+    career_example: "Operations analyst modelling waiting times and service variability in a constrained system"
+  - field: comp
+    label: Computing and data
+    hook: "Service reliability, queueing delay, and failure rates are as central to computing systems as they are to physical ones."
+    career_example: "Site reliability engineer modelling outages and queue growth under load"
+
+hook: |
+  One bearing fails early, another lasts for years. A queue stays calm all
+  morning, then suddenly grows faster than it clears. A production line meets
+  tolerance most days but not all days. Randomness is not a side issue here.
+  It changes maintenance, staffing, safety, and design.
+
+notation_introduced:
+  - symbol: "T"
+    reads_as: "capital T — a random lifetime"
+    notation_weight: 2
+  - symbol: "R(t) = P(T > t)"
+    reads_as: "R of t — the reliability function"
+    notation_weight: 3
+  - symbol: "F(t) = P(T \\leq t)"
+    reads_as: "F of t — the failure distribution function"
+    notation_weight: 2
+  - symbol: "\\lambda(t)"
+    reads_as: "lambda of t — the hazard or failure rate"
+    notation_weight: 3
+  - symbol: "L_q"
+    reads_as: "L sub q — expected queue length"
+    notation_weight: 2
+  - symbol: "W_q"
+    reads_as: "W sub q — expected waiting time in queue"
+    notation_weight: 2
+
+exercises:
+  type: "project"
+  real_world_context: true
+
+uofa_course: "STAT 235"
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+One bearing fails early, another lasts for years. A queue stays calm all
+morning, then suddenly grows faster than it clears. A production line meets
+tolerance most days but not all days. Randomness is not a side issue here.
+It changes maintenance, staffing, safety, and design.
+
+Reliability and stochastic systems matter because engineering decisions are
+made before the exact future is known. You do not know which unit will fail
+next, exactly when a line will back up, or precisely how many defects will
+appear in the next batch. What you can do is model the variability honestly and
+let that model shape action.
+
+This chapter keeps three linked ideas in view: lifetime, queueing, and quality.
+They look like separate professional topics, but they are all ways of asking
+how randomness accumulates into operational consequence.
+
+---
+
+## Reliability as survival over time
+
+Let $T$ be a random lifetime. The **reliability function** is
+
+$$R(t) = P(T > t)$$
+
+This is the probability that the component or system survives beyond time $t$.
+
+The **failure distribution** is
+
+$$F(t) = P(T \leq t) = 1 - R(t)$$
+
+If the lifetime is exponentially distributed with constant hazard rate
+$\lambda$, then
+
+$$R(t) = e^{-\lambda t}$$
+
+and
+
+$$F(t) = 1 - e^{-\lambda t}$$
+
+This is one of the most common first models because it is simple and because
+its interpretation is clean: the system has a constant failure tendency per unit
+time.
+
+The **hazard rate** $\lambda(t)$ describes the instantaneous failure tendency
+conditional on survival up to time $t$. In some systems hazard increases with
+age. In others it is approximately constant over the operational window of
+interest.
+
+<!-- VIZ: Reliability curve explorer. Show survival function R(t), cumulative failure F(t), and hazard behaviour on linked panels. Let the reader switch between constant hazard, increasing hazard, and early-failure regimes, and update a maintenance-interval marker so the operational implication is visible along with the curve. -->
+
+## Queueing as accumulation under uncertainty
+
+Now switch interpretation. Instead of asking when a unit fails, ask what
+happens when random arrivals meet random service.
+
+In a queueing system:
+
+- arrivals are uncertain in time
+- service completions are uncertain in time
+- if arrivals temporarily outpace service, a queue forms
+
+Two core quantities are:
+
+$$L_q = \text{expected number waiting in queue}$$
+
+$$W_q = \text{expected waiting time in queue}$$
+
+These are connected by **Little's Law**:
+
+$$L_q = \lambda_a W_q$$
+
+The expected queue length equals the arrival rate times the expected waiting
+time. Little's Law holds under mild conditions regardless of the arrival or
+service distribution — it is a conservation statement about flow rather than an
+assumption about randomness. For a single-server queue with traffic intensity
+$\rho < 1$, the queue length grows sharply as $\rho$ approaches 1, even when
+mean demand still looks safely below capacity.
+
+The engineering lesson is the same as in reliability: variability matters even
+when average values look harmless. A system with average arrival rate only
+slightly below service rate can still produce long queues if the variability is
+large enough.
+
+This is why service reliability in computing and waiting-time models in
+operations research belong in the same chapter as bearing lifetime and defect
+rates. They are all stochastic consequences of uncertain events over time.
+
+## Quality as probability of staying in tolerance
+
+A quality problem can often be phrased as:
+
+- what is the probability that a product characteristic falls outside the
+  acceptable region?
+
+If a machined diameter is modelled as approximately normal with mean $\mu$ and
+standard deviation $\sigma$, then defect probability is the area in the tails
+beyond the specification limits.
+
+This is not only a manufacturing question. The same logic appears in service
+level agreements, anomaly thresholds, and risk tolerances in data systems.
+
+::: {.callout-note appearance="simple"}
+## Why This Works
+
+Reliability, queueing, and quality all convert randomness into operational
+questions. Survival functions convert uncertainty into maintenance or safety
+policy. Queueing models convert uncertainty into staffing and capacity policy.
+Quality models convert uncertainty into tolerance and acceptance policy.
+
+The mathematics is useful precisely because it does not pretend the future is
+deterministic.
+:::
+
+## The core method
+
+A first pass through a stochastic reliability or quality problem usually goes
+like this:
+
+1. Identify the random quantity: lifetime, arrivals, service time, or process
+   variation.
+2. Choose the summary function that matches the decision: reliability, hazard,
+   queue length, waiting time, or defect probability.
+3. Compute the key probability or expected value.
+4. Interpret it in operational terms.
+5. Ask whether the assumed stochastic model is realistic enough for the
+   decision you are about to make.
+
+That final question is essential. A neat model with the wrong variability
+structure can be more dangerous than admitting uncertainty openly.
+
+## Worked example 1: exponential reliability
+
+Suppose a component has constant failure rate
+
+$$\lambda = 0.002 \text{ h}^{-1}$$
+
+Then the reliability at 100 hours is
+
+$$R(100) = e^{-0.002(100)} = e^{-0.2} \approx 0.819$$
+
+So there is about an 81.9% chance the component survives beyond 100 hours.
+Equivalently, the probability of failure by 100 hours is
+
+$$F(100) = 1 - 0.819 = 0.181$$
+
+This is already enough to frame a maintenance question. If a system contains
+many such components, or if failure consequence is high, 18.1% may be too risky
+to tolerate over that interval.
+
+## Worked example 2: a queue near saturation
+
+A service system receives jobs at average rate
+
+$$\lambda_a = 8 \text{ jobs/h}$$
+
+and can serve at average rate
+
+$$\mu = 10 \text{ jobs/h}$$
+
+The traffic intensity is
+
+$$\rho = \frac{\lambda_a}{\mu} = 0.8$$
+
+This means the server is busy most of the time. Even though capacity still
+exceeds mean demand, there is not much slack. A burst of arrivals can create a
+substantial queue.
+
+The lesson is operational, not just probabilistic: systems that look adequate
+on average can still feel overloaded to users because variability is lived in
+real time, not as a long-run mean.
+
+## Worked example 3: defect probability from a normal model
+
+Suppose a manufactured diameter is approximately normal with mean
+
+$$\mu = 10.0 \text{ mm}$$
+
+and standard deviation
+
+$$\sigma = 0.1 \text{ mm}$$
+
+The upper specification limit is $10.2$ mm. Standardise:
+
+$$z = \frac{10.2 - 10.0}{0.1} = 2$$
+
+So the probability of exceeding the upper limit is about
+
+$$P(Z > 2) \approx 0.0228$$
+
+or 2.28%.
+
+That tail probability is the mathematical link between observed variation and
+quality cost. It is also the same logic used in anomaly detection and service
+thresholds outside manufacturing.
+
+## Where this goes
+
+The next continuation is
+[Nonlinear optimisation for design and operations](07-nonlinear-optimisation.qmd).
+Once risk, waiting, and failure are quantified, design decisions become
+tradeoffs between cost, performance, safety, and uncertainty.
+
+This chapter also reframes what "uncertainty" means in Volume 8. It is not only
+about estimation error. It is about lifetime, demand, variability, and the
+operational consequences of randomness over time.
+
+::: {.callout-tip appearance="simple"}
+## Applications
+
+- maintenance interval planning
+- reliability engineering and survival analysis
+- queueing in production, logistics, and computing
+- defect rates and process capability
+- service availability and incident risk
+- uncertainty-aware operations decisions
+:::
+
+## Exercises
+
+These are project-style exercises. State the operational meaning of the number
+you compute.
+
+### Exercise 1
+
+A component has exponential lifetime with failure rate
+
+$$\lambda = 0.005 \text{ h}^{-1}$$
+
+Compute the probability it survives beyond 50 hours.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Write the reliability function"
+    eq: "R(t) = e^{-\\lambda t}"
+    note: ~
+  - op: "Substitute the data"
+    eq: "R(50) = e^{-0.005(50)} = e^{-0.25}"
+    note: ~
+  - op: "Compute the value"
+    eq: "R(50) \\approx 0.779"
+    note: ~
+  - op: "Interpret"
+    eq: "\\text{there is about a 77.9% chance of surviving beyond 50 h}"
+    note: ~
+  - op: "Check"
+    eq: "F(50) = 1 - 0.779 = 0.221"
+    note: "The complementary failure probability is about 22.1%."
+-->
+
+### Exercise 2
+
+A queueing system has average arrival rate 12 jobs/h and service rate 15 jobs/h.
+
+1. Compute the traffic intensity $\rho$.
+2. Explain whether the system has generous slack or operates near saturation.
+3. Suppose demand grows to 14 jobs/h without any change in service rate. What
+   happens to $\rho$, and at what arrival rate does the system become dangerously
+   loaded (say, $\rho > 0.95$)? What operational decision does this suggest?
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the traffic intensity"
+    eq: "\\rho = \\dfrac{\\lambda_a}{\\mu} = \\dfrac{12}{15}"
+    note: ~
+  - op: "Compute"
+    eq: "\\rho = 0.8"
+    note: ~
+  - op: "Interpret"
+    eq: "\\text{the server is busy most of the time and has limited slack}"
+    note: "A value close to 1 means queues can build quickly under variability."
+  - op: "Check"
+    eq: "\\text{mean capacity still exceeds mean demand, but not by much}"
+    note: ~
+-->
+
+### Exercise 3
+
+A process characteristic is approximately normal with mean 25 and standard
+deviation 2. The upper specification limit is 29.
+
+Compute the corresponding $z$ value and explain what tail probability it refers
+to.
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Standardise"
+    eq: "z = \\dfrac{29-25}{2} = 2"
+    note: ~
+  - op: "Interpret the tail"
+    eq: "P(X>29) = P(Z>2)"
+    note: "The defect probability is the upper tail beyond two standard deviations."
+  - op: "Approximate"
+    eq: "P(Z>2) \\approx 0.0228"
+    note: ~
+  - op: "Check"
+    eq: "\\text{about 2.28% of units exceed the upper specification limit}"
+    note: ~
+-->
+
+### Exercise 4
+
+Choose one stochastic setting from your field and prepare a one-page model
+brief naming:
+
+1. the random quantity
+2. the decision you need to support
+3. the probability or expectation that matters
+4. one source of model mismatch
+5. one action you would change if the risk turned out to be higher than expected
+
+<!-- VIZ: Reliability/queue/quality comparison board. Show three aligned panels: a survival curve, a queue-length trace, and a process distribution with specification limits. Let the reader adjust a single "variability" control and watch all three panels change, making the shared idea of operational consequence under uncertainty visible across domains. -->

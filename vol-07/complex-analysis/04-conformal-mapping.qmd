@@ -1,6 +1,710 @@
 ---
 title: "Conformal mapping"
-status: "seed"
+subtitle: "Angle-preserving transformations and applications to potential theory"
+chapter: 4
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: "An analytic function with non-zero derivative maps infinitesimally small shapes to similar shapes — it preserves angles. This conformal property means that a problem on a complicated domain can be transformed to a simple domain (a half-plane, a disk, a strip) where the solution is known, and then mapped back."
+
+rewrite: "If f is analytic and f′(z₀) ≠ 0, then f is conformal at z₀: it preserves angles between curves and maps small circles to small circles. The Möbius transformation w = (az+b)/(cz+d) is the most important class — it maps circles and lines to circles and lines, and three points determine it uniquely. The Joukowski transform w = z + 1/z maps circles near the unit circle to aerofoil shapes. In potential theory, a conformal map w = f(z) transforms the complex potential F(z) = Φ + iΨ: if F(w) solves Laplace's equation in the w-domain, then F(f(z)) solves it in the z-domain."
+
+prerequisite_ids:
+  - complex_seed
+  - multivariable
+  - diff_calc
+
+opens_to:
+  - id: vector_integral
+    label: "Vector integral calculus"
+    volume: 7
+    relationship: enriches
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "The Joukowski transformation maps flow around a cylinder to flow around an aerofoil — it is the mathematical foundation of thin-aerofoil theory and was used in early aircraft wing design."
+    career_example: "Aerospace engineer computing the lift distribution on a wing section using potential flow theory"
+  - field: sci
+    label: Hard sciences
+    hook: "Conformal mapping solves the two-dimensional Laplace equation — electrostatics, magnetostatics, and heat conduction in irregular geometries — by transforming the domain to one where the solution is trivial."
+    career_example: "Geophysicist modelling electromagnetic induction in a two-dimensional conducting body using conformal mapping"
+  - field: comp
+    label: Computing and data
+    hook: "The Schwarz-Christoffel formula, which maps the upper half-plane to any polygon, is used in numerical PDE solvers and in computer graphics for texture mapping on curved surfaces."
+    career_example: "Computer graphics engineer implementing texture mapping on a convex polyhedron using a conformal parametrisation"
+
+notation_introduced:
+  - symbol: "w = f(z)"
+    reads_as: "w equals f of z"
+    meaning: "A conformal map from the z-plane to the w-plane"
+  - symbol: "w = \\frac{az+b}{cz+d}"
+    reads_as: "Möbius transformation"
+    meaning: "The general fractional-linear transformation; maps circles and lines to circles and lines"
+  - symbol: "w = z + 1/z"
+    reads_as: "Joukowski transformation"
+    meaning: "Maps a near-unit circle in the z-plane to an aerofoil-like curve in the w-plane"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  In 1910 the Russian mathematician Nikolai Joukowski showed that
+  the airflow around a wing could be computed by a simple formula.
+  The trick: map the complicated wing shape back to a circle, solve
+  the much simpler flow problem around a circle, then map the
+  solution forward again. The map is the Joukowski transformation,
+  $w = z + 1/z$. With one formula, he turned a hard problem into
+  an easy one.
+
+  This is conformal mapping: using an analytic function to transform
+  a complicated geometry into a simple one where the physics is
+  tractable. The key property is angle preservation — a conformal
+  map distorts distances but preserves angles, so the shape of
+  streamlines and equipotential lines is preserved under the map.
+  Knowing the solution in the simple domain gives the solution in
+  the original domain automatically.
+
+kreyszig_chapter: "Ch 17"
+stroud_programme: null
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+## Conformal mappings
+
+An analytic function $w = f(z)$ is **conformal at $z_0$** if $f'(z_0) \neq 0$. At such a point, the mapping:
+
+1. **Preserves angles** between curves (in both magnitude and orientation).
+2. **Scales uniformly**: all infinitesimal lengths at $z_0$ are multiplied by $|f'(z_0)|$.
+3. **Rotates uniformly**: all directions at $z_0$ are rotated by $\arg f'(z_0)$.
+
+*Why angles are preserved.* If two curves $\gamma_1$ and $\gamma_2$ meet at $z_0$ at angle $\alpha$, their images under $f$ meet at $f(z_0)$ at the same angle. The chain rule gives the tangent direction of the image curve as $f'(z_0)\cdot\gamma'(t_0)$ — the original tangent vector multiplied by $f'(z_0)$. Writing $f'(z_0) = |f'(z_0)|e^{i\varphi}$ with $\varphi = \arg f'(z_0)$, this multiplication scales every tangent by $|f'(z_0)|$ and rotates it by $\varphi$. Both curves get the same rotation, so the angle between them is unchanged.
+
+<!-- STUDENT: The chain-rule argument is stated in one sentence but the key step — that multiplying the complex tangent vector by f′(z₀) rotates it by arg f′(z₀) — is compressed into the word "follows." A reader who is comfortable with complex multiplication will accept this; one who isn't will not see why multiplication by a complex number produces a pure rotation. One additional sentence making this explicit ("multiplying by f′(z₀) = |f′(z₀)|e^{iφ} scales by |f′(z₀)| and rotates by φ = arg f′(z₀)") would bridge the gap. -->
+
+At a **critical point** where $f'(z_0) = 0$, conformality fails: angles are multiplied by the order of the zero.
+
+**Example.** $w = z^2$ at $z = 0$: $f'(0) = 0$, so the map is not conformal at the origin. The angle between any two curves through 0 is doubled. Away from 0, $f'(z) = 2z \neq 0$ and the map is conformal.
+
+---
+
+## Möbius transformations
+
+The **Möbius transformation** (or **fractional linear transformation**) is:
+
+$$w = \frac{az + b}{cz + d}, \qquad ad - bc \neq 0$$
+
+The condition $ad - bc \neq 0$ ensures that $w$ is not constant. These transformations form a group under composition and are the most important class of conformal maps.
+
+**Key property: circles and lines map to circles and lines.** In the extended complex plane — the ordinary plane with a single point at infinity added — a straight line can be viewed as a circle that passes through that point at infinity. Under a Möbius transformation, circles (including lines viewed this way) always map to circles (including lines).
+
+<!-- STUDENT: "A line is a circle through ∞" is stated as a fact but uses the concept of a point at infinity without prior introduction. An engineering student who has not seen the Riemann sphere will find this puzzling — the idea that a line "passes through ∞" is not intuitive. A parenthetical — "(in the extended complex plane, where a single point at infinity is added)" — would make this less opaque. -->
+
+**Three-point determination.** A Möbius transformation is completely determined by specifying three distinct points and their images. Given pairs $(z_1 \mapsto w_1)$, $(z_2 \mapsto w_2)$, $(z_3 \mapsto w_3)$, the transformation is found by the **cross-ratio** equation:
+
+$$\frac{(w - w_1)(w_2 - w_3)}{(w - w_3)(w_2 - w_1)} = \frac{(z - z_1)(z_2 - z_3)}{(z - z_3)(z_2 - z_1)}$$
+
+The right side is a known number for each $z$. Cross-multiply to get a linear equation in $w$, then solve — the result is the unique Möbius transformation. Exercise 3 works through this procedure.
+
+<!-- STUDENT: The cross-ratio formula is given without any indication of how to use it to solve for w. A reader seeing this for the first time will not know: do you expand both sides and solve for w algebraically? Is there a standard simplification? Exercise 3 works through the procedure, but the body section could use one sentence saying "expand the left side for w, the rest is algebra" so the reader understands what the formula is asking them to do. -->
+
+**Standard mappings.**
+
+- $w = \dfrac{z - i}{z + i}$: maps the upper half-plane $\text{Im}(z) > 0$ to the unit disk $|w| < 1$, and the real axis to the unit circle.
+
+- $w = \dfrac{1+z}{1-z}$: maps $|z| < 1$ (unit disk) to $\text{Re}(w) > 0$ (right half-plane).
+
+### Fixed points
+
+The **fixed points** of a Möbius transformation $w = (az+b)/(cz+d)$ satisfy $z = (az+b)/(cz+d)$, i.e., $cz^2 + (d-a)z - b = 0$. A generic Möbius transformation has two fixed points (possibly coincident or at $\infty$).
+
+---
+
+## Standard conformal maps
+
+### $w = z^2$
+
+Doubles the argument and squares the modulus. The upper half-plane $\{z : \text{Im}(z) > 0\}$ maps to the full complex plane minus the non-negative real axis (since arg doubles from $(0,\pi)$ to $(0,2\pi)$).
+
+The first quadrant $\{0 < \arg z < \pi/2\}$ maps to the upper half-plane $\{0 < \arg w < \pi\}$.
+
+### $w = e^z$
+
+Maps the horizontal strip $\{0 < \text{Im}(z) < \pi\}$ to the upper half-plane $\{\text{Im}(w) > 0\}$: the strip width $\pi$ becomes the half-plane argument range $(0, \pi)$.
+
+More generally, the strip $\{a < \text{Im}(z) < b\}$ maps to the sector $\{a < \arg w < b\}$.
+
+### $w = \log z$
+
+The inverse of $w = e^z$. Maps the upper half-plane to the horizontal strip $\{0 < \text{Im}(w) < \pi\}$.
+
+---
+
+## The Joukowski transformation
+
+$$w = z + \frac{1}{z}$$
+
+This is the foundational map of thin-aerofoil theory.
+
+**The unit circle maps to a degenerate shape.** For $z = e^{i\theta}$:
+$$w = e^{i\theta} + e^{-i\theta} = 2\cos\theta \in [-2, 2]$$
+
+The unit circle collapses to the real interval $[-2, 2]$ — a flat plate.
+
+**Circles near the unit circle map to aerofoil-like shapes.** For $z = re^{i\theta}$ with $r > 1$:
+$$w = \left(r + \frac{1}{r}\right)\cos\theta + i\left(r - \frac{1}{r}\right)\sin\theta$$
+
+This is an **ellipse** with semi-axes $a = r + 1/r$ and $b = r - 1/r$. As $r \to 1^+$, the ellipse degenerates toward the flat plate.
+
+**Off-centre circles.** Shifting the circle in the $z$-plane before applying the Joukowski map breaks the ellipse's symmetry and produces a curved aerofoil profile with a sharp trailing edge. This is the Joukowski aerofoil — the basis of early wing design.
+
+**Why it works for aerodynamics.** The complex potential for irrotational flow around a cylinder of radius $r$ is known: $F(z) = U(z + r^2/z)$ for uniform flow at speed $U$. Composing with the Joukowski map gives the complex potential for flow around the aerofoil. The Kutta–Joukowski theorem then gives the lift per unit span as $L = \rho U \Gamma$, where $\Gamma = \oint \mathbf{v}\cdot d\mathbf{s}$ is the **circulation** — the line integral of the tangential velocity component around the aerofoil.
+
+<!-- STUDENT: Γ (circulation) is introduced here in the lift formula but is not defined in this chapter. A reader who has not taken fluid mechanics won't know that circulation is the line integral of velocity around a closed curve. This is the chapter's main engineering payoff and the formula deserves a brief definition of each term: "Γ = ∮ v · ds is the circulation (the integral of tangential velocity around the aerofoil)." -->
+
+<!-- VIZ 1 EXTENDED: Joukowski map explorer with streamlines and lift indicator. Two panels: z-plane (circle + flow) and w-plane (aerofoil + flow). Sliders for r, offset, circulation. Critical point annotation. -->
+
+```{ojs}
+//| echo: false
+{
+  const WP = 340, HP = 320, SCALE = 70;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const rSlider4 = Inputs.range([1.0, 2.0], {value: 1.15, step: 0.01, label: "Circle radius r"});
+  const offsetSlider = Inputs.range([0.0, 0.3], {value: 0.12, step: 0.01, label: "x-offset \u03b4"});
+  const circSlider = Inputs.range([0, Math.PI*2], {value: 0, step: 0.1, label: "Circulation \u0393"});
+
+  function joukowski(zRe, zIm) {
+    const d = zRe*zRe + zIm*zIm;
+    if(d < 1e-10) return [NaN, NaN];
+    return [zRe + zRe/d, zIm - zIm/d];
+  }
+
+  function toScreen(re, im, cx, cy, scale) {
+    return [cx + re*scale, cy - im*scale];
+  }
+
+  function renderJoukowski(r, delta, circ) {
+    // Build aerofoil curve
+    const N = 360;
+    const aerofoilPts = [];
+    for(let k=0; k<N; k++) {
+      const theta = (2*Math.PI*k)/(N-1);
+      const zRe = -delta + r*Math.cos(theta);
+      const zIm = r*Math.sin(theta);
+      const [wRe, wIm] = joukowski(zRe, zIm);
+      if(isFinite(wRe) && isFinite(wIm)) aerofoilPts.push([wRe, wIm]);
+    }
+
+    // Left panel: z-plane
+    const leftSvg = document.createElementNS(svgNS, "svg");
+    leftSvg.setAttribute("width", WP); leftSvg.setAttribute("height", HP);
+    leftSvg.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px;";
+
+    const CX = WP/2 + 10, CY = HP/2;
+
+    // Grid
+    const gridG = document.createElementNS(svgNS,"g"); gridG.setAttribute("stroke","#e5e7eb"); gridG.setAttribute("stroke-width","0.5");
+    for(let i=-3;i<=3;i++) {
+      const xl=document.createElementNS(svgNS,"line"); const [lx]=toScreen(i,0,CX,CY,SCALE); const [,ly1]=toScreen(0,-2.2,CX,CY,SCALE); const [,ly2]=toScreen(0,2.2,CX,CY,SCALE);
+      xl.setAttribute("x1",lx); xl.setAttribute("y1",ly1); xl.setAttribute("x2",lx); xl.setAttribute("y2",ly2); gridG.appendChild(xl);
+      const yl=document.createElementNS(svgNS,"line"); const [lx1]=toScreen(-3,0,CX,CY,SCALE); const [lx2]=toScreen(3,0,CX,CY,SCALE); const [,ly]=toScreen(0,i,CX,CY,SCALE);
+      yl.setAttribute("x1",lx1); yl.setAttribute("y1",ly); yl.setAttribute("x2",lx2); yl.setAttribute("y2",ly); gridG.appendChild(yl);
+    }
+    leftSvg.appendChild(gridG);
+
+    // Streamlines in z-plane: Im(F) = U(z + r²/z) = const
+    // F(z) = z + r²/z for uniform flow + vortex
+    // Streamlines: Im(F) = Im(z) + r² * Im(1/z) = y + r²*(-y)/(x²+y²) = const
+    // For vortex: add circulation * i/(2π) * log(z)
+    // Simple: just draw horizontal streamlines mapped through the potential
+    const streamG = document.createElementNS(svgNS,"g");
+    streamG.setAttribute("stroke","rgba(59,130,246,0.4)"); streamG.setAttribute("stroke-width","1"); streamG.setAttribute("fill","none");
+    for(let psi=-2.5; psi<=2.5; psi+=0.35) {
+      // parametric: Im(w + r²/w_conj) = psi — approximate by iterating x
+      let pathD=""; let started=false;
+      for(let x=-3.5; x<=3.5; x+=0.04) {
+        // Im(F) ≈ y(1 - r²/(x²+y²)) = psi; solve for y numerically
+        // simple approximation: far from origin, y ≈ psi
+        // Near origin, use Newton
+        let y=psi;
+        for(let iter=0;iter<8;iter++) {
+          const d2=x*x+y*y; if(d2<0.01) break;
+          const f=y-r*r*y/d2 - psi;
+          const fp=1 - r*r*(d2-2*y*y)/(d2*d2);
+          y -= f/(fp||1e-6);
+        }
+        const d2=x*x+y*y;
+        if(d2 < (r-delta)*(r-delta)*0.9) { started=false; continue; } // inside circle
+        const [px,py]=toScreen(x,y,CX,CY,SCALE);
+        if(px<0||px>WP||py<0||py>HP) { started=false; continue; }
+        pathD += started ? ` L ${px} ${py}` : `M ${px} ${py}`; started=true;
+      }
+      if(pathD) { const pEl=document.createElementNS(svgNS,"path"); pEl.setAttribute("d",pathD); pEl.setAttribute("stroke","rgba(59,130,246,0.35)"); streamG.appendChild(pEl); }
+    }
+    leftSvg.appendChild(streamG);
+
+    // Circle
+    const [cirCx, cirCy] = toScreen(-delta, 0, CX, CY, SCALE);
+    const circleEl = document.createElementNS(svgNS,"circle");
+    circleEl.setAttribute("cx",cirCx); circleEl.setAttribute("cy",cirCy); circleEl.setAttribute("r",r*SCALE);
+    circleEl.setAttribute("fill","none"); circleEl.setAttribute("stroke","#f97316"); circleEl.setAttribute("stroke-width","2");
+    leftSvg.appendChild(circleEl);
+
+    // Axes
+    const [ox,oy]=toScreen(0,0,CX,CY,SCALE);
+    const axG=document.createElementNS(svgNS,"g"); axG.setAttribute("stroke","#9ca3af"); axG.setAttribute("stroke-width","1");
+    const xa=document.createElementNS(svgNS,"line"); const [ax1]=toScreen(-3,0,CX,CY,SCALE); const [ax2]=toScreen(3,0,CX,CY,SCALE);
+    xa.setAttribute("x1",ax1); xa.setAttribute("y1",oy); xa.setAttribute("x2",ax2); xa.setAttribute("y2",oy); axG.appendChild(xa);
+    const ya=document.createElementNS(svgNS,"line"); const [,ay1]=toScreen(0,-2,CX,CY,SCALE); const [,ay2]=toScreen(0,2,CX,CY,SCALE);
+    ya.setAttribute("x1",ox); ya.setAttribute("y1",ay1); ya.setAttribute("x2",ox); ya.setAttribute("y2",ay2); axG.appendChild(ya);
+    leftSvg.appendChild(axG);
+
+    // Critical points at ±1
+    [1,-1].forEach(xc => {
+      const [cpx,cpy]=toScreen(xc,0,CX,CY,SCALE);
+      const cpEl=document.createElementNS(svgNS,"circle"); cpEl.setAttribute("cx",cpx); cpEl.setAttribute("cy",cpy); cpEl.setAttribute("r","4");
+      cpEl.setAttribute("fill","#8b5cf6"); cpEl.setAttribute("stroke","#fff"); cpEl.setAttribute("stroke-width","1.5");
+      leftSvg.appendChild(cpEl);
+    });
+
+    const lbl1=document.createElementNS(svgNS,"text"); lbl1.setAttribute("fill","#6b7280"); lbl1.setAttribute("font-size","10"); lbl1.setAttribute("font-family","sans-serif");
+    lbl1.setAttribute("x",5); lbl1.setAttribute("y",14); lbl1.textContent="z-plane";
+    leftSvg.appendChild(lbl1);
+
+    // Right panel: w-plane
+    const rightSvg = document.createElementNS(svgNS, "svg");
+    rightSvg.setAttribute("width", WP); rightSvg.setAttribute("height", HP);
+    rightSvg.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px;";
+
+    const WCX = WP/2, WCY = HP/2;
+    const WSCALE = 45;
+
+    // Grid
+    const wgridG=document.createElementNS(svgNS,"g"); wgridG.setAttribute("stroke","#e5e7eb"); wgridG.setAttribute("stroke-width","0.5");
+    for(let i=-4;i<=4;i++) {
+      const xl2=document.createElementNS(svgNS,"line"); const [lx]=toScreen(i,0,WCX,WCY,WSCALE); const [,ly1]=toScreen(0,-3,WCX,WCY,WSCALE); const [,ly2]=toScreen(0,3,WCX,WCY,WSCALE);
+      xl2.setAttribute("x1",lx); xl2.setAttribute("y1",ly1); xl2.setAttribute("x2",lx); xl2.setAttribute("y2",ly2); wgridG.appendChild(xl2);
+      const yl2=document.createElementNS(svgNS,"line"); const [lx1]=toScreen(-4,0,WCX,WCY,WSCALE); const [lx2]=toScreen(4,0,WCX,WCY,WSCALE); const [,ly]=toScreen(0,i,WCX,WCY,WSCALE);
+      yl2.setAttribute("x1",lx1); yl2.setAttribute("y1",ly); yl2.setAttribute("x2",lx2); yl2.setAttribute("y2",ly); wgridG.appendChild(yl2);
+    }
+    rightSvg.appendChild(wgridG);
+
+    // w-plane axes
+    const [wox,woy]=toScreen(0,0,WCX,WCY,WSCALE);
+    const waxG=document.createElementNS(svgNS,"g"); waxG.setAttribute("stroke","#9ca3af"); waxG.setAttribute("stroke-width","1");
+    const wxa=document.createElementNS(svgNS,"line"); const [wax1]=toScreen(-4,0,WCX,WCY,WSCALE); const [wax2]=toScreen(4,0,WCX,WCY,WSCALE);
+    wxa.setAttribute("x1",wax1); wxa.setAttribute("y1",woy); wxa.setAttribute("x2",wax2); wxa.setAttribute("y2",woy); waxG.appendChild(wxa);
+    const wya=document.createElementNS(svgNS,"line"); const [,way1]=toScreen(0,-3,WCX,WCY,WSCALE); const [,way2]=toScreen(0,3,WCX,WCY,WSCALE);
+    wya.setAttribute("x1",wox); wya.setAttribute("y1",way1); wya.setAttribute("x2",wox); wya.setAttribute("y2",way2); waxG.appendChild(wya);
+    rightSvg.appendChild(waxG);
+
+    // Aerofoil curve
+    if(aerofoilPts.length > 2) {
+      let aeroD = "";
+      aerofoilPts.forEach(([wre,wim],i) => {
+        const [px,py]=toScreen(wre,wim,WCX,WCY,WSCALE);
+        aeroD += i===0 ? `M ${px} ${py}` : ` L ${px} ${py}`;
+      });
+      aeroD += " Z";
+      const aeroPath=document.createElementNS(svgNS,"path"); aeroPath.setAttribute("d",aeroD);
+      aeroPath.setAttribute("fill","rgba(249,115,22,0.15)"); aeroPath.setAttribute("stroke","#f97316"); aeroPath.setAttribute("stroke-width","2");
+      rightSvg.appendChild(aeroPath);
+    }
+
+    // Labels
+    const wlbl=document.createElementNS(svgNS,"text"); wlbl.setAttribute("fill","#6b7280"); wlbl.setAttribute("font-size","10"); wlbl.setAttribute("font-family","sans-serif");
+    wlbl.setAttribute("x",5); wlbl.setAttribute("y",14); wlbl.textContent="w-plane";
+    rightSvg.appendChild(wlbl);
+
+    // Shape label
+    let shapeLabel = "";
+    if(r <= 1.02 && delta < 0.02) shapeLabel = "Flat plate [−2,2]";
+    else if(delta < 0.02) shapeLabel = "Ellipse";
+    else shapeLabel = "Joukowski aerofoil";
+    const shapeLbl=document.createElementNS(svgNS,"text"); shapeLbl.setAttribute("fill","#f97316"); shapeLbl.setAttribute("font-size","10"); shapeLbl.setAttribute("font-family","sans-serif");
+    shapeLbl.setAttribute("x",5); shapeLbl.setAttribute("y",HP-6); shapeLbl.textContent=shapeLabel;
+    rightSvg.appendChild(shapeLbl);
+
+    // Lift indicator
+    const lift = circ.toFixed(2);
+    const liftDiv=document.createElement("div");
+    liftDiv.style.cssText="margin-top:0.4rem; font-family:sans-serif; font-size:0.85em; padding:0.5rem; background:#f0f9ff; border-radius:4px;";
+    liftDiv.innerHTML=`<strong>Kutta–Joukowski:</strong> L = \u03c1U\u0393 &nbsp;|&nbsp; \u0393 = ${lift} &nbsp;|&nbsp; <span style="color:#1e40af">Lift \u221d \u0393 = ${(parseFloat(lift)).toFixed(2)}</span>
+      <div style="color:#6b7280; font-size:0.82em; margin-top:0.2rem;">Purple dots on z-plane: critical points z=±1 (images become trailing/leading edges). Circulation \u0393 = 0 gives symmetric flow; \u0393 > 0 creates lift.</div>`;
+
+    const panelsDiv=document.createElement("div");
+    panelsDiv.style.cssText="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;";
+    panelsDiv.appendChild(leftSvg);
+    panelsDiv.appendChild(rightSvg);
+
+    const wrap=document.createElement("div");
+    wrap.appendChild(panelsDiv);
+    wrap.appendChild(liftDiv);
+    return wrap;
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const title=document.createElement("div");
+  title.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title.textContent="Joukowski map explorer: circle to aerofoil";
+  container.appendChild(title);
+  container.appendChild(rSlider4);
+  container.appendChild(offsetSlider);
+  container.appendChild(circSlider);
+
+  const vizDiv4=document.createElement("div");
+  container.appendChild(vizDiv4);
+
+  const note4=document.createElement("div");
+  note4.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note4.textContent="Left: circle in z-plane with uniform flow streamlines (blue). Right: image aerofoil in w-plane under w = z + 1/z. At r=1, \u03b4=0: flat plate. Increase r for ellipse; increase \u03b4 for asymmetric aerofoil. Purple dots mark critical points z=\u00b11 (where the trailing edge forms). Circulation \u0393 controls lift.";
+  container.appendChild(note4);
+
+  function update4() {
+    vizDiv4.innerHTML="";
+    vizDiv4.appendChild(renderJoukowski(rSlider4.value, offsetSlider.value, circSlider.value));
+  }
+  rSlider4.addEventListener("input", update4);
+  offsetSlider.addEventListener("input", update4);
+  circSlider.addEventListener("input", update4);
+  update4();
+
+  return container;
+}
+```
+
+---
+
+## Application to potential theory
+
+The connection between conformal mapping and the Laplace equation makes it the principal analytic tool for two-dimensional field problems.
+
+### Complex potential
+
+For a two-dimensional **incompressible irrotational** flow (or electrostatic field, or heat conduction problem), the **complex potential** $F(z) = \Phi(x,y) + i\Psi(x,y)$ has:
+- $\Phi$: velocity potential (or electrostatic potential, or temperature)
+- $\Psi$: stream function (or flux lines)
+
+<!-- ENGINEER-PROF: [WARN] Incompressibility (∇·v = 0) is required for the stream function to exist. Irrotationality alone (∇×v = 0) gives the velocity potential but not the stream function. Both conditions together guarantee an analytic complex potential. The word "incompressible" has been added above; confirm this is the intended scope. -->
+
+The **complex velocity** is $dF/dz = v_x - iv_y$, where $(v_x, v_y)$ is the physical velocity vector. The sign convention ($v_x - iv_y$ rather than $v_x + iv_y$) is standard in potential flow and follows from $F = \Phi + i\Psi$ with $v_x = \Phi_x$, $v_y = \Phi_y$.
+
+Since $F$ is analytic, both $\Phi$ and $\Psi$ satisfy Laplace's equation, and they are harmonic conjugates.
+
+### Transforming the domain
+
+If $w = f(z)$ is a conformal map, and $F(w)$ is the complex potential in the $w$-domain, then $F(f(z))$ is the complex potential in the $z$-domain.
+
+**This means:** solve Laplace's equation in a simple domain (disk, half-plane, strip), map the domain to the complicated geometry using an appropriate conformal map, and the composition gives the solution in the complicated domain.
+
+**Example.** Take $G(w) = w$ (uniform flow in the $w$-plane) and the conformal map $f(z) = z^2$. The composed potential in the $z$-plane is $G(f(z)) = z^2$. That is, substitute $w = z^2$ directly: the result is a new function of $z$, not $G$ evaluated at $z$. With $f(z) = z^2$, the $z$-plane flow has streamlines $\Psi = \text{Im}(z^2) = 2xy = \text{const}$ — the rectangular hyperbola pattern of flow in a 90° corner.
+
+<!-- STUDENT: The notation jump here is confusing. The statement "F(w) = w maps to F(z) = f(z)" reads as if F is being applied to two different arguments. What is actually happening is: compose F with f to get a new function F(f(z)) = f(z) = z². Stating this as "the composed potential is F∘f(z) = z²" would be clearer. The current phrasing may leave a reader unsure whether F(z) and F(w) are the same function or different ones. -->
+
+---
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell); row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn); controls.appendChild(resetBtn); controls.appendChild(counter);
+  container.appendChild(stepsDiv); container.appendChild(controls);
+  renderSteps(); updateButtons();
+  return container;
+}
+```
+
+---
+
+### Exercise 1: Image of a circle under $w = z^2$
+
+Find the image of the circle $|z| = 3$ under $w = z^2$. Then find the image of the half-circle $|z| = 3$, $\text{Im}(z) \geq 0$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Parametrise |z| = 3",
+    eq: "z = 3e^{i\\theta}, \\quad w = z^2 = 9e^{2i\\theta}"
+  },
+  {
+    op: "Image of full circle",
+    eq: "|w| = 9 \\text{ and } \\arg w = 2\\theta \\in [0,4\\pi) \\implies \\text{image is } |w|=9 \\text{ traversed twice}"
+  },
+  {
+    op: "Image of upper half-circle: θ ∈ [0, π]",
+    eq: "\\arg w = 2\\theta \\in [0, 2\\pi) \\implies \\text{full circle } |w| = 9 \\text{ traversed once}",
+    note: "The upper semicircle maps onto the full circle |w| = 9 — the map w = z² is 2-to-1."
+  },
+  {
+    op: "Critical points check",
+    eq: "w'(z) = 2z = 0 \\text{ only at } z=0 \\notin |z|=3 \\implies \\text{map is conformal on the circle}",
+    note: "Angles are preserved at every point of the circle."
+  }
+])
+```
+
+---
+
+### Exercise 2: Image of a strip under $w = e^z$
+
+Find the image of the horizontal strip $\{0 < \text{Im}(z) < \pi/2\}$ under $w = e^z$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Write w = e^{x+iy} = e^x e^{iy}",
+    eq: "|w| = e^x \\in (0, \\infty), \\quad \\arg w = y \\in \\left(0, \\frac{\\pi}{2}\\right)"
+  },
+  {
+    op: "Image in the w-plane",
+    eq: "\\left\\{w : \\arg w \\in \\left(0, \\tfrac{\\pi}{2}\\right)\\right\\} = \\text{first quadrant of the } w\\text{-plane (excluding axes)}"
+  },
+  {
+    op: "Check boundary images",
+    eq: "y=0 \\mapsto \\arg w = 0 \\text{ (positive real axis)};\\quad y=\\pi/2 \\mapsto \\arg w = \\pi/2 \\text{ (positive imaginary axis)}"
+  },
+  {
+    op: "Conformality check: w′(z) = e^z ≠ 0 everywhere",
+    eq: "\\text{The map is conformal throughout the strip.}",
+    note: "The strip's right angles at its corner (at infinity) map to the right angle at w = 0 in the first quadrant. Conformality is consistent."
+  }
+])
+```
+
+---
+
+### Exercise 3: Möbius transformation from three point pairs
+
+Find the Möbius transformation mapping $z_1 = 0 \mapsto w_1 = i$, $z_2 = 1 \mapsto w_2 = 0$, $z_3 = -1 \mapsto w_3 = \infty$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "z₃ maps to ∞ means the denominator vanishes at z = −1",
+    eq: "w = \\frac{az+b}{c(z+1)} \\quad \\text{(denominator has root at } z=-1\\text{)}"
+  },
+  {
+    op: "Apply w(0) = i",
+    eq: "\\frac{b}{c} = i \\implies b = ic"
+  },
+  {
+    op: "Apply w(1) = 0: numerator vanishes at z = 1",
+    eq: "a(1) + b = 0 \\implies a = -b = -ic"
+  },
+  {
+    op: "Write the transformation (set c = 1)",
+    eq: "w = \\frac{-iz + i}{z + 1} = \\frac{i(1-z)}{z+1}"
+  },
+  {
+    op: "Verify all three pairs",
+    eq: "w(0) = i/1 = i\\checkmark, \\quad w(1) = 0/2 = 0\\checkmark, \\quad w(-1) = i(2)/0 = \\infty\\checkmark"
+  }
+])
+```
+
+---
+
+### Exercise 4: Joukowski map — circle to ellipse
+
+Apply $w = z + 1/z$ to the circle $|z| = 2$. Find the semi-axes of the resulting ellipse.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Parametrise |z| = 2",
+    eq: "z = 2e^{i\\theta} \\implies w = 2e^{i\\theta} + \\tfrac{1}{2}e^{-i\\theta}"
+  },
+  {
+    op: "Separate real and imaginary parts",
+    eq: "w = \\left(2+\\tfrac{1}{2}\\right)\\cos\\theta + i\\left(2-\\tfrac{1}{2}\\right)\\sin\\theta = \\tfrac{5}{2}\\cos\\theta + i\\tfrac{3}{2}\\sin\\theta"
+  },
+  {
+    op: "Identify as an ellipse",
+    eq: "\\frac{(\\text{Re}\\,w)^2}{(5/2)^2} + \\frac{(\\text{Im}\\,w)^2}{(3/2)^2} = \\cos^2\\theta + \\sin^2\\theta = 1"
+  },
+  {
+    op: "Semi-axes",
+    eq: "a = \\tfrac{5}{2} = 2.5 \\text{ (horizontal)}, \\quad b = \\tfrac{3}{2} = 1.5 \\text{ (vertical)}",
+    note: "General formula for |z| = r: a = r + 1/r, b = r − 1/r. As r → 1⁺, b → 0 and the ellipse collapses to the flat plate [−2, 2]."
+  }
+])
+```
+
+---
+
+### Exercise 5: Potential theory — flow in a corner
+
+The complex potential $F(w) = w$ represents uniform horizontal flow in the $w$-plane. Apply the conformal map $w = z^2$ to find the complex potential for flow in the first quadrant ($x > 0$, $y > 0$) of the $z$-plane.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Compose: F(z) = F(w)|_{w=z²} = z²",
+    eq: "F(z) = z^2 = (x^2-y^2) + 2ixy"
+  },
+  {
+    op: "Identify potential Φ and stream function Ψ",
+    eq: "\\Phi = x^2 - y^2 \\text{ (equipotential lines: rectangular hyperbolae)}"
+  },
+  {
+    op: "Stream function",
+    eq: "\\Psi = 2xy = \\text{const} \\text{ (streamlines: rectangular hyperbolae } xy = C\\text{)}"
+  },
+  {
+    op: "Verify Φ satisfies Laplace's equation",
+    eq: "\\Phi_{xx} + \\Phi_{yy} = 2 + (-2) = 0 \\checkmark"
+  },
+  {
+    op: "Velocity field",
+    eq: "\\frac{dF}{dz} = 2z = 2(x+iy) \\implies v_x - iv_y = 2z \\implies v_x = 2x,\\; v_y = -2y",
+    note: "Flow moves outward along the x-axis and inward along the y-axis — the stagnation-point flow pattern seen in a jet impinging on a flat plate."
+  }
+])
+```
+
+With these four chapters you now have the full analytic toolkit: complex differentiation and the Cauchy-Riemann equations, contour integration and Cauchy's theorem, Laurent series and residues, and conformal mapping. The methods connect directly to the rest of engineering mathematics: the Laplace equation in any two-dimensional domain, potential flow around aerofoils, inverse Laplace transforms via residues, and stability analysis in the complex frequency plane.
+
+<!-- MATH-PROF REVIEW
+## Fixes applied
+None — all calculations verified correct.
+
+## Open issues
+- [NOTE] The standard mapping $w = (z-i)/(z+i)$ (upper half-plane → unit disk) is correctly stated. The inverse direction (unit disk → upper half-plane) uses $z = i(1-w)/(1+w)$, which is not given — no issue since the chapter doesn't claim to list inverses, but worth noting for completeness.
+- [NOTE] "Kutta-Joukowski's theorem" (line in the Joukowski section): the standard English name is the "Kutta–Joukowski theorem" (hyphen, no possessive 's'). This is a terminology note, not a mathematical error. The formula $L = \rho U \Gamma$ is the lift per unit span, which the text correctly qualifies. No correction needed mathematically.
+- [NOTE] The `w = z^2` subsection states the upper half-plane maps to "the full complex plane minus the non-negative real axis." This is correct: argument $(0,\pi)$ maps to $(0,2\pi)$ under doubling, which covers all directions except argument 0 (the non-negative real axis). The origin (a critical point) maps to itself and is a separate case; the statement holds for the open upper half-plane excluding the origin.
+- [NOTE] Exercise 5 velocity convention: $dF/dz = v_x - iv_y$ is the standard complex-velocity convention for potential flow (where $F = \Phi + i\Psi$ and the physical velocity is $(v_x, v_y)$). This sign convention is correct but should be stated explicitly in the body text rather than only in an exercise note, since it is non-obvious.
+- [NOTE] `prerequisite_ids` lists `multivariable`. The topology has `multivariable` at layer 3 and `complex_analysis` at layer 4. The edge does not appear directly in the topology edges, but `multivariable → vector_calc → vector_integral` is present. The `multivariable` prerequisite is justified (potential theory requires 2D calculus vocabulary) but no direct edge `[multivariable, complex_analysis, enriches]` exists in the topology. Consider adding this edge to `_data/topology.yml`.
+
+## Verdict: PASS WITH NOTES
+-->
+
+<!-- ENGINEER-PROF REVIEW
+## Chapter 04 — Conformal mapping
+
+### Fixes applied
+- [WARN FIXED] Complex potential section: added the missing word "incompressible" to the flow description. A stream function exists only for incompressible flow; irrotationality alone is insufficient. The complex potential F = Φ + iΨ requires ∇·v = 0 (stream function) AND ∇×v = 0 (velocity potential) simultaneously. The omission could mislead students applying this to compressible flows.
+- [NOTE FIXED] Complex velocity convention ($dF/dz = v_x - iv_y$) has been moved from Exercise 5 notes into the body text (§ Complex potential), where engineers need it when first encountering the complex potential. The exercise note still references it for the worked example.
+
+### Open issues
+- [NOTE] The `eng` destinations hook (Joukowski transformation, thin-aerofoil theory) is accurate and well-placed. Joukowski aerofoils were historically important (early 20th-century aircraft) and the transform is still taught in aerodynamics courses (e.g. NACA thin-aerofoil theory builds on this framework).
+- [NOTE] "Kutta-Joukowski's theorem" in the body text — standard English usage is "Kutta–Joukowski theorem" (em-dash or hyphen, no possessive 's'). Math-prof flagged this. From an engineering credibility standpoint the possessive form is unusual and slightly odd; recommend correcting to "Kutta–Joukowski theorem".
+- [NOTE] The formula $L = \rho U \Gamma$ (lift per unit span) is dimensionally consistent: $[\text{kg/m}^3 \cdot \text{m/s} \cdot \text{m}^2\text{/s}] = [\text{N/m}]$. Correct.
+- [NOTE] `destinations.sci.hook` — "Conformal mapping solves the two-dimensional Laplace equation — electrostatics, magnetostatics, and heat conduction in irregular geometries." Accurate. These are the canonical engineering/science applications.
+- [NOTE] `destinations.comp.hook` — "Schwarz-Christoffel formula ... used in numerical PDE solvers and in computer graphics for texture mapping on curved surfaces." Accurate. The SC Toolbox (Driscoll & Trefethen) is widely used in numerical conformal mapping for FEM mesh generation and BVP solvers.
+- [NOTE] `stroud_programme: null` — Stroud touches conformal mapping briefly; Kreyszig Ch 17 is the primary reference here. The null is defensible given Stroud's limited coverage, but worth confirming.
+- [NOTE] Hook historical detail: Joukowski's key papers on aerofoil theory were published 1910–1912, so "In 1910" is approximately correct. Not a blocker.
+
+## Verdict: PASS WITH NOTES
+-->
+
+<!-- STUDENT REVIEW
+## Chapter 04 — Conformal mapping
+Layer: engineering
+
+### Confusion points
+
+1. **Angle-preservation argument relies on complex multiplication = rotation, which isn't stated** (§ Conformal mappings, "Why angles are preserved"). The key step — that multiplying the tangent vector by f′(z₀) rotates it by arg f′(z₀) — is compressed to "follows from the chain rule." A reader who is not comfortable seeing complex multiplication as a rotation will not close this gap unaided.
+
+2. **"A line is a circle through ∞"** (§ Möbius transformations). The extended complex plane (Riemann sphere, point at infinity) has not been introduced. Using it without definition asks the reader to accept a surprising-sounding claim on authority.
+
+3. **Cross-ratio: no indication of how to use it** (§ Three-point determination). The formula is given but the procedure — set the two cross-ratios equal, solve the resulting linear equation in w — is not stated. A reader will not know whether to expand, factorise, or use some other technique.
+
+4. **Circulation Γ undefined** (§ Joukowski transformation, "Why it works"). The Kutta-Joukowski lift formula contains Γ without definition. An engineering student who hasn't taken fluid mechanics won't know what circulation is. This is the chapter's headline engineering result; the audience deserves to know what Γ means.
+
+5. **Composed potential notation is ambiguous** (§ Application to potential theory, worked example). "F(w) = w maps to F(z) = f(z)" conflates the function F and its argument. The correct statement is that the composed potential is F(f(z)) = f(z) = z², but the notation used can be read as F(z) being a different object from F(w).
+
+### Reassurance gaps
+
+- The standard mappings (§ Standard conformal maps) list three maps and describe their domain/image pairs but give no worked verification. An engineering reader wants to confirm they can reproduce the w = e^z strip result before moving on. Exercise 2 covers this, but a brief check in the body — "confirm the boundary y=0 maps to the positive real axis: e^{x+0i} = e^x > 0 ✓" — would reduce anxiety.
+
+- After the Joukowski section, a reader is likely to ask: "could I compute the lift on a specific aerofoil using this?" The answer (in principle, yes, by computing the residue of the complex velocity) is not given, and the chapter ends without making clear what the reader could now do that they couldn't before.
+
+### Exercise calibration
+
+- Exercise 3 (Möbius transformation from three point pairs) is a well-matched engineering-layer exercise with a concrete procedure.
+- Exercise 5 (potential theory — flow in a corner) is the most conceptually demanding and requires understanding all three threads: conformality, complex potential, and the Cauchy-Riemann connection. It is well-constructed but is significantly harder than Exercises 1–2.
+- The jump from Exercise 4 (Joukowski circle → ellipse, essentially mechanical substitution) to Exercise 5 (potential theory) is steep. Exercises 1–4 feel computational; Exercise 5 requires synthesis. Some readers will stall here.
+- All exercises have clean, satisfying answers. The variety across exercises is good.
+
+### Wayfinding
+
+- `opens_to` points to "Vector integral calculus" with relationship `enriches`. This is the first chapter in the series where `opens_to` leaves the complex-analysis section entirely. The reader is not told this — no sentence signals "this is where complex analysis connects back into the rest of engineering mathematics." A closing remark noting what the reader has now equipped themselves to tackle (potential theory, the Laplace equation in any 2D domain, thin-aerofoil calculations) would be a strong finish.
+
+## Verdict: READABLE WITH FIXES
+
+The chapter is accessible and the Joukowski content is genuinely motivating. The main friction points are: the unexplained circulation Γ (a gap in an otherwise excellent engineering hook), the opaque cross-ratio usage instructions, and the "line is a circle through ∞" assertion that rests on an unintroduced concept. The potential-theory section is the weakest in terms of notation clarity and benefits from a minor rewrite of the worked example.
+-->
+
+<!-- EDIT LOG
+- [§ Conformal mappings, "Why angles are preserved"] Expanded the one-sentence chain-rule argument into three sentences. The key step — writing f′(z₀) = |f′(z₀)|e^{iφ}, so multiplication scales by |f′(z₀)| and rotates by φ — is now explicit. Previously this was compressed to "follows from the chain rule," which is opaque to anyone who doesn't already see complex multiplication as a rotation.
+- [§ Möbius transformations, "circles and lines" property] Replaced "A line is a circle through ∞" with an explanation: "In the extended complex plane — the ordinary plane with a single point at infinity added — a straight line can be viewed as a circle that passes through that point at infinity." The extended complex plane is now introduced rather than assumed.
+- [§ Möbius transformations, cross-ratio] Added a sentence after the cross-ratio formula: "Cross-multiply to get a linear equation in w, then solve." Previously the formula was displayed without any indication of the procedure for using it.
+- [§ Joukowski transformation, "Why it works for aerodynamics"] Defined circulation on first use: Γ = ∮ v·ds, the line integral of tangential velocity around the aerofoil. Also corrected "Kutta-Joukowski's theorem" to "Kutta–Joukowski theorem" (en-dash, no possessive), consistent with math-prof and engineer-prof notes.
+- [§ Application to potential theory, worked example] Rewrote the ambiguous "F(w) = w maps to F(z) = f(z)" formulation. Renamed the w-domain potential G(w) = w and described the composed potential as G(f(z)) = z², making the composition explicit and avoiding the confusion between F as a function name and F evaluated at different arguments.
+- [End of exercises, before review annotations] Added a closing wayfinding paragraph naming the four tools the reader has now acquired and the engineering contexts they connect to.
+-->

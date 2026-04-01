@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>43&nbsp; Vector differential calculus – Wayward House Mathematics</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../vol-07/linear-algebra/04-vector-integral.html" rel="next">
+<link href="../../vol-07/linear-algebra/02-eigenvalues.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4d9afe2b8d18ee9fa5d0d57b5ed4214d.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-a9e954662e31706c7e1874a45e879b53.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-04565151f1acebfab7f61e9b99bab78c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-a9e954662e31706c7e1874a45e879b53.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script>
+  (function () {
+    var s = localStorage.getItem('theme');
+    var dark = s !== null ? s === 'dark' : false;
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.dataset.brand = 'wayward';
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,700;1,800&amp;family=Barlow:wght@300;400;500;600&amp;family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&amp;family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,500;1,7..72,300;1,7..72,400&amp;display=swap" rel="stylesheet">
+<script type="module" src="../../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../assets/css/quarto-wayward.css">
+</head>
+
+<body class="nav-sidebar docked quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../vol-07/linear-algebra/01-matrices-systems.html">Volume 7 — Linear algebra and vector calculus</a></li><li class="breadcrumb-item"><a href="../../vol-07/linear-algebra/03-vector-differential.html"><span class="chapter-number">43</span>&nbsp; <span class="chapter-title">Vector differential calculus</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Wayward House Mathematics</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/wayward-house/mathematics" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+    </div>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Wayward House Mathematics</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">The map</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../map/wayfinding.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The Map</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../map/how-to-use.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">How to Use This Series</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 1 — Numbers and operations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-01/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Volume 1 — Numbers and operations</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-01/01-number-line.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Numbers and the number line</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-01/02-ratio-proportion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Ratio and proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-01/03-percent-rates.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Percent and rates</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-01/04-integers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Integers and signed arithmetic</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-01/05-fractions-decimals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Fractions and decimals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-01/06-statistics-probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Statistics and probability</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 2 — Patterns and algebra</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-02/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Volume 2 — Patterns and algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-02/01-linear-equations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Linear equations</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-02/02-inequalities.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inequalities</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-02/03-patterns-sequences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Patterns and sequences</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-02/04-graphing-relations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Graphing relations</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 3 — Shape and measure</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-03/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Volume 3 — Shape and measure</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-03/01-geometry-measurement.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Geometry and measurement</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-03/02-trigonometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Trigonometry</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-03/03-polynomials-factoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Polynomials and factoring</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-03/04-functions-relations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Functions and relations</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 4 — Functions and change</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-04/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Volume 4 — Functions and change</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-04/01-exponents-logarithms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Exponents and logarithms</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-04/02-complex-numbers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Complex numbers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-04/03-systems-matrices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Systems of equations</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-04/04-sequences-series.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Sequences and series</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 5 — Analysis and proof</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-05/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Volume 5 — Analysis and proof</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-05/01-limits-continuity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Limits and continuity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-05/02-differential-calculus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Differential calculus</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-05/03-integral-calculus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Integral calculus</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-05/04-proof-reasoning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Proof and mathematical reasoning</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 6 — Probability and data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-06/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Volume 6 — Probability and data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-06/01-probability-theory.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Probability theory</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-06/02-distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">33</span>&nbsp; <span class="chapter-title">Probability distributions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-06/03-statistical-inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">34</span>&nbsp; <span class="chapter-title">Statistical Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-06/04-data-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">35</span>&nbsp; <span class="chapter-title">Data Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 7 — Engineering mathematics: ODEs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">36</span>&nbsp; <span class="chapter-title">Volume 7 — Engineering mathematics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/odes/01-first-order.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">37</span>&nbsp; <span class="chapter-title">First-order ODEs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/odes/02-second-order.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">38</span>&nbsp; <span class="chapter-title">Second-order ODEs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/odes/03-systems-phase-plane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">39</span>&nbsp; <span class="chapter-title">Systems and phase plane</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/odes/04-laplace-transforms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">40</span>&nbsp; <span class="chapter-title">Laplace transforms</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 7 — Linear algebra and vector calculus</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/linear-algebra/01-matrices-systems.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">41</span>&nbsp; <span class="chapter-title">Matrices and linear systems</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/linear-algebra/02-eigenvalues.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">42</span>&nbsp; <span class="chapter-title">Eigenvalues and eigenvectors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/linear-algebra/03-vector-differential.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">43</span>&nbsp; <span class="chapter-title">Vector differential calculus</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/linear-algebra/04-vector-integral.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">44</span>&nbsp; <span class="chapter-title">Vector integral calculus</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 7 — Fourier analysis and PDEs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/fourier-pdes/01-fourier-series.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">45</span>&nbsp; <span class="chapter-title">Fourier series</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/fourier-pdes/02-fourier-transforms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">46</span>&nbsp; <span class="chapter-title">Fourier transforms</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/fourier-pdes/03-partial-differential-equations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">47</span>&nbsp; <span class="chapter-title">Partial differential equations</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 7 — Complex analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/complex-analysis/01-complex-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">48</span>&nbsp; <span class="chapter-title">Complex functions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/complex-analysis/02-complex-integration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">49</span>&nbsp; <span class="chapter-title">Complex integration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/complex-analysis/03-series-residues.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">50</span>&nbsp; <span class="chapter-title">Series and residues</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/complex-analysis/04-conformal-mapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">51</span>&nbsp; <span class="chapter-title">Conformal mapping</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 7 — Numerical methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/numerics/01-numerical-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">52</span>&nbsp; <span class="chapter-title">Numerical methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/numerics/02-numerical-linear-algebra.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">53</span>&nbsp; <span class="chapter-title">Numerical linear algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/numerics/03-numerical-odes-pdes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">54</span>&nbsp; <span class="chapter-title">Numerical ODEs and PDEs</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 7 — Optimisation and probability</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/optimisation/01-linear-programming.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">55</span>&nbsp; <span class="chapter-title">Linear programming</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/optimisation/02-graphs-networks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">56</span>&nbsp; <span class="chapter-title">Graphs and networks</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/probability/01-probability-theory.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">57</span>&nbsp; <span class="chapter-title">Probability theory</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-07/probability/02-mathematical-statistics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">58</span>&nbsp; <span class="chapter-title">Mathematical statistics</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="true">
+ <span class="menu-text">Volume 8 — Upper-year engineering mathematics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">59</span>&nbsp; <span class="chapter-title">Volume 8 — Upper-year engineering mathematics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/01-control-feedback.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">60</span>&nbsp; <span class="chapter-title">Control, feedback, and stability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/02-discrete-systems-signals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">61</span>&nbsp; <span class="chapter-title">Discrete-time systems and signal processing</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/03-continuum-transport.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">62</span>&nbsp; <span class="chapter-title">Continuum mechanics and transport</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/04-computational-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">63</span>&nbsp; <span class="chapter-title">Computational methods for engineering models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/05-estimation-inverse.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">64</span>&nbsp; <span class="chapter-title">Estimation, inverse problems, and filtering</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/06-reliability-stochastic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">65</span>&nbsp; <span class="chapter-title">Reliability, stochastic systems, and quality</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../vol-08/07-nonlinear-optimisation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">66</span>&nbsp; <span class="chapter-title">Nonlinear optimisation for design and operations</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#vectors-dot-and-cross-products" id="toc-vectors-dot-and-cross-products" class="nav-link active" data-scroll-target="#vectors-dot-and-cross-products"><span class="header-section-number">43.1</span> Vectors: dot and cross products</a>
+  <ul class="collapse">
+  <li><a href="#the-dot-product" id="toc-the-dot-product" class="nav-link" data-scroll-target="#the-dot-product"><span class="header-section-number">43.1.1</span> The dot product</a></li>
+  <li><a href="#the-cross-product" id="toc-the-cross-product" class="nav-link" data-scroll-target="#the-cross-product"><span class="header-section-number">43.1.2</span> The cross product</a></li>
+  </ul></li>
+  <li><a href="#scalar-and-vector-fields" id="toc-scalar-and-vector-fields" class="nav-link" data-scroll-target="#scalar-and-vector-fields"><span class="header-section-number">43.2</span> Scalar and vector fields</a></li>
+  <li><a href="#the-gradient" id="toc-the-gradient" class="nav-link" data-scroll-target="#the-gradient"><span class="header-section-number">43.3</span> The gradient</a>
+  <ul class="collapse">
+  <li><a href="#partial-derivatives" id="toc-partial-derivatives" class="nav-link" data-scroll-target="#partial-derivatives"><span class="header-section-number">43.3.1</span> Partial derivatives</a></li>
+  <li><a href="#definition" id="toc-definition" class="nav-link" data-scroll-target="#definition"><span class="header-section-number">43.3.2</span> Definition</a></li>
+  <li><a href="#geometric-meaning" id="toc-geometric-meaning" class="nav-link" data-scroll-target="#geometric-meaning"><span class="header-section-number">43.3.3</span> Geometric meaning</a></li>
+  <li><a href="#directional-derivative" id="toc-directional-derivative" class="nav-link" data-scroll-target="#directional-derivative"><span class="header-section-number">43.3.4</span> Directional derivative</a></li>
+  <li><a href="#total-differential" id="toc-total-differential" class="nav-link" data-scroll-target="#total-differential"><span class="header-section-number">43.3.5</span> Total differential</a></li>
+  </ul></li>
+  <li><a href="#divergence" id="toc-divergence" class="nav-link" data-scroll-target="#divergence"><span class="header-section-number">43.4</span> Divergence</a>
+  <ul class="collapse">
+  <li><a href="#definition-1" id="toc-definition-1" class="nav-link" data-scroll-target="#definition-1"><span class="header-section-number">43.4.1</span> Definition</a></li>
+  <li><a href="#physical-meaning" id="toc-physical-meaning" class="nav-link" data-scroll-target="#physical-meaning"><span class="header-section-number">43.4.2</span> Physical meaning</a></li>
+  </ul></li>
+  <li><a href="#curl" id="toc-curl" class="nav-link" data-scroll-target="#curl"><span class="header-section-number">43.5</span> Curl</a>
+  <ul class="collapse">
+  <li><a href="#definition-2" id="toc-definition-2" class="nav-link" data-scroll-target="#definition-2"><span class="header-section-number">43.5.1</span> Definition</a></li>
+  <li><a href="#physical-meaning-1" id="toc-physical-meaning-1" class="nav-link" data-scroll-target="#physical-meaning-1"><span class="header-section-number">43.5.2</span> Physical meaning</a></li>
+  </ul></li>
+  <li><a href="#the-laplacian" id="toc-the-laplacian" class="nav-link" data-scroll-target="#the-laplacian"><span class="header-section-number">43.6</span> The Laplacian</a>
+  <ul class="collapse">
+  <li><a href="#definition-3" id="toc-definition-3" class="nav-link" data-scroll-target="#definition-3"><span class="header-section-number">43.6.1</span> Definition</a></li>
+  <li><a href="#physical-meaning-2" id="toc-physical-meaning-2" class="nav-link" data-scroll-target="#physical-meaning-2"><span class="header-section-number">43.6.2</span> Physical meaning</a></li>
+  </ul></li>
+  <li><a href="#applications" id="toc-applications" class="nav-link" data-scroll-target="#applications"><span class="header-section-number">43.7</span> Applications</a>
+  <ul class="collapse">
+  <li><a href="#gradient-descent-and-optimisation" id="toc-gradient-descent-and-optimisation" class="nav-link" data-scroll-target="#gradient-descent-and-optimisation"><span class="header-section-number">43.7.1</span> Gradient descent and optimisation</a></li>
+  <li><a href="#electric-field-from-voltage-potential" id="toc-electric-field-from-voltage-potential" class="nav-link" data-scroll-target="#electric-field-from-voltage-potential"><span class="header-section-number">43.7.2</span> Electric field from voltage potential</a></li>
+  <li><a href="#continuity-equation-in-fluid-mechanics" id="toc-continuity-equation-in-fluid-mechanics" class="nav-link" data-scroll-target="#continuity-equation-in-fluid-mechanics"><span class="header-section-number">43.7.3</span> Continuity equation in fluid mechanics</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">43.8</span> Exercises</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/wayward-house/mathematics/edit/main/vol-07/linear-algebra/03-vector-differential.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/wayward-house/mathematics/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../vol-07/linear-algebra/01-matrices-systems.html">Volume 7 — Linear algebra and vector calculus</a></li><li class="breadcrumb-item"><a href="../../vol-07/linear-algebra/03-vector-differential.html"><span class="chapter-number">43</span>&nbsp; <span class="chapter-title">Vector differential calculus</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">43</span>&nbsp; <span class="chapter-title">Vector differential calculus</span></h1>
+<p class="subtitle lead">Grad, div, curl — the calculus of fields</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Hold a weather map. The isotherms — lines of equal temperature — curve across it. At any point, one direction makes the temperature climb fastest; the gradient tells you which direction that is and how steep the climb is. Perpendicular to that direction, the temperature doesn’t change at all.</p>
+<p>Now picture a pipe carrying fluid. At some cross-sections the fluid spreads out; at others it converges. Divergence measures the net outflow at each point — positive where fluid is being created (a source), negative where it drains away (a sink). Curl measures something different: whether the fluid rotates. Stick a tiny paddle wheel in the flow; if it spins, the curl is non-zero.</p>
+<p>Three operators — gradient, divergence, curl — encode the geometry of how any field varies through space. Every major equation in physics is written in terms of them.</p>
+<section id="vectors-dot-and-cross-products" class="level2" data-number="43.1">
+<h2 data-number="43.1" class="anchored" data-anchor-id="vectors-dot-and-cross-products"><span class="header-section-number">43.1</span> Vectors: dot and cross products</h2>
+<p>A vector in three dimensions is a triple of numbers, written <span class="math inline">\(\mathbf{u} = (u_1, u_2, u_3)\)</span> or in column form. Its magnitude is <span class="math inline">\(|\mathbf{u}| = \sqrt{u_1^2 + u_2^2 + u_3^2}\)</span>.</p>
+<p>Two operations link a pair of vectors to useful scalars and vectors.</p>
+<section id="the-dot-product" class="level3" data-number="43.1.1">
+<h3 data-number="43.1.1" class="anchored" data-anchor-id="the-dot-product"><span class="header-section-number">43.1.1</span> The dot product</h3>
+<p><span class="math display">\[\mathbf{u} \cdot \mathbf{v} = u_1 v_1 + u_2 v_2 + u_3 v_3\]</span></p>
+<p>Geometrically: <span class="math inline">\(\mathbf{u} \cdot \mathbf{v} = |\mathbf{u}||\mathbf{v}|\cos\theta\)</span>, where <span class="math inline">\(\theta\)</span> is the angle between them. This means:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{u} \cdot \mathbf{v} = 0\)</span> if and only if <span class="math inline">\(\mathbf{u}\)</span> and <span class="math inline">\(\mathbf{v}\)</span> are perpendicular.</li>
+<li><span class="math inline">\(\text{proj}_{\mathbf{v}} \mathbf{u} = \dfrac{\mathbf{u} \cdot \mathbf{v}}{|\mathbf{v}|}\)</span> is the scalar projection of <span class="math inline">\(\mathbf{u}\)</span> onto <span class="math inline">\(\mathbf{v}\)</span> — how much of <span class="math inline">\(\mathbf{u}\)</span> lies in the direction of <span class="math inline">\(\mathbf{v}\)</span>.</li>
+</ul>
+<p><strong>Example.</strong> <span class="math inline">\(\mathbf{u} = (1, 2, 3)\)</span>, <span class="math inline">\(\mathbf{v} = (4, 0, -1)\)</span>.</p>
+<p><span class="math display">\[\mathbf{u} \cdot \mathbf{v} = (1)(4) + (2)(0) + (3)(-1) = 4 + 0 - 3 = 1\]</span></p>
+<p>The angle between them: <span class="math inline">\(\cos\theta = \dfrac{1}{\sqrt{14}\,\sqrt{17}} \approx 0.065\)</span>, so <span class="math inline">\(\theta \approx 86°\)</span> — nearly perpendicular.</p>
+</section>
+<section id="the-cross-product" class="level3" data-number="43.1.2">
+<h3 data-number="43.1.2" class="anchored" data-anchor-id="the-cross-product"><span class="header-section-number">43.1.2</span> The cross product</h3>
+<p><span class="math display">\[\mathbf{u} \times \mathbf{v} = \begin{vmatrix} \mathbf{i} &amp; \mathbf{j} &amp; \mathbf{k} \\ u_1 &amp; u_2 &amp; u_3 \\ v_1 &amp; v_2 &amp; v_3 \end{vmatrix} = (u_2 v_3 - u_3 v_2,\; u_3 v_1 - u_1 v_3,\; u_1 v_2 - u_2 v_1)\]</span></p>
+<p>The result is a vector perpendicular to both <span class="math inline">\(\mathbf{u}\)</span> and <span class="math inline">\(\mathbf{v}\)</span>, with magnitude <span class="math inline">\(|\mathbf{u} \times \mathbf{v}| = |\mathbf{u}||\mathbf{v}|\sin\theta\)</span> — equal to the area of the parallelogram spanned by <span class="math inline">\(\mathbf{u}\)</span> and <span class="math inline">\(\mathbf{v}\)</span>. Direction follows the right-hand rule: curl the fingers of your right hand from <span class="math inline">\(\mathbf{u}\)</span> toward <span class="math inline">\(\mathbf{v}\)</span>; your thumb points in the direction of <span class="math inline">\(\mathbf{u} \times \mathbf{v}\)</span>.</p>
+<p>Note that <span class="math inline">\(\mathbf{u} \times \mathbf{v} = -\mathbf{v} \times \mathbf{u}\)</span> — order matters. The cross product is anti-commutative.</p>
+<p><strong>Example.</strong> <span class="math inline">\(\mathbf{u} = (1, 0, 0)\)</span>, <span class="math inline">\(\mathbf{v} = (0, 1, 0)\)</span> (the standard basis vectors <span class="math inline">\(\mathbf{i}\)</span> and <span class="math inline">\(\mathbf{j}\)</span>).</p>
+<p><span class="math display">\[\mathbf{u} \times \mathbf{v} = (0 \cdot 0 - 0 \cdot 1,\; 0 \cdot 0 - 1 \cdot 0,\; 1 \cdot 1 - 0 \cdot 0) = (0, 0, 1) = \mathbf{k}\]</span></p>
+<p>This is correct: the right-hand rule applied to <span class="math inline">\(\mathbf{i} \times \mathbf{j}\)</span> gives <span class="math inline">\(\mathbf{k}\)</span>, pointing out of the <span class="math inline">\(xy\)</span>-plane.</p>
+</section>
+</section>
+<section id="scalar-and-vector-fields" class="level2" data-number="43.2">
+<h2 data-number="43.2" class="anchored" data-anchor-id="scalar-and-vector-fields"><span class="header-section-number">43.2</span> Scalar and vector fields</h2>
+<p>A <strong>scalar field</strong> assigns a single number to each point in space: <span class="math inline">\(f : \mathbb{R}^3 \to \mathbb{R}\)</span>. Examples:</p>
+<ul>
+<li>Temperature <span class="math inline">\(T(x,y,z)\)</span> — one number at each location</li>
+<li>Pressure <span class="math inline">\(p(x,y,z)\)</span> — one number at each location</li>
+<li>Voltage <span class="math inline">\(V(x,y,z)\)</span> — one number at each location</li>
+</ul>
+<p>A <strong>vector field</strong> assigns a vector to each point in space: <span class="math inline">\(\mathbf{F} : \mathbb{R}^3 \to \mathbb{R}^3\)</span>. Examples:</p>
+<ul>
+<li>Wind velocity <span class="math inline">\(\mathbf{v}(x,y,z)\)</span> — a direction and speed at each location</li>
+<li>Gravitational field <span class="math inline">\(\mathbf{g}(x,y,z)\)</span> — pointing toward the Earth’s centre, weakening with distance</li>
+<li>Electric field <span class="math inline">\(\mathbf{E}(x,y,z)\)</span> — direction a positive test charge would accelerate</li>
+</ul>
+<p>Both are functions. The difference is only in what they return. All of single-variable calculus was about functions <span class="math inline">\(f : \mathbb{R} \to \mathbb{R}\)</span>. Vector differential calculus extends differentiation to these richer domains.</p>
+</section>
+<section id="the-gradient" class="level2" data-number="43.3">
+<h2 data-number="43.3" class="anchored" data-anchor-id="the-gradient"><span class="header-section-number">43.3</span> The gradient</h2>
+<section id="partial-derivatives" class="level3" data-number="43.3.1">
+<h3 data-number="43.3.1" class="anchored" data-anchor-id="partial-derivatives"><span class="header-section-number">43.3.1</span> Partial derivatives</h3>
+<p>Before defining the gradient, we need partial derivatives. Given <span class="math inline">\(f(x, y, z)\)</span>, the partial derivative with respect to <span class="math inline">\(x\)</span> is:</p>
+<p><span class="math display">\[\frac{\partial f}{\partial x} = \lim_{h \to 0} \frac{f(x+h, y, z) - f(x, y, z)}{h}\]</span></p>
+<p>Compute it by differentiating <span class="math inline">\(f\)</span> with respect to <span class="math inline">\(x\)</span> while treating <span class="math inline">\(y\)</span> and <span class="math inline">\(z\)</span> as constants. The partial with respect to <span class="math inline">\(y\)</span> treats <span class="math inline">\(x\)</span> and <span class="math inline">\(z\)</span> as constants, and so on.</p>
+<p><strong>Example.</strong> <span class="math inline">\(f(x, y, z) = x^2 y + yz^3\)</span>.</p>
+<p><span class="math display">\[\frac{\partial f}{\partial x} = 2xy, \qquad \frac{\partial f}{\partial y} = x^2 + z^3, \qquad \frac{\partial f}{\partial z} = 3yz^2\]</span></p>
+<p>Each partial derivative measures the rate of change as you move in exactly one coordinate direction while holding the others fixed.</p>
+</section>
+<section id="definition" class="level3" data-number="43.3.2">
+<h3 data-number="43.3.2" class="anchored" data-anchor-id="definition"><span class="header-section-number">43.3.2</span> Definition</h3>
+<p>The <strong>gradient</strong> of a scalar field <span class="math inline">\(f\)</span> is the vector field formed by collecting all three partial derivatives:</p>
+<p><span class="math display">\[\nabla f = \left(\frac{\partial f}{\partial x},\; \frac{\partial f}{\partial y},\; \frac{\partial f}{\partial z}\right)\]</span></p>
+<p>The symbol <span class="math inline">\(\nabla\)</span> (nabla) is the <strong>del operator</strong> — an instruction to differentiate. Applied to a scalar, it produces a vector.</p>
+</section>
+<section id="geometric-meaning" class="level3" data-number="43.3.3">
+<h3 data-number="43.3.3" class="anchored" data-anchor-id="geometric-meaning"><span class="header-section-number">43.3.3</span> Geometric meaning</h3>
+<p>The gradient <span class="math inline">\(\nabla f\)</span> at any point:</p>
+<ol type="1">
+<li><strong>Points in the direction of steepest increase</strong> of <span class="math inline">\(f\)</span>.</li>
+<li><strong>Is perpendicular to the level surface</strong> <span class="math inline">\(f = c\)</span> passing through that point.</li>
+<li>Has magnitude <span class="math inline">\(|\nabla f|\)</span> equal to the rate of change of <span class="math inline">\(f\)</span> in that steepest direction.</li>
+</ol>
+<p>Think of contour lines on a topographic map. The gradient at any point is an arrow pointing directly uphill — perpendicular to the contour through that point, and longer where the slope is steeper.</p>
+<p><strong>Example.</strong> <span class="math inline">\(f(x, y, z) = x^2 + y^2 + z^2\)</span> (the squared distance from the origin).</p>
+<p><span class="math display">\[\nabla f = (2x,\; 2y,\; 2z) = 2(x, y, z) = 2\mathbf{r}\]</span></p>
+<p>The gradient points radially outward — away from the origin, in the direction of increasing distance. This makes geometric sense: the level surfaces of <span class="math inline">\(f\)</span> are spheres centred at the origin, and the gradient is perpendicular to them, i.e.&nbsp;radially outward.</p>
+<!-- VIZ: Gradient field visualiser — enter a scalar function f(x,y), display the scalar field as a heatmap and overlay gradient arrows -->
+</section>
+<section id="directional-derivative" class="level3" data-number="43.3.4">
+<h3 data-number="43.3.4" class="anchored" data-anchor-id="directional-derivative"><span class="header-section-number">43.3.4</span> Directional derivative</h3>
+<p>The rate of change of <span class="math inline">\(f\)</span> as you move in an arbitrary direction <span class="math inline">\(\mathbf{u}\)</span> (a unit vector) is called the <strong>directional derivative</strong>:</p>
+<p><span class="math display">\[D_{\mathbf{u}} f = \nabla f \cdot \mathbf{u}\]</span></p>
+<p>This is the projection of the gradient onto the direction you’re moving. When <span class="math inline">\(\mathbf{u}\)</span> aligns with <span class="math inline">\(\nabla f\)</span>, the directional derivative is maximised. When <span class="math inline">\(\mathbf{u}\)</span> is perpendicular to <span class="math inline">\(\nabla f\)</span>, the directional derivative is zero — you’re moving along a level surface.</p>
+<p><strong>Example.</strong> <span class="math inline">\(f(x, y, z) = x^2 y + yz^3\)</span> at point <span class="math inline">\((1, 2, -1)\)</span>. Find the rate of change in the direction <span class="math inline">\(\mathbf{u} = \frac{1}{\sqrt{3}}(1, 1, 1)\)</span>.</p>
+<p>First, the gradient at <span class="math inline">\((1, 2, -1)\)</span>:</p>
+<p><span class="math display">\[\nabla f\big|_{(1,2,-1)} = \bigl(2(1)(2),\; (1)^2 + (-1)^3,\; 3(2)(-1)^2\bigr) = (4, 0, 6)\]</span></p>
+<p>Then:</p>
+<p><span class="math display">\[D_{\mathbf{u}} f = (4, 0, 6) \cdot \frac{1}{\sqrt{3}}(1, 1, 1) = \frac{4 + 0 + 6}{\sqrt{3}} = \frac{10}{\sqrt{3}} \approx 5.77\]</span></p>
+</section>
+<section id="total-differential" class="level3" data-number="43.3.5">
+<h3 data-number="43.3.5" class="anchored" data-anchor-id="total-differential"><span class="header-section-number">43.3.5</span> Total differential</h3>
+<p>For small displacements <span class="math inline">\((dx, dy, dz)\)</span> from a point, the change in <span class="math inline">\(f\)</span> is approximated by the <strong>total differential</strong>:</p>
+<p><span class="math display">\[df = \frac{\partial f}{\partial x}\,dx + \frac{\partial f}{\partial y}\,dy + \frac{\partial f}{\partial z}\,dz = \nabla f \cdot d\mathbf{r}\]</span></p>
+<p>This is the multi-variable chain rule in compact form. If <span class="math inline">\(x\)</span>, <span class="math inline">\(y\)</span>, <span class="math inline">\(z\)</span> are themselves functions of a parameter <span class="math inline">\(t\)</span>, the chain rule becomes:</p>
+<p><span class="math display">\[\frac{df}{dt} = \frac{\partial f}{\partial x}\frac{dx}{dt} + \frac{\partial f}{\partial y}\frac{dy}{dt} + \frac{\partial f}{\partial z}\frac{dz}{dt} = \nabla f \cdot \frac{d\mathbf{r}}{dt}\]</span></p>
+</section>
+</section>
+<section id="divergence" class="level2" data-number="43.4">
+<h2 data-number="43.4" class="anchored" data-anchor-id="divergence"><span class="header-section-number">43.4</span> Divergence</h2>
+<section id="definition-1" class="level3" data-number="43.4.1">
+<h3 data-number="43.4.1" class="anchored" data-anchor-id="definition-1"><span class="header-section-number">43.4.1</span> Definition</h3>
+<p>Given a vector field <span class="math inline">\(\mathbf{F} = (F_1, F_2, F_3)\)</span>, the <strong>divergence</strong> is:</p>
+<p><span class="math display">\[\nabla \cdot \mathbf{F} = \frac{\partial F_1}{\partial x} + \frac{\partial F_2}{\partial y} + \frac{\partial F_3}{\partial z}\]</span></p>
+<p>The del operator <span class="math inline">\(\nabla\)</span> is now being “dotted” with the vector field — hence the dot product notation. The result is a scalar field: one number at each point.</p>
+<p><strong>Example.</strong> <span class="math inline">\(\mathbf{F}(x, y, z) = (x^2, 2xy, z^2)\)</span>.</p>
+<p><span class="math display">\[\nabla \cdot \mathbf{F} = \frac{\partial}{\partial x}(x^2) + \frac{\partial}{\partial y}(2xy) + \frac{\partial}{\partial z}(z^2) = 2x + 2x + 2z = 4x + 2z\]</span></p>
+<p>At the point <span class="math inline">\((1, 0, 1)\)</span>: <span class="math inline">\(\nabla \cdot \mathbf{F} = 4(1) + 2(1) = 6\)</span>.</p>
+</section>
+<section id="physical-meaning" class="level3" data-number="43.4.2">
+<h3 data-number="43.4.2" class="anchored" data-anchor-id="physical-meaning"><span class="header-section-number">43.4.2</span> Physical meaning</h3>
+<p>Imagine <span class="math inline">\(\mathbf{F}\)</span> is a fluid velocity field. Enclose a tiny box around a point. The divergence measures the <strong>net rate of fluid flowing out</strong> of that box per unit volume:</p>
+<ul>
+<li><span class="math inline">\(\nabla \cdot \mathbf{F} &gt; 0\)</span>: more fluid leaving than entering — a <strong>source</strong>. (Think: water spraying from a sprinkler head.)</li>
+<li><span class="math inline">\(\nabla \cdot \mathbf{F} &lt; 0\)</span>: more fluid entering than leaving — a <strong>sink</strong>. (Think: water draining into a drain.)</li>
+<li><span class="math inline">\(\nabla \cdot \mathbf{F} = 0\)</span>: perfectly balanced inflow and outflow — the fluid is <strong>incompressible</strong> at that point.</li>
+</ul>
+<p>The continuity equation in fluid mechanics captures this precisely:</p>
+<p><span class="math display">\[\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) = 0\]</span></p>
+<p>This says: the rate of change of density at a point equals the negative divergence of the mass flux. Mass neither appears nor disappears.</p>
+<div class="callout callout-style-simple callout-note">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Preview: Divergence theorem</strong></p>
+<p>Gauss’s divergence theorem connects the divergence over a volume <span class="math inline">\(V\)</span> to the flux through its bounding surface <span class="math inline">\(S\)</span>:</p>
+<p><span class="math display">\[\iiint_V \nabla \cdot \mathbf{F}\, dV = \oiint_S \mathbf{F} \cdot d\mathbf{A}\]</span></p>
+<p>The integral of all the local sources inside equals the total outflow through the boundary. This is covered in full in the next chapter on vector integral calculus.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="curl" class="level2" data-number="43.5">
+<h2 data-number="43.5" class="anchored" data-anchor-id="curl"><span class="header-section-number">43.5</span> Curl</h2>
+<section id="definition-2" class="level3" data-number="43.5.1">
+<h3 data-number="43.5.1" class="anchored" data-anchor-id="definition-2"><span class="header-section-number">43.5.1</span> Definition</h3>
+<p>Given a vector field <span class="math inline">\(\mathbf{F} = (F_1, F_2, F_3)\)</span>, the <strong>curl</strong> is:</p>
+<p><span class="math display">\[\nabla \times \mathbf{F} = \begin{vmatrix} \mathbf{i} &amp; \mathbf{j} &amp; \mathbf{k} \\ \dfrac{\partial}{\partial x} &amp; \dfrac{\partial}{\partial y} &amp; \dfrac{\partial}{\partial z} \\[6pt] F_1 &amp; F_2 &amp; F_3 \end{vmatrix}\]</span></p>
+<p>Expanding the determinant:</p>
+<p><span class="math display">\[\nabla \times \mathbf{F} = \left(\frac{\partial F_3}{\partial y} - \frac{\partial F_2}{\partial z},\; \frac{\partial F_1}{\partial z} - \frac{\partial F_3}{\partial x},\; \frac{\partial F_2}{\partial x} - \frac{\partial F_1}{\partial y}\right)\]</span></p>
+<p>The del operator is now being “crossed” with the vector field. The result is itself a vector field.</p>
+<p><strong>Example.</strong> <span class="math inline">\(\mathbf{F}(x, y, z) = (-y, x, 0)\)</span>. This is a 2D field that rotates counterclockwise.</p>
+<p><span class="math display">\[\frac{\partial F_3}{\partial y} - \frac{\partial F_2}{\partial z} = 0 - 0 = 0\]</span> <span class="math display">\[\frac{\partial F_1}{\partial z} - \frac{\partial F_3}{\partial x} = 0 - 0 = 0\]</span> <span class="math display">\[\frac{\partial F_2}{\partial x} - \frac{\partial F_1}{\partial y} = 1 - (-1) = 2\]</span></p>
+<p>So <span class="math inline">\(\nabla \times \mathbf{F} = (0, 0, 2)\)</span> — a uniform curl pointing in the <span class="math inline">\(z\)</span>-direction. The rotation is uniform everywhere, which makes sense: this is solid-body rotation.</p>
+</section>
+<section id="physical-meaning-1" class="level3" data-number="43.5.2">
+<h3 data-number="43.5.2" class="anchored" data-anchor-id="physical-meaning-1"><span class="header-section-number">43.5.2</span> Physical meaning</h3>
+<p>Imagine dropping a tiny paddle wheel into a fluid flow. If the paddle wheel spins, the curl is non-zero at that point; if it doesn’t spin, the curl is zero. The direction of the curl vector is the axis of rotation (by the right-hand rule); its magnitude measures the rotation speed.</p>
+<ul>
+<li><strong>Irrotational field:</strong> <span class="math inline">\(\nabla \times \mathbf{F} = \mathbf{0}\)</span> everywhere. The field has no local rotation — no paddle wheel anywhere would spin.</li>
+<li><strong>Rotational field:</strong> <span class="math inline">\(\nabla \times \mathbf{F} \neq \mathbf{0}\)</span> somewhere.</li>
+</ul>
+<p>An irrotational field for which <span class="math inline">\(\nabla \times \mathbf{F} = \mathbf{0}\)</span> throughout a simply-connected region can be written as the gradient of a scalar potential: <span class="math inline">\(\mathbf{F} = \nabla \phi\)</span>. Gravity and electrostatics are irrotational outside their sources.</p>
+<p><strong>Key identity:</strong> For any twice-differentiable scalar field <span class="math inline">\(f\)</span>,</p>
+<p><span class="math display">\[\nabla \times (\nabla f) = \mathbf{0}\]</span></p>
+<p>The curl of a gradient is always zero. Geometrically: gradient fields have no rotation. This identity will appear repeatedly — it is a test for whether a vector field can be expressed as a gradient.</p>
+<!-- VIZ: Div and curl demo — 2D vector field with radio buttons for "source", "sink", "rotation", "shear"; display div and curl values -->
+<div class="callout callout-style-simple callout-note">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Preview: Stokes’ theorem</strong></p>
+<p>Stokes’ theorem connects the curl over a surface <span class="math inline">\(S\)</span> to the line integral around its boundary curve <span class="math inline">\(C\)</span>:</p>
+<p><span class="math display">\[\iint_S (\nabla \times \mathbf{F}) \cdot d\mathbf{A} = \oint_C \mathbf{F} \cdot d\mathbf{r}\]</span></p>
+<p>The total rotation through a surface equals the circulation around its edge.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="the-laplacian" class="level2" data-number="43.6">
+<h2 data-number="43.6" class="anchored" data-anchor-id="the-laplacian"><span class="header-section-number">43.6</span> The Laplacian</h2>
+<section id="definition-3" class="level3" data-number="43.6.1">
+<h3 data-number="43.6.1" class="anchored" data-anchor-id="definition-3"><span class="header-section-number">43.6.1</span> Definition</h3>
+<p>Apply the gradient to a scalar field <span class="math inline">\(f\)</span> to get <span class="math inline">\(\nabla f\)</span>. Then take the divergence of that result. The outcome is the <strong>Laplacian</strong>:</p>
+<p><span class="math display">\[\nabla^2 f = \nabla \cdot (\nabla f) = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2}\]</span></p>
+<p>The Laplacian is a scalar field. It is a single operator that combines second-order partial derivatives in all directions.</p>
+<p><strong>Example.</strong> <span class="math inline">\(f(x, y, z) = x^2 + y^2 + z^2\)</span>.</p>
+<p><span class="math display">\[\frac{\partial^2 f}{\partial x^2} = 2, \qquad \frac{\partial^2 f}{\partial y^2} = 2, \qquad \frac{\partial^2 f}{\partial z^2} = 2\]</span></p>
+<p><span class="math display">\[\nabla^2 f = 2 + 2 + 2 = 6\]</span></p>
+<p><strong>Example.</strong> <span class="math inline">\(f(x, y, z) = \frac{1}{r}\)</span> where <span class="math inline">\(r = \sqrt{x^2 + y^2 + z^2}\)</span> (the electrostatic potential of a point charge). A careful calculation shows <span class="math inline">\(\nabla^2\!\left(\frac{1}{r}\right) = 0\)</span> for <span class="math inline">\(r \neq 0\)</span>. This is Laplace’s equation, and functions satisfying it are called harmonic.</p>
+</section>
+<section id="physical-meaning-2" class="level3" data-number="43.6.2">
+<h3 data-number="43.6.2" class="anchored" data-anchor-id="physical-meaning-2"><span class="header-section-number">43.6.2</span> Physical meaning</h3>
+<p>The Laplacian <span class="math inline">\(\nabla^2 f\)</span> at a point measures how <span class="math inline">\(f\)</span> at that point differs from the average value of <span class="math inline">\(f\)</span> in a small sphere around it. Specifically:</p>
+<ul>
+<li><span class="math inline">\(\nabla^2 f &gt; 0\)</span>: <span class="math inline">\(f\)</span> is below the local average — the field is concave up, like the bottom of a bowl.</li>
+<li><span class="math inline">\(\nabla^2 f &lt; 0\)</span>: <span class="math inline">\(f\)</span> is above the local average — a local maximum relative to its surroundings.</li>
+<li><span class="math inline">\(\nabla^2 f = 0\)</span>: <span class="math inline">\(f\)</span> exactly equals its local average everywhere — this is Laplace’s equation, and its solutions are smooth without local extrema in the interior.</li>
+</ul>
+<p>The Laplacian appears in every major equation of mathematical physics:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Equation</th>
+<th>Form</th>
+<th>What it models</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Laplace’s equation</td>
+<td><span class="math inline">\(\nabla^2 f = 0\)</span></td>
+<td>Steady-state electrostatics, incompressible flow</td>
+</tr>
+<tr class="even">
+<td>Poisson’s equation</td>
+<td><span class="math inline">\(\nabla^2 f = g\)</span></td>
+<td>Electrostatics with charges, gravity with mass</td>
+</tr>
+<tr class="odd">
+<td>Heat equation</td>
+<td><span class="math inline">\(\frac{\partial u}{\partial t} = k\,\nabla^2 u\)</span></td>
+<td>Heat diffusion through a material</td>
+</tr>
+<tr class="even">
+<td>Wave equation</td>
+<td><span class="math inline">\(\frac{\partial^2 u}{\partial t^2} = c^2\,\nabla^2 u\)</span></td>
+<td>Sound, light, water waves</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="applications" class="level2" data-number="43.7">
+<h2 data-number="43.7" class="anchored" data-anchor-id="applications"><span class="header-section-number">43.7</span> Applications</h2>
+<section id="gradient-descent-and-optimisation" class="level3" data-number="43.7.1">
+<h3 data-number="43.7.1" class="anchored" data-anchor-id="gradient-descent-and-optimisation"><span class="header-section-number">43.7.1</span> Gradient descent and optimisation</h3>
+<p>In machine learning, a loss function <span class="math inline">\(L(\mathbf{w})\)</span> measures how wrong a model is, where <span class="math inline">\(\mathbf{w}\)</span> is a vector of model parameters. The gradient <span class="math inline">\(\nabla_\mathbf{w} L\)</span> points in the direction of steepest increase of the loss. To reduce the loss, move in the opposite direction:</p>
+<p><span class="math display">\[\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \eta\,\nabla_\mathbf{w} L\]</span></p>
+<p>The scalar <span class="math inline">\(\eta\)</span> is the <strong>learning rate</strong> — how large a step to take. This is gradient descent. In high-dimensional spaces (modern neural networks have billions of parameters), computing the gradient efficiently is the central computational challenge. The mathematics is exactly what this chapter covers, lifted to millions of dimensions.</p>
+</section>
+<section id="electric-field-from-voltage-potential" class="level3" data-number="43.7.2">
+<h3 data-number="43.7.2" class="anchored" data-anchor-id="electric-field-from-voltage-potential"><span class="header-section-number">43.7.2</span> Electric field from voltage potential</h3>
+<p>In electrostatics, the voltage <span class="math inline">\(V(x, y, z)\)</span> is a scalar field. The electric field is its negative gradient:</p>
+<p><span class="math display">\[\mathbf{E} = -\nabla V\]</span></p>
+<p>The minus sign is physical convention: the electric field points from high to low voltage, not from low to high. Positive charges accelerate down the voltage hill.</p>
+<p>If <span class="math inline">\(V = x^2 + y^2 + z^2\)</span> (a simple quadratic potential), then:</p>
+<p><span class="math display">\[\nabla V = (2x, 2y, 2z), \qquad \mathbf{E} = (-2x, -2y, -2z)\]</span></p>
+<p>The field points radially inward — toward the origin, toward lower potential. Taking the divergence:</p>
+<p><span class="math display">\[\nabla \cdot \mathbf{E} = -2 - 2 - 2 = -6\]</span></p>
+<p>Gauss’s law in differential form states <span class="math inline">\(\nabla \cdot \mathbf{E} = \rho/\varepsilon_0\)</span>, where <span class="math inline">\(\rho\)</span> is the charge density. A uniform <span class="math inline">\(\nabla \cdot \mathbf{E} = -6\)</span> means a uniform negative charge density — a medium with uniform charge throughout.</p>
+</section>
+<section id="continuity-equation-in-fluid-mechanics" class="level3" data-number="43.7.3">
+<h3 data-number="43.7.3" class="anchored" data-anchor-id="continuity-equation-in-fluid-mechanics"><span class="header-section-number">43.7.3</span> Continuity equation in fluid mechanics</h3>
+<p>For a fluid with density <span class="math inline">\(\rho(x, y, z, t)\)</span> and velocity field <span class="math inline">\(\mathbf{v}(x, y, z, t)\)</span>, conservation of mass requires:</p>
+<p><span class="math display">\[\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho\,\mathbf{v}) = 0\]</span></p>
+<p>This says: the rate at which mass density increases at a point equals the negative divergence of mass flux. Mass flows in from regions where <span class="math inline">\(\nabla \cdot (\rho\mathbf{v}) &lt; 0\)</span> and flows out where it is positive. If the fluid is incompressible ($= $ const), this simplifies to <span class="math inline">\(\nabla \cdot \mathbf{v} = 0\)</span>.</p>
+<div class="callout callout-style-simple callout-tip">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Where this shows up</strong></p>
+<ul>
+<li>An <strong>electrical engineer</strong> designs antenna patterns using the curl and divergence of Maxwell’s equations: <span class="math inline">\(\nabla \times \mathbf{E} = -\partial\mathbf{B}/\partial t\)</span> and <span class="math inline">\(\nabla \cdot \mathbf{B} = 0\)</span>.</li>
+<li>A <strong>meteorologist</strong> reads wind fields as vector fields and uses divergence to locate areas of rising air (positive divergence near the surface means air is being pulled up).</li>
+<li>A <strong>robotics engineer</strong> computing the configuration-space gradient of a potential function is doing gradient descent in the exact sense of this chapter.</li>
+<li>A <strong>GIS analyst</strong> computing watershed flow directions is applying the gradient of the elevation field: water flows opposite to <span class="math inline">\(\nabla h\)</span>.</li>
+</ul>
+<p>The operators are the same in every case. The domain changes.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="exercises" class="level2" data-number="43.8">
+<h2 data-number="43.8" class="anchored" data-anchor-id="exercises"><span class="header-section-number">43.8</span> Exercises</h2>
+<p>These exercises progress from component calculation through applied interpretation. In each, start with the definition before writing any formula.</p>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="480" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 479;"><span id="cb1-480"><a href="#cb1-480" aria-hidden="true" tabindex="-1"></a>katex <span class="op">=</span> <span class="pp">require</span>(<span class="st">"katex@0.16"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="485" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 484;"><span id="cb2-485"><a href="#cb2-485" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">makeStepperHTML</span>(exerciseNum<span class="op">,</span> steps) {</span>
+<span id="cb2-486"><a href="#cb2-486" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> current <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-487"><a href="#cb2-487" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> totalSteps <span class="op">=</span> steps<span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb2-488"><a href="#cb2-488" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> container <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"div"</span>)<span class="op">;</span></span>
+<span id="cb2-489"><a href="#cb2-489" aria-hidden="true" tabindex="-1"></a>  container<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;"</span><span class="op">;</span></span>
+<span id="cb2-490"><a href="#cb2-490" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> stepsDiv <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"div"</span>)<span class="op">;</span></span>
+<span id="cb2-491"><a href="#cb2-491" aria-hidden="true" tabindex="-1"></a>  stepsDiv<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">marginBottom</span> <span class="op">=</span> <span class="st">"0.75rem"</span><span class="op">;</span></span>
+<span id="cb2-492"><a href="#cb2-492" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-493"><a href="#cb2-493" aria-hidden="true" tabindex="-1"></a>  <span class="kw">function</span> <span class="fu">renderSteps</span>() {</span>
+<span id="cb2-494"><a href="#cb2-494" aria-hidden="true" tabindex="-1"></a>    stepsDiv<span class="op">.</span><span class="at">innerHTML</span> <span class="op">=</span> <span class="st">""</span><span class="op">;</span></span>
+<span id="cb2-495"><a href="#cb2-495" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> current<span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb2-496"><a href="#cb2-496" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> s <span class="op">=</span> steps[i]<span class="op">;</span></span>
+<span id="cb2-497"><a href="#cb2-497" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> row <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"div"</span>)<span class="op">;</span></span>
+<span id="cb2-498"><a href="#cb2-498" aria-hidden="true" tabindex="-1"></a>      row<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;"</span><span class="op">;</span></span>
+<span id="cb2-499"><a href="#cb2-499" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> opCell <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"span"</span>)<span class="op">;</span></span>
+<span id="cb2-500"><a href="#cb2-500" aria-hidden="true" tabindex="-1"></a>      opCell<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"font-size:0.85em; color:#6b7280; font-style:italic;"</span><span class="op">;</span></span>
+<span id="cb2-501"><a href="#cb2-501" aria-hidden="true" tabindex="-1"></a>      opCell<span class="op">.</span><span class="at">textContent</span> <span class="op">=</span> s<span class="op">.</span><span class="at">op</span><span class="op">;</span></span>
+<span id="cb2-502"><a href="#cb2-502" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> eqCell <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"span"</span>)<span class="op">;</span></span>
+<span id="cb2-503"><a href="#cb2-503" aria-hidden="true" tabindex="-1"></a>      eqCell<span class="op">.</span><span class="at">innerHTML</span> <span class="op">=</span> katex<span class="op">.</span><span class="fu">renderToString</span>(s<span class="op">.</span><span class="at">eq</span><span class="op">,</span> { <span class="dt">throwOnError</span><span class="op">:</span> <span class="kw">false</span><span class="op">,</span> <span class="dt">displayMode</span><span class="op">:</span> <span class="kw">false</span> })<span class="op">;</span></span>
+<span id="cb2-504"><a href="#cb2-504" aria-hidden="true" tabindex="-1"></a>      row<span class="op">.</span><span class="fu">appendChild</span>(opCell)<span class="op">;</span></span>
+<span id="cb2-505"><a href="#cb2-505" aria-hidden="true" tabindex="-1"></a>      row<span class="op">.</span><span class="fu">appendChild</span>(eqCell)<span class="op">;</span></span>
+<span id="cb2-506"><a href="#cb2-506" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (s<span class="op">.</span><span class="at">note</span>) {</span>
+<span id="cb2-507"><a href="#cb2-507" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> noteRow <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"div"</span>)<span class="op">;</span></span>
+<span id="cb2-508"><a href="#cb2-508" aria-hidden="true" tabindex="-1"></a>        noteRow<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;"</span><span class="op">;</span></span>
+<span id="cb2-509"><a href="#cb2-509" aria-hidden="true" tabindex="-1"></a>        noteRow<span class="op">.</span><span class="at">textContent</span> <span class="op">=</span> s<span class="op">.</span><span class="at">note</span><span class="op">;</span></span>
+<span id="cb2-510"><a href="#cb2-510" aria-hidden="true" tabindex="-1"></a>        row<span class="op">.</span><span class="fu">appendChild</span>(noteRow)<span class="op">;</span></span>
+<span id="cb2-511"><a href="#cb2-511" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb2-512"><a href="#cb2-512" aria-hidden="true" tabindex="-1"></a>      stepsDiv<span class="op">.</span><span class="fu">appendChild</span>(row)<span class="op">;</span></span>
+<span id="cb2-513"><a href="#cb2-513" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-514"><a href="#cb2-514" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (current <span class="op">===</span> totalSteps) {</span>
+<span id="cb2-515"><a href="#cb2-515" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> done <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"div"</span>)<span class="op">;</span></span>
+<span id="cb2-516"><a href="#cb2-516" aria-hidden="true" tabindex="-1"></a>      done<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;"</span><span class="op">;</span></span>
+<span id="cb2-517"><a href="#cb2-517" aria-hidden="true" tabindex="-1"></a>      done<span class="op">.</span><span class="at">textContent</span> <span class="op">=</span> <span class="st">"✓ Solution complete"</span><span class="op">;</span></span>
+<span id="cb2-518"><a href="#cb2-518" aria-hidden="true" tabindex="-1"></a>      stepsDiv<span class="op">.</span><span class="fu">appendChild</span>(done)<span class="op">;</span></span>
+<span id="cb2-519"><a href="#cb2-519" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-520"><a href="#cb2-520" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-521"><a href="#cb2-521" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-522"><a href="#cb2-522" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> controls <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"div"</span>)<span class="op">;</span></span>
+<span id="cb2-523"><a href="#cb2-523" aria-hidden="true" tabindex="-1"></a>  controls<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"display:flex; gap:0.5rem; align-items:center;"</span><span class="op">;</span></span>
+<span id="cb2-524"><a href="#cb2-524" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> nextBtn <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"button"</span>)<span class="op">;</span></span>
+<span id="cb2-525"><a href="#cb2-525" aria-hidden="true" tabindex="-1"></a>  nextBtn<span class="op">.</span><span class="at">textContent</span> <span class="op">=</span> <span class="st">"Next step →"</span><span class="op">;</span></span>
+<span id="cb2-526"><a href="#cb2-526" aria-hidden="true" tabindex="-1"></a>  nextBtn<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;"</span><span class="op">;</span></span>
+<span id="cb2-527"><a href="#cb2-527" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> resetBtn <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"button"</span>)<span class="op">;</span></span>
+<span id="cb2-528"><a href="#cb2-528" aria-hidden="true" tabindex="-1"></a>  resetBtn<span class="op">.</span><span class="at">textContent</span> <span class="op">=</span> <span class="st">"Reset"</span><span class="op">;</span></span>
+<span id="cb2-529"><a href="#cb2-529" aria-hidden="true" tabindex="-1"></a>  resetBtn<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;"</span><span class="op">;</span></span>
+<span id="cb2-530"><a href="#cb2-530" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> counter <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="st">"span"</span>)<span class="op">;</span></span>
+<span id="cb2-531"><a href="#cb2-531" aria-hidden="true" tabindex="-1"></a>  counter<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">cssText</span> <span class="op">=</span> <span class="st">"font-size:0.82em; color:#9ca3af; margin-left:0.25rem;"</span><span class="op">;</span></span>
+<span id="cb2-532"><a href="#cb2-532" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-533"><a href="#cb2-533" aria-hidden="true" tabindex="-1"></a>  <span class="kw">function</span> <span class="fu">updateButtons</span>() {</span>
+<span id="cb2-534"><a href="#cb2-534" aria-hidden="true" tabindex="-1"></a>    nextBtn<span class="op">.</span><span class="at">disabled</span> <span class="op">=</span> current <span class="op">===</span> totalSteps<span class="op">;</span></span>
+<span id="cb2-535"><a href="#cb2-535" aria-hidden="true" tabindex="-1"></a>    nextBtn<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">opacity</span> <span class="op">=</span> current <span class="op">===</span> totalSteps <span class="op">?</span> <span class="st">"0.4"</span> <span class="op">:</span> <span class="st">"1"</span><span class="op">;</span></span>
+<span id="cb2-536"><a href="#cb2-536" aria-hidden="true" tabindex="-1"></a>    counter<span class="op">.</span><span class="at">textContent</span> <span class="op">=</span> current <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="st">"Click to reveal steps"</span> <span class="op">:</span> <span class="vs">`Step </span><span class="sc">${</span>current<span class="sc">}</span><span class="vs"> of </span><span class="sc">${</span>totalSteps<span class="sc">}</span><span class="vs">`</span><span class="op">;</span></span>
+<span id="cb2-537"><a href="#cb2-537" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-538"><a href="#cb2-538" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-539"><a href="#cb2-539" aria-hidden="true" tabindex="-1"></a>  nextBtn<span class="op">.</span><span class="at">onclick</span> <span class="op">=</span> () <span class="kw">=&gt;</span> { <span class="cf">if</span> (current <span class="op">&lt;</span> totalSteps) { current<span class="op">++;</span> <span class="fu">renderSteps</span>()<span class="op">;</span> <span class="fu">updateButtons</span>()<span class="op">;</span> } }<span class="op">;</span></span>
+<span id="cb2-540"><a href="#cb2-540" aria-hidden="true" tabindex="-1"></a>  resetBtn<span class="op">.</span><span class="at">onclick</span> <span class="op">=</span> () <span class="kw">=&gt;</span> { current <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="fu">renderSteps</span>()<span class="op">;</span> <span class="fu">updateButtons</span>()<span class="op">;</span> }<span class="op">;</span></span>
+<span id="cb2-541"><a href="#cb2-541" aria-hidden="true" tabindex="-1"></a>  controls<span class="op">.</span><span class="fu">appendChild</span>(nextBtn)<span class="op">;</span></span>
+<span id="cb2-542"><a href="#cb2-542" aria-hidden="true" tabindex="-1"></a>  controls<span class="op">.</span><span class="fu">appendChild</span>(resetBtn)<span class="op">;</span></span>
+<span id="cb2-543"><a href="#cb2-543" aria-hidden="true" tabindex="-1"></a>  controls<span class="op">.</span><span class="fu">appendChild</span>(counter)<span class="op">;</span></span>
+<span id="cb2-544"><a href="#cb2-544" aria-hidden="true" tabindex="-1"></a>  container<span class="op">.</span><span class="fu">appendChild</span>(stepsDiv)<span class="op">;</span></span>
+<span id="cb2-545"><a href="#cb2-545" aria-hidden="true" tabindex="-1"></a>  container<span class="op">.</span><span class="fu">appendChild</span>(controls)<span class="op">;</span></span>
+<span id="cb2-546"><a href="#cb2-546" aria-hidden="true" tabindex="-1"></a>  <span class="fu">renderSteps</span>()<span class="op">;</span></span>
+<span id="cb2-547"><a href="#cb2-547" aria-hidden="true" tabindex="-1"></a>  <span class="fu">updateButtons</span>()<span class="op">;</span></span>
+<span id="cb2-548"><a href="#cb2-548" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> container<span class="op">;</span></span>
+<span id="cb2-549"><a href="#cb2-549" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<ol type="1">
+<li>A temperature field on a heated plate is modelled by <span class="math inline">\(f(x, y, z) = x^2 y + yz^3\)</span>. Find <span class="math inline">\(\nabla f\)</span> and evaluate it at the point <span class="math inline">\((1, 2, -1)\)</span>. Which coordinate direction gives the greatest rate of temperature increase at that point?</li>
+</ol>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="559" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 558;"><span id="cb3-559"><a href="#cb3-559" aria-hidden="true" tabindex="-1"></a><span class="fu">makeStepperHTML</span>(<span class="dv">1</span><span class="op">,</span> [</span>
+<span id="cb3-560"><a href="#cb3-560" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Partial derivative w.r.t. x"</span><span class="op">,</span></span>
+<span id="cb3-561"><a href="#cb3-561" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial f}{</span><span class="sc">\\</span><span class="st">partial x} = 2xy"</span><span class="op">,</span></span>
+<span id="cb3-562"><a href="#cb3-562" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Treat y and z as constants; differentiate x² y with respect to x."</span> }<span class="op">,</span></span>
+<span id="cb3-563"><a href="#cb3-563" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Partial derivative w.r.t. y"</span><span class="op">,</span></span>
+<span id="cb3-564"><a href="#cb3-564" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial f}{</span><span class="sc">\\</span><span class="st">partial y} = x^2 + z^3"</span><span class="op">,</span></span>
+<span id="cb3-565"><a href="#cb3-565" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Differentiate x²y + yz³ with respect to y; both terms contribute."</span> }<span class="op">,</span></span>
+<span id="cb3-566"><a href="#cb3-566" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Partial derivative w.r.t. z"</span><span class="op">,</span></span>
+<span id="cb3-567"><a href="#cb3-567" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial f}{</span><span class="sc">\\</span><span class="st">partial z} = 3yz^2"</span><span class="op">,</span></span>
+<span id="cb3-568"><a href="#cb3-568" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Only yz³ depends on z."</span> }<span class="op">,</span></span>
+<span id="cb3-569"><a href="#cb3-569" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Assemble the gradient"</span><span class="op">,</span></span>
+<span id="cb3-570"><a href="#cb3-570" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla f = </span><span class="sc">\\</span><span class="st">bigl(2xy,</span><span class="sc">\\</span><span class="st">; x^2 + z^3,</span><span class="sc">\\</span><span class="st">; 3yz^2</span><span class="sc">\\</span><span class="st">bigr)"</span> }<span class="op">,</span></span>
+<span id="cb3-571"><a href="#cb3-571" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Evaluate at (1, 2, -1)"</span><span class="op">,</span></span>
+<span id="cb3-572"><a href="#cb3-572" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla f</span><span class="sc">\\</span><span class="st">big|_{(1,2,-1)} = </span><span class="sc">\\</span><span class="st">bigl(2(1)(2),</span><span class="sc">\\</span><span class="st">; (1)^2 + (-1)^3,</span><span class="sc">\\</span><span class="st">; 3(2)(-1)^2</span><span class="sc">\\</span><span class="st">bigr) = (4,</span><span class="sc">\\</span><span class="st">; 0,</span><span class="sc">\\</span><span class="st">; 6)"</span><span class="op">,</span></span>
+<span id="cb3-573"><a href="#cb3-573" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Substitute x = 1, y = 2, z = -1 into each component."</span> }<span class="op">,</span></span>
+<span id="cb3-574"><a href="#cb3-574" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Greatest rate of increase"</span><span class="op">,</span></span>
+<span id="cb3-575"><a href="#cb3-575" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">text{The z-component is 6, the x-component is 4, the y-component is 0.}"</span><span class="op">,</span></span>
+<span id="cb3-576"><a href="#cb3-576" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"The z-direction has the largest partial derivative at this point, so temperature increases fastest in the z-direction there."</span> }</span>
+<span id="cb3-577"><a href="#cb3-577" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-3" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<ol start="2" type="1">
+<li>A pressure field is given by <span class="math inline">\(p(x, y, z) = 3x^2 - 2y^2 + xyz\)</span>. At the point <span class="math inline">\((2, 1, 3)\)</span>, find the rate of change of pressure in the direction <span class="math inline">\(\mathbf{u} = \frac{1}{\sqrt{2}}(1, 0, 1)\)</span> — the diagonal direction in the <span class="math inline">\(xz\)</span>-plane.</li>
+</ol>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="587" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 586;"><span id="cb4-587"><a href="#cb4-587" aria-hidden="true" tabindex="-1"></a><span class="fu">makeStepperHTML</span>(<span class="dv">2</span><span class="op">,</span> [</span>
+<span id="cb4-588"><a href="#cb4-588" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Compute partial derivatives"</span><span class="op">,</span></span>
+<span id="cb4-589"><a href="#cb4-589" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial p}{</span><span class="sc">\\</span><span class="st">partial x} = 6x + yz,</span><span class="sc">\\</span><span class="st">quad </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial p}{</span><span class="sc">\\</span><span class="st">partial y} = -4y + xz,</span><span class="sc">\\</span><span class="st">quad </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial p}{</span><span class="sc">\\</span><span class="st">partial z} = xy"</span> }<span class="op">,</span></span>
+<span id="cb4-590"><a href="#cb4-590" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Evaluate at (2, 1, 3)"</span><span class="op">,</span></span>
+<span id="cb4-591"><a href="#cb4-591" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla p = </span><span class="sc">\\</span><span class="st">bigl(6(2) + (1)(3),</span><span class="sc">\\</span><span class="st">; -4(1) + (2)(3),</span><span class="sc">\\</span><span class="st">; (2)(1)</span><span class="sc">\\</span><span class="st">bigr) = (15,</span><span class="sc">\\</span><span class="st">; 2,</span><span class="sc">\\</span><span class="st">; 2)"</span><span class="op">,</span></span>
+<span id="cb4-592"><a href="#cb4-592" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Substitute x = 2, y = 1, z = 3."</span> }<span class="op">,</span></span>
+<span id="cb4-593"><a href="#cb4-593" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Confirm u is a unit vector"</span><span class="op">,</span></span>
+<span id="cb4-594"><a href="#cb4-594" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"|</span><span class="sc">\\</span><span class="st">mathbf{u}| = </span><span class="sc">\\</span><span class="st">sqrt{</span><span class="sc">\\</span><span class="st">tfrac{1}{2} + 0 + </span><span class="sc">\\</span><span class="st">tfrac{1}{2}} = 1 </span><span class="sc">\\</span><span class="st">checkmark"</span> }<span class="op">,</span></span>
+<span id="cb4-595"><a href="#cb4-595" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Compute directional derivative"</span><span class="op">,</span></span>
+<span id="cb4-596"><a href="#cb4-596" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"D_{</span><span class="sc">\\</span><span class="st">mathbf{u}}</span><span class="sc">\\</span><span class="st">, p = </span><span class="sc">\\</span><span class="st">nabla p </span><span class="sc">\\</span><span class="st">cdot </span><span class="sc">\\</span><span class="st">mathbf{u} = (15, 2, 2) </span><span class="sc">\\</span><span class="st">cdot </span><span class="sc">\\</span><span class="st">tfrac{1}{</span><span class="sc">\\</span><span class="st">sqrt{2}}(1, 0, 1) = </span><span class="sc">\\</span><span class="st">frac{15 + 0 + 2}{</span><span class="sc">\\</span><span class="st">sqrt{2}} = </span><span class="sc">\\</span><span class="st">frac{17}{</span><span class="sc">\\</span><span class="st">sqrt{2}} </span><span class="sc">\\</span><span class="st">approx 12.0"</span><span class="op">,</span></span>
+<span id="cb4-597"><a href="#cb4-597" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"The dot product selects the component of the gradient in the direction u."</span> }</span>
+<span id="cb4-598"><a href="#cb4-598" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<ol start="3" type="1">
+<li>A fluid velocity field is given by <span class="math inline">\(\mathbf{F}(x, y, z) = (x^2, 2xy, z^2)\)</span>. Compute <span class="math inline">\(\nabla \cdot \mathbf{F}\)</span>. Identify the regions where the fluid acts as a source (positive divergence) and where it acts as a sink (negative divergence).</li>
+</ol>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb5" data-startfrom="608" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 607;"><span id="cb5-608"><a href="#cb5-608" aria-hidden="true" tabindex="-1"></a><span class="fu">makeStepperHTML</span>(<span class="dv">3</span><span class="op">,</span> [</span>
+<span id="cb5-609"><a href="#cb5-609" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Identify components"</span><span class="op">,</span></span>
+<span id="cb5-610"><a href="#cb5-610" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"F_1 = x^2,</span><span class="sc">\\</span><span class="st">quad F_2 = 2xy,</span><span class="sc">\\</span><span class="st">quad F_3 = z^2"</span> }<span class="op">,</span></span>
+<span id="cb5-611"><a href="#cb5-611" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Partial derivative of F₁ w.r.t. x"</span><span class="op">,</span></span>
+<span id="cb5-612"><a href="#cb5-612" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_1}{</span><span class="sc">\\</span><span class="st">partial x} = 2x"</span> }<span class="op">,</span></span>
+<span id="cb5-613"><a href="#cb5-613" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Partial derivative of F₂ w.r.t. y"</span><span class="op">,</span></span>
+<span id="cb5-614"><a href="#cb5-614" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_2}{</span><span class="sc">\\</span><span class="st">partial y} = 2x"</span><span class="op">,</span></span>
+<span id="cb5-615"><a href="#cb5-615" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Differentiate 2xy with respect to y; x is treated as a constant."</span> }<span class="op">,</span></span>
+<span id="cb5-616"><a href="#cb5-616" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Partial derivative of F₃ w.r.t. z"</span><span class="op">,</span></span>
+<span id="cb5-617"><a href="#cb5-617" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_3}{</span><span class="sc">\\</span><span class="st">partial z} = 2z"</span> }<span class="op">,</span></span>
+<span id="cb5-618"><a href="#cb5-618" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Assemble divergence"</span><span class="op">,</span></span>
+<span id="cb5-619"><a href="#cb5-619" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla </span><span class="sc">\\</span><span class="st">cdot </span><span class="sc">\\</span><span class="st">mathbf{F} = 2x + 2x + 2z = 4x + 2z"</span> }<span class="op">,</span></span>
+<span id="cb5-620"><a href="#cb5-620" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Interpret"</span><span class="op">,</span></span>
+<span id="cb5-621"><a href="#cb5-621" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla </span><span class="sc">\\</span><span class="st">cdot </span><span class="sc">\\</span><span class="st">mathbf{F} &gt; 0 </span><span class="sc">\\</span><span class="st">text{ when } 4x + 2z &gt; 0,</span><span class="sc">\\</span><span class="st">text{ i.e. when } 2x + z &gt; 0"</span><span class="op">,</span></span>
+<span id="cb5-622"><a href="#cb5-622" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"The field is a source (net outflow) in the half-space 2x + z &gt; 0, and a sink where 2x + z &lt; 0."</span> }</span>
+<span id="cb5-623"><a href="#cb5-623" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-5" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<ol start="4" type="1">
+<li>Verify that <span class="math inline">\(\mathbf{F}(x, y, z) = (-y, x, 0)\)</span> represents a purely rotational flow — it should have non-zero curl and zero divergence. Compute both.</li>
+</ol>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb6" data-startfrom="632" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 631;"><span id="cb6-632"><a href="#cb6-632" aria-hidden="true" tabindex="-1"></a><span class="fu">makeStepperHTML</span>(<span class="dv">4</span><span class="op">,</span> [</span>
+<span id="cb6-633"><a href="#cb6-633" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Identify components"</span><span class="op">,</span></span>
+<span id="cb6-634"><a href="#cb6-634" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"F_1 = -y,</span><span class="sc">\\</span><span class="st">quad F_2 = x,</span><span class="sc">\\</span><span class="st">quad F_3 = 0"</span> }<span class="op">,</span></span>
+<span id="cb6-635"><a href="#cb6-635" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Compute divergence"</span><span class="op">,</span></span>
+<span id="cb6-636"><a href="#cb6-636" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla </span><span class="sc">\\</span><span class="st">cdot </span><span class="sc">\\</span><span class="st">mathbf{F} = </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(-y)}{</span><span class="sc">\\</span><span class="st">partial x} + </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(x)}{</span><span class="sc">\\</span><span class="st">partial y} + </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(0)}{</span><span class="sc">\\</span><span class="st">partial z} = 0 + 0 + 0 = 0"</span><span class="op">,</span></span>
+<span id="cb6-637"><a href="#cb6-637" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"No sources or sinks — the fluid is incompressible."</span> }<span class="op">,</span></span>
+<span id="cb6-638"><a href="#cb6-638" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Curl: z-component"</span><span class="op">,</span></span>
+<span id="cb6-639"><a href="#cb6-639" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_2}{</span><span class="sc">\\</span><span class="st">partial x} - </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_1}{</span><span class="sc">\\</span><span class="st">partial y} = 1 - (-1) = 2"</span><span class="op">,</span></span>
+<span id="cb6-640"><a href="#cb6-640" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"This is the dominant term for a rotation in the xy-plane."</span> }<span class="op">,</span></span>
+<span id="cb6-641"><a href="#cb6-641" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Curl: x and y components"</span><span class="op">,</span></span>
+<span id="cb6-642"><a href="#cb6-642" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_3}{</span><span class="sc">\\</span><span class="st">partial y} - </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_2}{</span><span class="sc">\\</span><span class="st">partial z} = 0,</span><span class="sc">\\</span><span class="st">quad </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_1}{</span><span class="sc">\\</span><span class="st">partial z} - </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial F_3}{</span><span class="sc">\\</span><span class="st">partial x} = 0"</span> }<span class="op">,</span></span>
+<span id="cb6-643"><a href="#cb6-643" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Assemble curl"</span><span class="op">,</span></span>
+<span id="cb6-644"><a href="#cb6-644" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla </span><span class="sc">\\</span><span class="st">times </span><span class="sc">\\</span><span class="st">mathbf{F} = (0,</span><span class="sc">\\</span><span class="st">; 0,</span><span class="sc">\\</span><span class="st">; 2)"</span><span class="op">,</span></span>
+<span id="cb6-645"><a href="#cb6-645" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Constant curl pointing in the z-direction: uniform counterclockwise rotation everywhere in the xy-plane, at rate 2."</span> }</span>
+<span id="cb6-646"><a href="#cb6-646" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-6" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<ol start="5" type="1">
+<li>Let <span class="math inline">\(f(x, y, z) = x^2 y^2 z\)</span>. Verify the identity <span class="math inline">\(\nabla \times (\nabla f) = \mathbf{0}\)</span> — the curl of a gradient is always zero. This confirms that gradient fields are irrotational (conservative).</li>
+</ol>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb7" data-startfrom="655" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 654;"><span id="cb7-655"><a href="#cb7-655" aria-hidden="true" tabindex="-1"></a><span class="fu">makeStepperHTML</span>(<span class="dv">5</span><span class="op">,</span> [</span>
+<span id="cb7-656"><a href="#cb7-656" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Compute gradient"</span><span class="op">,</span></span>
+<span id="cb7-657"><a href="#cb7-657" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla f = </span><span class="sc">\\</span><span class="st">bigl(2xy^2z,</span><span class="sc">\\</span><span class="st">; 2x^2yz,</span><span class="sc">\\</span><span class="st">; x^2y^2</span><span class="sc">\\</span><span class="st">bigr)"</span> }<span class="op">,</span></span>
+<span id="cb7-658"><a href="#cb7-658" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Curl x-component"</span><span class="op">,</span></span>
+<span id="cb7-659"><a href="#cb7-659" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(x^2y^2)}{</span><span class="sc">\\</span><span class="st">partial y} - </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(2x^2yz)}{</span><span class="sc">\\</span><span class="st">partial z} = 2x^2y - 2x^2y = 0"</span><span class="op">,</span></span>
+<span id="cb7-660"><a href="#cb7-660" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Each term differentiates a component of ∇f."</span> }<span class="op">,</span></span>
+<span id="cb7-661"><a href="#cb7-661" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Curl y-component"</span><span class="op">,</span></span>
+<span id="cb7-662"><a href="#cb7-662" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(2xy^2z)}{</span><span class="sc">\\</span><span class="st">partial z} - </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(x^2y^2)}{</span><span class="sc">\\</span><span class="st">partial x} = 2xy^2 - 2xy^2 = 0"</span> }<span class="op">,</span></span>
+<span id="cb7-663"><a href="#cb7-663" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Curl z-component"</span><span class="op">,</span></span>
+<span id="cb7-664"><a href="#cb7-664" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(2x^2yz)}{</span><span class="sc">\\</span><span class="st">partial x} - </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(2xy^2z)}{</span><span class="sc">\\</span><span class="st">partial y} = 4xyz - 4xyz = 0"</span> }<span class="op">,</span></span>
+<span id="cb7-665"><a href="#cb7-665" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Conclusion"</span><span class="op">,</span></span>
+<span id="cb7-666"><a href="#cb7-666" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla </span><span class="sc">\\</span><span class="st">times (</span><span class="sc">\\</span><span class="st">nabla f) = (0,</span><span class="sc">\\</span><span class="st">; 0,</span><span class="sc">\\</span><span class="st">; 0) = </span><span class="sc">\\</span><span class="st">mathbf{0} </span><span class="sc">\\</span><span class="st">checkmark"</span><span class="op">,</span></span>
+<span id="cb7-667"><a href="#cb7-667" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"This holds for any twice-differentiable f — the cancellations come from the symmetry of mixed partial derivatives (Clairaut's theorem)."</span> }</span>
+<span id="cb7-668"><a href="#cb7-668" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-7" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<ol start="6" type="1">
+<li>The electric potential in free space is <span class="math inline">\(V(x, y, z) = x^2 + y^2 + z^2\)</span>. Find the electric field <span class="math inline">\(\mathbf{E} = -\nabla V\)</span>, then compute <span class="math inline">\(\nabla \cdot \mathbf{E}\)</span> and identify what Gauss’s law says about the charge distribution.</li>
+</ol>
+<div class="cell">
+<details class="code-fold hidden">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb8" data-startfrom="678" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 677;"><span id="cb8-678"><a href="#cb8-678" aria-hidden="true" tabindex="-1"></a><span class="fu">makeStepperHTML</span>(<span class="dv">6</span><span class="op">,</span> [</span>
+<span id="cb8-679"><a href="#cb8-679" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Compute gradient of V"</span><span class="op">,</span></span>
+<span id="cb8-680"><a href="#cb8-680" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla V = </span><span class="sc">\\</span><span class="st">left(</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial V}{</span><span class="sc">\\</span><span class="st">partial x},</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial V}{</span><span class="sc">\\</span><span class="st">partial y},</span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial V}{</span><span class="sc">\\</span><span class="st">partial z}</span><span class="sc">\\</span><span class="st">right) = (2x,</span><span class="sc">\\</span><span class="st">; 2y,</span><span class="sc">\\</span><span class="st">; 2z)"</span> }<span class="op">,</span></span>
+<span id="cb8-681"><a href="#cb8-681" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Electric field E = -∇V"</span><span class="op">,</span></span>
+<span id="cb8-682"><a href="#cb8-682" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">mathbf{E} = -</span><span class="sc">\\</span><span class="st">nabla V = (-2x,</span><span class="sc">\\</span><span class="st">; -2y,</span><span class="sc">\\</span><span class="st">; -2z)"</span><span class="op">,</span></span>
+<span id="cb8-683"><a href="#cb8-683" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"The field points toward the origin — inward, toward lower potential."</span> }<span class="op">,</span></span>
+<span id="cb8-684"><a href="#cb8-684" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Compute divergence of E"</span><span class="op">,</span></span>
+<span id="cb8-685"><a href="#cb8-685" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla </span><span class="sc">\\</span><span class="st">cdot </span><span class="sc">\\</span><span class="st">mathbf{E} = </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(-2x)}{</span><span class="sc">\\</span><span class="st">partial x} + </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(-2y)}{</span><span class="sc">\\</span><span class="st">partial y} + </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">partial(-2z)}{</span><span class="sc">\\</span><span class="st">partial z} = -2 - 2 - 2 = -6"</span> }<span class="op">,</span></span>
+<span id="cb8-686"><a href="#cb8-686" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Apply Gauss's law"</span><span class="op">,</span></span>
+<span id="cb8-687"><a href="#cb8-687" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">nabla </span><span class="sc">\\</span><span class="st">cdot </span><span class="sc">\\</span><span class="st">mathbf{E} = </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">rho}{</span><span class="sc">\\</span><span class="st">varepsilon_0} </span><span class="sc">\\</span><span class="st">implies </span><span class="sc">\\</span><span class="st">rho = -6</span><span class="sc">\\</span><span class="st">varepsilon_0"</span><span class="op">,</span></span>
+<span id="cb8-688"><a href="#cb8-688" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"Gauss's law in differential form: the divergence of E equals charge density over permittivity."</span> }<span class="op">,</span></span>
+<span id="cb8-689"><a href="#cb8-689" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">op</span><span class="op">:</span> <span class="st">"Interpret"</span><span class="op">,</span></span>
+<span id="cb8-690"><a href="#cb8-690" aria-hidden="true" tabindex="-1"></a>    <span class="dt">eq</span><span class="op">:</span> <span class="st">"</span><span class="sc">\\</span><span class="st">rho = -6</span><span class="sc">\\</span><span class="st">varepsilon_0 = </span><span class="sc">\\</span><span class="st">text{const}"</span><span class="op">,</span></span>
+<span id="cb8-691"><a href="#cb8-691" aria-hidden="true" tabindex="-1"></a>    <span class="dt">note</span><span class="op">:</span> <span class="st">"A uniform negative charge density fills all space. The electric field converges inward everywhere because negative charges attract positive test charges inward."</span> }</span>
+<span id="cb8-692"><a href="#cb8-692" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-8" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImthdGV4ID0gcmVxdWlyZShcImthdGV4QDAuMTZcIilcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZ1bmN0aW9uIG1ha2VTdGVwcGVySFRNTChleGVyY2lzZU51bSwgc3RlcHMpIHtcbiAgbGV0IGN1cnJlbnQgPSAwO1xuICBjb25zdCB0b3RhbFN0ZXBzID0gc3RlcHMubGVuZ3RoO1xuICBjb25zdCBjb250YWluZXIgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwiZGl2XCIpO1xuICBjb250YWluZXIuc3R5bGUuY3NzVGV4dCA9IFwiYm9yZGVyOjFweCBzb2xpZCAjZTVlN2ViOyBib3JkZXItcmFkaXVzOjhweDsgcGFkZGluZzoxcmVtIDEuMjVyZW07IG1hcmdpbjowLjc1cmVtIDA7IGZvbnQtZmFtaWx5OmluaGVyaXQ7XCI7XG4gIGNvbnN0IHN0ZXBzRGl2ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcbiAgc3RlcHNEaXYuc3R5bGUubWFyZ2luQm90dG9tID0gXCIwLjc1cmVtXCI7XG5cbiAgZnVuY3Rpb24gcmVuZGVyU3RlcHMoKSB7XG4gICAgc3RlcHNEaXYuaW5uZXJIVE1MID0gXCJcIjtcbiAgICBmb3IgKGxldCBpID0gMDsgaSA8IGN1cnJlbnQ7IGkrKykge1xuICAgICAgY29uc3QgcyA9IHN0ZXBzW2ldO1xuICAgICAgY29uc3Qgcm93ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcbiAgICAgIHJvdy5zdHlsZS5jc3NUZXh0ID0gXCJkaXNwbGF5OmdyaWQ7IGdyaWQtdGVtcGxhdGUtY29sdW1uczoyMjBweCAxZnI7IGdhcDowLjM1cmVtIDFyZW07IGFsaWduLWl0ZW1zOmJhc2VsaW5lOyBwYWRkaW5nOjAuMzVyZW0gMDsgYm9yZGVyLXRvcDoxcHggc29saWQgI2YzZjRmNjtcIjtcbiAgICAgIGNvbnN0IG9wQ2VsbCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJzcGFuXCIpO1xuICAgICAgb3BDZWxsLnN0eWxlLmNzc1RleHQgPSBcImZvbnQtc2l6ZTowLjg1ZW07IGNvbG9yOiM2YjcyODA7IGZvbnQtc3R5bGU6aXRhbGljO1wiO1xuICAgICAgb3BDZWxsLnRleHRDb250ZW50ID0gcy5vcDtcbiAgICAgIGNvbnN0IGVxQ2VsbCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJzcGFuXCIpO1xuICAgICAgZXFDZWxsLmlubmVySFRNTCA9IGthdGV4LnJlbmRlclRvU3RyaW5nKHMuZXEsIHsgdGhyb3dPbkVycm9yOiBmYWxzZSwgZGlzcGxheU1vZGU6IGZhbHNlIH0pO1xuICAgICAgcm93LmFwcGVuZENoaWxkKG9wQ2VsbCk7XG4gICAgICByb3cuYXBwZW5kQ2hpbGQoZXFDZWxsKTtcbiAgICAgIGlmIChzLm5vdGUpIHtcbiAgICAgICAgY29uc3Qgbm90ZVJvdyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG4gICAgICAgIG5vdGVSb3cuc3R5bGUuY3NzVGV4dCA9IFwiZ3JpZC1jb2x1bW46MjsgZm9udC1zaXplOjAuODJlbTsgY29sb3I6IzZiNzI4MDsgcGFkZGluZy1ib3R0b206MC4ycmVtO1wiO1xuICAgICAgICBub3RlUm93LnRleHRDb250ZW50ID0gcy5ub3RlO1xuICAgICAgICByb3cuYXBwZW5kQ2hpbGQobm90ZVJvdyk7XG4gICAgICB9XG4gICAgICBzdGVwc0Rpdi5hcHBlbmRDaGlsZChyb3cpO1xuICAgIH1cbiAgICBpZiAoY3VycmVudCA9PT0gdG90YWxTdGVwcykge1xuICAgICAgY29uc3QgZG9uZSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG4gICAgICBkb25lLnN0eWxlLmNzc1RleHQgPSBcIm1hcmdpbi10b3A6MC41cmVtOyBmb250LXNpemU6MC45ZW07IGNvbG9yOiMwNTk2Njk7IGZvbnQtd2VpZ2h0OjUwMDtcIjtcbiAgICAgIGRvbmUudGV4dENvbnRlbnQgPSBcIuKckyBTb2x1dGlvbiBjb21wbGV0ZVwiO1xuICAgICAgc3RlcHNEaXYuYXBwZW5kQ2hpbGQoZG9uZSk7XG4gICAgfVxuICB9XG5cbiAgY29uc3QgY29udHJvbHMgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwiZGl2XCIpO1xuICBjb250cm9scy5zdHlsZS5jc3NUZXh0ID0gXCJkaXNwbGF5OmZsZXg7IGdhcDowLjVyZW07IGFsaWduLWl0ZW1zOmNlbnRlcjtcIjtcbiAgY29uc3QgbmV4dEJ0biA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJidXR0b25cIik7XG4gIG5leHRCdG4udGV4dENvbnRlbnQgPSBcIk5leHQgc3RlcCDihpJcIjtcbiAgbmV4dEJ0bi5zdHlsZS5jc3NUZXh0ID0gXCJwYWRkaW5nOjAuMzVyZW0gMC44NXJlbTsgYm9yZGVyOjFweCBzb2xpZCAjZDFkNWRiOyBib3JkZXItcmFkaXVzOjRweDsgYmFja2dyb3VuZDojZmZmOyBjdXJzb3I6cG9pbnRlcjsgZm9udC1zaXplOjAuOWVtO1wiO1xuICBjb25zdCByZXNldEJ0biA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJidXR0b25cIik7XG4gIHJlc2V0QnRuLnRleHRDb250ZW50ID0gXCJSZXNldFwiO1xuICByZXNldEJ0bi5zdHlsZS5jc3NUZXh0ID0gXCJwYWRkaW5nOjAuMzVyZW0gMC43NXJlbTsgYm9yZGVyOjFweCBzb2xpZCAjZTVlN2ViOyBib3JkZXItcmFkaXVzOjRweDsgYmFja2dyb3VuZDojZjlmYWZiOyBjdXJzb3I6cG9pbnRlcjsgZm9udC1zaXplOjAuOWVtOyBjb2xvcjojNmI3MjgwO1wiO1xuICBjb25zdCBjb3VudGVyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcInNwYW5cIik7XG4gIGNvdW50ZXIuc3R5bGUuY3NzVGV4dCA9IFwiZm9udC1zaXplOjAuODJlbTsgY29sb3I6IzljYTNhZjsgbWFyZ2luLWxlZnQ6MC4yNXJlbTtcIjtcblxuICBmdW5jdGlvbiB1cGRhdGVCdXR0b25zKCkge1xuICAgIG5leHRCdG4uZGlzYWJsZWQgPSBjdXJyZW50ID09PSB0b3RhbFN0ZXBzO1xuICAgIG5leHRCdG4uc3R5bGUub3BhY2l0eSA9IGN1cnJlbnQgPT09IHRvdGFsU3RlcHMgPyBcIjAuNFwiIDogXCIxXCI7XG4gICAgY291bnRlci50ZXh0Q29udGVudCA9IGN1cnJlbnQgPT09IDAgPyBcIkNsaWNrIHRvIHJldmVhbCBzdGVwc1wiIDogYFN0ZXAgJHtjdXJyZW50fSBvZiAke3RvdGFsU3RlcHN9YDtcbiAgfVxuXG4gIG5leHRCdG4ub25jbGljayA9ICgpID0+IHsgaWYgKGN1cnJlbnQgPCB0b3RhbFN0ZXBzKSB7IGN1cnJlbnQrKzsgcmVuZGVyU3RlcHMoKTsgdXBkYXRlQnV0dG9ucygpOyB9IH07XG4gIHJlc2V0QnRuLm9uY2xpY2sgPSAoKSA9PiB7IGN1cnJlbnQgPSAwOyByZW5kZXJTdGVwcygpOyB1cGRhdGVCdXR0b25zKCk7IH07XG4gIGNvbnRyb2xzLmFwcGVuZENoaWxkKG5leHRCdG4pO1xuICBjb250cm9scy5hcHBlbmRDaGlsZChyZXNldEJ0bik7XG4gIGNvbnRyb2xzLmFwcGVuZENoaWxkKGNvdW50ZXIpO1xuICBjb250YWluZXIuYXBwZW5kQ2hpbGQoc3RlcHNEaXYpO1xuICBjb250YWluZXIuYXBwZW5kQ2hpbGQoY29udHJvbHMpO1xuICByZW5kZXJTdGVwcygpO1xuICB1cGRhdGVCdXR0b25zKCk7XG4gIHJldHVybiBjb250YWluZXI7XG59XG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTMiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJtYWtlU3RlcHBlckhUTUwoMSwgW1xuICB7IG9wOiBcIlBhcnRpYWwgZGVyaXZhdGl2ZSB3LnIudC4geFwiLFxuICAgIGVxOiBcIlxcXFxmcmFje1xcXFxwYXJ0aWFsIGZ9e1xcXFxwYXJ0aWFsIHh9ID0gMnh5XCIsXG4gICAgbm90ZTogXCJUcmVhdCB5IGFuZCB6IGFzIGNvbnN0YW50czsgZGlmZmVyZW50aWF0ZSB4wrIgeSB3aXRoIHJlc3BlY3QgdG8geC5cIiB9LFxuICB7IG9wOiBcIlBhcnRpYWwgZGVyaXZhdGl2ZSB3LnIudC4geVwiLFxuICAgIGVxOiBcIlxcXFxmcmFje1xcXFxwYXJ0aWFsIGZ9e1xcXFxwYXJ0aWFsIHl9ID0geF4yICsgel4zXCIsXG4gICAgbm90ZTogXCJEaWZmZXJlbnRpYXRlIHjCsnkgKyB5esKzIHdpdGggcmVzcGVjdCB0byB5OyBib3RoIHRlcm1zIGNvbnRyaWJ1dGUuXCIgfSxcbiAgeyBvcDogXCJQYXJ0aWFsIGRlcml2YXRpdmUgdy5yLnQuIHpcIixcbiAgICBlcTogXCJcXFxcZnJhY3tcXFxccGFydGlhbCBmfXtcXFxccGFydGlhbCB6fSA9IDN5el4yXCIsXG4gICAgbm90ZTogXCJPbmx5IHl6wrMgZGVwZW5kcyBvbiB6LlwiIH0sXG4gIHsgb3A6IFwiQXNzZW1ibGUgdGhlIGdyYWRpZW50XCIsXG4gICAgZXE6IFwiXFxcXG5hYmxhIGYgPSBcXFxcYmlnbCgyeHksXFxcXDsgeF4yICsgel4zLFxcXFw7IDN5el4yXFxcXGJpZ3IpXCIgfSxcbiAgeyBvcDogXCJFdmFsdWF0ZSBhdCAoMSwgMiwgLTEpXCIsXG4gICAgZXE6IFwiXFxcXG5hYmxhIGZcXFxcYmlnfF97KDEsMiwtMSl9ID0gXFxcXGJpZ2woMigxKSgyKSxcXFxcOyAoMSleMiArICgtMSleMyxcXFxcOyAzKDIpKC0xKV4yXFxcXGJpZ3IpID0gKDQsXFxcXDsgMCxcXFxcOyA2KVwiLFxuICAgIG5vdGU6IFwiU3Vic3RpdHV0ZSB4ID0gMSwgeSA9IDIsIHogPSAtMSBpbnRvIGVhY2ggY29tcG9uZW50LlwiIH0sXG4gIHsgb3A6IFwiR3JlYXRlc3QgcmF0ZSBvZiBpbmNyZWFzZVwiLFxuICAgIGVxOiBcIlxcXFx0ZXh0e1RoZSB6LWNvbXBvbmVudCBpcyA2LCB0aGUgeC1jb21wb25lbnQgaXMgNCwgdGhlIHktY29tcG9uZW50IGlzIDAufVwiLFxuICAgIG5vdGU6IFwiVGhlIHotZGlyZWN0aW9uIGhhcyB0aGUgbGFyZ2VzdCBwYXJ0aWFsIGRlcml2YXRpdmUgYXQgdGhpcyBwb2ludCwgc28gdGVtcGVyYXR1cmUgaW5jcmVhc2VzIGZhc3Rlc3QgaW4gdGhlIHotZGlyZWN0aW9uIHRoZXJlLlwiIH1cbl0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTQiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJtYWtlU3RlcHBlckhUTUwoMiwgW1xuICB7IG9wOiBcIkNvbXB1dGUgcGFydGlhbCBkZXJpdmF0aXZlc1wiLFxuICAgIGVxOiBcIlxcXFxmcmFje1xcXFxwYXJ0aWFsIHB9e1xcXFxwYXJ0aWFsIHh9ID0gNnggKyB5eixcXFxccXVhZCBcXFxcZnJhY3tcXFxccGFydGlhbCBwfXtcXFxccGFydGlhbCB5fSA9IC00eSArIHh6LFxcXFxxdWFkIFxcXFxmcmFje1xcXFxwYXJ0aWFsIHB9e1xcXFxwYXJ0aWFsIHp9ID0geHlcIiB9LFxuICB7IG9wOiBcIkV2YWx1YXRlIGF0ICgyLCAxLCAzKVwiLFxuICAgIGVxOiBcIlxcXFxuYWJsYSBwID0gXFxcXGJpZ2woNigyKSArICgxKSgzKSxcXFxcOyAtNCgxKSArICgyKSgzKSxcXFxcOyAoMikoMSlcXFxcYmlncikgPSAoMTUsXFxcXDsgMixcXFxcOyAyKVwiLFxuICAgIG5vdGU6IFwiU3Vic3RpdHV0ZSB4ID0gMiwgeSA9IDEsIHogPSAzLlwiIH0sXG4gIHsgb3A6IFwiQ29uZmlybSB1IGlzIGEgdW5pdCB2ZWN0b3JcIixcbiAgICBlcTogXCJ8XFxcXG1hdGhiZnt1fXwgPSBcXFxcc3FydHtcXFxcdGZyYWN7MX17Mn0gKyAwICsgXFxcXHRmcmFjezF9ezJ9fSA9IDEgXFxcXGNoZWNrbWFya1wiIH0sXG4gIHsgb3A6IFwiQ29tcHV0ZSBkaXJlY3Rpb25hbCBkZXJpdmF0aXZlXCIsXG4gICAgZXE6IFwiRF97XFxcXG1hdGhiZnt1fX1cXFxcLCBwID0gXFxcXG5hYmxhIHAgXFxcXGNkb3QgXFxcXG1hdGhiZnt1fSA9ICgxNSwgMiwgMikgXFxcXGNkb3QgXFxcXHRmcmFjezF9e1xcXFxzcXJ0ezJ9fSgxLCAwLCAxKSA9IFxcXFxmcmFjezE1ICsgMCArIDJ9e1xcXFxzcXJ0ezJ9fSA9IFxcXFxmcmFjezE3fXtcXFxcc3FydHsyfX0gXFxcXGFwcHJveCAxMi4wXCIsXG4gICAgbm90ZTogXCJUaGUgZG90IHByb2R1Y3Qgc2VsZWN0cyB0aGUgY29tcG9uZW50IG9mIHRoZSBncmFkaWVudCBpbiB0aGUgZGlyZWN0aW9uIHUuXCIgfVxuXSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtNSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Im1ha2VTdGVwcGVySFRNTCgzLCBbXG4gIHsgb3A6IFwiSWRlbnRpZnkgY29tcG9uZW50c1wiLFxuICAgIGVxOiBcIkZfMSA9IHheMixcXFxccXVhZCBGXzIgPSAyeHksXFxcXHF1YWQgRl8zID0gel4yXCIgfSxcbiAgeyBvcDogXCJQYXJ0aWFsIGRlcml2YXRpdmUgb2YgRuKCgSB3LnIudC4geFwiLFxuICAgIGVxOiBcIlxcXFxmcmFje1xcXFxwYXJ0aWFsIEZfMX17XFxcXHBhcnRpYWwgeH0gPSAyeFwiIH0sXG4gIHsgb3A6IFwiUGFydGlhbCBkZXJpdmF0aXZlIG9mIEbigoIgdy5yLnQuIHlcIixcbiAgICBlcTogXCJcXFxcZnJhY3tcXFxccGFydGlhbCBGXzJ9e1xcXFxwYXJ0aWFsIHl9ID0gMnhcIixcbiAgICBub3RlOiBcIkRpZmZlcmVudGlhdGUgMnh5IHdpdGggcmVzcGVjdCB0byB5OyB4IGlzIHRyZWF0ZWQgYXMgYSBjb25zdGFudC5cIiB9LFxuICB7IG9wOiBcIlBhcnRpYWwgZGVyaXZhdGl2ZSBvZiBG4oKDIHcuci50LiB6XCIsXG4gICAgZXE6IFwiXFxcXGZyYWN7XFxcXHBhcnRpYWwgRl8zfXtcXFxccGFydGlhbCB6fSA9IDJ6XCIgfSxcbiAgeyBvcDogXCJBc3NlbWJsZSBkaXZlcmdlbmNlXCIsXG4gICAgZXE6IFwiXFxcXG5hYmxhIFxcXFxjZG90IFxcXFxtYXRoYmZ7Rn0gPSAyeCArIDJ4ICsgMnogPSA0eCArIDJ6XCIgfSxcbiAgeyBvcDogXCJJbnRlcnByZXRcIixcbiAgICBlcTogXCJcXFxcbmFibGEgXFxcXGNkb3QgXFxcXG1hdGhiZntGfSA+IDAgXFxcXHRleHR7IHdoZW4gfSA0eCArIDJ6ID4gMCxcXFxcdGV4dHsgaS5lLiB3aGVuIH0gMnggKyB6ID4gMFwiLFxuICAgIG5vdGU6IFwiVGhlIGZpZWxkIGlzIGEgc291cmNlIChuZXQgb3V0ZmxvdykgaW4gdGhlIGhhbGYtc3BhY2UgMnggKyB6ID4gMCwgYW5kIGEgc2luayB3aGVyZSAyeCArIHogPCAwLlwiIH1cbl0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTYiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJtYWtlU3RlcHBlckhUTUwoNCwgW1xuICB7IG9wOiBcIklkZW50aWZ5IGNvbXBvbmVudHNcIixcbiAgICBlcTogXCJGXzEgPSAteSxcXFxccXVhZCBGXzIgPSB4LFxcXFxxdWFkIEZfMyA9IDBcIiB9LFxuICB7IG9wOiBcIkNvbXB1dGUgZGl2ZXJnZW5jZVwiLFxuICAgIGVxOiBcIlxcXFxuYWJsYSBcXFxcY2RvdCBcXFxcbWF0aGJme0Z9ID0gXFxcXGZyYWN7XFxcXHBhcnRpYWwoLXkpfXtcXFxccGFydGlhbCB4fSArIFxcXFxmcmFje1xcXFxwYXJ0aWFsKHgpfXtcXFxccGFydGlhbCB5fSArIFxcXFxmcmFje1xcXFxwYXJ0aWFsKDApfXtcXFxccGFydGlhbCB6fSA9IDAgKyAwICsgMCA9IDBcIixcbiAgICBub3RlOiBcIk5vIHNvdXJjZXMgb3Igc2lua3Mg4oCUIHRoZSBmbHVpZCBpcyBpbmNvbXByZXNzaWJsZS5cIiB9LFxuICB7IG9wOiBcIkN1cmw6IHotY29tcG9uZW50XCIsXG4gICAgZXE6IFwiXFxcXGZyYWN7XFxcXHBhcnRpYWwgRl8yfXtcXFxccGFydGlhbCB4fSAtIFxcXFxmcmFje1xcXFxwYXJ0aWFsIEZfMX17XFxcXHBhcnRpYWwgeX0gPSAxIC0gKC0xKSA9IDJcIixcbiAgICBub3RlOiBcIlRoaXMgaXMgdGhlIGRvbWluYW50IHRlcm0gZm9yIGEgcm90YXRpb24gaW4gdGhlIHh5LXBsYW5lLlwiIH0sXG4gIHsgb3A6IFwiQ3VybDogeCBhbmQgeSBjb21wb25lbnRzXCIsXG4gICAgZXE6IFwiXFxcXGZyYWN7XFxcXHBhcnRpYWwgRl8zfXtcXFxccGFydGlhbCB5fSAtIFxcXFxmcmFje1xcXFxwYXJ0aWFsIEZfMn17XFxcXHBhcnRpYWwgen0gPSAwLFxcXFxxdWFkIFxcXFxmcmFje1xcXFxwYXJ0aWFsIEZfMX17XFxcXHBhcnRpYWwgen0gLSBcXFxcZnJhY3tcXFxccGFydGlhbCBGXzN9e1xcXFxwYXJ0aWFsIHh9ID0gMFwiIH0sXG4gIHsgb3A6IFwiQXNzZW1ibGUgY3VybFwiLFxuICAgIGVxOiBcIlxcXFxuYWJsYSBcXFxcdGltZXMgXFxcXG1hdGhiZntGfSA9ICgwLFxcXFw7IDAsXFxcXDsgMilcIixcbiAgICBub3RlOiBcIkNvbnN0YW50IGN1cmwgcG9pbnRpbmcgaW4gdGhlIHotZGlyZWN0aW9uOiB1bmlmb3JtIGNvdW50ZXJjbG9ja3dpc2Ugcm90YXRpb24gZXZlcnl3aGVyZSBpbiB0aGUgeHktcGxhbmUsIGF0IHJhdGUgMi5cIiB9XG5dKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC03IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoibWFrZVN0ZXBwZXJIVE1MKDUsIFtcbiAgeyBvcDogXCJDb21wdXRlIGdyYWRpZW50XCIsXG4gICAgZXE6IFwiXFxcXG5hYmxhIGYgPSBcXFxcYmlnbCgyeHleMnosXFxcXDsgMnheMnl6LFxcXFw7IHheMnleMlxcXFxiaWdyKVwiIH0sXG4gIHsgb3A6IFwiQ3VybCB4LWNvbXBvbmVudFwiLFxuICAgIGVxOiBcIlxcXFxmcmFje1xcXFxwYXJ0aWFsKHheMnleMil9e1xcXFxwYXJ0aWFsIHl9IC0gXFxcXGZyYWN7XFxcXHBhcnRpYWwoMnheMnl6KX17XFxcXHBhcnRpYWwgen0gPSAyeF4yeSAtIDJ4XjJ5ID0gMFwiLFxuICAgIG5vdGU6IFwiRWFjaCB0ZXJtIGRpZmZlcmVudGlhdGVzIGEgY29tcG9uZW50IG9mIOKIh2YuXCIgfSxcbiAgeyBvcDogXCJDdXJsIHktY29tcG9uZW50XCIsXG4gICAgZXE6IFwiXFxcXGZyYWN7XFxcXHBhcnRpYWwoMnh5XjJ6KX17XFxcXHBhcnRpYWwgen0gLSBcXFxcZnJhY3tcXFxccGFydGlhbCh4XjJ5XjIpfXtcXFxccGFydGlhbCB4fSA9IDJ4eV4yIC0gMnh5XjIgPSAwXCIgfSxcbiAgeyBvcDogXCJDdXJsIHotY29tcG9uZW50XCIsXG4gICAgZXE6IFwiXFxcXGZyYWN7XFxcXHBhcnRpYWwoMnheMnl6KX17XFxcXHBhcnRpYWwgeH0gLSBcXFxcZnJhY3tcXFxccGFydGlhbCgyeHleMnopfXtcXFxccGFydGlhbCB5fSA9IDR4eXogLSA0eHl6ID0gMFwiIH0sXG4gIHsgb3A6IFwiQ29uY2x1c2lvblwiLFxuICAgIGVxOiBcIlxcXFxuYWJsYSBcXFxcdGltZXMgKFxcXFxuYWJsYSBmKSA9ICgwLFxcXFw7IDAsXFxcXDsgMCkgPSBcXFxcbWF0aGJmezB9IFxcXFxjaGVja21hcmtcIixcbiAgICBub3RlOiBcIlRoaXMgaG9sZHMgZm9yIGFueSB0d2ljZS1kaWZmZXJlbnRpYWJsZSBmIOKAlCB0aGUgY2FuY2VsbGF0aW9ucyBjb21lIGZyb20gdGhlIHN5bW1ldHJ5IG9mIG1peGVkIHBhcnRpYWwgZGVyaXZhdGl2ZXMgKENsYWlyYXV0J3MgdGhlb3JlbSkuXCIgfVxuXSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtOCIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Im1ha2VTdGVwcGVySFRNTCg2LCBbXG4gIHsgb3A6IFwiQ29tcHV0ZSBncmFkaWVudCBvZiBWXCIsXG4gICAgZXE6IFwiXFxcXG5hYmxhIFYgPSBcXFxcbGVmdChcXFxcZnJhY3tcXFxccGFydGlhbCBWfXtcXFxccGFydGlhbCB4fSxcXFxcZnJhY3tcXFxccGFydGlhbCBWfXtcXFxccGFydGlhbCB5fSxcXFxcZnJhY3tcXFxccGFydGlhbCBWfXtcXFxccGFydGlhbCB6fVxcXFxyaWdodCkgPSAoMngsXFxcXDsgMnksXFxcXDsgMnopXCIgfSxcbiAgeyBvcDogXCJFbGVjdHJpYyBmaWVsZCBFID0gLeKIh1ZcIixcbiAgICBlcTogXCJcXFxcbWF0aGJme0V9ID0gLVxcXFxuYWJsYSBWID0gKC0yeCxcXFxcOyAtMnksXFxcXDsgLTJ6KVwiLFxuICAgIG5vdGU6IFwiVGhlIGZpZWxkIHBvaW50cyB0b3dhcmQgdGhlIG9yaWdpbiDigJQgaW53YXJkLCB0b3dhcmQgbG93ZXIgcG90ZW50aWFsLlwiIH0sXG4gIHsgb3A6IFwiQ29tcHV0ZSBkaXZlcmdlbmNlIG9mIEVcIixcbiAgICBlcTogXCJcXFxcbmFibGEgXFxcXGNkb3QgXFxcXG1hdGhiZntFfSA9IFxcXFxmcmFje1xcXFxwYXJ0aWFsKC0yeCl9e1xcXFxwYXJ0aWFsIHh9ICsgXFxcXGZyYWN7XFxcXHBhcnRpYWwoLTJ5KX17XFxcXHBhcnRpYWwgeX0gKyBcXFxcZnJhY3tcXFxccGFydGlhbCgtMnopfXtcXFxccGFydGlhbCB6fSA9IC0yIC0gMiAtIDIgPSAtNlwiIH0sXG4gIHsgb3A6IFwiQXBwbHkgR2F1c3MncyBsYXdcIixcbiAgICBlcTogXCJcXFxcbmFibGEgXFxcXGNkb3QgXFxcXG1hdGhiZntFfSA9IFxcXFxmcmFje1xcXFxyaG99e1xcXFx2YXJlcHNpbG9uXzB9IFxcXFxpbXBsaWVzIFxcXFxyaG8gPSAtNlxcXFx2YXJlcHNpbG9uXzBcIixcbiAgICBub3RlOiBcIkdhdXNzJ3MgbGF3IGluIGRpZmZlcmVudGlhbCBmb3JtOiB0aGUgZGl2ZXJnZW5jZSBvZiBFIGVxdWFscyBjaGFyZ2UgZGVuc2l0eSBvdmVyIHBlcm1pdHRpdml0eS5cIiB9LFxuICB7IG9wOiBcIkludGVycHJldFwiLFxuICAgIGVxOiBcIlxcXFxyaG8gPSAtNlxcXFx2YXJlcHNpbG9uXzAgPSBcXFxcdGV4dHtjb25zdH1cIixcbiAgICBub3RlOiBcIkEgdW5pZm9ybSBuZWdhdGl2ZSBjaGFyZ2UgZGVuc2l0eSBmaWxscyBhbGwgc3BhY2UuIFRoZSBlbGVjdHJpYyBmaWVsZCBjb252ZXJnZXMgaW53YXJkIGV2ZXJ5d2hlcmUgYmVjYXVzZSBuZWdhdGl2ZSBjaGFyZ2VzIGF0dHJhY3QgcG9zaXRpdmUgdGVzdCBjaGFyZ2VzIGlud2FyZC5cIiB9XG5dKVxuIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../vol-07/linear-algebra";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "../..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../vol-07/linear-algebra/02-eigenvalues.html" class="pagination-link" aria-label="Eigenvalues and eigenvectors">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">42</span>&nbsp; <span class="chapter-title">Eigenvalues and eigenvectors</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../vol-07/linear-algebra/04-vector-integral.html" class="pagination-link" aria-label="Vector integral calculus">
+        <span class="nav-page-text"><span class="chapter-number">44</span>&nbsp; <span class="chapter-title">Vector integral calculus</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/wayward-house/mathematics/edit/main/vol-07/linear-algebra/03-vector-differential.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/wayward-house/mathematics/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

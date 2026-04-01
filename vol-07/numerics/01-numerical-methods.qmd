@@ -1,6 +1,905 @@
 ---
 title: "Numerical methods"
-status: "seed"
+subtitle: "When the exact answer isn't the point"
+chapter: 1
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: |
+  You can write down the equation. You cannot always solve it in closed form.
+
+rewrite: |
+  Every root-finding, integration, and interpolation problem is a systematic
+  approximation with a controllable error. The method is the answer.
+
+opens_to:
+  - id: vol7-numerics-02
+    label: Numerical linear algebra
+    volume: 7
+    relationship: enables
+  - id: vol7-numerics-03
+    label: Numerical ODEs and PDEs
+    volume: 7
+    relationship: enables
+
+prerequisite_ids:
+  - limits
+  - diff_calc
+  - int_calc
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: >
+      Every finite-element solver, circuit simulator, and control system
+      integrator runs on these three ideas.
+    career_example: "Mechanical engineer running FEA on a structural component"
+  - field: sci
+    label: Hard sciences
+    hook: >
+      Orbital mechanics, molecular dynamics, and climate models are all
+      solved numerically — the exact equations have no closed-form solutions.
+    career_example: "Astrophysicist integrating equations of motion for N-body systems"
+  - field: comp
+    label: Computing and data
+    hook: >
+      Optimisation in machine learning uses Newton-like methods; spline
+      interpolation underpins every graphics renderer.
+    career_example: "ML engineer implementing gradient-based optimisers"
+  - field: biz
+    label: Finance and quant
+    hook: >
+      Option pricing models (Black-Scholes, stochastic vol) are solved
+      numerically; yield curves are fitted by interpolation.
+    career_example: "Quantitative analyst pricing exotic derivatives"
+
+hook: |
+  The heat equation through an irregular fin. The trajectory of a satellite
+  perturbed by the moon's gravity. The implied volatility of an options
+  contract given its market price. Three equations you can write down in
+  seconds. None of them have closed-form solutions.
+
+  This is not unusual. Most equations that describe something real cannot
+  be solved exactly. Numerical methods are what you use instead — systematic
+  procedures that produce answers you can trust, with errors you can bound.
+
+notation_introduced:
+  - symbol: "f(x)"
+    reads_as: "f of x — the function whose root or integral we are working with"
+    notation_weight: 1
+  - symbol: "x_n"
+    reads_as: "x sub n — the nth iterate (our current best estimate)"
+    notation_weight: 1
+  - symbol: "f'(x)"
+    reads_as: "f prime of x — the derivative of f at x"
+    notation_weight: 1
+  - symbol: "h"
+    reads_as: "h — the step size (panel width for integration, interval width for root-finding)"
+    notation_weight: 1
+  - symbol: "O(h^p)"
+    reads_as: "big-O of h to the p — the error shrinks as h to the power p as h → 0"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+kreyszig_chapter: 19
+stroud_programme: null
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+The heat equation through an irregular fin. The trajectory of a satellite
+perturbed by the moon's gravity. The implied volatility of an options
+contract given its market price. Three equations you can write down in
+seconds. None of them have closed-form solutions.
+
+This is not unusual. Most equations that describe something real cannot
+be solved exactly. Numerical methods are what you use instead — systematic
+procedures that produce answers you can trust, with errors you can bound.
+
+Three families of problems appear everywhere:
+
+- **Root-finding**: find $x$ such that $f(x) = 0$.
+- **Interpolation**: given values at a set of points, estimate the value elsewhere.
+- **Numerical integration**: compute $\int_a^b f(x)\,dx$ when $f$ has no antiderivative in closed form.
+
+Each family has the same structure: start with something computable, iterate
+or accumulate, and keep track of how wrong you might be.
+
+---
+
+## Root-finding
+
+### The problem
+
+You have a function $f(x)$ — read "$f$ of $x$", the function whose root
+you want — and you need to find $x^*$ such that $f(x^*) = 0$. This is
+every nonlinear equation in disguise. If you need to solve $g(x) = h(x)$,
+define $f(x) = g(x) - h(x)$ and find its root.
+
+### Bisection method
+
+The simplest idea: if $f(a) < 0$ and $f(b) > 0$, and $f$ is continuous,
+then somewhere in $(a, b)$ the function must cross zero. The midpoint
+$m = (a+b)/2$ is either a root, or the root lies in $(a, m)$, or it lies
+in $(m, b)$. Evaluate $f(m)$ and keep the half that changes sign. Repeat.
+
+**Algorithm:**
+
+1. Choose $[a, b]$ with $f(a)$ and $f(b)$ having opposite signs.
+2. Set $m = (a + b)/2$.
+3. If $|f(m)| < \varepsilon$ (your tolerance), stop. $m$ is the root.
+4. If $f(a) \cdot f(m) < 0$, the root is in $[a, m]$: set $b = m$.
+   Otherwise set $a = m$.
+5. Return to step 2.
+
+After $n$ steps the bracket width is $(b - a)/2^n$, so the error is
+bounded by $(b - a)/2^{n+1}$. This is the **bisection error bound**. To
+guarantee an error below $\varepsilon$, you need at most
+$\lceil \log_2((b-a)/\varepsilon) \rceil$ iterations.
+
+The method is slow — the error halves each step — but it always converges
+as long as the function is continuous and the initial bracket is valid.
+Nothing else is assumed.
+
+**Worked example.** Find the positive real root of $f(x) = x^3 - x - 2$,
+starting in $[1, 2]$.
+
+Note that $f(1) = 1 - 1 - 2 = -2 < 0$ and $f(2) = 8 - 2 - 2 = 4 > 0$.
+A root exists in $[1, 2]$.
+
+| Step | $a$ | $b$ | $m$ | $f(m)$ | New bracket |
+|------|-----|-----|-----|--------|-------------|
+| 1    | 1   | 2   | 1.5 | $1.5^3 - 1.5 - 2 = -0.125$ | $[1.5, 2]$ |
+| 2    | 1.5 | 2   | 1.75 | $1.75^3 - 1.75 - 2 \approx 1.609$ | $[1.5, 1.75]$ |
+| 3    | 1.5 | 1.75 | 1.625 | $1.625^3 - 1.625 - 2 \approx 0.666$ | $[1.5, 1.625]$ |
+
+After three steps the root is bracketed in $[1.5, 1.625]$, width $0.125 = 1/2^3$.
+The exact root is $x^* \approx 1.5214$.
+
+<!-- VIZ: animated bisection — slider for iteration count, shows interval halving on a user-selectable function (e.g. x³-x-2), bracket endpoints updating each step -->
+
+### Newton-Raphson method
+
+Bisection is robust but slow. If $f$ is differentiable, you can do much
+better. The idea: at your current estimate $x_n$ — read "$x$ sub $n$",
+the $n$th iterate — draw the tangent line to $y = f(x)$. Follow the
+tangent to where it hits zero; call that $x_{n+1}$.
+
+The tangent line at $x_n$ has equation:
+
+$$y - f(x_n) = f'(x_n)(x - x_n)$$
+
+where $f'(x_n)$ — read "$f$ prime at $x_n$" — is the derivative of $f$
+at the current point. Setting $y = 0$ and solving for $x$:
+
+$$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
+
+This is the **Newton-Raphson iteration**. Apply it repeatedly until
+$|f(x_n)|$ is below your tolerance.
+
+**Why it converges so fast.** The error $e_n = x_n - x^*$ satisfies:
+
+<!-- STUDENT: The error formula drops in without any derivation cue. An engineering reader who hasn't seen iteration error analysis before won't know where the f'' term comes from. A one-line prompt — "Substituting a Taylor expansion of f(x_n) about x* into the Newton iteration and simplifying gives…" — would make the step traceable. -->
+
+Substituting a Taylor expansion of $f(x_n)$ about the true root $x^*$ into the Newton iteration and simplifying:
+
+$$e_{n+1} \approx -\frac{f''(x^*)}{2f'(x^*)} e_n^2$$
+
+The next error is proportional to the *square* of the current error. If
+you are accurate to 3 decimal places, one more step gives you roughly 6.
+This is **quadratic convergence** — the number of correct digits doubles
+each step. Bisection adds about 0.3 correct digits per step; Newton-Raphson
+roughly doubles them.
+
+The method fails if $f'(x_n) = 0$ (the tangent is flat) or if the
+starting point is far from the root (the iteration diverges or cycles).
+Always check convergence.
+
+**Worked example.** Compute $\sqrt{2}$ using Newton-Raphson. The positive
+root of $f(x) = x^2 - 2$ is $\sqrt{2}$, so $f'(x) = 2x$.
+
+The iteration is:
+
+$$x_{n+1} = x_n - \frac{x_n^2 - 2}{2x_n} = \frac{x_n + 2/x_n}{2}$$
+
+Starting from $x_0 = 1$:
+
+| $n$ | $x_n$ | $f(x_n) = x_n^2 - 2$ | $|f(x_n)|$ |
+|-----|-------|-----------------------|-----------|
+| 0   | 1.000000 | −1.000000 | 1.000000 |
+| 1   | 1.500000 | 0.250000 | 0.250000 |
+| 2   | 1.416667 | 0.006944 | 0.006944 |
+| 3   | 1.414216 | 0.000006 | $6 \times 10^{-6}$ |
+
+Three steps to six-digit accuracy. Quadratic convergence in action.
+
+<!-- VIZ: Newton-Raphson convergence — shows tangent line to curve at current iterate, click "Next iteration" to step, displays |f(xₙ)| error log -->
+
+### Secant method
+
+Newton-Raphson requires the derivative $f'(x)$. When that is expensive or
+unavailable, replace it with a finite-difference approximation using the
+two most recent iterates:
+
+$$x_{n+1} = x_n - f(x_n) \cdot \frac{x_n - x_{n-1}}{f(x_n) - f(x_{n-1})}$$
+
+This is the **secant method**. It needs two starting values $x_0$ and $x_1$.
+The convergence order is approximately 1.618 (the golden ratio) — super-linear
+but slower than quadratic. No derivative evaluation required.
+
+::: {.callout-note appearance="simple"}
+**Which root-finder to use**
+
+Bisection is your fallback: slow, guaranteed, needs only function values and
+a sign change. Newton-Raphson is your workhorse when you have a derivative
+and a decent starting point: fast, elegant, can fail. The secant method sits
+between them: no derivative, faster than bisection, needs two starting points.
+In practice, hybrid methods (Brent's method, Illinois algorithm) combine
+bisection safety with Newton-like speed.
+:::
+
+---
+
+## Interpolation
+
+### The problem
+
+You have $n+1$ data points $(x_0, y_0), (x_1, y_1), \ldots, (x_n, y_n)$
+and you want to estimate $f(x)$ at a new $x$ lying between them. The
+classical approach: find a polynomial that passes exactly through all the
+given points, then evaluate it at $x$.
+
+### Lagrange interpolation
+
+For $n+1$ points there is exactly one polynomial of degree $\leq n$ passing
+through all of them. Write it as:
+
+$$P_n(x) = \sum_{k=0}^{n} y_k \, L_k(x)$$
+
+where each **Lagrange basis polynomial** $L_k(x)$ is:
+
+$$L_k(x) = \prod_{\substack{j=0 \\ j \neq k}}^{n} \frac{x - x_j}{x_k - x_j}$$
+
+Read this as: $L_k(x)$ equals 1 at $x_k$ and equals 0 at every other
+node $x_j$. So $P_n(x_k) = y_k$ for each $k$ — the polynomial
+interpolates every point exactly.
+
+**Worked example.** Interpolate $f$ at $x = 1.5$ using the points
+$(1, 1)$, $(2, 8)$, $(3, 27)$ — the cube function sampled at three integers.
+
+With nodes $x_0 = 1$, $x_1 = 2$, $x_2 = 3$:
+
+$$L_0(x) = \frac{(x-2)(x-3)}{(1-2)(1-3)} = \frac{(x-2)(x-3)}{2}$$
+
+$$L_1(x) = \frac{(x-1)(x-3)}{(2-1)(2-3)} = \frac{(x-1)(x-3)}{-1} = -(x-1)(x-3)$$
+
+$$L_2(x) = \frac{(x-1)(x-2)}{(3-1)(3-2)} = \frac{(x-1)(x-2)}{2}$$
+
+At $x = 1.5$:
+
+$$L_0(1.5) = \frac{(1.5-2)(1.5-3)}{2} = \frac{(-0.5)(-1.5)}{2} = \frac{0.75}{2} = 0.375$$
+
+$$L_1(1.5) = -(1.5-1)(1.5-3) = -(0.5)(-1.5) = 0.75$$
+
+$$L_2(1.5) = \frac{(1.5-1)(1.5-2)}{2} = \frac{(0.5)(-0.5)}{2} = -0.125$$
+
+$$P_2(1.5) = 1 \cdot 0.375 + 8 \cdot 0.75 + 27 \cdot (-0.125) = 0.375 + 6 - 3.375 = 3$$
+
+The exact value is $1.5^3 = 3.375$. The polynomial through three points of
+$x^3$ is not perfect — it is a degree-2 polynomial approximating a degree-3
+function. Adding the fourth node $(4, 64)$ would give exact interpolation.
+
+### Newton's divided-difference form
+
+The Lagrange form is conceptually clean but computationally inconvenient: to
+add a new node you must recompute everything. Newton's divided-difference
+form builds the polynomial incrementally.
+
+Define the **divided differences** recursively:
+
+$$f[x_k] = y_k$$
+
+$$f[x_k, x_{k+1}] = \frac{f[x_{k+1}] - f[x_k]}{x_{k+1} - x_k}$$
+
+$$f[x_k, \ldots, x_{k+j}] = \frac{f[x_{k+1}, \ldots, x_{k+j}] - f[x_k, \ldots, x_{k+j-1}]}{x_{k+j} - x_k}$$
+
+<!-- STUDENT: The divided-difference form is presented but never worked through numerically. The Lagrange form had a full worked example; Newton's form has none. Even a two-node example — showing that f[x_0,x_1](x−x_0) recovers a straight line through the two points — would make the formula tangible before trusting it. -->
+
+To see how this builds, use two of the cube-function points: $x_0 = 1$, $y_0 = 1$ and $x_1 = 2$, $y_1 = 8$. The first divided difference is $f[x_0, x_1] = (8-1)/(2-1) = 7$. Newton's form gives $P_1(x) = 1 + 7(x - 1)$ — the straight line through $(1,1)$ and $(2,8)$. Adding a third node brings in the next divided difference and bends the curve to pass through that point too.
+
+The interpolating polynomial is then:
+
+$$P_n(x) = f[x_0] + f[x_0,x_1](x - x_0) + f[x_0,x_1,x_2](x-x_0)(x-x_1) + \cdots$$
+
+Adding a new node $x_{n+1}$ requires only one new divided difference and one
+new term — the previous work is retained.
+
+### Runge's phenomenon and why splines exist
+
+High-degree polynomial interpolation over equally-spaced nodes can oscillate
+wildly near the endpoints, even when the underlying function is smooth. This
+is Runge's phenomenon. The standard fix is **spline interpolation**: use
+low-degree polynomials (typically cubics) on each sub-interval, stitched
+together with continuity conditions. Splines are covered in the next chapter.
+
+---
+
+## Numerical integration
+
+### The problem
+
+Compute $\int_a^b f(x)\,dx$ when $f$ has no closed-form antiderivative, or
+when $f$ is known only at discrete points (sampled data from a sensor, say).
+
+Partition $[a, b]$ into $n$ equal panels of width $h = (b - a)/n$. Let
+$x_i = a + ih$ for $i = 0, 1, \ldots, n$, and write $f_i = f(x_i)$.
+
+### Trapezoid rule
+
+Approximate $f$ on each panel by a straight line joining $(x_i, f_i)$ and
+$(x_{i+1}, f_{i+1})$. The area of each trapezoid is $\frac{h}{2}(f_i + f_{i+1})$.
+Summing over all panels:
+
+$$\int_a^b f(x)\,dx \approx T_n = \frac{h}{2}\bigl(f_0 + 2f_1 + 2f_2 + \cdots + 2f_{n-1} + f_n\bigr)$$
+
+The error is $O(h^2)$ — halving the step size $h$ reduces the error by a
+factor of four. More precisely:
+
+$$\text{Error} = -\frac{(b-a)h^2}{12} f''(\xi)$$
+
+<!-- STUDENT: The $\xi$ notation appears here without prior introduction. The chapter's notation_introduced section doesn't list it. A brief aside — "$\xi$ is some point inside $(a,b)$ whose exact location is unknown; this form says the error depends on the curvature of $f$ somewhere in the interval" — would prevent readers from stalling on the symbol. -->
+
+for some $\xi \in (a,b)$ — a point whose exact location is unknown, but which lies somewhere in the integration interval. The formula says: the error depends on the curvature of $f$ somewhere in $(a,b)$. You don't need to know where $\xi$ is; you only need an upper bound on $|f''|$ over the interval. The error is proportional to the second derivative
+of $f$ — large curvature means larger error.
+
+**Worked example.** Estimate $\int_0^1 e^x\,dx$ with $n = 4$ panels.
+
+$h = 0.25$, nodes at $x = 0, 0.25, 0.5, 0.75, 1$.
+
+| $x_i$ | $f_i = e^{x_i}$ |
+|--------|-----------------|
+| 0      | 1.000000        |
+| 0.25   | 1.284025        |
+| 0.5    | 1.648721        |
+| 0.75   | 2.117000        |
+| 1      | 2.718282        |
+
+$$T_4 = \frac{0.25}{2}\bigl(1 + 2(1.284025) + 2(1.648721) + 2(2.117000) + 2.718282\bigr)$$
+
+$$= 0.125 \times (1 + 2.568050 + 3.297442 + 4.234000 + 2.718282)$$
+
+$$= 0.125 \times 13.817774 = 1.727222$$
+
+The exact value is $e - 1 \approx 1.718282$. Error: $|1.727222 - 1.718282| \approx 0.008940$.
+
+### Simpson's 1/3 rule
+
+Replace the straight-line approximation on each pair of panels with a
+quadratic through three consecutive nodes. Require $n$ even.
+
+$$\int_a^b f(x)\,dx \approx S_n = \frac{h}{3}\bigl(f_0 + 4f_1 + 2f_2 + 4f_3 + \cdots + 4f_{n-1} + f_n\bigr)$$
+
+The coefficients alternate $4, 2, 4, 2, \ldots, 4$ for interior nodes.
+The error is $O(h^4)$:
+
+$$\text{Error} = -\frac{(b-a)h^4}{180} f^{(4)}(\xi)$$
+
+Halving $h$ reduces the error by a factor of sixteen. Simpson's rule is
+exact for polynomials of degree up to 3, even though it uses degree-2
+approximations — a consequence of symmetry.
+
+**Worked example.** Apply Simpson's 1/3 rule to $\int_0^1 e^x\,dx$ with
+$n = 4$.
+
+Using the same nodes as above:
+
+$$S_4 = \frac{0.25}{3}\bigl(f_0 + 4f_1 + 2f_2 + 4f_3 + f_4\bigr)$$
+
+$$= \frac{0.25}{3}\bigl(1 + 4(1.284025) + 2(1.648721) + 4(2.117000) + 2.718282\bigr)$$
+
+$$= \frac{0.25}{3}\bigl(1 + 5.136100 + 3.297442 + 8.468000 + 2.718282\bigr)$$
+
+$$= \frac{0.25}{3} \times 20.619824 = 1.718319$$
+
+Error: $|1.718319 - 1.718282| \approx 0.000037$. A factor of 241 smaller
+than the trapezoid rule with the same number of function evaluations.
+
+### Simpson's 3/8 rule
+
+A variant using groups of three panels instead of two, again with a cubic
+approximant. Require $n$ divisible by 3.
+
+$$\int_a^b f(x)\,dx \approx \frac{3h}{8}\bigl(f_0 + 3f_1 + 3f_2 + 2f_3 + 3f_4 + 3f_5 + 2f_6 + \cdots + f_n\bigr)$$
+
+Error is also $O(h^4)$. The 1/3 rule is more commonly used; the 3/8 rule
+appears when $n$ is odd so the standard Simpson pairing fails.
+
+<!-- VIZ: quadrature comparison — slider for n panels, overlays trapezoid vs Simpson approximation on a fixed curve, shows error vs exact -->
+
+### Gaussian quadrature
+
+The rules above use evenly-spaced nodes. If you are free to choose both
+the node locations and the weights, you can do much better.
+
+**Gauss-Legendre quadrature** on $[-1, 1]$ with $n$ nodes is exact for
+polynomials of degree up to $2n-1$ — twice the order you might expect.
+The nodes are the roots of the Legendre polynomial $P_n(x)$, and the
+weights are determined by the condition of exactness.
+
+<!-- STUDENT: "Legendre polynomial $P_n(x)$" appears without any context. An engineering reader who hasn't encountered special functions will not know what these are, why their roots have this property, or where to find the nodes for $n > 2$ in practice. A note that node locations are tabulated (and that you never derive them by hand) would relieve the confusion. -->
+
+The Legendre polynomials are a specific family of functions whose roots have an extremal property: placing quadrature nodes there squeezes the most accuracy out of a given number of evaluations. You do not derive these roots by hand — they are tabulated in every numerical methods reference and built into every serious quadrature library. For $n = 2$, the nodes and weights are:
+
+For $n = 2$: nodes $x_{1,2} = \pm 1/\sqrt{3}$, weights $w_{1,2} = 1$:
+
+$$\int_{-1}^1 f(x)\,dx \approx f\!\left(-\frac{1}{\sqrt{3}}\right) + f\!\left(\frac{1}{\sqrt{3}}\right)$$
+
+This is exact for all polynomials of degree $\leq 3$.
+
+To integrate over $[a, b]$, substitute $x = \frac{a+b}{2} + \frac{b-a}{2}t$
+where $t \in [-1, 1]$:
+
+$$\int_a^b f(x)\,dx = \frac{b-a}{2} \int_{-1}^1 f\!\left(\frac{a+b}{2} + \frac{b-a}{2}t\right) dt$$
+
+**Worked example.** Estimate $\int_0^1 e^x\,dx$ using 2-point Gauss-Legendre.
+
+Change variables to $[-1,1]$: $x = \frac{1}{2} + \frac{1}{2}t$, $dx = \frac{1}{2}\,dt$.
+
+Nodes in $t$: $t_{1,2} = \pm 1/\sqrt{3} \approx \pm 0.577350$.
+
+Corresponding $x$-values: $x_1 = 0.5 - 0.288675 = 0.211325$, $x_2 = 0.5 + 0.288675 = 0.788675$.
+
+$$\int_0^1 e^x\,dx \approx \frac{1}{2}\Bigl(e^{0.211325} + e^{0.788675}\Bigr) = \frac{1}{2}(1.235369 + 2.200819) = 1.718094$$
+
+Error: $|1.718094 - 1.718282| \approx 0.000188$. Two function evaluations;
+better accuracy than the 5-point trapezoid rule.
+
+::: {.callout-note appearance="simple"}
+**Summary: error orders**
+
+| Method | Error | Error reduction when $n$ doubles |
+|--------|-------|----------------------------------|
+| Trapezoid | $O(h^2)$ | 4× smaller |
+| Simpson's 1/3 | $O(h^4)$ | 16× smaller |
+| Gauss–Legendre ($n$ pts) | exact for degree $\leq 2n-1$ | — |
+
+When $f$ is smooth and you control the nodes, Gaussian quadrature wins.
+When $f$ comes from sampled data at fixed points, use Simpson or trapezoid.
+:::
+
+---
+
+## Where this goes
+
+The three families here — root-finding, interpolation, numerical integration
+— are the building blocks for almost everything else in numerical computation.
+**Numerical linear algebra** (the next chapter in this section) extends
+root-finding ideas to systems: you want $\mathbf{x}$ such that $A\mathbf{x} = \mathbf{b}$,
+and for large systems you solve it iteratively using methods (Gauss-Seidel,
+conjugate gradient) that are direct descendants of the Newton-Raphson idea.
+
+Numerical integration connects back to **ordinary differential equations**:
+Euler's method for ODEs is the forward-rectangle (left-endpoint) rule applied
+to the integral form of the ODE — at each step you approximate the integrand
+by its value at the left endpoint, which is first-order accurate. Runge-Kutta
+methods are higher-order quadrature applied at each step. Knowing the error orders from this chapter tells you
+immediately why RK4 (fourth-order) is preferred over Euler (first-order):
+halving the step size reduces RK4's error by 16×, Euler's by only 2×.
+
+::: {.callout-tip appearance="simple"}
+**Where these methods appear**
+
+- **Structural engineering (FEA):** each element stiffness matrix is assembled
+  using Gaussian quadrature over the element domain.
+- **Signal processing:** interpolation underlies sample-rate conversion (resampling
+  audio or images); Newton-Raphson is used in carrier phase estimation.
+- **Options pricing:** Newton-Raphson is the standard method for computing
+  implied volatility from the Black-Scholes formula — the exact inverse
+  doesn't exist.
+- **Astrophysics:** orbital trajectories are integrated numerically step by
+  step using adaptive-step Runge-Kutta, which uses error estimates derived
+  from the quadrature theory here.
+- **Machine learning:** most optimisers (Adam, L-BFGS) are Newton-like methods
+  applied to high-dimensional loss functions. The convergence order matters
+  enormously at scale.
+:::
+
+---
+
+## Exercises
+
+These are puzzles. Each has a clean numerical answer. The interesting work
+is carrying the method through correctly and checking the error bound.
+
+**1.** Apply three iterations of bisection to find the positive root of
+$f(x) = x^3 - x - 2 = 0$, starting with the bracket $[1, 2]$. State the
+midpoint after each iteration and the final bracket width.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Verify initial bracket"
+    eq: "f(1) = 1 - 1 - 2 = -2 < 0,\\quad f(2) = 8 - 2 - 2 = 4 > 0"
+    note: "Opposite signs confirm a root exists in [1, 2] by the Intermediate Value Theorem."
+  - op: "Iteration 1: midpoint"
+    eq: "m_1 = (1 + 2)/2 = 1.5"
+    note: ~
+  - op: "Evaluate at midpoint"
+    eq: "f(1.5) = 3.375 - 1.5 - 2 = -0.125 < 0"
+    note: ~
+  - op: "Update bracket (root in right half)"
+    eq: "[a,b] = [1.5,\\, 2]"
+    note: "f(1.5) < 0 and f(2) > 0, so the root is in [1.5, 2]."
+  - op: "Iteration 2: midpoint"
+    eq: "m_2 = (1.5 + 2)/2 = 1.75"
+    note: ~
+  - op: "Evaluate at midpoint"
+    eq: "f(1.75) = 5.359 - 1.75 - 2 = 1.609 > 0"
+    note: ~
+  - op: "Update bracket (root in left half)"
+    eq: "[a,b] = [1.5,\\, 1.75]"
+    note: "f(1.5) < 0 and f(1.75) > 0, so the root is in [1.5, 1.75]."
+  - op: "Iteration 3: midpoint"
+    eq: "m_3 = (1.5 + 1.75)/2 = 1.625"
+    note: ~
+  - op: "Evaluate at midpoint"
+    eq: "f(1.625) = 4.291 - 1.625 - 2 = 0.666 > 0"
+    note: ~
+  - op: "Final bracket"
+    eq: "[a,b] = [1.5,\\, 1.625],\\quad \\text{width} = 0.125 = 2^{-3}"
+    note: ~
+  - op: "Check"
+    eq: "\\text{Error bound: } (2-1)/2^4 = 0.0625.\\quad x^* \\approx 1.5214 \\in [1.5,\\, 1.625] \\checkmark"
+    note: ~
+-->
+
+---
+
+**2.** Apply three iterations of Newton-Raphson to compute $\sqrt{2}$,
+starting from $x_0 = 1$. Use $f(x) = x^2 - 2$. Record $x_n$ and $|f(x_n)|$
+at each step and comment on the convergence rate.
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the iteration formula"
+    eq: "x_{n+1} = x_n - \\frac{x_n^2 - 2}{2x_n} = \\frac{x_n^2 + 2}{2x_n}"
+    note: "Derive by applying the Newton formula x_{n+1} = x_n - f(x_n)/f'(x_n) with f'(x) = 2x."
+  - op: "Iteration 1: x₀ = 1"
+    eq: "x_1 = \\frac{1 + 2}{2 \\times 1} = 1.5,\\quad |f(x_1)| = |2.25 - 2| = 0.25"
+    note: ~
+  - op: "Iteration 2: x₁ = 1.5"
+    eq: "x_2 = \\frac{1.5^2 + 2}{2 \\times 1.5} = \\frac{4.25}{3} \\approx 1.41\\overline{6},\\quad |f(x_2)| \\approx 0.00694"
+    note: ~
+  - op: "Iteration 3: x₂ ≈ 1.41667"
+    eq: "x_3 = \\frac{1.41667^2 + 2}{2 \\times 1.41667} \\approx 1.41422,\\quad |f(x_3)| \\approx 6 \\times 10^{-6}"
+    note: ~
+  - op: "Observe convergence"
+    eq: "|f|:\\; 0.25 \\to 0.00694 \\to 6\\times10^{-6} \\quad (\\text{error squares each step})"
+    note: "The number of correct digits roughly doubles each iteration — this is quadratic convergence."
+  - op: "Check"
+    eq: "x_3^2 \\approx 1.99998,\\quad |x_3 - \\sqrt{2}| \\approx 1.5 \\times 10^{-6} \\checkmark"
+    note: ~
+-->
+
+---
+
+**3.** Use the Lagrange interpolation formula to estimate $f(1.5)$,
+given the data points $(1, 1)$, $(2, 8)$, $(3, 27)$. Compare with the
+exact value $1.5^3 = 3.375$ and explain the discrepancy.
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Label nodes and values"
+    eq: "x_0=1,\\; y_0=1;\\quad x_1=2,\\; y_1=8;\\quad x_2=3,\\; y_2=27"
+    note: ~
+  - op: "Compute L₀(1.5)"
+    eq: "L_0 = \\frac{(1.5-2)(1.5-3)}{(1-2)(1-3)} = \\frac{(-0.5)(-1.5)}{(-1)(-2)} = \\frac{0.75}{2} = 0.375"
+    note: ~
+  - op: "Compute L₁(1.5)"
+    eq: "L_1 = \\frac{(1.5-1)(1.5-3)}{(2-1)(2-3)} = \\frac{(0.5)(-1.5)}{(1)(-1)} = \\frac{-0.75}{-1} = 0.75"
+    note: ~
+  - op: "Compute L₂(1.5)"
+    eq: "L_2 = \\frac{(1.5-1)(1.5-2)}{(3-1)(3-2)} = \\frac{(0.5)(-0.5)}{(2)(1)} = \\frac{-0.25}{2} = -0.125"
+    note: ~
+  - op: "Assemble P₂(1.5)"
+    eq: "P_2(1.5) = 1(0.375) + 8(0.75) + 27(-0.125) = 0.375 + 6 - 3.375 = 3"
+    note: ~
+  - op: "Check"
+    eq: "P_2(1.5) = 3,\\quad 1.5^3 = 3.375,\\quad \\text{error} = 0.375"
+    note: "The degree-2 polynomial through three points of x³ cannot capture the cubic term. Four nodes would give exact recovery."
+-->
+
+---
+
+**4.** Apply the trapezoid rule to $\int_0^1 e^x\,dx$ with $n = 4$
+panels. Compute the numerical result and the absolute error against
+the exact value $e - 1 \approx 1.718282$.
+
+<!-- STEPPER
+exercise: 4
+steps:
+  - op: "Set up nodes and step size"
+    eq: "h = 0.25,\\quad x_i = 0,\\, 0.25,\\, 0.5,\\, 0.75,\\, 1"
+    note: ~
+  - op: "Evaluate f at each node"
+    eq: "f_0=1,\\; f_1=1.28403,\\; f_2=1.64872,\\; f_3=2.11700,\\; f_4=2.71828"
+    note: ~
+  - op: "Apply trapezoid formula"
+    eq: "T_4 = \\frac{0.25}{2}(f_0 + 2f_1 + 2f_2 + 2f_3 + f_4)"
+    note: "End nodes get weight 1; all interior nodes get weight 2."
+  - op: "Sum the weighted values"
+    eq: "1 + 2(1.28403) + 2(1.64872) + 2(2.11700) + 2.71828 = 13.81778"
+    note: ~
+  - op: "Multiply by h/2"
+    eq: "T_4 = 0.125 \\times 13.81778 = 1.72722"
+    note: ~
+  - op: "Check"
+    eq: "|T_4 - (e-1)| = |1.72722 - 1.71828| \\approx 0.00894 \\checkmark"
+    note: "Error is O(h²). Halving h to 0.125 would reduce error to roughly 0.00224."
+-->
+
+---
+
+**5.** Apply Simpson's 1/3 rule to the same integral $\int_0^1 e^x\,dx$
+with $n = 4$ panels. Compare your error with Exercise 4 and confirm
+the improvement is consistent with the $O(h^4)$ order.
+
+<!-- STEPPER
+exercise: 5
+steps:
+  - op: "Recall nodes and values from Exercise 4"
+    eq: "h = 0.25,\\quad f_0=1,\\; f_1=1.28403,\\; f_2=1.64872,\\; f_3=2.11700,\\; f_4=2.71828"
+    note: ~
+  - op: "Apply Simpson's 1/3 formula"
+    eq: "S_4 = \\frac{h}{3}(f_0 + 4f_1 + 2f_2 + 4f_3 + f_4)"
+    note: "Coefficients: 1, 4, 2, 4, 1 — alternating 4 and 2 for interior nodes."
+  - op: "Sum the weighted values"
+    eq: "1 + 4(1.28403) + 2(1.64872) + 4(2.11700) + 2.71828 = 20.61982"
+    note: ~
+  - op: "Multiply by h/3"
+    eq: "S_4 = \\frac{0.25}{3} \\times 20.61982 = 1.71832"
+    note: ~
+  - op: "Compute error"
+    eq: "|S_4 - (e-1)| = |1.71832 - 1.71828| \\approx 3.7 \\times 10^{-5}"
+    note: ~
+  - op: "Check improvement ratio"
+    eq: "\\frac{\\text{Trapezoid error}}{\\text{Simpson error}} = \\frac{0.00894}{0.000037} \\approx 240"
+    note: "Expected ratio for O(h⁴) vs O(h²) with the same h: roughly 1/h² = 16. The larger ratio reflects the specific smoothness of eˣ and the coefficient difference."
+-->
+
+---
+
+**6.** A diode circuit satisfies $I \cdot R + V_T \ln(I / I_0) = V_s$,
+where $R = 100\,\Omega$, $V_T = 0.026\,\text{V}$, $I_0 = 10^{-12}\,\text{A}$,
+$V_s = 5\,\text{V}$. Starting from $I_0^* = 0.04\,\text{A}$, apply
+one step of Newton-Raphson to find a better estimate. *(Linearise the
+equation about the starting point.)*
+
+<!-- ENGINEER-PROF: The full Shockley diode equation is I·R + V_T·ln(I/I_0 + 1) = V_s. The form above drops the "+1", which is the standard large-forward-bias approximation valid when I >> I_0 (easily satisfied here since I ~ 0.04 A >> I_0 = 1e-12 A). The exercise is numerically correct in this regime, but should note the approximation so students encountering the exact form elsewhere are not confused. -->
+
+<!-- STEPPER
+exercise: 6
+steps:
+  - op: "Write as a root-finding problem"
+    eq: "f(I) = IR + V_T \\ln(I/I_0) - V_s = 0"
+    note: "Rearranging the circuit equation puts everything on the left, giving f(I) = 0."
+  - op: "Compute the derivative"
+    eq: "f'(I) = R + V_T / I"
+    note: "Differentiate term by term: d/dI[IR] = R, d/dI[V_T ln(I/I₀)] = V_T/I."
+  - op: "Evaluate f at I₀* = 0.04 A"
+    eq: "f(0.04) = 0.04 \\times 100 + 0.026\\,\\ln(0.04/10^{-12}) - 5"
+    note: ~
+  - op: "Compute the logarithm term"
+    eq: "\\ln(0.04/10^{-12}) = \\ln(4 \\times 10^{10}) \\approx 24.41"
+    note: ~
+  - op: "Sum to get f(0.04)"
+    eq: "f(0.04) = 4 + 0.026 \\times 24.41 - 5 = 4 + 0.635 - 5 = -0.365"
+    note: ~
+  - op: "Evaluate f'(0.04)"
+    eq: "f'(0.04) = 100 + 0.026/0.04 = 100 + 0.65 = 100.65"
+    note: ~
+  - op: "Apply one Newton step"
+    eq: "I_1 = 0.04 - \\frac{-0.365}{100.65} \\approx 0.04 + 0.003627 = 0.04363 \\text{ A}"
+    note: ~
+  - op: "Check"
+    eq: "f(0.04363) = 4.363 + 0.026\\,\\ln(4.363 \\times 10^{10}) - 5 \\approx 0.000"
+    note: "One Newton step moves us from f = −0.365 to near zero, confirming fast convergence despite the nonlinear diode term."
+-->
+
+<!--
+MATH-PROF REVIEW
+================
+
+BLOCKERS (chapter cannot move to review without fixing)
+-------------------------------------------------------
+
+1. [BLOCKER] Bisection worked example table (step 2 and step 3): f(m) values were wrong.
+   - f(1.75) = 1.75³ − 1.75 − 2 = 5.359375 − 1.75 − 2 = 1.609375 ≈ 1.609. Text had 0.609.
+   - f(1.625) = 1.625³ − 1.625 − 2 = 4.291015... − 1.625 − 2 ≈ 0.666. Text had 0.191.
+   FIXED directly.
+
+2. [BLOCKER] opens_to references id: numerics, which is this chapter's own section node in topology.yml
+   — not a valid downstream target. No "numerical_linear_algebra" node exists in topology.yml.
+   See inline MATH-PROF comment above the body text. Author must either add the target node to
+   topology.yml or change opens_to to a valid existing node.
+
+WARNINGS
+--------
+
+3. [WARN] Summary table column was labelled "Points to halve error" with entries "4× as many"
+   (trapezoid) and "2× as many" (Simpson). The 4× entry misdescribed what happens when n doubles
+   (error drops by 4, not that you need 4× more points to halve it). The Simpson entry "2× as many"
+   was wrong in both interpretations — doubling n reduces O(h⁴) error by 16, and to halve O(h⁴)
+   error you need only about 1.19× more points. FIXED directly: column relabelled "Error reduction
+   when n doubles"; entries now "4× smaller" (trapezoid) and "16× smaller" (Simpson).
+
+4. [WARN] uofa_course: "MATH 201" is the course code for ODEs in topology.yml, not numerical methods.
+   Numerical methods is a distinct course at U of A. See inline MATH-PROF comment near front matter.
+   Author must verify and correct, or remove the field.
+
+NOTES
+-----
+
+5. [NOTE] The Newton-Raphson iteration formula appears in two algebraically equivalent forms:
+   body text uses (x_n + 2/x_n)/2; Exercise 2 stepper uses (x_n² + 2)/(2x_n). Both are correct
+   and identical. No change needed, but a consistency note for the editor.
+
+6. [NOTE] lin_alg is listed in topology.yml as enriching numerics but is absent from
+   prerequisite_ids. This is consistent with the enriches (not enables) relationship, so no error.
+   Worth keeping in mind if the chapter later develops matrix-heavy content.
+
+ALL WORKED EXAMPLES VERIFIED
+------------------------------
+- Bisection (f(x) = x³ − x − 2): all arithmetic correct after fix.
+- Newton-Raphson (√2): all four iterates and error values correct.
+- Lagrange interpolation: all three basis polynomials and assembly correct; discrepancy explanation correct.
+- Trapezoid rule (∫₀¹ eˣ dx, n=4): T₄ = 1.727222, error 0.008940 — correct.
+- Simpson 1/3 (same integral, n=4): S₄ = 1.718319, error ≈ 3.7×10⁻⁵ — correct.
+- Gauss-Legendre 2-point: GL ≈ 1.718094, error ≈ 1.88×10⁻⁴ — correct.
+- All six exercise steppers verify correctly.
+- Error formulas (trapezoid −(b−a)h²/12 f″(ξ), Simpson −(b−a)h⁴/180 f⁽⁴⁾(ξ)) correct.
+- Simpson exactness for degree ≤ 3 (superconvergence) stated correctly.
+- Secant method convergence order 1.618 (golden ratio) correct.
+- Quadratic convergence formula e_{n+1} ≈ −f″(x*)/[2f′(x*)] e_n² correct.
+
+VERDICT: BLOCK — two blockers above must be resolved before review.
+The mathematical content is otherwise sound.
+-->
+
+<!--
+ENGINEER-PROF REVIEW
+====================
+
+FIXED DIRECTLY
+--------------
+1. [BLOCKER — fixed] Euler's method was described as "the trapezoid rule applied to
+   the integral form of the ODE." This is wrong. Euler's method is the forward-rectangle
+   (left-endpoint) rule: it uses the derivative at the left endpoint of each step and is
+   first-order accurate (O(h) global error). The trapezoid rule would give the
+   trapezoidal ODE integrator (the implicit trapezoidal / Crank-Nicolson method), which
+   is second-order. Fixed: prose now says "forward-rectangle (left-endpoint) rule."
+
+FLAGGED WITH INLINE COMMENT
+----------------------------
+2. [WARN — inline comment inserted] Diode exercise (Ex 6): the circuit equation
+   uses ln(I/I_0), which is the large-forward-bias approximation of the exact
+   Shockley equation IR + V_T·ln(I/I_0 + 1) = V_s. The approximation is entirely
+   valid here (I ~ 0.04 A >> I_0 = 10⁻¹² A), but the omission is unexplained.
+   Students who later encounter the exact Shockley equation will be confused.
+   Inline ENGINEER-PROF comment inserted after the exercise statement.
+
+ENGINEERING FRAMING — PASSED
+------------------------------
+3. [PASS] FEA hook: "each element stiffness matrix is assembled using Gaussian
+   quadrature over the element domain." This is accurate. Gaussian quadrature is
+   the standard in FEA codes (ABAQUS, ANSYS use 2-point or 3-point Gauss rules
+   for most element types; the exact order depends on element formulation).
+
+4. [PASS] Newton-Raphson for implied volatility: Black-Scholes has no closed-form
+   inverse for volatility given market price; Newton-Raphson is the industry-standard
+   method. Accurate.
+
+5. [PASS] Signal processing: "interpolation underlies sample-rate conversion" and
+   "Newton-Raphson is used in carrier phase estimation." Both accurate. Polyphase
+   filter banks use polynomial interpolation; carrier recovery loops (PLLs) use
+   Newton-like iterations for phase locking.
+
+6. [PASS] Engineering destinations hook: "Every finite-element solver, circuit
+   simulator, and control system integrator runs on these three ideas." Accurate and
+   appropriately pitched.
+
+7. [NOTE] The chapter mentions Brent's method (bisection safety + Newton-like speed)
+   in a callout. The Illinois algorithm is also mentioned. Both are real hybrid methods
+   (Brent is standard in SciPy/MATLAB fzero; Illinois is less common but valid).
+   No issue.
+
+8. [NOTE] Gauss-Legendre nodes are described as "roots of the Legendre polynomial
+   P_n(x)." Correct. The weights are described as "determined by the condition of
+   exactness." This is slightly informal (the exact formula is w_i = 2/[(1-x_i²)(P_n′(x_i))²])
+   but acceptable at engineering layer.
+
+VERDICT: PASS WITH NOTES — one blocker fixed directly (Euler/trapezoid confusion);
+one warning flagged with inline comment (diode approximation). Remaining content
+is engineering-accurate.
+-->
+
+<!-- STUDENT REVIEW
+Chapter: Numerical methods (Vol 7, Ch 1)
+Layer: engineering
+Reviewer: student agent
+Date: 2026-04-01
+
+VERDICT: READABLE WITH FIXES
+
+FRICTION POINTS (inline comments inserted above each):
+
+1. Newton-Raphson error formula (§Newton-Raphson, "Why it converges so fast"):
+   The quadratic error equation e_{n+1} ≈ −[f″/2f′] e_n² drops in with no derivation
+   cue. The Taylor-expansion origin is invisible. Engineering readers who have not
+   seen iteration error analysis will not know what the f″ term represents or where
+   it comes from. A one-line prompt pointing to the Taylor expansion would close this.
+
+2. Newton's divided-difference form (§Newton's divided-difference form):
+   No worked numerical example. Contrast with Lagrange (full three-point example)
+   and trapezoid/Simpson (full worked integrals). The abstract recursive formula is
+   hard to verify mentally without at least a two-point illustration.
+
+3. ξ notation in trapezoid error formula (§Trapezoid rule):
+   "$\xi \in (a,b)$" appears without being in notation_introduced and without a
+   brief gloss. Readers who have not encountered mean-value/intermediate-value
+   arguments will treat it as unexplained magic. One parenthetical sentence is enough.
+
+4. Gauss-Legendre nodes — "roots of the Legendre polynomial" (§Gaussian quadrature):
+   "Legendre polynomial" is a term from special functions, not covered in the
+   prerequisites. Engineering readers will not know how to find the nodes for n > 2
+   or why the roots have this quadrature property. A note that the nodes are tabulated
+   and never hand-derived in practice would prevent a dead end.
+
+EXERCISE CALIBRATION:
+- Exercises 1–5 are well-calibrated to the worked examples; step sizes and functions
+  are consistent with what has been modelled.
+- Exercise 6 (diode circuit, Newton step) is the hardest and most interesting. The
+  engineer-prof inline comment about the diode approximation is appropriate; a brief
+  note to the student about the large-forward-bias assumption would help readers who
+  later see the full Shockley equation and wonder why the "+1" disappeared.
+
+WAYFINDING:
+- "Where this goes" correctly connects to numerical linear algebra and ODEs via
+  Newton-like methods and quadrature-as-time-stepping. Both links are concrete and
+  useful. No issues.
+- The callout "Where these methods appear" covers five fields with specific examples.
+  The FEM/Gaussian quadrature link (structural engineering) and the implied volatility
+  link (finance) are the strongest; both reward the engineering reader directly.
+-->
+
+<!--
+EDIT LOG (editor agent)
+=======================
+
+- [Newton-Raphson convergence, §Root-finding] Added a one-line Taylor-expansion cue
+  before the quadratic convergence formula. The formula was landing without any
+  indication of where the f'' term comes from; the cue makes the result traceable
+  without adding a full derivation.
+
+- [Newton's divided-difference form, §Interpolation] Added a two-point worked
+  illustration (the line through (1,1) and (2,8)) to make the recursion concrete
+  before the general formula. The Lagrange form had a full worked example; Newton's
+  had none. The illustration is three sentences and does not change the mathematics.
+
+- [Trapezoid rule error, §Numerical integration] Added a gloss on the $\xi$ notation
+  directly after the error formula. The notation_introduced section did not list $\xi$,
+  and a reader who stalls on the symbol loses the thread. The gloss is one sentence
+  and folds naturally into the existing text.
+
+- [Gaussian quadrature, §Numerical integration] Added a short paragraph before the
+  $n=2$ node/weight table explaining what Legendre polynomials are in practical terms
+  (a specific family whose roots are extremal for quadrature accuracy; nodes are
+  tabulated, never derived by hand). The term was appearing without context for any
+  reader who hasn't studied special functions.
+-->
+

@@ -18,12 +18,12 @@
 title: ""               # [REQUIRED] Short, plain. No "Introduction to".
 subtitle: ""            # [REQUIRED] One phrase naming the core move.
 
-volume: ~               # [REQUIRED] Integer 1–7
+volume: ~               # [REQUIRED] Integer 1–8
 chapter: ~              # [REQUIRED] Integer, unique within volume
 section: ""             # [OPTIONAL] For vol-07 sub-parts (odes/fourier etc.)
 
 layer: ""               # [REQUIRED] One of:
-                        #   pre-university | bridge | university | engineering
+                        #   pre-university | bridge | university | engineering | discipline
                         # Determines which ring of the bloom this sits in.
 
 status: "seed"          # [REQUIRED] One of: seed | draft | review | final
@@ -46,7 +46,17 @@ rewrite: ""             # [REQUIRED] The rule that fires in this chapter.
                         # without breaking the relationship."
 
 opens_to:               # [REQUIRED] What this chapter makes visible.
-  - id: ""              # Chapter id (volume-chapter slug, e.g. "v2c1-linear")
+                        # Empty list [] is valid ONLY for the genuinely terminal
+                        # chapter in the series — i.e. a chapter whose topology
+                        # node has no outgoing edges in _data/topology.yml.
+                        # All other chapters must have at least one entry.
+  - id: ""              # Chapter id. Two conventions are in use:
+                        #   Vols 1–6: chapter-slug format, e.g. "v2c1-linear"
+                        #   Vols 7–8 (layers engineering/discipline): topology
+                        #     node id format, e.g. "estimation_inverse"
+                        # Use the convention that matches the target chapter's
+                        # volume. Do not mix conventions within a batch.
+                        # Topology node ids as prerequisite_ids are always valid.
     label: ""           # Short human label
     volume: ~           # Integer
     relationship: ""    # One of: enables | enriches | motivates
@@ -57,7 +67,9 @@ opens_to:               # [REQUIRED] What this chapter makes visible.
 
 # ── Wayfinding ──────────────────────────────────────────────────────────────
 
-prerequisite_ids: []    # [REQUIRED] List of chapter id slugs.
+prerequisite_ids: []    # [REQUIRED] List of topology node ids from _data/topology.yml.
+                        # Use the node `id` field (e.g. "linear_eq", "num", "trig") —
+                        # NOT chapter-slug format (e.g. NOT "v1c1-num").
                         # Empty list is valid for Vol 1 Chapter 1 only.
 
 destinations:           # [REQUIRED] At least one entry.

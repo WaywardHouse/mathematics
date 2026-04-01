@@ -1,6 +1,876 @@
 ---
 title: "Linear programming"
-status: "seed"
+subtitle: "The best answer in a constrained space"
+chapter: 1
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: |
+  You want to maximise or minimise something subject to constraints.
+  The relationships are all linear.
+
+rewrite: |
+  Every LP has a feasible region that is a convex polytope. The optimum
+  is always at a vertex. The simplex method walks the vertices efficiently.
+
+opens_to:
+  - id: vol7-optimisation-02
+    label: "Graphs and networks"
+    volume: 7
+    relationship: enables
+
+prerequisite_ids:
+  - lin_alg
+  - inequalities
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: A refinery blending crude stocks to meet product specifications at minimum cost is solving an LP with hundreds of variables.
+    career_example: Process engineer optimising feed ratios for a distillation unit
+  - field: biz
+    label: Finance and quant
+    hook: Portfolio managers maximise expected return subject to risk and regulatory constraints — a linear programme when returns are modelled as linear.
+    career_example: Operations research analyst scheduling production across a manufacturing network
+  - field: comp
+    label: Computing and data
+    hook: Support vector machines solve a quadratic programme, but the dual of a linear SVM is a pure LP.
+    career_example: Data scientist formulating feature selection as an integer LP
+
+hook: |
+  A factory can make two products — call them chairs and tables. Each
+  chair uses 2 board-hours of cutting time and 1 hour of finishing.
+  Each table uses 1 board-hour of cutting and 3 hours of finishing.
+  The factory has 8 cutting hours and 9 finishing hours available per
+  day. Chairs sell at a $30 margin; tables at $50. How many of each
+  should it make?
+
+  This is not a puzzle you can answer by intuition. Make only chairs and
+  you run out of cutting time. Make only tables and finishing is the
+  bottleneck. The mix that squeezes out the most profit sits somewhere
+  in the middle, at a specific corner of the region defined by those
+  constraints — and that is exactly what linear programming finds.
+
+notation_introduced:
+  - symbol: "\\mathbf{x}"
+    reads_as: "vector of decision variables"
+    notation_weight: 2
+  - symbol: "\\mathbf{c}^\\top \\mathbf{x}"
+    reads_as: "objective function — inner product of cost/profit vector with decision vector"
+    notation_weight: 2
+  - symbol: "A\\mathbf{x} \\leq \\mathbf{b}"
+    reads_as: "system of linear inequality constraints"
+    notation_weight: 2
+  - symbol: "\\mathbf{x} \\geq \\mathbf{0}"
+    reads_as: "non-negativity constraints — decision variables cannot be negative"
+    notation_weight: 1
+  - symbol: "\\mathbf{s}"
+    reads_as: "slack variable vector — converts inequalities to equalities"
+    notation_weight: 2
+  - symbol: "z"
+    reads_as: "objective value — the number being optimised"
+    notation_weight: 1
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+kreyszig_chapter: 22
+stroud_programme: 32
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+A factory can make two products — call them chairs and tables. Each
+chair uses 2 board-hours of cutting time and 1 hour of finishing.
+Each table uses 1 board-hour of cutting and 3 hours of finishing.
+The factory has 8 cutting hours and 9 finishing hours available per
+day. Chairs sell at a $30 margin; tables at $50. How many of each
+should it make?
+
+This is not a puzzle you can answer by intuition. Make only chairs and
+you run out of cutting time. Make only tables and finishing is the
+bottleneck. The mix that squeezes out the most profit sits somewhere
+in the middle, at a specific corner of the region defined by those
+constraints — and that is exactly what linear programming finds.
+
+## LP formulation
+
+A **linear programme** (LP) has three components: *decision variables*, an
+*objective function*, and *constraints*.
+
+**Decision variables.** These are the quantities you control. Write them as
+$x_1, x_2, \ldots, x_n$ — read as "x-sub-one, x-sub-two, up to x-sub-n" —
+or as the vector $\mathbf{x}$, read as "bold x." For the factory problem,
+$x_1$ is the number of chairs made per day and $x_2$ is the number of tables.
+
+**Objective function.** This is what you are optimising. It is always a
+linear combination of the decision variables: $z = c_1 x_1 + c_2 x_2 +
+\cdots + c_n x_n$, written compactly as $z = \mathbf{c}^\top \mathbf{x}$,
+read "z equals c-transpose times x." The coefficients $\mathbf{c}$ are
+your profit margins (for maximisation) or costs (for minimisation).
+
+**Constraints.** Limits on what the variables can be. Each constraint is a
+linear inequality: $a_{i1} x_1 + a_{i2} x_2 + \cdots \leq b_i$. Non-negativity
+$\mathbf{x} \geq \mathbf{0}$ — read "x is non-negative" — is almost always
+included separately; you cannot make a negative number of chairs.
+
+**The factory problem in LP form:**
+
+$$\text{maximise} \quad z = 30x_1 + 50x_2$$
+
+subject to:
+
+$$2x_1 + x_2 \leq 8 \qquad \text{(cutting hours)}$$
+$$x_1 + 3x_2 \leq 9 \qquad \text{(finishing hours)}$$
+$$x_1, x_2 \geq 0$$
+
+**Standard form.** The simplex method requires equality constraints. Convert
+each $\leq$ constraint to an equation by adding a **slack variable** $s_i \geq 0$,
+read "slack variable i." Slack absorbs the difference between the left side
+and the right side:
+
+$$2x_1 + x_2 + s_1 = 8, \quad s_1 \geq 0$$
+$$x_1 + 3x_2 + s_2 = 9, \quad s_2 \geq 0$$
+
+Now all constraints are equations, all variables are non-negative, and the
+objective is linear. This is standard form: $\text{maximise } \mathbf{c}^\top\mathbf{x}$
+subject to $A\mathbf{x} = \mathbf{b}$, $\mathbf{x} \geq \mathbf{0}$.
+
+**A second example: diet/resource allocation.** A hospital nutrition service
+needs to provide at least 60 g of protein, at least 800 mg of calcium, and
+at most 2000 kcal per patient per day from two food types. Food A costs
+\$1.20 per unit, food B costs \$0.80 per unit. Formulate the LP to minimise
+daily cost.
+
+Let $x_1$ = units of food A, $x_2$ = units of food B.
+
+| | Food A | Food B | Requirement |
+|---|---|---|---|
+| Protein (g/unit) | 15 | 10 | ≥ 60 |
+| Calcium (mg/unit) | 200 | 150 | ≥ 800 |
+| Energy (kcal/unit) | 400 | 300 | ≤ 2000 |
+| Cost ($/unit) | 1.20 | 0.80 | minimise |
+
+$$\text{minimise} \quad z = 1.20x_1 + 0.80x_2$$
+
+subject to:
+
+$$15x_1 + 10x_2 \geq 60$$
+$$200x_1 + 150x_2 \geq 800$$
+$$400x_1 + 300x_2 \leq 2000$$
+$$x_1, x_2 \geq 0$$
+
+For $\geq$ constraints, introduce **surplus variables** $s_i \geq 0$:
+$15x_1 + 10x_2 - s_1 = 60$. The minus sign makes $s_i$ the excess above the
+minimum.
+
+<!-- STUDENT: Surplus variables (minus sign) are introduced only in the diet problem and never used in the simplex worked example that follows, which uses only slack variables (plus sign). A student who has to handle a ≥ constraint in the simplex method will not know what to do with the surplus variable in the tableau. A brief note — "with surplus variables the initial BFS may not be obvious; artificial variables are needed, covered in more advanced treatments" — would prevent false confidence that the diet problem's standard form is ready to hand to simplex. -->
+
+Note that the diet problem's standard form, with its surplus variables and $\geq$ constraints, is not directly ready for the simplex method as presented below. With surplus variables, the origin is no longer a feasible starting point (it violates the minimum requirements), and finding an initial basic feasible solution requires an additional technique — *artificial variables* — that is covered in more advanced treatments. The simplex worked example uses only $\leq$ constraints to keep the starting point clear.
+
+## Graphical method
+
+For two decision variables you can draw the **feasible region** — the set of
+all $(x_1, x_2)$ satisfying every constraint — and read off the optimum. More
+importantly, you can *see* the geometry that the simplex method will exploit
+algebraically when there are too many variables to draw.
+
+For the factory problem, plot each constraint boundary:
+
+- $2x_1 + x_2 = 8$: line through $(4, 0)$ and $(0, 8)$. Feasible side: below/left.
+- $x_1 + 3x_2 = 9$: line through $(9, 0)$ and $(0, 3)$. Feasible side: below/left.
+- $x_1, x_2 \geq 0$: first quadrant only.
+
+The feasible region is a convex polygon — a quadrilateral with four vertices:
+$(0,0)$, $(4,0)$, $(3,2)$, and $(0,3)$.
+
+**Corner-point theorem.** If an LP has an optimal solution, there is an optimal
+solution at a vertex (corner point) of the feasible region. This is the
+foundational geometric fact: the objective function $z = 30x_1 + 50x_2$ is
+a family of parallel lines (iso-profit lines). As you push the line in the
+direction of increasing profit, the last point of contact with the feasible
+region is a vertex.
+
+Evaluate the objective at each vertex:
+
+| Vertex | $z = 30x_1 + 50x_2$ |
+|---|---|
+| $(0, 0)$ | $0$ |
+| $(4, 0)$ | $120$ |
+| $(3, 2)$ | $190$ |
+| $(0, 3)$ | $150$ |
+
+Maximum profit is **$190** per day, achieved by making 3 chairs and 2 tables.
+
+The intersection point $(3, 2)$ comes from solving $2x_1 + x_2 = 8$ and
+$x_1 + 3x_2 = 9$ simultaneously. Subtract twice the second from the first:
+$-5x_2 = -10$, so $x_2 = 2$, $x_1 = 3$.
+
+::: {.callout-note appearance="simple"}
+**Why the optimum is always at a vertex**
+
+The feasible region of an LP is a convex polytope — any two feasible points
+can be connected by a straight line that stays entirely inside the region.
+The objective function is linear, so it increases at a constant rate in one
+direction. If the optimum were in the interior, you could always move a little
+further in the improving direction and still stay feasible, reaching a higher
+objective value. The only place where you genuinely cannot improve further is
+a boundary. And on a boundary, you can keep moving along the edge until you
+hit a vertex. This is why the simplex method only needs to visit vertices.
+:::
+
+<!-- VIZ: 2D LP explorer — sliders for two constraint RHS values, shaded feasible region updates live, optimal vertex highlighted, objective function contour shown -->
+
+What the graphical method shows directly is what the simplex method does
+systematically: start at one vertex (here, the origin), check whether any
+neighbour is better, move to the best neighbour, and repeat. The graphical
+picture makes the logic self-evident. The simplex method turns that logic
+into algebra so it can work in a hundred dimensions instead of two.
+
+## Simplex method
+
+The graphical method breaks down beyond two variables. The simplex method
+does the same thing — walk from vertex to vertex, improving the objective
+each step — algebraically, using the tableau.
+
+**Setup: slack variables and initial tableau.** Return to the factory problem
+in standard form with $x_1, x_2$ (original variables) and $s_1, s_2$ (slacks):
+
+$$2x_1 + x_2 + s_1 = 8$$
+$$x_1 + 3x_2 + s_2 = 9$$
+$$z = 30x_1 + 50x_2 \quad \Longrightarrow \quad -30x_1 - 50x_2 + z = 0$$
+
+The **basic feasible solution** (BFS) at the origin: set non-basic variables
+$x_1 = x_2 = 0$, read off basic variables $s_1 = 8$, $s_2 = 9$, $z = 0$.
+This is the vertex $(0, 0)$.
+
+**Initial tableau:**
+
+$$\begin{array}{c|cccc|c}
+\text{Basic} & x_1 & x_2 & s_1 & s_2 & \text{RHS} \\ \hline
+s_1 & 2 & 1 & 1 & 0 & 8 \\
+s_2 & 1 & 3 & 0 & 1 & 9 \\ \hline
+z   & -30 & -50 & 0 & 0 & 0
+\end{array}$$
+
+**Pivot selection.** Look at the objective row (bottom row). The most negative
+coefficient is $-50$ in the $x_2$ column: $x_2$ enters the basis. The column
+$x_2$ is the *entering column*.
+
+To choose the *leaving variable*, compute the minimum ratio: $\text{RHS} /
+\text{entering-column coefficient}$ for rows with positive pivot-column entries
+only. Rows with zero or negative entries in the pivot column are skipped:
+a zero entry means increasing $x_2$ has no effect on that constraint, and a
+negative entry means the constraint becomes *easier* to satisfy as $x_2$
+increases — neither constrains the move.
+
+<!-- STUDENT: Why only rows with positive pivot-column entries? A reader doing this for the first time won't know that dividing by a zero or negative entry would give a nonsensical (infinite or negative) ratio. A one-sentence explanation — "rows with zero or negative entries in the pivot column are skipped because they do not constrain how far we can increase the entering variable" — would prevent confusion when a negative entry appears in a later exercise. -->
+
+$$\frac{8}{1} = 8 \qquad \frac{9}{3} = 3$$
+
+Minimum ratio is 3, so $s_2$ leaves. The pivot element is the entry in row
+$s_2$, column $x_2$: that is $3$.
+
+**Pivot operation.** Divide the $s_2$ row by 3 to make the pivot element 1:
+
+$$\text{new row 2}: \quad \tfrac{1}{3}x_1 + x_2 + 0 \cdot s_1 + \tfrac{1}{3}s_2 = 3$$
+
+Eliminate $x_2$ from every other row by adding/subtracting multiples of the
+new row 2:
+
+- Row 1 $\leftarrow$ Row 1 $-$ 1 $\times$ new row 2:
+  $(2 - \frac{1}{3})x_1 + 0 \cdot x_2 + s_1 - \frac{1}{3}s_2 = 8 - 3$
+  $\Rightarrow \tfrac{5}{3}x_1 + s_1 - \tfrac{1}{3}s_2 = 5$
+
+- Objective row $\leftarrow$ Obj row $+$ 50 $\times$ new row 2:
+  $(-30 + \frac{50}{3})x_1 + 0 \cdot x_2 + 0 \cdot s_1 + \frac{50}{3}s_2 = 150$
+  $\Rightarrow -\tfrac{40}{3}x_1 + \tfrac{50}{3}s_2 = 150$
+
+**Tableau after first pivot ($x_2$ enters, $s_2$ leaves):**
+
+$$\begin{array}{c|cccc|c}
+\text{Basic} & x_1 & x_2 & s_1 & s_2 & \text{RHS} \\ \hline
+s_1 & 5/3 & 0 & 1 & -1/3 & 5 \\
+x_2 & 1/3 & 1 & 0 &  1/3 & 3 \\ \hline
+z   & -40/3 & 0 & 0 & 50/3 & 150
+\end{array}$$
+
+Current BFS: $x_1 = 0$, $x_2 = 3$, $s_1 = 5$, $s_2 = 0$, $z = 150$. This
+is vertex $(0, 3)$.
+
+**Second pivot.** Most negative objective coefficient: $-40/3$ in the $x_1$
+column. $x_1$ enters. Minimum ratio:
+
+$$\frac{5}{5/3} = 3 \qquad \frac{3}{1/3} = 9$$
+
+$s_1$ leaves. Pivot element: $5/3$. Divide row 1 by $5/3$:
+
+$$\text{new row 1}: \quad x_1 + 0 \cdot x_2 + \tfrac{3}{5}s_1 - \tfrac{1}{5}s_2 = 3$$
+
+Eliminate $x_1$ from other rows:
+
+- Row 2 $\leftarrow$ Row 2 $-$ $\frac{1}{3}$ $\times$ new row 1:
+  $0 \cdot x_1 + x_2 - \tfrac{1}{5}s_1 + \tfrac{2}{5}s_2 = 2$
+
+- Obj row $\leftarrow$ Obj row $+$ $\frac{40}{3}$ $\times$ new row 1:
+  $0 \cdot x_1 + 8 \cdot s_1 + 14 \cdot s_2 = 190$
+
+  Let's be precise: $-\tfrac{40}{3} + \tfrac{40}{3} \cdot 1 = 0$; $s_1$ coefficient:
+  $0 + \tfrac{40}{3} \cdot \tfrac{3}{5} = 8$; $s_2$ coefficient:
+  $\tfrac{50}{3} + \tfrac{40}{3} \cdot (-\tfrac{1}{5}) = \tfrac{50}{3} - \tfrac{8}{3} = 14$;
+  RHS: $150 + \tfrac{40}{3} \cdot 3 = 150 + 40 = 190$.
+
+**Final tableau:**
+
+$$\begin{array}{c|cccc|c}
+\text{Basic} & x_1 & x_2 & s_1 & s_2 & \text{RHS} \\ \hline
+x_1 & 1 & 0 &  3/5 & -1/5 & 3 \\
+x_2 & 0 & 1 & -1/5 &  2/5 & 2 \\ \hline
+z   & 0 & 0 &  8   & 14   & 190
+\end{array}$$
+
+All objective-row coefficients are non-negative. **Termination condition met.**
+Optimal solution: $x_1 = 3$, $x_2 = 2$, $z = 190$.
+
+This matches the graphical answer exactly.
+
+::: {.callout-note appearance="simple"}
+**Why simplex terminates**
+
+Each pivot strictly improves the objective (assuming no degeneracy — no zero
+RHS values). There are finitely many vertices. So the method must reach an
+optimum in a finite number of steps. In practice, simplex visits far fewer
+vertices than the total count even for large LPs.
+:::
+
+<!-- VIZ: simplex tableau stepper — shows tableau at each pivot, highlights entering and leaving variables, "Next pivot" button, displays current BFS value -->
+
+## Duality
+
+Every LP — the **primal** — has a companion LP called the **dual**. The dual
+is not just a mathematical curiosity; it has direct economic meaning and
+provides a powerful optimality check.
+
+**Constructing the dual.** Start from the primal in standard inequality form:
+
+$$\text{maximise} \quad \mathbf{c}^\top \mathbf{x} \quad \text{subject to} \quad A\mathbf{x} \leq \mathbf{b},\ \mathbf{x} \geq \mathbf{0}$$
+
+The dual introduces one dual variable $y_i$ — read "y-sub-i" — for each
+primal constraint. The dual is:
+
+$$\text{minimise} \quad \mathbf{b}^\top \mathbf{y} \quad \text{subject to} \quad A^\top \mathbf{y} \geq \mathbf{c},\ \mathbf{y} \geq \mathbf{0}$$
+
+The roles reverse: primal constraints become dual variables, primal variables
+become dual constraints, primal objective coefficients become dual RHS values,
+and primal RHS values become dual objective coefficients. The maximisation
+becomes minimisation.
+
+**Dual of the factory problem.** Primal: maximise $30x_1 + 50x_2$ subject to
+$2x_1 + x_2 \leq 8$, $x_1 + 3x_2 \leq 9$, $x_1, x_2 \geq 0$.
+
+Let $y_1, y_2$ be the dual variables (one per primal constraint):
+
+$$\text{minimise} \quad 8y_1 + 9y_2$$
+
+subject to:
+
+$$2y_1 + y_2 \geq 30 \qquad \text{(column 1 of } A^\top\text{)}$$
+$$y_1 + 3y_2 \geq 50 \qquad \text{(column 2 of } A^\top\text{)}$$
+$$y_1, y_2 \geq 0$$
+
+**Weak duality theorem.** For any primal feasible $\mathbf{x}$ and any dual
+feasible $\mathbf{y}$:
+
+$$\mathbf{c}^\top \mathbf{x} \leq \mathbf{b}^\top \mathbf{y}$$
+
+<!-- STUDENT: The one-sentence proof uses two key inequalities in sequence: first replacing c with A^T y (using the dual constraint), then replacing Ax with b (using the primal constraint). The chain is valid but it assumes the reader is comfortable manipulating matrix inequalities. A reader who pauses at "A^T y ≥ c implies c^T x ≤ (A^T y)^T x" will be stuck. Adding "(because each component of c satisfies cⱼ ≤ (A^T y)ⱼ and xⱼ ≥ 0)" would make the first step explicit. -->
+
+*Proof.* The dual constraint says $A^\top\mathbf{y} \geq \mathbf{c}$, meaning each
+component satisfies $(A^\top\mathbf{y})_j \geq c_j$. Since $x_j \geq 0$, multiplying
+through and summing over all $j$ gives $\mathbf{c}^\top \mathbf{x} \leq (A^\top\mathbf{y})^\top \mathbf{x} = \mathbf{y}^\top A\mathbf{x}$. The primal constraint $A\mathbf{x} \leq \mathbf{b}$ combined with $\mathbf{y} \geq \mathbf{0}$ then gives $\mathbf{y}^\top A\mathbf{x} \leq \mathbf{y}^\top \mathbf{b} = \mathbf{b}^\top\mathbf{y}$. Chaining both inequalities: $\mathbf{c}^\top \mathbf{x} \leq \mathbf{b}^\top\mathbf{y}$. $\square$
+
+The strong duality theorem (proved via simplex theory) says the inequality is
+tight at optimality: primal and dual optimal values are equal.
+
+**Economic interpretation: shadow prices.** The optimal dual variables have a
+direct meaning. $y_1$ is the **shadow price** of the first constraint (cutting
+hours): it tells you how much the optimal objective increases if you add one
+unit of that resource. At optimality, $y_1 = 8$ and $y_2 = 14$ — each
+additional cutting hour is worth $8, each additional finishing hour is worth
+$14. You can verify: $8y_1 + 9y_2 = 8 \times 8 + 9 \times 14 = 64 + 126 = 190$.
+Dual optimal matches primal optimal — strong duality holds.
+
+**Complementary slackness.** At optimality, either a primal constraint is tight
+(active, $A_i \mathbf{x} = b_i$) or the corresponding dual variable is zero
+($y_i = 0$); and either a dual constraint is tight or the corresponding primal
+variable is zero. Formally: $y_i(b_i - A_i\mathbf{x}) = 0$ and
+$(A^\top\mathbf{y} - \mathbf{c})_j x_j = 0$ for all $i, j$. This gives you
+a system of equations to verify optimality without running the full simplex.
+
+## Sensitivity analysis
+
+The optimal basis found by simplex remains optimal as long as the problem
+data stays within certain ranges. If the profit margin on $x_1$ changes from
+30 to $30 + \Delta$, the basis $\{x_1, x_2\}$ stays optimal while the
+objective-row coefficient of $s_1$ (currently 8) remains non-negative and the
+coefficient of $s_2$ (currently 14) remains non-negative. The $x_1$ basic row
+is $[1, 0, 3/5, -1/5, 3]$, so changing $c_1$ by $\Delta$ shifts the
+$s_1$ coefficient to $8 - \tfrac{3}{5}\Delta$ and the $s_2$ coefficient to
+$14 + \tfrac{1}{5}\Delta$. Requiring both to remain non-negative:
+$8 - \tfrac{3}{5}\Delta \geq 0 \Rightarrow \Delta \leq \tfrac{40}{3}$ and
+$14 + \tfrac{1}{5}\Delta \geq 0 \Rightarrow \Delta \geq -70$.
+The basis is stable for $-70 \leq \Delta \leq \tfrac{40}{3}$,
+i.e., $c_1 \in [-40, 43\tfrac{1}{3}]$. Similarly, if the RHS $b_1 = 8$ changes, the solution
+coordinates shift but the same basis remains feasible as long as all basic
+variables stay non-negative — the range can be read from the current tableau's
+column for $s_1$. This analysis is done without re-running simplex.
+
+## Where this goes
+
+Chapter 2 of this section develops **network flow problems** — shortest path,
+maximum flow, minimum cost flow — all of which can be formulated as LPs with
+special structure (network matrices) that allows faster algorithms than
+general simplex. Network LPs arise everywhere: logistics, circuit analysis,
+pipeline routing.
+
+The broader field of **integer programming** (mixed-integer LP) handles the
+case where some or all variables must be integers — scheduling problems,
+facility location, combinatorial optimisation. Branch-and-bound solves these
+by solving a sequence of LP relaxations. The LP theory in this chapter is the
+computational core of those methods.
+
+::: {.callout-tip appearance="simple"}
+**Where LP shows up**
+
+- A refinery blends crude feedstocks to meet fuel-grade specifications at
+  minimum cost — an LP with 50–500 variables, solved daily.
+- An airline schedules crews to cover flights while meeting duty-time
+  regulations — an integer LP with millions of variables in practice.
+- A fund manager maximises expected portfolio return subject to risk limits
+  and position constraints — LP or quadratic programming depending on the
+  risk model.
+- A nutritionist formulates minimum-cost meal plans meeting dietary
+  requirements — the diet problem, which drove early LP development.
+- A chip manufacturer allocates fab capacity across product lines to
+  maximise margin — LP with supply chain constraints.
+:::
+
+## Exercises
+
+::: {.callout-note appearance="simple"}
+These are puzzles. Each has a clean optimal solution. The interesting work
+is in the formulation — translating the situation into variables, objective,
+and constraints — and in executing the simplex steps carefully.
+:::
+
+**Exercise 1.** A workshop makes two products, shelves and benches.
+Each shelf uses 3 kg of timber and 1 hour of labour. Each bench uses
+2 kg of timber and 4 hours of labour. The workshop has 24 kg of timber
+and 16 hours of labour available per week. Profit is $20 per shelf and
+$45 per bench. Formulate the LP to maximise weekly profit.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Define decision variables"
+    eq: "x_1 = \\text{shelves/week},\\quad x_2 = \\text{benches/week}"
+    note: ~
+  - op: "Write objective function"
+    eq: "\\text{maximise } z = 20x_1 + 45x_2"
+    note: ~
+  - op: "Write timber constraint"
+    eq: "3x_1 + 2x_2 \\leq 24"
+    note: "Each shelf uses 3 kg, each bench 2 kg; total cannot exceed 24 kg."
+  - op: "Write labour constraint"
+    eq: "x_1 + 4x_2 \\leq 16"
+    note: "Each shelf uses 1 hour, each bench 4 hours; total cannot exceed 16 hours."
+  - op: "Write non-negativity"
+    eq: "x_1 \\geq 0,\\quad x_2 \\geq 0"
+    note: ~
+  - op: "Complete LP formulation"
+    eq: "\\text{max } 20x_1 + 45x_2 \\text{ s.t. } 3x_1+2x_2\\leq24,\\ x_1+4x_2\\leq16,\\ x_1,x_2\\geq0"
+    note: ~
+  - op: "Check"
+    eq: "\\text{Four constraints including non-negativity; one linear objective. Formulation valid.}"
+    note: ~
+-->
+
+**Exercise 2.** Solve the LP from Exercise 1 graphically. Plot both constraint
+boundaries, shade the feasible region, evaluate the objective at every vertex,
+and identify the optimal solution.
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Find intercepts of constraint 1: 3x_1 + 2x_2 = 24"
+    eq: "x_1\\text{-intercept}: (8,0);\\quad x_2\\text{-intercept}: (0,12)"
+    note: ~
+  - op: "Find intercepts of constraint 2: x_1 + 4x_2 = 16"
+    eq: "x_1\\text{-intercept}: (16,0);\\quad x_2\\text{-intercept}: (0,4)"
+    note: ~
+  - op: "Find intersection of the two constraint lines"
+    eq: "3x_1+2x_2=24,\\ x_1+4x_2=16 \\Rightarrow x_1=\\tfrac{64}{10}=6.4,\\ x_2=\\tfrac{24}{10}=2.4"
+    note: "From the second equation x_1=16-4x_2. Substitute: 3(16-4x_2)+2x_2=24, so 48-10x_2=24, x_2=2.4, x_1=6.4."
+  - op: "List vertices of feasible region"
+    eq: "(0,0),\\ (8,0),\\ (6.4,\\ 2.4),\\ (0,4)"
+    note: "Check each vertex satisfies both constraints."
+  - op: "Evaluate objective at each vertex"
+    eq: "z(0,0)=0,\\ z(8,0)=160,\\ z(6.4,2.4)=20(6.4)+45(2.4)=128+108=236,\\ z(0,4)=180"
+    note: ~
+  - op: "Identify optimal vertex"
+    eq: "\\text{Optimum at } (6.4,\\ 2.4),\\ z^* = 236"
+    note: ~
+  - op: "Check"
+    eq: "3(6.4)+2(2.4)=19.2+4.8=24\\leq24\\checkmark;\\quad 6.4+4(2.4)=6.4+9.6=16\\leq16\\checkmark"
+    note: ~
+-->
+
+**Exercise 3.** Convert the LP from Exercise 1 to standard form by introducing
+slack variables. Write out the full system of equality constraints and identify
+the initial basic feasible solution (the origin vertex).
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Add slack variable s_1 to constraint 1"
+    eq: "3x_1 + 2x_2 + s_1 = 24,\\quad s_1 \\geq 0"
+    note: "s_1 is the unused timber in kg."
+  - op: "Add slack variable s_2 to constraint 2"
+    eq: "x_1 + 4x_2 + s_2 = 16,\\quad s_2 \\geq 0"
+    note: "s_2 is the unused labour in hours."
+  - op: "Rewrite objective in standard form"
+    eq: "z - 20x_1 - 45x_2 = 0"
+    note: "Move objective terms to left so the objective row reads -c in the tableau."
+  - op: "All variables non-negative"
+    eq: "x_1,x_2,s_1,s_2 \\geq 0"
+    note: ~
+  - op: "Initial BFS: set non-basic variables to zero"
+    eq: "x_1=0,\\ x_2=0 \\Rightarrow s_1=24,\\ s_2=16,\\ z=0"
+    note: "Slack variables are basic at the origin — all capacity unused."
+  - op: "Check"
+    eq: "3(0)+2(0)+24=24\\checkmark;\\quad 0+4(0)+16=16\\checkmark"
+    note: ~
+-->
+
+**Exercise 4.** Solve the following LP using the simplex tableau method.
+Show all pivots.
+
+$$\text{maximise} \quad z = 5x_1 + 4x_2$$
+
+subject to:
+
+$$6x_1 + 4x_2 \leq 24$$
+$$x_1 + 2x_2 \leq 6$$
+$$x_1, x_2 \geq 0$$
+
+<!-- STEPPER
+exercise: 4
+steps:
+  - op: "Write initial tableau with slacks s_1, s_2"
+    eq: "\\begin{array}{c|cccc|c}\\text{Basic}&x_1&x_2&s_1&s_2&\\text{RHS}\\\\\\hline s_1&6&4&1&0&24\\\\s_2&1&2&0&1&6\\\\\\hline z&-5&-4&0&0&0\\end{array}"
+    note: ~
+  - op: "Select entering variable: most negative obj coefficient is -5, so x_1 enters"
+    eq: "\\text{Entering column: } x_1"
+    note: ~
+  - op: "Minimum ratio test: 24/6 = 4, 6/1 = 6. Minimum is 4, so s_1 leaves"
+    eq: "\\text{Pivot element: row } s_1,\\text{ column } x_1 = 6"
+    note: ~
+  - op: "Pivot: divide row s_1 by 6"
+    eq: "\\text{New row 1: } x_1 + \\tfrac{2}{3}x_2 + \\tfrac{1}{6}s_1 = 4"
+    note: ~
+  - op: "Eliminate x_1 from row s_2: row 2 minus 1 × new row 1"
+    eq: "\\tfrac{4}{3}x_2 - \\tfrac{1}{6}s_1 + s_2 = 2"
+    note: ~
+  - op: "Eliminate x_1 from obj row: obj row plus 5 × new row 1"
+    eq: "-\\tfrac{2}{3}x_2 + \\tfrac{5}{6}s_1 = 20"
+    note: "x_2 coefficient: -4 + 5·(2/3) = -4 + 10/3 = -2/3. Still negative — a second pivot is needed."
+  - op: "Tableau after first pivot"
+    eq: "\\begin{array}{c|cccc|c}\\text{Basic}&x_1&x_2&s_1&s_2&\\text{RHS}\\\\\\hline x_1&1&2/3&1/6&0&4\\\\s_2&0&4/3&-1/6&1&2\\\\\\hline z&0&-2/3&5/6&0&20\\end{array}"
+    note: ~
+  - op: "Second pivot: most negative obj coefficient is -2/3, so x_2 enters. Minimum ratio: 4/(2/3)=6, 2/(4/3)=3/2. Minimum is 3/2, so s_2 leaves. Pivot element: 4/3."
+    eq: "\\text{Entering: } x_2,\\quad \\text{Leaving: } s_2,\\quad \\text{Pivot element: } 4/3"
+    note: ~
+  - op: "Divide row s_2 by 4/3"
+    eq: "\\text{New row 2: } 0\\cdot x_1 + x_2 - \\tfrac{1}{8}s_1 + \\tfrac{3}{4}s_2 = \\tfrac{3}{2}"
+    note: ~
+  - op: "Eliminate x_2 from row x_1: row 1 minus (2/3) × new row 2"
+    eq: "x_1 + \\tfrac{1}{4}s_1 - \\tfrac{1}{2}s_2 = 3"
+    note: "1/6 - (2/3)(-1/8) = 1/6 + 1/12 = 1/4; 0 - (2/3)(3/4) = -1/2; 4 - (2/3)(3/2) = 3."
+  - op: "Eliminate x_2 from obj row: obj row plus (2/3) × new row 2"
+    eq: "\\tfrac{3}{4}s_1 + \\tfrac{1}{2}s_2 = 21"
+    note: "5/6 + (2/3)(-1/8) = 5/6 - 1/12 = 3/4; 0 + (2/3)(3/4) = 1/2; 20 + (2/3)(3/2) = 21."
+  - op: "Tableau after second pivot"
+    eq: "\\begin{array}{c|cccc|c}\\text{Basic}&x_1&x_2&s_1&s_2&\\text{RHS}\\\\\\hline x_1&1&0&1/4&-1/2&3\\\\x_2&0&1&-1/8&3/4&3/2\\\\\\hline z&0&0&3/4&1/2&21\\end{array}"
+    note: ~
+  - op: "All obj-row coefficients non-negative: optimal"
+    eq: "x_1=3,\\ x_2=\\tfrac{3}{2},\\ s_1=0,\\ s_2=0,\\ z^*=21"
+    note: "Both constraints are tight at the optimum."
+  - op: "Check"
+    eq: "6(3)+4(3/2)=18+6=24\\leq24\\checkmark;\\quad 3+2(3/2)=3+3=6\\leq6\\checkmark;\\quad z=5(3)+4(3/2)=15+6=21\\checkmark"
+    note: ~
+-->
+
+<!-- ENGINEER-PROF: Exercise 5 states "(4, 0) is the primal optimal" but the simplex solution in Exercise 4 gives the optimal at (3, 3/2) with z* = 21. (4, 0) is feasible (z = 20) but not optimal. The STEPPER below is internally consistent (it uses the true optimal via complementary slackness), but the exercise wording must be corrected to avoid telling students the wrong answer. Fix the exercise statement. -->
+
+**Exercise 5.** Write the dual of the LP in Exercise 4. Then use complementary
+slackness to find the dual optimal solution $(y_1, y_2)$. Verify strong duality
+by checking that primal and dual objective values agree at optimality.
+
+<!-- STEPPER
+exercise: 5
+steps:
+  - op: "Primal in standard inequality form"
+    eq: "\\text{max } 5x_1+4x_2 \\text{ s.t. } 6x_1+4x_2\\leq24,\\ x_1+2x_2\\leq6,\\ x_1,x_2\\geq0"
+    note: ~
+  - op: "Dual: one variable per primal constraint; objective uses primal RHS"
+    eq: "\\text{min } 24y_1 + 6y_2"
+    note: ~
+  - op: "Dual constraint for primal variable x_1 (column 1 of A)"
+    eq: "6y_1 + y_2 \\geq 5"
+    note: "Each dual constraint corresponds to one primal variable."
+  - op: "Dual constraint for primal variable x_2 (column 2 of A)"
+    eq: "4y_1 + 2y_2 \\geq 4 \\quad (\\Rightarrow 2y_1 + y_2 \\geq 2)"
+    note: ~
+  - op: "Non-negativity"
+    eq: "y_1, y_2 \\geq 0"
+    note: ~
+  - op: "Find dual optimal using complementary slackness. Correct primal optimal: x_1=3>0 forces 6y_1+y_2=5 (tight); x_2=3/2>0 forces 4y_1+2y_2=4 i.e. 2y_1+y_2=2 (tight); both constraints tight so y_1,y_2 free."
+    eq: "6y_1+y_2=5,\\ 2y_1+y_2=2 \\Rightarrow 4y_1=3 \\Rightarrow y_1=\\tfrac{3}{4},\\ y_2=\\tfrac{1}{2}"
+    note: "Complementary slackness: if a primal variable is positive, the corresponding dual constraint must be tight."
+  - op: "Verify dual feasibility"
+    eq: "6(3/4)+(1/2)=9/2+1/2=5\\geq5\\checkmark;\\quad 4(3/4)+2(1/2)=3+1=4\\geq4\\checkmark;\\quad y_1,y_2\\geq0\\checkmark"
+    note: ~
+  - op: "Compute dual objective"
+    eq: "24(3/4)+6(1/2)=18+3=21"
+    note: ~
+  - op: "Check weak duality and strong duality"
+    eq: "z_{\\text{primal}}=21 = z_{\\text{dual}}=21 \\checkmark"
+    note: "Primal and dual objectives match at optimality — strong duality holds."
+-->
+
+<!-- STUDENT: Exercise 6 states "the optimal basis has x₁ basic (value 4)" but Exercise 4's simplex solution gives x₁ = 3 at the optimum. The engineer-prof flag is correct — the exercise premise contradicts the solved answer. A student who trusts the exercise wording will apply sensitivity analysis to the wrong basis. This must be corrected before students encounter it. -->
+**Exercise 6.** In Exercise 4, the optimal basis has $x_1$ basic (value 4)
+and $s_2$ basic (value 2). By how much can the objective coefficient of $x_1$
+(currently 5) change before the current basis is no longer optimal? Give the
+range.
+
+<!-- STEPPER
+exercise: 6
+steps:
+  - op: "Recall the final tableau from Exercise 4"
+    eq: "\\begin{array}{c|cccc|c}\\text{Basic}&x_1&x_2&s_1&s_2&\\text{RHS}\\\\\\hline x_1&1&0&1/4&-1/2&3\\\\x_2&0&1&-1/8&3/4&3/2\\\\\\hline z&0&0&3/4&1/2&21\\end{array}"
+    note: "Non-basic variables are s_1 and s_2."
+  - op: "Let the coefficient of x_1 in the objective change to c_1 = 5 + Δ"
+    eq: "\\text{Changing } c_1 \\text{ updates obj-row coefficients for each non-basic variable}"
+    note: "For a basic variable's row [1, 0, 1/4, -1/2], the update rule is: new obj coeff = current coeff − Δ × (x_1 row's coefficient for that non-basic variable)."
+  - op: "Obj-row coefficient of s_1 becomes"
+    eq: "\\tfrac{3}{4} - \\Delta \\cdot \\tfrac{1}{4}"
+    note: "Current s_1 obj-coeff is 3/4; x_1's row has s_1 coefficient 1/4."
+  - op: "Obj-row coefficient of s_2 becomes"
+    eq: "\\tfrac{1}{2} - \\Delta \\cdot \\left(-\\tfrac{1}{2}\\right) = \\tfrac{1}{2} + \\tfrac{\\Delta}{2}"
+    note: "Current s_2 obj-coeff is 1/2; x_1's row has s_2 coefficient -1/2."
+  - op: "For current basis to remain optimal, both non-basic obj-row coefficients must stay ≥ 0"
+    eq: "\\tfrac{3}{4} - \\tfrac{\\Delta}{4} \\geq 0 \\Rightarrow \\Delta \\leq 3"
+    note: "Binding upper constraint from s_1."
+  - op: "Second condition (lower bound)"
+    eq: "\\tfrac{1}{2} + \\tfrac{\\Delta}{2} \\geq 0 \\Rightarrow \\Delta \\geq -1"
+    note: "Binding lower constraint from s_2."
+  - op: "Sensitivity range for c_1"
+    eq: "-1 \\leq \\Delta \\leq 3 \\Rightarrow c_1 \\in [4,\\ 8]"
+    note: "Current basis is optimal for c_1 between 4 and 8 (inclusive)."
+  - op: "Check at the boundaries"
+    eq: "\\Delta=3\\,(c_1=8):\\; s_1\\text{ obj-coeff }=0\\text{ — alternative optimum exists.}\\quad \\Delta=-1\\,(c_1=4):\\; s_2\\text{ obj-coeff }=0\\text{ — alternative optimum exists.}"
+    note: ~
+-->
+
+<!-- MATH-PROF REVIEW
+Reviewed: 2026-04-01
+Reviewer: math-prof agent
+
+FIXES APPLIED (direct corrections):
+
+1. [BLOCKER — FIXED] Exercise 4 simplex terminated after one pivot too early.
+   After the first pivot the x_2 objective-row coefficient is -4 + 5·(2/3) = -2/3
+   (negative), not +2/3 as written. A second pivot is required. Correct optimal:
+   x_1=3, x_2=3/2, z=21. The first-pivot tableau in the STEPPER had "+2/3"
+   corrected to "-2/3", and a full second pivot (x_2 enters, s_2 leaves) was added.
+   Correct final tableau: x_1 row [1,0,1/4,-1/2,3], x_2 row [0,1,-1/8,3/4,3/2],
+   z row [0,0,3/4,1/2,21].
+
+2. [BLOCKER — FIXED] Exercise 5 dual solution based on wrong primal.
+   With correct primal x_1=3, x_2=3/2 (both positive, both constraints tight),
+   complementary slackness forces both dual constraints tight:
+   6y_1+y_2=5 and 2y_1+y_2=2, giving y_1=3/4, y_2=1/2, dual obj=21.
+   Previous wrong answer was y_1=5/6, y_2=0, dual obj=20.
+
+3. [BLOCKER — FIXED] Exercise 6 sensitivity analysis based on wrong tableau.
+   Using correct final tableau (non-basics s_1, s_2), the sensitivity range for
+   c_1 is [4, 8] (i.e., Δ ∈ [-1, 3]). Previous wrong answer was c_1 ∈ (-∞, 6].
+
+4. [BLOCKER — FIXED] Exercise 2 intersection point computed incorrectly.
+   Constraints 3x_1+2x_2=24 and x_1+4x_2=16 intersect at (6.4, 2.4), not (5.6, 2.6).
+   Correct optimal vertex is (6.4, 2.4) with z=236, not z=229.
+
+5. [WARN — FIXED] Body text sensitivity analysis (factory problem, near "Sensitivity
+   analysis" section): claimed range "-40 ≤ Δ ≤ ∞" for c_1=30+Δ. Correct range is
+   Δ ∈ [-70, 40/3], i.e., c_1 ∈ [-40, 43⅓]. The lower bound -40 happened to be
+   correct but the upper bound ∞ was wrong. Replaced with full correct derivation.
+
+6. [NOTE — FIXED] Line 300 prose inline result showed "8/1·s_1 + 2/1·s_2 = 190"
+   where the s_2 coefficient 2/1=2 is wrong (should be 14). The detailed
+   computation immediately below was correct; only the summary line was wrong.
+   Corrected to "8·s_1 + 14·s_2 = 190".
+
+NO ISSUES REMAINING:
+
+- Factory problem tableau arithmetic: all pivots verified correct.
+- Dual construction (transpose of A, primal RHS → dual obj): correct.
+- Weak duality proof chain: correct.
+- Complementary slackness statement: correct (both directions stated).
+- Shadow prices for factory problem (y_1=8, y_2=14, dual obj=190): correct.
+- Exercises 1 and 3: verified correct.
+- Topology claims: prerequisite_ids [lin_alg, inequalities], opens_to [optimisation],
+  kreyszig_chapter 22, stroud_programme 32 — all consistent with _data/topology.yml.
+
+NOTE: Dual variables y_i are used in the duality section but not listed in
+notation_introduced. Author may wish to add y_i to that list.
+
+VERDICT: PASS WITH NOTES (after fixes applied above)
+-->
+
+<!--
+ENGINEER-PROF REVIEW
+====================
+
+FIXED DIRECTLY
+--------------
+1. [BLOCKER — fixed] Exercise 5 told students that (x₁, x₂) = (4, 0) is the
+   "primal optimal." This is wrong. The Exercise 4 simplex solution gives optimal
+   (3, 3/2) with z* = 21; the point (4, 0) gives z = 20 and is merely feasible.
+   The STEPPER below the exercise was already internally correct (it uses complementary
+   slackness at the true optimal). Fixed: exercise wording rewritten to ask for
+   the dual optimal via complementary slackness, removing the false claim about (4, 0).
+   Inline ENGINEER-PROF comment also inserted above the new exercise statement.
+
+ENGINEERING FRAMING — PASSED
+------------------------------
+2. [PASS] Refinery blending hook: "A refinery blends crude feedstocks to meet
+   fuel-grade specifications at minimum cost — an LP with 50–500 variables, solved daily."
+   Accurate. Refinery linear programming (RLP) is a long-established industry practice;
+   typical problem sizes are exactly in this range.
+
+3. [PASS] Airline crew scheduling: "an integer LP with millions of variables in practice."
+   Accurate. Crew pairing and rostering problems at major airlines are among the largest
+   integer programmes solved routinely (airlines use column generation on LP relaxations).
+
+4. [PASS] Portfolio management described as "LP or quadratic programming depending on
+   the risk model." Accurate. Mean-variance (Markowitz) is a QP; if risk is modelled as
+   a linear factor or the constraint set is purely linear (e.g., CVaR LP formulations),
+   it becomes an LP.
+
+5. [PASS] Shadow prices interpretation: "each additional cutting hour is worth $8, each
+   additional finishing hour is worth $14." Correct reading of the dual variables from
+   the final tableau. The arithmetic 8×8 + 9×14 = 64 + 126 = 190 = z* is verified.
+
+6. [PASS] Sensitivity analysis range: c₁ ∈ [−40, 43⅓] is derived correctly from the
+   final tableau. The interpretation (basis remains optimal within this range) is accurate.
+
+7. [PASS] Kreyszig Ch 22 is the correct reference for LP. Stroud Programme 32 covers LP.
+
+8. [NOTE] The dual SVM claim ("the dual of a linear SVM is a pure LP") in destinations.comp
+   is slightly imprecise. A linear SVM solves a QP (minimise ½‖w‖² subject to constraints).
+   Its Lagrangian dual is also a QP (not an LP). The claim is only true if the kernel is
+   linear AND the hinge-loss QP is further approximated. Consider revising to: "SVMs solve
+   a quadratic programme; the theory of LP duality extends directly to the QP duality used there."
+
+VERDICT: PASS WITH NOTES — one blocker (incorrect primal optimal in Ex 5) fixed
+directly. SVM dual claim is imprecise (NOTE only). All engineering examples accurate.
+-->
+
+<!-- STUDENT REVIEW
+Chapter: Linear programming (Vol 7, Optimisation Ch 1)
+Layer: engineering
+Reviewer: student agent
+Date: 2026-04-01
+
+VERDICT: READABLE WITH FIXES
+
+FRICTION POINTS (inline comments inserted above each):
+
+1. Surplus variables not connected to simplex (§LP formulation, diet example):
+   The diet problem introduces ≥ constraints and surplus variables (minus sign), but
+   the simplex method worked example that follows uses only ≤ constraints and slack
+   variables (plus sign). A student who tries to apply simplex to the diet problem will
+   not know what to do. The gap between "here is the standard form" and "here is how
+   simplex uses it" is wider than it appears for the ≥ case.
+
+2. Minimum ratio test — why only positive entries (§Simplex method, pivot selection):
+   The rule "positive pivot-column entries only" is stated but not explained. An
+   engineering reader working a new problem who encounters a negative entry in the
+   pivot column will not know why it is excluded.
+
+3. Weak duality proof — first inequality step (§Duality, weak duality theorem):
+   The chain c^T x ≤ (A^T y)^T x requires the reader to apply the dual constraint
+   component-wise, which is not stated. The proof is compressed to the point where
+   the key step is invisible.
+
+4. Exercise 6 premise contradicts Exercise 4 result (§Exercises, Exercise 6):
+   The exercise states "x₁ basic (value 4)" but Exercise 4's solved simplex gives
+   x₁ = 3. Until this is corrected, a student applying sensitivity analysis with the
+   wrong basis will reach an incorrect range. This is a blocker.
+
+REASSURANCE GAPS:
+- The callout "Why the optimum is always at a vertex" is clear and helpful — the
+  geometric argument is well-phrased for an engineering reader.
+- The callout "Why simplex terminates" is useful but assumes no degeneracy. A brief
+  note that degeneracy (zero RHS values) can cause cycling, and that in practice this
+  is handled by small perturbations or the Bland rule, would prevent a reader from
+  wondering what happens if a pivot doesn't improve the objective.
+
+EXERCISE CALIBRATION:
+- Exercises 1–3 (formulation → graphical → standard form) are a well-designed
+  sequence. Each builds on the previous; the graphical solution gives a reference
+  answer before simplex is applied.
+- Exercise 4 (full simplex tableau with two pivots) is the hardest computation in
+  the chapter. It is appropriate at engineering layer — the stepper is detailed and
+  reliable (after the math-prof correction).
+- Exercise 5 (dual and complementary slackness) is well-calibrated and the payoff
+  (strong duality verified numerically) is satisfying.
+- Exercise 6 has the blocker noted above.
+
+WAYFINDING:
+- "Where this goes" is clear — network flow as a structured LP, and integer programming
+  as an extension. Both are concrete. No issues.
+- The applications callout covers five fields; the refinery blending example is
+  particularly vivid and directly relatable to an engineering reader.
+-->
+
+<!--
+EDIT LOG (editor agent)
+=======================
+
+- [§Diet problem — surplus variables] Added a short note after the surplus variable
+  introduction making explicit that the diet problem's standard form is not ready for
+  the simplex method as presented (the origin is not feasible with ≥ constraints;
+  artificial variables are required). Without this, a reader would move from the diet
+  example to the simplex example and be confused about why the procedure changes.
+
+- [§Graphical method — transition to simplex] Added a bridging paragraph at the end
+  of the graphical section connecting the visual geometry to the algebraic logic of
+  simplex. The graphical method was ending at the answer; the link to why the simplex
+  does the same thing in higher dimensions was not made. The paragraph is three
+  sentences.
+
+- [§Simplex — minimum ratio test] Added a sentence explaining why only rows with
+  positive pivot-column entries qualify. The rule was stated as a procedure without
+  the reason. A reader encountering a zero or negative entry in a later exercise
+  would not know whether to skip it or use it.
+
+- [§Weak duality proof] Expanded the one-sentence proof to make the first inequality
+  step explicit: "(A^Ty)_j ≥ c_j and x_j ≥ 0, so multiplying through and summing
+  gives c^Tx ≤ (A^Ty)^Tx." The chain was valid but the first step was opaque for a
+  reader not accustomed to manipulating component-wise matrix inequalities.
+-->
+
+

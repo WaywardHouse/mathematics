@@ -1,6 +1,818 @@
 ---
-title: "Systems and matrices"
-status: "seed"
+title: "Systems of equations"
+subtitle: "Two unknowns, two constraints"
+
+volume: 4
+chapter: 3
+layer: "pre-university"
+status: "review"
+
+axiom: |
+  You can already find one unknown from one equation.
+  Some problems give you two things you don't know — and
+  two separate facts about them.
+
+rewrite: |
+  Two equations, two unknowns: each equation is a constraint
+  that cuts the possibilities down. Where both constraints
+  hold at once, that is the solution.
+
+opens_to:
+  - id: "v7c2-linear-algebra"
+    label: "Linear algebra"
+    volume: 7
+    relationship: "enables"
+  - id: "v2c4-graphing"
+    label: "Graphing relations"
+    volume: 2
+    relationship: "enriches"
+  - id: "v7c1-numerics"
+    label: "Numerical methods"
+    volume: 7
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "linear_eq"
+  - "graphing"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Kirchhoff's laws applied to each loop or node of a circuit produce one equation per loop — a system that must be solved together."
+    career_example: "Electrical engineer analysing a two-loop circuit"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Balancing a chemical reaction with two unknown coefficients requires solving a 2×2 system."
+    career_example: "Chemist calculating equilibrium concentrations"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Supply and demand equilibrium is the point where two linear functions intersect — a 2×2 system."
+    career_example: "Analyst finding the market-clearing price and quantity"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Linear regression, graphics transformations, and constraint solvers all reduce to solving systems of equations."
+    career_example: "Game developer resolving resource constraints"
+
+hook: |
+  Two streaming plans. Plan A charges $6 per month plus $3 per film.
+  Plan B charges $15 per month with unlimited films. At some number
+  of films per month the two plans cost exactly the same. Below that
+  number, A is cheaper. Above it, B is cheaper. Where is the crossover?
+
+  A and B are moving in opposite directions as you rent more films.
+  That crossover is the point where both plans satisfy the same two
+  facts at once: the same monthly cost, the same number of films.
+
+  Two walkers start from opposite ends of a 9 km path. One walks at
+  4 km/h, the other at 5 km/h. When do they meet, and where?
+  You need two facts: the total distance covered equals 9 km, and they
+  have both been walking the same amount of time.
+
+  Both problems have the same mathematical shape: two unknowns,
+  two constraints. A system of equations.
+
+notation_introduced:
+  - symbol: "\\begin{cases} \\cdots \\end{cases}"
+    reads_as: "a system — both equations must hold at the same time"
+    notation_weight: 2
+  - symbol: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"
+    reads_as: "a 2×2 matrix — the coefficients arranged in a rectangle"
+    notation_weight: 3
+  - symbol: "\\det(A) = ad - bc"
+    reads_as: "the determinant of A — tells you whether a unique solution exists"
+    notation_weight: 3
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 10
+  strand: "Systems of Linear Equations"
+  outcome: "RF6"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+Two streaming plans. Plan A charges \$6 per month plus \$3 per film.
+Plan B charges \$15 per month with unlimited films. At some number of
+films per month they cost exactly the same. Where is that crossover?
+
+Two walkers start from opposite ends of a 9 km path. One walks at
+4 km/h, the other at 5 km/h. When do they meet, and where?
+
+Both questions have the same shape: two things you don't know, two
+separate facts about them. A single equation can pin down one unknown.
+To pin down two, you need two.
+
+## What the notation is saying
+
+Here are the two streaming plans written as equations. Let $m$ = months
+(fixed at 1, so we can drop it) and $f$ = number of films rented:
+
+$$\begin{cases} \text{Cost}_A = 6 + 3f \\ \text{Cost}_B = 15 \end{cases}$$
+
+When the costs are equal: $6 + 3f = 15$. One unknown, one equation —
+you already know how to solve this.
+
+Now for the walkers. Let $t$ = time in hours, $d$ = distance walked
+by the first walker. Two facts:
+
+$$\begin{cases} d + (9 - d) = 9 \\ d = 4t \quad \text{and} \quad 9 - d = 5t \end{cases}$$
+
+Rewriting cleanly:
+
+$$\begin{cases} d + 5t = 9 \\ d - 4t = 0 \end{cases}$$
+
+Read the curly brace as "both of these must be true at the same time."
+That is a system. The solution is the pair of values $(d,\, t)$ that
+satisfies *both* equations simultaneously.
+
+### The general form
+
+The standard 2×2 system looks like this:
+
+$$\begin{cases} a_1 x + b_1 y = c_1 \\ a_2 x + b_2 y = c_2 \end{cases}$$
+
+Here $x$ and $y$ are the unknowns. The numbers $a_1, b_1, c_1$ and
+$a_2, b_2, c_2$ are given — they are the **coefficients** (the
+multipliers of $x$ and $y$) and the **constant terms** (the values on
+the right).
+
+### Compact matrix notation
+
+The same system can be written using a **matrix** — just the
+coefficients arranged in a rectangular array:
+
+$$\begin{pmatrix} a_1 & b_1 \\ a_2 & b_2 \end{pmatrix} \begin{pmatrix} x \\ y \end{pmatrix} = \begin{pmatrix} c_1 \\ c_2 \end{pmatrix}$$
+
+Say it as: the 2×2 matrix of coefficients, multiplied by the column of
+unknowns, equals the column of constants. This notation is compact —
+it stores the same information without repeating $x$ and $y$ on every
+line. For a 2×2 system it's a convenience. For a 100×100 system (as
+in circuit analysis or machine learning), it's essential.
+
+The matrix itself — the rectangular array of coefficients — is written
+with parentheses around it:
+
+$$A = \begin{pmatrix} a_1 & b_1 \\ a_2 & b_2 \end{pmatrix}$$
+
+Read "$A$" as "the coefficient matrix." The entries are: top-left
+$a_1$ (coefficient of $x$ in the first equation), top-right $b_1$
+(coefficient of $y$ in the first equation), and so on.
+
+## The method
+
+Three methods solve a 2×2 system. Each is worth knowing: the graphical
+method shows you what you're doing, substitution is efficient for small
+systems, and elimination is the one that scales.
+
+### Method 1 — Graphical
+
+Each equation is a straight line. The solution is where the two lines
+cross.
+
+$$\begin{cases} x + y = 5 \\ x - y = 1 \end{cases}$$
+
+Rearrange each equation into $y = mx + b$ form:
+
+- Line 1: $y = -x + 5$ (slope $-1$, intercept $5$)
+- Line 2: $y = x - 1$ (slope $1$, intercept $-1$)
+
+Plot both. They cross at $(3, 2)$. Check: $3 + 2 = 5$ ✓ and
+$3 - 2 = 1$ ✓.
+
+**Three possible outcomes:**
+
+| What the lines do | What it means |
+|---|---|
+| Cross at one point | One unique solution |
+| Are parallel (never cross) | No solution — the equations contradict each other |
+| Are the same line | Infinitely many solutions — one equation gives no new information |
+
+```{ojs}
+//| echo: false
+{
+  const div = document.createElement("div");
+  div.style.cssText = "font-family:inherit; padding:0.5rem 0;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem 1.5rem; margin-bottom:0.75rem; max-width:600px;";
+
+  const params = [
+    {id:"sa1", label:"a₁", min:-5, max:5, step:0.5, val:1},
+    {id:"sb1", label:"b₁", min:-5, max:5, step:0.5, val:1},
+    {id:"sc1", label:"c₁", min:-10, max:10, step:1, val:5},
+    {id:"sa2", label:"a₂", min:-5, max:5, step:0.5, val:2},
+    {id:"sb2", label:"b₂", min:-5, max:5, step:0.5, val:-1},
+    {id:"sc2", label:"c₂", min:-10, max:10, step:1, val:4},
+  ];
+
+  params.forEach(p => {
+    const wrap = document.createElement("div");
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "font-size:0.8rem; color:#374151; display:block;";
+    const span = document.createElement("span"); span.textContent = p.val;
+    lbl.appendChild(document.createTextNode(p.label + " = ")); lbl.appendChild(span);
+    const input = document.createElement("input");
+    input.type = "range"; input.min = p.min; input.max = p.max; input.step = p.step; input.value = p.val;
+    input.style.width = "100%";
+    wrap.appendChild(lbl); wrap.appendChild(input);
+    controls.appendChild(wrap);
+    p.input = input;
+    p.span = span;
+  });
+
+  const infoEl = document.createElement("div");
+  infoEl.style.cssText = "font-size:0.88rem; margin-bottom:0.5rem; min-height:1.4em; font-weight:600;";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 400; canvas.height = 400;
+  canvas.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; display:block; max-width:400px;";
+
+  div.appendChild(controls); div.appendChild(infoEl); div.appendChild(canvas);
+
+  function draw() {
+    const vals = {};
+    params.forEach(p => {
+      const v = parseFloat(p.input.value);
+      p.span.textContent = v;
+      vals[p.id] = v;
+    });
+
+    const {sa1:a1, sb1:b1, sc1:c1, sa2:a2, sb2:b2, sc2:c2} = vals;
+    const det = a1*b2 - a2*b1;
+
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const range = 12;
+    function px(x) { return (x+range)/(2*range)*W; }
+    function py(y) { return H-(y+range)/(2*range)*H; }
+
+    // Grid
+    ctx.strokeStyle = "#f3f4f6"; ctx.lineWidth = 1;
+    for (let i = -10; i <= 10; i += 2) {
+      ctx.beginPath(); ctx.moveTo(px(i), 0); ctx.lineTo(px(i), H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, py(i)); ctx.lineTo(W, py(i)); ctx.stroke();
+    }
+    ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, py(0)); ctx.lineTo(W, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), H); ctx.stroke();
+
+    // Line 1: a1*x + b1*y = c1  => y = (c1 - a1*x)/b1
+    function drawLine(a, b, c, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      let first = true;
+      for (let xi = 0; xi <= W; xi++) {
+        const x = -range + (xi / W) * 2 * range;
+        let y;
+        if (Math.abs(b) > 0.001) y = (c - a*x) / b;
+        else { if (xi === 0) { ctx.moveTo(px(c/a), 0); ctx.lineTo(px(c/a), H); ctx.stroke(); } return; }
+        if (first) { ctx.moveTo(xi, py(y)); first = false; }
+        else ctx.lineTo(xi, py(y));
+      }
+      ctx.stroke();
+    }
+
+    drawLine(a1, b1, c1, "#2563eb");
+    drawLine(a2, b2, c2, "#ef4444");
+
+    if (Math.abs(det) < 0.001) {
+      const parallel = Math.abs(a1*c2 - a2*c1) > 0.001 || Math.abs(b1*c2 - b2*c1) > 0.001;
+      infoEl.textContent = parallel ? "No unique solution — lines are parallel" : "Infinitely many solutions — same line";
+      infoEl.style.color = "#dc2626";
+    } else {
+      const x = (c1*b2 - c2*b1) / det;
+      const y = (a1*c2 - a2*c1) / det;
+      ctx.fillStyle = "#7c3aed";
+      ctx.beginPath(); ctx.arc(px(x), py(y), 6, 0, 2*Math.PI); ctx.fill();
+      ctx.fillStyle = "#374151"; ctx.font = "bold 12px sans-serif";
+      ctx.fillText("(" + x.toFixed(2) + ", " + y.toFixed(2) + ")", px(x)+8, py(y)-8);
+      infoEl.textContent = "Solution: x = " + x.toFixed(2) + ", y = " + y.toFixed(2);
+      infoEl.style.color = "#7c3aed";
+    }
+
+    // Equation labels
+    ctx.font = "12px sans-serif";
+    ctx.fillStyle = "#2563eb";
+    ctx.fillText(a1+"x + "+b1+"y = "+c1, 8, 16);
+    ctx.fillStyle = "#ef4444";
+    ctx.fillText(a2+"x + "+b2+"y = "+c2, 8, 32);
+  }
+
+  params.forEach(p => p.input.addEventListener("input", draw));
+  draw();
+  return div;
+}
+```
+
+### Method 2 — Substitution
+
+Solve one equation for one variable, then substitute into the other.
+This eliminates one unknown and leaves a single equation you can solve
+directly.
+
+$$\begin{cases} x + y = 5 \qquad (1) \\ x - y = 1 \qquad (2) \end{cases}$$
+
+From equation (1): $x = 5 - y$.
+
+Substitute into equation (2):
+
+$$(5 - y) - y = 1$$
+
+$$5 - 2y = 1$$
+
+$$-2y = -4 \implies y = 2$$
+
+Now substitute $y = 2$ back into $x = 5 - y$:
+
+$$x = 5 - 2 = 3$$
+
+Solution: $x = 3$, $y = 2$.
+
+**When to use it:** substitution works cleanly when one equation already
+has a variable with coefficient 1 (so there's no fraction to deal with
+when you isolate it).
+
+### Method 3 — Elimination
+
+Multiply one or both equations by constants to make the coefficient of
+one variable the same (or opposite) in both equations. Then add or
+subtract to eliminate that variable.
+
+$$\begin{cases} 2x + 3y = 12 \qquad (1) \\ 4x - y = \phantom{1}5 \qquad\;\; (2) \end{cases}$$
+
+The coefficient of $y$ is $3$ in equation (1) and $-1$ in equation (2).
+Multiply equation (2) by $3$ to make the $y$-coefficients match in
+magnitude:
+
+$$3 \times (2): \quad 12x - 3y = 15 \qquad (2')$$
+
+Now add equations (1) and (2'):
+
+$$(2x + 3y) + (12x - 3y) = 12 + 15$$
+
+$$14x = 27 \implies x = \frac{27}{14}$$
+
+Substitute into equation (1):
+
+$$2 \cdot \frac{27}{14} + 3y = 12 \implies \frac{27}{7} + 3y = 12 \implies 3y = 12 - \frac{27}{7} = \frac{57}{7} \implies y = \frac{19}{7}$$
+
+Check in equation (2): $4 \cdot \frac{27}{14} - \frac{19}{7} = \frac{54}{7} - \frac{19}{7} = \frac{35}{7} = 5$ ✓
+
+**When to use it:** elimination is best when no variable has a
+coefficient of 1, or when the numbers make substitution awkward.
+It's also the method that generalises directly to 3×3 and larger
+systems (Gaussian elimination).
+
+## Why this works
+
+::: {.callout-note appearance="simple"}
+**The determinant tells you whether a unique solution exists**
+
+For the system $\begin{pmatrix} a & b \\ c & d \end{pmatrix} \begin{pmatrix} x \\ y \end{pmatrix} = \begin{pmatrix} e \\ f \end{pmatrix}$, define the **determinant**:
+
+$$\det(A) = ad - bc$$
+
+Read it as: top-left times bottom-right, minus top-right times bottom-left.
+
+- If $\det(A) \neq 0$: one unique solution exists. The two lines cross.
+- If $\det(A) = 0$: no unique solution. The lines are parallel (no solution) or identical (infinitely many).
+
+For the system $\begin{cases} x + y = 5 \\ x - y = 1 \end{cases}$, the matrix is $\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$ and $\det = (1)(-1) - (1)(1) = -2 \neq 0$. One solution. ✓
+
+The determinant is a quick test before you do any work. If it's zero, stop — no amount of algebra will produce a unique answer.
+:::
+
+## Worked examples
+
+---
+
+**Example 1 — Business: supply and demand equilibrium.**
+
+A market for concert tickets has a supply curve and a demand curve:
+
+$$\begin{cases} p = 2q + 10 \qquad \text{(supply: price rises with quantity)} \\ p = -3q + 60 \qquad \text{(demand: price falls as quantity rises)} \end{cases}$$
+
+Here $p$ = price (dollars), $q$ = quantity (thousands of tickets).
+The equilibrium is where supply price equals demand price.
+
+Set the right-hand sides equal (substitution):
+
+$$2q + 10 = -3q + 60$$
+
+$$5q = 50 \implies q = 10$$
+
+$$p = 2(10) + 10 = 30$$
+
+**Equilibrium:** 10,000 tickets at \$30 each.
+
+Check in the demand equation: $-3(10) + 60 = -30 + 60 = 30$ ✓
+
+The determinant check: rewrite as $\begin{cases} 2q - p = -10 \\ -3q - p = -60 \end{cases}$.
+Matrix $\begin{pmatrix} 2 & -1 \\ -3 & -1 \end{pmatrix}$, $\det = (2)(-1) - (-1)(-3) = -2 - 3 = -5 \neq 0$. Unique solution confirmed.
+
+```{ojs}
+//| echo: false
+{
+  const canvas = document.createElement("canvas");
+  canvas.width = 400; canvas.height = 380;
+  canvas.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; display:block; max-width:400px;";
+
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const qMax = 20, pMax = 70;
+  const marg = {l:50, r:20, t:20, b:40};
+
+  function px(q) { return marg.l + (q / qMax) * (W - marg.l - marg.r); }
+  function py(p) { return marg.t + (1 - p / pMax) * (H - marg.t - marg.b); }
+
+  // Background shade: demand > supply (q < 10, left of intersection)
+  ctx.fillStyle = "rgba(219,234,254,0.4)";
+  ctx.fillRect(px(0), marg.t, px(10)-px(0), H-marg.t-marg.b);
+  ctx.fillStyle = "rgba(220,252,231,0.4)";
+  ctx.fillRect(px(10), marg.t, px(qMax)-px(10), H-marg.t-marg.b);
+
+  // Axes
+  ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(px(0), py(0)); ctx.lineTo(px(qMax), py(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px(0), py(0)); ctx.lineTo(px(0), py(pMax)); ctx.stroke();
+  ctx.fillStyle = "#6b7280"; ctx.font = "12px sans-serif";
+  ctx.fillText("q", px(qMax)-10, py(0)+20);
+  ctx.fillText("p", px(0)-20, py(pMax)+5);
+
+  // Tick marks
+  for (let q = 0; q <= 20; q += 5) {
+    ctx.beginPath(); ctx.moveTo(px(q), py(0)); ctx.lineTo(px(q), py(0)+5); ctx.stroke();
+    ctx.fillText(q, px(q)-5, py(0)+18);
+  }
+  for (let p = 0; p <= 70; p += 10) {
+    ctx.beginPath(); ctx.moveTo(px(0), py(p)); ctx.lineTo(px(0)-5, py(p)); ctx.stroke();
+    ctx.fillText(p, px(0)-28, py(p)+4);
+  }
+
+  // Supply: p = 2q + 10
+  ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(px(0), py(10)); ctx.lineTo(px(qMax), py(2*qMax+10)); ctx.stroke();
+  ctx.fillStyle = "#ef4444"; ctx.font = "bold 11px sans-serif";
+  ctx.fillText("Supply: p = 2q + 10", px(12), py(2*12+10)-8);
+
+  // Demand: p = -3q + 60
+  ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(px(0), py(60)); ctx.lineTo(px(20), py(-3*20+60)); ctx.stroke();
+  ctx.fillStyle = "#2563eb";
+  ctx.fillText("Demand: p = −3q + 60", px(1), py(-3*1+60)-8);
+
+  // Intersection at (10, 30)
+  ctx.fillStyle = "#7c3aed";
+  ctx.beginPath(); ctx.arc(px(10), py(30), 6, 0, 2*Math.PI); ctx.fill();
+  ctx.fillStyle = "#374151"; ctx.font = "bold 12px sans-serif";
+  ctx.fillText("Equilibrium (10, 30)", px(10)+8, py(30)-8);
+
+  // Shade labels
+  ctx.font = "11px sans-serif";
+  ctx.fillStyle = "#1d4ed8"; ctx.fillText("demand > supply", px(1), py(50));
+  ctx.fillStyle = "#166534"; ctx.fillText("supply > demand", px(12), py(50));
+
+  return canvas;
+}
+```
+
+---
+
+**Example 2 — Engineering: two-loop circuit (Kirchhoff's laws).**
+
+A simple circuit has two loops. Kirchhoff's voltage law says the voltage
+drops around each loop must sum to zero. After applying the law to each
+loop, the unknowns are the two loop currents $I_1$ and $I_2$ (in amps):
+
+$$\begin{cases} 3I_1 + 2I_2 = 12 \qquad \text{(loop 1: total 12 V)} \\ 2I_1 + 5I_2 = 14 \qquad \text{(loop 2: total 14 V)} \end{cases}$$
+
+Use elimination. Multiply equation (1) by 5 and equation (2) by 2:
+
+$$\begin{cases} 15I_1 + 10I_2 = 60 \\ 4I_1 + 10I_2 = 28 \end{cases}$$
+
+Subtract the second from the first:
+
+$$11I_1 = 32 \implies I_1 = \frac{32}{11} \approx 2.91 \text{ A}$$
+
+Substitute into equation (1):
+
+$$3 \cdot \frac{32}{11} + 2I_2 = 12 \implies \frac{96}{11} + 2I_2 = 12 \implies 2I_2 = 12 - \frac{96}{11} = \frac{36}{11} \implies I_2 = \frac{18}{11} \approx 1.64 \text{ A}$$
+
+Check in equation (2): $2 \cdot \frac{32}{11} + 5 \cdot \frac{18}{11} = \frac{64 + 90}{11} = \frac{154}{11} = 14$ ✓
+
+---
+
+**Example 3 — Science: mixture problem.**
+
+A lab needs 80 mL of a 35% saline solution. The lab has a 20% solution
+and a 50% solution. How many mL of each should be mixed?
+
+Let $x$ = mL of the 20% solution, $y$ = mL of the 50% solution.
+
+Two constraints:
+
+$$\begin{cases} x + y = 80 \qquad \text{(total volume)} \\ 0.20x + 0.50y = 0.35 \times 80 = 28 \qquad \text{(total salt)} \end{cases}$$
+
+From equation (1): $x = 80 - y$. Substitute into equation (2):
+
+$$0.20(80 - y) + 0.50y = 28$$
+
+$$16 - 0.20y + 0.50y = 28$$
+
+$$0.30y = 12 \implies y = 40$$
+
+$$x = 80 - 40 = 40$$
+
+Mix 40 mL of the 20% solution with 40 mL of the 50% solution.
+
+Check: salt = $0.20(40) + 0.50(40) = 8 + 20 = 28$ and $28/80 = 0.35$ ✓
+
+---
+
+**Example 4 — Computing: game resource constraints.**
+
+A game character can perform two actions: attacking costs 3 energy and
+1 second, defending costs 1 energy and 2 seconds. In one round, the
+character uses exactly 14 energy and 8 seconds. How many attacks and
+defends did they perform?
+
+Let $a$ = attacks, $d$ = defends.
+
+$$\begin{cases} 3a + d = 14 \qquad \text{(energy)} \\ a + 2d = 8 \qquad\;\, \text{(time)} \end{cases}$$
+
+From equation (1): $d = 14 - 3a$. Substitute into equation (2):
+
+$$a + 2(14 - 3a) = 8$$
+
+$$a + 28 - 6a = 8$$
+
+$$-5a = -20 \implies a = 4$$
+
+$$d = 14 - 3(4) = 2$$
+
+Four attacks and two defends.
+
+Check energy: $3(4) + 2 = 14$ ✓. Check time: $4 + 2(2) = 8$ ✓.
+
+Determinant check: matrix $\begin{pmatrix} 3 & 1 \\ 1 & 2 \end{pmatrix}$, $\det = (3)(2) - (1)(1) = 5 \neq 0$. Unique solution. ✓
+
+## Where this goes
+
+This chapter handled two unknowns and two equations. Real systems are
+often much larger — 10 unknowns, 100, or more. The method that scales
+is **Gaussian elimination**: the same idea as the elimination you
+learned here, applied row by row to a matrix. That is the core of
+**linear algebra** (Vol 7). Matrix notation, which you saw as a
+shorthand here, becomes indispensable there — you'll work with
+eigenvalues, matrix inverses, and linear transformations that are
+impossible to write without it.
+
+When systems get large enough, solving them exactly becomes
+computationally expensive. **Numerical methods** (Vol 7) replace exact
+algebra with iterative algorithms — methods that get close enough, fast
+enough, for engineering and data science work. Systems of equations are
+the motivating problem that drives a large part of that volume. The
+determinant you met here generalises too: for an $n \times n$ matrix,
+the same zero/non-zero test predicts whether a unique solution exists.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- **Engineering:** Kirchhoff's voltage and current laws applied to a
+  circuit produce one equation per loop or node. A circuit with two
+  loops gives a 2×2 system; a real circuit might give a 50×50 system
+  solved by computer using the same method.
+- **Science:** Chemical stoichiometry — balancing an equation with two
+  unknown coefficients — is a 2×2 system. Equilibrium calculations
+  in physical chemistry are similar.
+- **Finance:** Supply and demand equilibrium is the intersection of two
+  linear functions. Every introductory economics model of price-setting
+  is a system of equations.
+- **Computing:** Linear regression with two parameters solves a 2×2
+  system. Graphics engines apply matrix transformations (systems of
+  equations) to every vertex on screen, thousands of times per second.
+:::
+
+## Exercises
+
+These are puzzles. The interesting part is setting up the system —
+translating the situation into two equations before you solve.
+
+---
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opEl = document.createElement("span");
+      opEl.style.cssText = "font-size:0.8rem; color:#6b7280; font-style:italic;";
+      opEl.textContent = s.op;
+      const eqEl = document.createElement("span");
+      eqEl.innerHTML = katex.renderToString(s.eq, {throwOnError: false, displayMode: false});
+      row.appendChild(opEl);
+      row.appendChild(eqEl);
+      container.appendChild(row);
+      if (s.note) {
+        const noteEl = document.createElement("p");
+        noteEl.style.cssText = "margin:0.2rem 0 0.5rem 200px; font-size:0.82rem; color:#374151;";
+        noteEl.textContent = s.note;
+        container.appendChild(noteEl);
+      }
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("p");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.85rem; color:#059669; font-weight:600;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; align-items:center; gap:0.75rem; margin-top:0.5rem;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.85rem; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.8rem; color:#6b7280;";
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); counter.textContent = current + " / " + totalSteps; if (current === totalSteps) nextBtn.disabled = true; } };
+  resetBtn.onclick = () => { current = 0; nextBtn.disabled = false; renderSteps(); counter.textContent = "0 / " + totalSteps; };
+  counter.textContent = "0 / " + totalSteps;
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  return container;
+}
+```
+
+**1.** Two friends are buying supplies for a camping trip. Rashida buys
+3 bags of trail mix and 2 water bottles for \$19. Tomasz buys
+1 bag of trail mix and 4 water bottles for \$17. What does one bag of
+trail mix cost, and what does one water bottle cost?
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(1, [
+    { op: "Write as a system", eq: "\\begin{cases} 3t + 2w = 19 \\\\ t + 4w = 17 \\end{cases}", note: "t = price of trail mix, w = price of water bottle" },
+    { op: "Solve equation 2 for t", eq: "t = 17 - 4w", note: null },
+    { op: "Substitute into equation 1", eq: "3(17 - 4w) + 2w = 19", note: null },
+    { op: "Expand and simplify", eq: "51 - 12w + 2w = 19 \\implies -10w = -32 \\implies w = 3.20", note: null },
+    { op: "Back-substitute to find t", eq: "t = 17 - 4(3.20) = 17 - 12.80 = 4.20", note: null },
+    { op: "Check", eq: "3(4.20) + 2(3.20) = 12.60 + 6.40 = 19 \\checkmark \\quad 4.20 + 4(3.20) = 4.20 + 12.80 = 17 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**2.** A cinema charges one price for adults and another for children.
+Two families bought tickets last Saturday:
+
+- The Nguyens: 3 adults and 2 children, total \$32.
+- The Garcias: 1 adult and 4 children, total \$24.
+
+What is the adult ticket price? What is the child ticket price?
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(2, [
+    { op: "Write as a system", eq: "\\begin{cases} 3a + 2c = 32 \\\\ a + 4c = 24 \\end{cases}", note: "a = adult price, c = child price" },
+    { op: "Solve equation 2 for a", eq: "a = 24 - 4c", note: null },
+    { op: "Substitute into equation 1", eq: "3(24 - 4c) + 2c = 32 \\implies 72 - 12c + 2c = 32 \\implies -10c = -40 \\implies c = 4", note: null },
+    { op: "Back-substitute to find a", eq: "a = 24 - 4(4) = 24 - 16 = 8", note: null },
+    { op: "Check", eq: "3(8) + 2(4) = 24 + 8 = 32 \\checkmark \\quad 1(8) + 4(4) = 8 + 16 = 24 \\checkmark", note: "Child ticket = £4, adult ticket = £8." },
+  ]);
+  return el;
+}
+```
+
+---
+
+**3.** Two cyclists start from the same point at the same time and
+ride in opposite directions. After 3 hours they are 132 km apart.
+One rides 6 km/h faster than the other. What is each cyclist's speed?
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(3, [
+    { op: "Write as a system", eq: "\\begin{cases} 3r + 3s = 132 \\\\ r - s = 6 \\end{cases}", note: "r and s are the two speeds; together they cover 132 km in 3 hours; one is 6 km/h faster" },
+    { op: "Simplify equation 1", eq: "r + s = 44", note: null },
+    { op: "Add the two equations", eq: "(r + s) + (r - s) = 44 + 6 \\implies 2r = 50 \\implies r = 25 \\text{ km/h}", note: null },
+    { op: "Back-substitute to find s", eq: "s = 44 - 25 = 19 \\text{ km/h}", note: null },
+    { op: "Check", eq: "3(25) + 3(19) = 75 + 57 = 132 \\checkmark \\quad 25 - 19 = 6 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**4.** Use the determinant to decide, without solving, whether each
+system has a unique solution, no solution, or infinitely many solutions.
+
+**(a)**
+$$\begin{cases} 2x + 4y = 8 \\ x + 2y = 4 \end{cases}$$
+
+**(b)**
+$$\begin{cases} 3x - y = 5 \\ 6x - 2y = 7 \end{cases}$$
+
+**(c)**
+$$\begin{cases} 5x + 3y = 11 \\ 2x - y = 3 \end{cases}$$
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(4, [
+    { op: "Write the coefficient matrix for (a)", eq: "A = \\begin{pmatrix} 2 & 4 \\\\ 1 & 2 \\end{pmatrix}", note: null },
+    { op: "Compute det(A) for (a)", eq: "\\det(A) = (2)(2) - (4)(1) = 4 - 4 = 0", note: "det = 0 means no unique solution; check if the equations are the same line or parallel" },
+    { op: "Inspect (a): are the equations the same?", eq: "\\text{Row 1} = 2 \\times \\text{Row 2}: \\quad 2x + 4y = 8 \\text{ is exactly } 2(x + 2y = 4). \\text{ Same line.}", note: "Infinitely many solutions." },
+    { op: "Compute det for (b)", eq: "\\det\\begin{pmatrix} 3 & -1 \\\\ 6 & -2 \\end{pmatrix} = (3)(-2) - (-1)(6) = -6 + 6 = 0", note: null },
+    { op: "Inspect (b): same line or parallel?", eq: "\\text{Row 1} = \\tfrac{1}{2} \\times \\text{Row 2 LHS, but } \\tfrac{7}{2} \\neq 5. \\text{ Parallel lines.}", note: "No solution." },
+    { op: "Compute det for (c)", eq: "\\det\\begin{pmatrix} 5 & 3 \\\\ 2 & -1 \\end{pmatrix} = (5)(-1) - (3)(2) = -5 - 6 = -11 \\neq 0", note: "Unique solution exists." },
+    { op: "Solve by substitution", eq: "2x - y = 3 \\Rightarrow y = 2x - 3", note: null },
+    { op: "Substitute into first equation", eq: "5x + 3(2x-3) = 11 \\Rightarrow 11x = 20 \\Rightarrow x = \\frac{20}{11}", note: null },
+    { op: "Find y", eq: "y = 2 \\cdot \\frac{20}{11} - 3 = \\frac{40}{11} - \\frac{33}{11} = \\frac{7}{11}", note: null },
+    { op: "Check", eq: "5 \\cdot \\frac{20}{11} + 3 \\cdot \\frac{7}{11} = \\frac{100}{11} + \\frac{21}{11} = \\frac{121}{11} = 11 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**5.** Two phone plans:
+
+- Plan X: \$20 per month plus \$0.10 per text.
+- Plan Y: \$35 per month, unlimited texts.
+
+*(a)* Set up a system and find the number of texts per month where
+both plans cost the same.
+
+*(b)* If you send 200 texts per month, which plan is cheaper and by
+how much?
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(5, [
+    { op: "Write the cost equations", eq: "\\begin{cases} C_X = 20 + 0.10n \\\\ C_Y = 35 \\end{cases}", note: "n = number of texts per month" },
+    { op: "Set costs equal and solve", eq: "20 + 0.10n = 35 \\implies 0.10n = 15 \\implies n = 150", note: null },
+    { op: "State the crossover", eq: "\\text{At } n = 150 \\text{ texts, both plans cost } \\$35.", note: null },
+    { op: "Evaluate at n = 200 for part (b)", eq: "C_X = 20 + 0.10(200) = 20 + 20 = \\$40; \\quad C_Y = \\$35", note: null },
+    { op: "Check", eq: "C_X - C_Y = 40 - 35 = \\$5. \\text{ Plan Y is cheaper by } \\$5 \\text{ at 200 texts.} \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**6.** A chemist has two alcohol solutions: one is 30% alcohol, the
+other is 70% alcohol. She needs 200 mL of a 45% solution.
+
+How many mL of each solution should she mix?
+
+*(Hint: write one equation for total volume and one for total amount
+of alcohol.)*
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(6, [
+    { op: "Write as a system", eq: "\\begin{cases} x + y = 200 \\\\ 0.30x + 0.70y = 0.45 \\times 200 = 90 \\end{cases}", note: "x = mL of 30% solution, y = mL of 70% solution" },
+    { op: "Solve equation 1 for x", eq: "x = 200 - y", note: null },
+    { op: "Substitute into equation 2", eq: "0.30(200 - y) + 0.70y = 90 \\implies 60 - 0.30y + 0.70y = 90 \\implies 0.40y = 30 \\implies y = 75", note: null },
+    { op: "Back-substitute to find x", eq: "x = 200 - 75 = 125", note: null },
+    { op: "Check", eq: "0.30(125) + 0.70(75) = 37.50 + 52.50 = 90 \\quad \\text{and} \\quad 90/200 = 0.45 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```

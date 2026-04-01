@@ -1,6 +1,18 @@
 ---
 title: "Volume 5 — Analysis and proof"
-status: "seed"
 ---
 
-*Seed — front matter to be completed before content is written.*
+The central move of this volume is taming the infinite.
+
+Up until now, you've relied on assumptions about how numbers behave between points. This volume strips away those assumptions and rebuilds mathematics on a rigorous foundation of limits, instantaneous rates of change, and continuous accumulation.
+
+By the end of this volume, you will understand how to freeze a changing system precisely at a moment in time, how to add up an infinite number of infinitely small pieces, and how to construct a rock-solid logical argument that proves why something must guaranteeably be true.
+
+## Chapters
+
+| Chapter | Title | Core move |
+|---------|-------|-----------|
+| 1 | Limits and continuity | Approaching the boundary |
+| 2 | Differential calculus | Measuring instantaneous change |
+| 3 | Integral calculus | Accumulating continuous amounts |
+| 4 | Proof and reasoning | Establishing absolute certainty |

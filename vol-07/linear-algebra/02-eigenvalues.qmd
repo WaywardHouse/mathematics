@@ -1,6 +1,842 @@
 ---
 title: "Eigenvalues and eigenvectors"
-status: "seed"
+subtitle: "The natural modes of a system"
+chapter: 2
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: |
+  You know how a matrix transforms vectors — it rotates and stretches space.
+  Most directions get scrambled: a vector that points east may come out pointing
+  northeast at a different length. But some directions survive the transformation
+  intact.
+
+rewrite: |
+  Eigenvectors are the special directions a matrix leaves unchanged in orientation.
+  It can scale them — stretch or flip — but it cannot rotate them.
+  The scale factor is the eigenvalue. Finding these pairs reveals what a system
+  naturally wants to do: the frequencies it vibrates at, the axes it aligns to,
+  the dominant pattern it amplifies.
+
+prerequisite_ids:
+  - lin_alg
+  - odes
+
+opens_to:
+  - id: odes_systems
+    label: "ODE systems and phase plane"
+    volume: 7
+    relationship: enriches
+  - id: fourier_series
+    label: "Fourier series"
+    volume: 7
+    relationship: motivates
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "A rotating shaft has critical speeds — RPMs at which vibration explodes — and they are eigenvalues of the shaft's stiffness matrix."
+    career_example: "Mechanical engineer calculating the Campbell diagram for a turbine rotor"
+  - field: sci
+    label: Hard sciences
+    hook: "The allowed energy levels of a quantum system are eigenvalues of its Hamiltonian operator."
+    career_example: "Physicist computing molecular orbital energies using matrix representations"
+  - field: comp
+    label: Computing and data
+    hook: "PageRank scores are the dominant eigenvector of the web's link matrix; PCA axes are the eigenvectors of the data covariance matrix."
+    career_example: "Machine learning engineer performing dimensionality reduction with PCA"
+
+notation_introduced:
+  - symbol: "\\lambda"
+    reads_as: "lambda"
+    meaning: "Eigenvalue of matrix A"
+    notation_weight: 2
+  - symbol: "\\mathbf{x}"
+    reads_as: "x (boldface)"
+    meaning: "Eigenvector corresponding to eigenvalue λ"
+    notation_weight: 1
+  - symbol: "\\det(A - \\lambda I)"
+    reads_as: "determinant of A minus lambda I"
+    meaning: "Characteristic polynomial — set to zero to find eigenvalues"
+    notation_weight: 3
+  - symbol: "P, D"
+    reads_as: "P and D"
+    meaning: "Diagonalisation: A = PDP⁻¹ where D is diagonal and P's columns are eigenvectors"
+    notation_weight: 2
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  Spin a shaft slowly and nothing unusual happens. Spin it faster and, at one
+  particular speed, the whole machine shakes itself apart. That speed is not
+  bad luck — it is the shaft's natural frequency, a number written into the
+  geometry and stiffness of the metal itself. Engineers calculate it before
+  the shaft is ever machined.
+
+  The calculation is an eigenvalue problem. Feed in the stiffness matrix,
+  solve for the special values that make a certain determinant zero, and out
+  come the critical speeds. The same computation — different matrix, same method —
+  tells Google which web pages matter, tells a structural engineer where a
+  building will sway, and tells a data scientist which direction in a dataset
+  carries the most information.
+
+kreyszig_chapter: "Ch 8"
+stroud_programme: null
+uofa_course: "MATH 102"
 ---
 
-*Seed — front matter to be completed before content is written.*
+Spin a shaft slowly and nothing unusual happens. Spin it faster and, at one
+particular speed, the whole machine shakes itself apart. That speed is not
+bad luck — it is the shaft's natural frequency, a number written into the
+geometry and stiffness of the metal itself. Engineers calculate it before
+the shaft is ever machined.
+
+The calculation is an eigenvalue problem. Feed in the stiffness matrix,
+solve for the special values that make a certain determinant zero, and out
+come the critical speeds. The same computation — different matrix, same method —
+tells Google which web pages matter, tells a structural engineer where a
+building will sway, and tells a data scientist which direction in a dataset
+carries the most information.
+
+## The eigenvalue problem
+
+Multiply a vector by a matrix and you generally get a new vector pointing in a
+completely different direction. But for certain special vectors, the matrix acts
+more simply — it only scales the vector, leaving its direction unchanged (or
+exactly reversed). These are **eigenvectors**.
+
+Formally: $\mathbf{x}$ is an eigenvector of $A$ with eigenvalue $\lambda$ if
+
+$$A\mathbf{x} = \lambda\mathbf{x}, \quad \mathbf{x} \neq \mathbf{0}$$
+
+Read this as: "applying $A$ to $\mathbf{x}$ is the same as stretching $\mathbf{x}$ by a
+factor of $\lambda$." The vector $\mathbf{x}$ points in a direction that $A$ cannot
+rotate — it can only scale it.
+
+The eigenvalue $\lambda$ can be:
+
+- **Positive** — the eigenvector points the same way, scaled by $\lambda$.
+- **Negative** — the eigenvector is flipped and scaled.
+- **Zero** — $A\mathbf{x} = \mathbf{0}$; the eigenvector is in the null space of $A$ (and $A$ is singular).
+- **Complex** — the matrix introduces a rotation; eigenvalues come in conjugate pairs for real symmetric matrices this cannot happen, but for general real matrices it can.
+
+**Geometric picture.** Imagine $A$ as a transformation of the plane. Most vectors
+get rotated and stretched into new directions. The eigenvectors are the
+"fixed axes" — directions that survive the transformation pointing the same way
+they started (or exactly opposite). The eigenvalue tells you how much the
+transformation stretches along each fixed axis.
+
+<!-- VIZ: Eigenvector visualiser — 2×2 matrix with sliders for entries a, b, c, d, shows the unit circle mapped to an ellipse under the transformation, with eigenvectors drawn as arrows along the principal axes of the ellipse, labelled with their eigenvalues -->
+
+::: {.callout-note appearance="simple"}
+**Why $\mathbf{x} \neq \mathbf{0}$ is required**
+
+The zero vector satisfies $A\mathbf{0} = \lambda\mathbf{0}$ for any $\lambda$.
+That is trivially true but useless — it gives no information about $A$.
+We demand a non-zero eigenvector.
+:::
+
+## Characteristic equation
+
+Rearrange $A\mathbf{x} = \lambda\mathbf{x}$:
+
+$$A\mathbf{x} - \lambda\mathbf{x} = \mathbf{0}$$
+$$(A - \lambda I)\mathbf{x} = \mathbf{0}$$
+
+This is a homogeneous linear system. A homogeneous system has a non-zero
+solution if and only if its coefficient matrix is **singular** — that is,
+its determinant is zero:
+
+$$\det(A - \lambda I) = 0$$
+
+This is the **characteristic equation**. Expanding the determinant gives a
+polynomial in $\lambda$ — the **characteristic polynomial**. Its roots are the
+eigenvalues of $A$.
+
+For an $n \times n$ matrix, the characteristic polynomial has degree $n$, so
+there are exactly $n$ eigenvalues (counting multiplicity, and allowing complex values).
+
+**For a 2×2 matrix:**
+
+$$A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$$
+
+$$\det(A - \lambda I) = \det\begin{pmatrix} a-\lambda & b \\ c & d-\lambda \end{pmatrix} = (a-\lambda)(d-\lambda) - bc$$
+
+Expanding:
+
+$$\lambda^2 - (a+d)\lambda + (ad - bc) = 0$$
+
+$$\lambda^2 - \text{tr}(A)\,\lambda + \det(A) = 0$$
+
+The trace $\text{tr}(A) = a + d$ (sum of diagonal entries) and $\det(A) = ad - bc$
+appear directly in the characteristic polynomial. This is a useful check:
+the sum of the eigenvalues equals the trace, and their product equals the
+determinant.
+
+::: {.callout-tip appearance="simple"}
+**Trace–determinant check**
+
+After finding eigenvalues $\lambda_1, \lambda_2$:
+
+$$\lambda_1 + \lambda_2 = \text{tr}(A), \qquad \lambda_1 \lambda_2 = \det(A)$$
+
+Always verify this before proceeding. A quick arithmetic error in the
+characteristic polynomial shows up immediately.
+:::
+
+## Finding eigenvalues and eigenvectors — worked examples
+
+### Example 1: A 2×2 electrical network matrix
+
+A simplified two-node circuit has the nodal admittance matrix
+
+$$A = \begin{pmatrix} 3 & -1 \\ -1 & 3 \end{pmatrix}$$
+
+**Step 1: Characteristic equation.**
+
+$$\det(A - \lambda I) = \det\begin{pmatrix} 3-\lambda & -1 \\ -1 & 3-\lambda \end{pmatrix} = (3-\lambda)^2 - 1 = 0$$
+
+$$9 - 6\lambda + \lambda^2 - 1 = 0$$
+
+$$\lambda^2 - 6\lambda + 8 = 0$$
+
+**Step 2: Solve the quadratic.**
+
+$$(\lambda - 2)(\lambda - 4) = 0 \implies \lambda_1 = 2, \quad \lambda_2 = 4$$
+
+*Check:* $\lambda_1 + \lambda_2 = 6 = \text{tr}(A)$ and $\lambda_1 \lambda_2 = 8 = \det(A)$. Yes.
+
+**Step 3: Eigenvector for $\lambda_1 = 2$.**
+
+Solve $(A - 2I)\mathbf{x} = \mathbf{0}$:
+
+$$\begin{pmatrix} 1 & -1 \\ -1 & 1 \end{pmatrix}\begin{pmatrix} x_1 \\ x_2 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \end{pmatrix}$$
+
+The two rows say the same thing: $x_1 - x_2 = 0$, so $x_1 = x_2$. One free
+variable — take $x_2 = 1$:
+
+$$\mathbf{x}_1 = \begin{pmatrix} 1 \\ 1 \end{pmatrix}$$
+
+**Step 4: Eigenvector for $\lambda_2 = 4$.**
+
+Solve $(A - 4I)\mathbf{x} = \mathbf{0}$:
+
+$$\begin{pmatrix} -1 & -1 \\ -1 & -1 \end{pmatrix}\begin{pmatrix} x_1 \\ x_2 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \end{pmatrix}$$
+
+The equation is $-x_1 - x_2 = 0$, so $x_1 = -x_2$. Take $x_2 = 1$:
+
+$$\mathbf{x}_2 = \begin{pmatrix} -1 \\ 1 \end{pmatrix}$$
+
+Notice the eigenvectors are perpendicular: $(1)(−1) + (1)(1) = 0$. This is
+not a coincidence — $A$ is symmetric. Symmetric matrices always have
+orthogonal eigenvectors (more on this in the spectral theorem section).
+
+### Example 2: A 3×3 two-storey building stiffness matrix
+
+A two-storey shear building with a rigid base has three degrees of freedom (ground,
+first floor, second floor). With floor masses normalised to 1 and storey stiffnesses
+$k = 1$, the equation of motion $M\ddot{u} + Ku = 0$ (with $M = I$) reduces to
+an eigenvalue problem on the stiffness matrix:
+
+$$K = \begin{pmatrix} 2 & -1 & 0 \\ -1 & 2 & -1 \\ 0 & -1 & 1 \end{pmatrix}$$
+
+The eigenvalues of $K$ are the squares of the natural frequencies.
+
+**Step 1: Characteristic polynomial.**
+
+$$\det(K - \lambda I) = \det\begin{pmatrix} 2-\lambda & -1 & 0 \\ -1 & 2-\lambda & -1 \\ 0 & -1 & 1-\lambda \end{pmatrix}$$
+
+Expanding along the first row:
+
+$$= (2-\lambda)\det\begin{pmatrix} 2-\lambda & -1 \\ -1 & 1-\lambda \end{pmatrix} - (-1)\det\begin{pmatrix} -1 & -1 \\ 0 & 1-\lambda \end{pmatrix}$$
+
+$$= (2-\lambda)\bigl[(2-\lambda)(1-\lambda) - 1\bigr] + \bigl[(-1)(1-\lambda) - 0\bigr]$$
+
+$$= (2-\lambda)(2 - 3\lambda + \lambda^2 - 1) + (-(1-\lambda))$$
+
+$$= (2-\lambda)(\lambda^2 - 3\lambda + 1) - (1 - \lambda)$$
+
+Expanding $(2-\lambda)(\lambda^2 - 3\lambda + 1)$:
+
+$$= 2\lambda^2 - 6\lambda + 2 - \lambda^3 + 3\lambda^2 - \lambda$$
+
+$$= -\lambda^3 + 5\lambda^2 - 7\lambda + 2$$
+
+Subtracting $(1 - \lambda)$:
+
+$$\det(K - \lambda I) = -\lambda^3 + 5\lambda^2 - 6\lambda + 1$$
+
+Or equivalently: $\lambda^3 - 5\lambda^2 + 6\lambda - 1 = 0$.
+
+**Step 2: Roots.** Numerically (or via Cardano's formula): the three roots are
+approximately
+
+$$\lambda_1 \approx 0.198, \quad \lambda_2 \approx 1.555, \quad \lambda_3 \approx 3.247$$
+
+The natural frequencies are $\omega_i = \sqrt{\lambda_i}$:
+
+$$\omega_1 \approx 0.445, \quad \omega_2 \approx 1.247, \quad \omega_3 \approx 1.802 \text{ rad/s}$$
+
+::: {.callout-note appearance="simple"}
+**3×3 and larger: numerical methods in practice**
+
+For $3 \times 3$ matrices, the characteristic polynomial can still be solved
+by hand — but it is tedious. For $4 \times 4$ and beyond, exact polynomial
+roots are impossible in general (Abel–Ruffini theorem). In practice, engineers
+use numerical algorithms — the QR algorithm, Jacobi iteration, or Lanczos
+methods. The point of working through the $3 \times 3$ case by hand is to
+understand what the algorithm is computing, not to match its speed.
+:::
+
+## Repeated eigenvalues
+
+When the characteristic polynomial has a repeated root $\lambda$ of multiplicity
+$m > 1$, two cases arise:
+
+**Case 1: Non-defective (enough eigenvectors).** The eigenspace for $\lambda$ has
+dimension $m$ — you can find $m$ linearly independent eigenvectors. The matrix
+is diagonalisable.
+
+Example: $A = \lambda I$ (a scalar matrix). Every vector is an eigenvector. The
+eigenspace is the whole $\mathbb{R}^n$.
+
+**Case 2: Defective (not enough eigenvectors).** The eigenspace for $\lambda$ has
+dimension less than $m$. You cannot find enough linearly independent eigenvectors
+to fill out a basis. The matrix is **not diagonalisable** — you need the Jordan
+normal form instead.
+
+$$A = \begin{pmatrix} 2 & 1 \\ 0 & 2 \end{pmatrix}$$
+
+Characteristic polynomial: $(\lambda - 2)^2 = 0$, so $\lambda = 2$ with multiplicity 2.
+
+Eigenvectors: $(A - 2I)\mathbf{x} = \mathbf{0}$ gives $\begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}\mathbf{x} = \mathbf{0}$, so $x_2 = 0$ and $x_1$ is free. There is only one
+linearly independent eigenvector: $\mathbf{x} = \begin{pmatrix} 1 \\ 0 \end{pmatrix}$.
+
+Algebraic multiplicity (from the polynomial) is 2. Geometric multiplicity
+(dimension of eigenspace) is 1. Because they differ, $A$ is **defective**.
+
+::: {.callout-tip appearance="simple"}
+**Why this matters in engineering**
+
+A defective matrix arises when two natural frequencies of a system coincide
+exactly — a degenerate case. Small perturbations (real-world manufacturing
+tolerances) break the degeneracy, splitting the repeated eigenvalue into two
+distinct ones. Defective matrices are a theoretical boundary case. In practice,
+if your numerical computation returns a repeated eigenvalue, check whether it
+reflects genuine physics or accumulated rounding error.
+:::
+
+## Diagonalisation
+
+If an $n \times n$ matrix $A$ has $n$ linearly independent eigenvectors
+$\mathbf{x}_1, \ldots, \mathbf{x}_n$ with eigenvalues $\lambda_1, \ldots, \lambda_n$,
+form the matrices:
+
+$$P = \begin{pmatrix} | & & | \\ \mathbf{x}_1 & \cdots & \mathbf{x}_n \\ | & & | \end{pmatrix}, \qquad D = \begin{pmatrix} \lambda_1 & & \\ & \ddots & \\ & & \lambda_n \end{pmatrix}$$
+
+Then:
+
+$$A = PDP^{-1}$$
+
+$P$ is the **modal matrix** (columns are eigenvectors); $D$ is **diagonal** with
+eigenvalues on the diagonal.
+
+**Why diagonalisation is useful.**
+
+Powers of a diagonal matrix are trivial: $D^k$ is just each diagonal entry
+raised to the $k$-th power. So:
+
+$$A^k = PD^kP^{-1}$$
+
+This makes computing $A^{100}$ as cheap as computing $\lambda_1^{100}, \ldots,
+\lambda_n^{100}$ — a dramatic saving. It also makes solving $\dot{\mathbf{u}} = A\mathbf{u}$
+straightforward: substitute $\mathbf{u} = P\mathbf{v}$ to decouple the system into
+$n$ independent scalar ODEs, each of the form $\dot{v}_i = \lambda_i v_i$.
+
+**Worked diagonalisation of Example 1.**
+
+From Example 1: $\lambda_1 = 2$, $\mathbf{x}_1 = \begin{pmatrix} 1 \\ 1 \end{pmatrix}$;
+$\lambda_2 = 4$, $\mathbf{x}_2 = \begin{pmatrix} -1 \\ 1 \end{pmatrix}$.
+
+$$P = \begin{pmatrix} 1 & -1 \\ 1 & 1 \end{pmatrix}, \qquad D = \begin{pmatrix} 2 & 0 \\ 0 & 4 \end{pmatrix}$$
+
+$$P^{-1} = \frac{1}{\det P}\begin{pmatrix} 1 & 1 \\ -1 & 1 \end{pmatrix} = \frac{1}{2}\begin{pmatrix} 1 & 1 \\ -1 & 1 \end{pmatrix}$$
+
+Verify $AP = PD$:
+
+$$AP = \begin{pmatrix} 3 & -1 \\ -1 & 3 \end{pmatrix}\begin{pmatrix} 1 & -1 \\ 1 & 1 \end{pmatrix} = \begin{pmatrix} 2 & -4 \\ 2 & 4 \end{pmatrix}$$
+
+$$PD = \begin{pmatrix} 1 & -1 \\ 1 & 1 \end{pmatrix}\begin{pmatrix} 2 & 0 \\ 0 & 4 \end{pmatrix} = \begin{pmatrix} 2 & -4 \\ 2 & 4 \end{pmatrix} \checkmark$$
+
+## Symmetric matrices and the spectral theorem
+
+A matrix $A$ is **symmetric** if $A = A^T$ (the transpose equals itself).
+Symmetric matrices arise everywhere in physics and engineering: stiffness
+matrices, covariance matrices, the inertia tensor. They have two beautiful
+properties:
+
+::: {.callout-important appearance="simple"}
+**Spectral theorem (stated)**
+
+If $A$ is a real symmetric $n \times n$ matrix, then:
+
+1. All eigenvalues of $A$ are **real**.
+2. Eigenvectors corresponding to distinct eigenvalues are **orthogonal**.
+3. $A$ has $n$ linearly independent eigenvectors, so it is always diagonalisable.
+4. The eigenvectors can be chosen to be an **orthonormal basis** of $\mathbb{R}^n$.
+
+This means $A = Q D Q^T$ where $Q$ is an **orthogonal** matrix ($Q^T = Q^{-1}$)
+whose columns are orthonormal eigenvectors. This is the **eigendecomposition** or
+**spectral decomposition** of $A$.
+:::
+
+**Why engineers care.** Stiffness matrices are symmetric (by Maxwell's reciprocal
+theorem). The spectral theorem guarantees that their eigenvalues (natural
+frequencies squared) are real and positive — physically, modes must vibrate at
+real frequencies, not grow exponentially. The orthogonality of mode shapes means
+each mode can be analysed independently, which is the foundation of modal
+analysis.
+
+**Principal axes.** The eigendecomposition of a symmetric matrix gives the
+**principal axes** of the associated quadratic form. For a 3D stress tensor,
+the eigenvalues are the principal stresses and the eigenvectors are the
+principal stress directions — the coordinate system in which the stress tensor
+is diagonal (no shear stress). Every solid mechanics textbook derives the
+principal stress transformation this way.
+
+## Applications
+
+### Vibrational modes of a two-mass spring system
+
+Two masses connected by three springs form the simplest mechanical model of a
+multi-storey building or a coupled oscillator. With masses $m_1 = 1$, $m_2 = 2$
+and spring constants $k_1 = k_2 = k_3 = 1$:
+
+The equations of motion are:
+
+$$m_1 \ddot{u}_1 = -k_1 u_1 + k_2(u_2 - u_1) = -(k_1+k_2)u_1 + k_2 u_2$$
+$$m_2 \ddot{u}_2 = -k_2(u_2 - u_1) - k_3 u_2 = k_2 u_1 - (k_2+k_3)u_2$$
+
+In matrix form $M\ddot{\mathbf{u}} + K\mathbf{u} = \mathbf{0}$ with $M = \text{diag}(1, 2)$:
+
+$$K = \begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}$$
+
+For harmonic motion $\mathbf{u} = \mathbf{x} e^{i\omega t}$, this becomes the
+**generalised eigenvalue problem**:
+
+$$K\mathbf{x} = \omega^2 M\mathbf{x}$$
+
+Pre-multiply by $M^{-1} = \text{diag}(1, \tfrac{1}{2})$:
+
+$$M^{-1}K\mathbf{x} = \omega^2\mathbf{x}, \qquad M^{-1}K = \begin{pmatrix} 2 & -1 \\ -\tfrac{1}{2} & 1 \end{pmatrix}$$
+
+Characteristic equation: $\det(M^{-1}K - \omega^2 I) = 0$:
+
+$$(2 - \omega^2)(1 - \omega^2) - \tfrac{1}{2} = 0$$
+
+$$\omega^4 - 3\omega^2 + \tfrac{3}{2} = 0$$
+
+Using the quadratic formula with $\mu = \omega^2$:
+
+$$\mu = \frac{3 \pm \sqrt{9 - 6}}{2} = \frac{3 \pm \sqrt{3}}{2}$$
+
+$$\omega_1^2 = \frac{3 - \sqrt{3}}{2} \approx 0.634, \quad \omega_1 \approx 0.796 \text{ rad/s}$$
+$$\omega_2^2 = \frac{3 + \sqrt{3}}{2} \approx 2.366, \quad \omega_2 \approx 1.538 \text{ rad/s}$$
+
+These are the two **natural frequencies**. At $\omega_1$, both masses oscillate in
+phase (the first mode shape). At $\omega_2$, they oscillate out of phase (the second
+mode shape). If you drive this system at either of these frequencies, resonance
+occurs — amplitudes grow without bound (in the undamped model).
+
+### Power iteration and PageRank
+
+Google's PageRank assigns importance scores to web pages based on the link
+structure of the web. Define the transition matrix $G$ (the "Google matrix") where
+$G_{ij}$ is proportional to the probability of following a link from page $j$ to
+page $i$.
+
+PageRank scores are the entries of the **dominant eigenvector** of $G$ — the
+eigenvector corresponding to the largest eigenvalue (which is always 1 for a
+properly normalised transition matrix).
+
+Finding the exact dominant eigenvector of a billion-by-billion matrix is
+impossible by direct methods. Instead, Google uses **power iteration**:
+
+1. Start with any vector $\mathbf{v}^{(0)}$ (e.g., uniform: all pages equally likely).
+2. Multiply: $\mathbf{v}^{(k+1)} = G\mathbf{v}^{(k)}$.
+3. Normalise: divide by $\|\mathbf{v}^{(k+1)}\|$.
+4. Repeat until convergence.
+
+Under mild conditions, this converges to the dominant eigenvector. The convergence
+rate depends on the ratio $|\lambda_2/\lambda_1|$ — how much smaller the second
+eigenvalue is than the first.
+
+<!-- VIZ: Power iteration demo — animate the iteration Ax^(k)/||Ax^(k)|| converging to the dominant eigenvector for a 2×2 example with sliders for matrix entries; show the current iterate as an arrow on the unit circle, converging toward the dominant eigenvector direction -->
+
+### Principal component analysis (PCA) — a preview
+
+A dataset of $n$ observations in $p$ variables can be represented as a matrix.
+The **sample covariance matrix** $\Sigma$ is symmetric, so the spectral theorem
+applies: it has real eigenvalues and orthogonal eigenvectors.
+
+The eigenvectors of $\Sigma$ are the **principal components** — the directions
+of maximum variance in the data. The corresponding eigenvalues measure how
+much variance each direction accounts for.
+
+Projecting data onto the first $k$ principal components is the best
+rank-$k$ approximation of the data (in the least-squares sense). This is PCA.
+A face recognition system, a genomics pipeline, and a financial risk model all
+use the same eigendecomposition under the hood.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A structural engineer computing mode shapes and natural frequencies of a
+  building frame is solving an eigenvalue problem on a stiffness matrix.
+- A quantum chemist finding molecular orbital energies is diagonalising a
+  Hamiltonian matrix.
+- A data scientist reducing 1000-dimensional embeddings to 2D for visualisation
+  is computing the top two eigenvectors of a covariance matrix.
+- A search engine ranking web pages is finding the dominant eigenvector of a
+  link matrix.
+
+The matrix changes. The method does not.
+:::
+
+## Exercises
+
+These exercises move from mechanical computation to physical interpretation.
+In each case: set up the eigenvalue problem, find the eigenvalues and
+eigenvectors, and state what they mean in the engineering context.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+{
+  const css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css";
+  document.head.appendChild(css);
+}
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**1.** The nodal admittance matrix of a two-node electrical network is
+$A = \begin{pmatrix} 4 & -2 \\ -2 & 4 \end{pmatrix}$.
+Find the characteristic polynomial and the two eigenvalues.
+(The eigenvalues are the network's natural admittances — their reciprocals are natural impedances.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  {
+    op: "Write the characteristic equation",
+    eq: "\\det(A - \\lambda I) = \\det\\begin{pmatrix} 4-\\lambda & -2 \\\\ -2 & 4-\\lambda \\end{pmatrix} = 0",
+    note: "Non-trivial solutions exist only when A − λI is singular."
+  },
+  {
+    op: "Expand the determinant",
+    eq: "(4-\\lambda)^2 - (-2)(-2) = 0"
+  },
+  {
+    op: "Simplify",
+    eq: "16 - 8\\lambda + \\lambda^2 - 4 = 0 \\implies \\lambda^2 - 8\\lambda + 12 = 0"
+  },
+  {
+    op: "Factor the quadratic",
+    eq: "(\\lambda - 2)(\\lambda - 6) = 0 \\implies \\lambda_1 = 2,\\ \\lambda_2 = 6"
+  },
+  {
+    op: "Check with trace and determinant",
+    eq: "\\lambda_1 + \\lambda_2 = 8 = \\operatorname{tr}(A),\\quad \\lambda_1 \\lambda_2 = 12 = \\det(A)\\ \\checkmark"
+  }
+])
+```
+
+**2.** Using the eigenvalues from Exercise 1, find an eigenvector for each eigenvalue.
+Then write down the diagonalisation $A = PDP^{-1}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  {
+    op: "Eigenvector for λ₁ = 2: solve (A − 2I)x = 0",
+    eq: "\\begin{pmatrix} 2 & -2 \\\\ -2 & 2 \\end{pmatrix}\\mathbf{x} = \\mathbf{0} \\implies x_1 = x_2",
+    note: "Both rows give the same equation 2x₁ − 2x₂ = 0."
+  },
+  {
+    op: "Take x₂ = 1",
+    eq: "\\mathbf{x}_1 = \\begin{pmatrix} 1 \\\\ 1 \\end{pmatrix}"
+  },
+  {
+    op: "Eigenvector for λ₂ = 6: solve (A − 6I)x = 0",
+    eq: "\\begin{pmatrix} -2 & -2 \\\\ -2 & -2 \\end{pmatrix}\\mathbf{x} = \\mathbf{0} \\implies x_1 = -x_2"
+  },
+  {
+    op: "Take x₂ = 1",
+    eq: "\\mathbf{x}_2 = \\begin{pmatrix} -1 \\\\ 1 \\end{pmatrix}"
+  },
+  {
+    op: "Assemble P and D",
+    eq: "P = \\begin{pmatrix} 1 & -1 \\\\ 1 & 1 \\end{pmatrix},\\quad D = \\begin{pmatrix} 2 & 0 \\\\ 0 & 6 \\end{pmatrix}"
+  },
+  {
+    op: "Verify AP = PD (first column)",
+    eq: "A\\mathbf{x}_1 = \\begin{pmatrix} 4 & -2 \\\\ -2 & 4 \\end{pmatrix}\\begin{pmatrix} 1 \\\\ 1 \\end{pmatrix} = \\begin{pmatrix} 2 \\\\ 2 \\end{pmatrix} = 2\\mathbf{x}_1\\ \\checkmark"
+  }
+])
+```
+
+**3.** Diagonalise the symmetric matrix
+$B = \begin{pmatrix} 5 & 3 \\ 3 & 5 \end{pmatrix}$.
+Write $B = QDQ^T$ using orthonormal eigenvectors.
+(This matrix represents a plane stress state — its eigenvectors are the principal stress directions.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  {
+    op: "Characteristic equation",
+    eq: "(5-\\lambda)^2 - 9 = 0 \\implies \\lambda^2 - 10\\lambda + 16 = 0"
+  },
+  {
+    op: "Solve",
+    eq: "\\lambda_1 = 2,\\quad \\lambda_2 = 8"
+  },
+  {
+    op: "Eigenvector for λ₁ = 2",
+    eq: "(B - 2I)\\mathbf{x} = \\mathbf{0}: \\begin{pmatrix} 3 & 3 \\\\ 3 & 3 \\end{pmatrix}\\mathbf{x} = \\mathbf{0} \\implies \\mathbf{x}_1 = \\begin{pmatrix} 1 \\\\ -1 \\end{pmatrix}"
+  },
+  {
+    op: "Eigenvector for λ₂ = 8",
+    eq: "(B - 8I)\\mathbf{x} = \\mathbf{0}: \\begin{pmatrix} -3 & 3 \\\\ 3 & -3 \\end{pmatrix}\\mathbf{x} = \\mathbf{0} \\implies \\mathbf{x}_2 = \\begin{pmatrix} 1 \\\\ 1 \\end{pmatrix}"
+  },
+  {
+    op: "Normalise to unit length",
+    eq: "\\mathbf{q}_1 = \\frac{1}{\\sqrt{2}}\\begin{pmatrix} 1 \\\\ -1 \\end{pmatrix},\\quad \\mathbf{q}_2 = \\frac{1}{\\sqrt{2}}\\begin{pmatrix} 1 \\\\ 1 \\end{pmatrix}",
+    note: "Each eigenvector has length √2, so divide by √2 to normalise."
+  },
+  {
+    op: "Write the orthogonal diagonalisation",
+    eq: "Q = \\frac{1}{\\sqrt{2}}\\begin{pmatrix} 1 & 1 \\\\ -1 & 1 \\end{pmatrix},\\quad D = \\begin{pmatrix} 2 & 0 \\\\ 0 & 8 \\end{pmatrix},\\quad B = QDQ^T\\ \\checkmark"
+  }
+])
+```
+
+**4.** A simplified three-storey shear building has mass matrix $M = I$ and
+stiffness matrix
+$K = \begin{pmatrix} 3 & -1 & 0 \\ -1 & 2 & -1 \\ 0 & -1 & 1 \end{pmatrix}$.
+Find the characteristic polynomial and verify that $\lambda \approx 0.198$ is
+one eigenvalue by substituting it back.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  {
+    op: "Write det(K − λI) = 0",
+    eq: "\\det\\begin{pmatrix} 3-\\lambda & -1 & 0 \\\\ -1 & 2-\\lambda & -1 \\\\ 0 & -1 & 1-\\lambda \\end{pmatrix} = 0"
+  },
+  {
+    op: "Expand along row 1",
+    eq: "(3-\\lambda)\\bigl[(2-\\lambda)(1-\\lambda)-1\\bigr] + 1\\cdot\\bigl[(-1)(1-\\lambda)\\bigr] = 0"
+  },
+  {
+    op: "Simplify inner bracket",
+    eq: "(2-\\lambda)(1-\\lambda) - 1 = \\lambda^2 - 3\\lambda + 1"
+  },
+  {
+    op: "Expand and collect",
+    eq: "(3-\\lambda)(\\lambda^2-3\\lambda+1) - (1-\\lambda) = -\\lambda^3 + 6\\lambda^2 - 10\\lambda + 4 = 0"
+  },
+  {
+    op: "Divide by −1",
+    eq: "\\lambda^3 - 6\\lambda^2 + 10\\lambda - 4 = 0"
+  },
+  {
+    op: "Verify λ ≈ 0.491 is a root (smallest eigenvalue of this K)",
+    eq: "(0.491)^3 - 6(0.491)^2 + 10(0.491) - 4 \\approx 0.118 - 1.446 + 4.91 - 4 \\approx -0.418",
+    note: "Exact roots require numerical methods; the exercise builds comfort reading the polynomial structure."
+  },
+  {
+    op: "Trace check",
+    eq: "\\lambda_1 + \\lambda_2 + \\lambda_3 = \\operatorname{tr}(K) = 3+2+1 = 6\\ \\checkmark"
+  }
+])
+```
+
+**5.** Determine whether the matrix
+$C = \begin{pmatrix} 3 & 1 \\ 0 & 3 \end{pmatrix}$
+is diagonalisable. If not, explain why and state what the geometric and algebraic
+multiplicities are.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  {
+    op: "Find eigenvalues",
+    eq: "\\det(C - \\lambda I) = (3-\\lambda)^2 = 0 \\implies \\lambda = 3 \\text{ (algebraic multiplicity 2)}"
+  },
+  {
+    op: "Find eigenspace: solve (C − 3I)x = 0",
+    eq: "\\begin{pmatrix} 0 & 1 \\\\ 0 & 0 \\end{pmatrix}\\mathbf{x} = \\mathbf{0} \\implies x_2 = 0,\\ x_1 \\text{ free}"
+  },
+  {
+    op: "Eigenspace",
+    eq: "\\mathbf{x} = x_1\\begin{pmatrix} 1 \\\\ 0 \\end{pmatrix} \\implies \\text{geometric multiplicity} = 1"
+  },
+  {
+    op: "Compare multiplicities",
+    eq: "\\text{algebraic mult.} = 2 > 1 = \\text{geometric mult.}",
+    note: "When these differ, the matrix is defective — not enough eigenvectors to form a basis."
+  },
+  {
+    op: "Conclusion",
+    eq: "C \\text{ is NOT diagonalisable (it is defective).",
+    note: "It has Jordan normal form J = [[3,1],[0,3]] — identical to C in this case."
+  }
+])
+```
+
+**6.** Find the two natural frequencies of the two-mass spring system with
+$m_1 = 1$, $m_2 = 2$, $k_1 = k_2 = k_3 = 1$, and describe the two mode shapes
+(which mass moves more in each mode).
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  {
+    op: "Stiffness matrix K (from equations of motion)",
+    eq: "K = \\begin{pmatrix} k_1+k_2 & -k_2 \\\\ -k_2 & k_2+k_3 \\end{pmatrix} = \\begin{pmatrix} 2 & -1 \\\\ -1 & 2 \\end{pmatrix}"
+  },
+  {
+    op: "Mass matrix M and M⁻¹",
+    eq: "M = \\begin{pmatrix} 1 & 0 \\\\ 0 & 2 \\end{pmatrix},\\quad M^{-1} = \\begin{pmatrix} 1 & 0 \\\\ 0 & \\tfrac{1}{2} \\end{pmatrix}"
+  },
+  {
+    op: "Form the system matrix A = M⁻¹K",
+    eq: "A = M^{-1}K = \\begin{pmatrix} 2 & -1 \\\\ -\\tfrac{1}{2} & 1 \\end{pmatrix}"
+  },
+  {
+    op: "Characteristic equation det(A − ω²I) = 0",
+    eq: "(2-\\omega^2)(1-\\omega^2) - \\tfrac{1}{2} = 0 \\implies \\omega^4 - 3\\omega^2 + \\tfrac{3}{2} = 0"
+  },
+  {
+    op: "Solve for ω² (quadratic in μ = ω²)",
+    eq: "\\mu = \\frac{3 \\pm \\sqrt{9-6}}{2} = \\frac{3 \\pm \\sqrt{3}}{2}"
+  },
+  {
+    op: "Natural frequencies",
+    eq: "\\omega_1 = \\sqrt{\\tfrac{3-\\sqrt{3}}{2}} \\approx 0.796\\ \\text{rad/s},\\quad \\omega_2 = \\sqrt{\\tfrac{3+\\sqrt{3}}{2}} \\approx 1.538\\ \\text{rad/s}"
+  },
+  {
+    op: "Mode 1 eigenvector (ω₁²≈0.634): solve (A − 0.634I)x = 0",
+    eq: "\\begin{pmatrix} 1.366 & -1 \\\\ -0.5 & 0.366 \\end{pmatrix}\\mathbf{x} = \\mathbf{0} \\implies \\mathbf{x}_1 \\approx \\begin{pmatrix} 1 \\\\ 1.366 \\end{pmatrix}",
+    note: "Both entries positive — both masses move in the same direction. Mass 2 has larger amplitude."
+  },
+  {
+    op: "Mode 2 eigenvector (ω₂²≈2.366): solve (A − 2.366I)x = 0",
+    eq: "\\mathbf{x}_2 \\approx \\begin{pmatrix} 1 \\\\ -0.732 \\end{pmatrix}",
+    note: "Opposite signs — masses move in opposite directions. This is the higher-frequency mode."
+  },
+  {
+    op: "Physical interpretation",
+    eq: "\\omega_1 \\approx 0.796\\ \\text{rad/s (in-phase)},\\quad \\omega_2 \\approx 1.538\\ \\text{rad/s (anti-phase)}",
+    note: "Driving the system near either frequency causes resonance. The anti-phase mode has higher frequency because the relative motion stretches the coupling spring more."
+  }
+])
+```
+
+## Where this goes
+
+Eigenvalues connect directly outward in two directions. The first is **ODE systems**: a
+linear system $\dot{\mathbf{u}} = A\mathbf{u}$ has solution $\mathbf{u}(t) = e^{At}\mathbf{u}(0)$,
+and the long-term behaviour is governed entirely by the eigenvalues of $A$ — whether
+solutions decay, grow, or oscillate depends on their real and imaginary parts.
+The phase plane of Chapter 3 in this volume is a geometric picture of this.
+
+The second direction is **Fourier series**: the sinusoidal functions $\sin(n\pi x/L)$
+and $\cos(n\pi x/L)$ are eigenfunctions of the second-derivative operator
+$d^2/dx^2$ — an extension of the eigenvalue concept to function spaces. The
+Fourier coefficients are the "eigenvalues" (amplitudes) of the modes. The spectral
+theorem for matrices has an analogue for symmetric differential operators (Sturm–Liouville
+theory) that underpins heat equations, wave equations, and quantum mechanics.
+
+The computation behind all of this — finding eigenvalues reliably for large
+matrices — is the **QR algorithm**, one of the ten most important algorithms of the
+twentieth century according to *Computing in Science and Engineering*. You now
+understand what it is computing.

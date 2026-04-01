@@ -1,6 +1,895 @@
 ---
 title: "Graphs and networks"
-status: "seed"
+subtitle: "Paths, flows, and spanning structures"
+chapter: 2
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: |
+  You have nodes and connections. You want the shortest route, the cheapest
+  spanning structure, or the maximum flow.
+
+rewrite: |
+  Graph algorithms are systematic procedures on adjacency structure.
+  Each classic problem — shortest path, MST, max-flow — has a polynomial
+  algorithm with a clean correctness proof.
+
+opens_to:
+  - id: prob_stats
+    label: "Probability and mathematical statistics"
+    volume: 7
+    relationship: motivates
+
+prerequisite_ids:
+  - optimisation
+  - lin_alg
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Pipeline and power-grid routing problems are minimum spanning tree and max-flow problems."
+    career_example: "Network engineer designing a fibre backbone with minimum cable cost"
+  - field: "comp"
+    label: "Computing"
+    hook: "GPS navigation computes shortest paths on a weighted road graph millions of times per second."
+    career_example: "Software engineer implementing a routing protocol or web crawler"
+  - field: "biz"
+    label: "Operations research"
+    hook: "Supply-chain logistics is a network flow problem: maximise goods moved through a distribution network."
+    career_example: "Operations analyst optimising warehouse-to-store delivery routes"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Protein interaction networks, neural connectivity maps, and metabolic pathways are all modelled as graphs."
+    career_example: "Bioinformatician finding shortest signalling paths in a gene network"
+
+hook: |
+  You want to drive from Edmonton to Calgary in the least time, not just
+  the fewest kilometres. You need to wire up five remote sensors to a
+  data logger using as little cable as possible. You want to know the
+  maximum throughput a pipeline network can deliver before a bottleneck
+  binds.
+
+  Different questions. The same underlying structure: nodes, connections,
+  weights. Once you have that structure, a handful of classical algorithms
+  — each with a clean proof of correctness — answer all of them.
+
+notation_introduced:
+  - symbol: "G = (V, E)"
+    reads_as: "a graph G consisting of vertex set V and edge set E"
+    notation_weight: 2
+  - symbol: "w(u, v)"
+    reads_as: "the weight of the edge from u to v"
+    notation_weight: 1
+  - symbol: "d(v)"
+    reads_as: "the degree of vertex v — the number of edges incident to v"
+    notation_weight: 1
+  - symbol: "A"
+    reads_as: "the adjacency matrix of the graph"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: ~
+  strand: ""
+  outcome: ""
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: 23
 ---
 
-*Seed — front matter to be completed before content is written.*
+You want to drive from Edmonton to Calgary in the least time, not just
+the fewest kilometres. You need to wire up five remote sensors to a
+data logger using as little cable as possible. You want to know the
+maximum throughput a pipeline network can deliver before a bottleneck
+binds.
+
+Different questions. The same underlying structure: nodes, connections,
+weights. Once you have that structure, a handful of classical algorithms
+— each with a clean proof of correctness — answer all of them.
+
+## Graph fundamentals
+
+A **graph** $G = (V, E)$ — read "a graph G consisting of vertex set V
+and edge set E" — is a set of **vertices** (also called nodes) $V$
+together with a set of **edges** $E$, where each edge connects two
+vertices.
+
+In an **undirected** graph, the edge $\{u, v\}$ can be traversed in
+either direction. In a **directed** graph (digraph), each edge $(u, v)$
+— read "from u to v" — has a direction: you can go from $u$ to $v$ but
+not necessarily back.
+
+A **weighted** graph assigns a real number $w(u, v)$ — "the weight of
+the edge from $u$ to $v$" — to each edge. Weights model distance, cost,
+travel time, capacity, or any other quantity associated with a connection.
+
+### Adjacency matrix
+
+The **adjacency matrix** $A$ of a graph on $n$ vertices is the $n \times n$
+matrix where entry $A_{ij} = 1$ if there is an edge from vertex $i$ to
+vertex $j$, and $A_{ij} = 0$ otherwise. For a weighted graph, replace the
+1 with the edge weight. For an undirected graph, $A$ is symmetric:
+$A_{ij} = A_{ji}$.
+
+Example: a simple undirected graph with four vertices $\{1, 2, 3, 4\}$
+and edges $\{1,2\}$, $\{1,3\}$, $\{2,4\}$, $\{3,4\}$ has adjacency
+matrix
+
+$$A = \begin{pmatrix} 0 & 1 & 1 & 0 \\ 1 & 0 & 0 & 1 \\ 1 & 0 & 0 & 1 \\ 0 & 1 & 1 & 0 \end{pmatrix}.$$
+
+### Degree, paths, and connectivity
+
+The **degree** $d(v)$ — "the degree of vertex $v$" — is the number of
+edges incident to $v$. In the example above, $d(1) = 2$, $d(2) = 2$,
+$d(3) = 2$, $d(4) = 2$.
+
+A **path** from $u$ to $v$ is a sequence of vertices starting at $u$
+and ending at $v$ where consecutive vertices are connected by an edge,
+and no vertex repeats. A **cycle** is a closed path: it starts and ends
+at the same vertex. A graph is **connected** if there is a path between
+every pair of vertices.
+
+A **tree** is a connected graph with no cycles. Equivalently, a tree on
+$n$ vertices has exactly $n-1$ edges — removing any edge disconnects it,
+adding any edge creates a cycle. Trees are the minimal connected
+structures, which is exactly why they appear in spanning problems.
+
+## Shortest path: Dijkstra's algorithm
+
+**Problem.** Given a weighted graph with non-negative edge weights and a
+source vertex $s$, find the shortest-distance path from $s$ to every
+other vertex.
+
+**Algorithm.** Maintain a set $S$ of vertices whose shortest distances
+are finalised, and for every vertex outside $S$, a tentative distance
+$\text{dist}[v]$. Initially $\text{dist}[s] = 0$ and $\text{dist}[v] = \infty$ for all $v \neq s$.
+
+Repeat until $S = V$:
+
+1. Pick the vertex $u \notin S$ with the smallest $\text{dist}[u]$.
+2. Add $u$ to $S$ (its distance is now final).
+3. For each neighbour $v$ of $u$: if $\text{dist}[u] + w(u,v) < \text{dist}[v]$,
+   update $\text{dist}[v] \leftarrow \text{dist}[u] + w(u,v)$.
+
+### Worked trace — 6-node graph
+
+Consider the following undirected weighted graph with vertices
+$\{A, B, C, D, E, F\}$ and source $A$:
+
+| Edge | Weight |
+|------|--------|
+| A–B  | 4      |
+| A–C  | 2      |
+| B–C  | 5      |
+| B–D  | 10     |
+| C–E  | 3      |
+| E–D  | 4      |
+| D–F  | 11     |
+| E–F  | 7      |
+
+Initial distances: $A=0$, $B=\infty$, $C=\infty$, $D=\infty$, $E=\infty$, $F=\infty$.
+
+**Step 1.** Smallest tentative distance is $A$ (dist = 0). Finalise $A$.
+Update neighbours: $\text{dist}[B] \leftarrow 4$, $\text{dist}[C] \leftarrow 2$.
+
+**Step 2.** Smallest non-finalised: $C$ (dist = 2). Finalise $C$.
+Update neighbours: $B$: $2+5=7 > 4$, no change. $E$: $2+3=5 \leftarrow 5$.
+
+**Step 3.** Smallest non-finalised: $B$ (dist = 4). Finalise $B$.
+Update neighbours: $C$: already finalised. $D$: $4+10=14 \leftarrow 14$.
+
+**Step 4.** Smallest non-finalised: $E$ (dist = 5). Finalise $E$.
+Update neighbours: $D$: $5+4=9 < 14$, update $\text{dist}[D] \leftarrow 9$.
+$F$: $5+7=12 \leftarrow 12$.
+
+**Step 5.** Smallest non-finalised: $D$ (dist = 9). Finalise $D$.
+Update neighbours: $F$: $9+11=20 > 12$, no change.
+
+**Step 6.** Smallest non-finalised: $F$ (dist = 12). Finalise $F$.
+
+Final shortest distances from $A$: $B=4$, $C=2$, $D=9$, $E=5$, $F=12$.
+
+The shortest path to $F$ is $A \to C \to E \to F$ with total weight $2+3+7=12$.
+
+<!-- VIZ: Dijkstra step-through — fixed 6-node weighted graph using the A–F example above, "Next step" button highlights the current shortest-path tree, shows distance labels updating at each finalisation step, colours finalised vertices differently from tentative ones -->
+
+### Correctness sketch
+
+<!-- STUDENT: The proof introduces a new variable $y$ that requires careful reading: $y$ is defined as "the first vertex on the shorter path not yet in $S$." This is clear but dense. A reader who has never seen a proof by contradiction in a graph-theory context may lose the thread at "extending the path beyond $y$ can only increase its length." It would help to add: "any further edges on the path from $y$ to $u$ add non-negative weight, so the total cannot be shorter than dist[y] alone." -->
+
+Dijkstra is a greedy algorithm. Before the proof, it's worth asking: *why would the greedy choice ever go wrong?* The answer is: it could go wrong if a later, distant vertex $y$ had a shortcut that made a longer-looking path to $u$ end up shorter. Non-negative edge weights prevent exactly this — you can never shorten a path by adding edges.
+
+The key claim: when a vertex $u$ is moved into $S$, its tentative distance $\text{dist}[u]$ is the true shortest distance.
+
+Proof by contradiction: suppose some path to $u$ is shorter, and let
+$y$ be the first vertex on that path not yet in $S$ when $u$ is picked.
+The portion of that path from the source to $y$ has length $\text{dist}[y]$
+(since Dijkstra has already found the shortest path to $y$, which lies on
+our assumed shorter path). Any further edges from $y$ to $u$ have non-negative
+weight, so the full path is at least $\text{dist}[y]$ in length. But $\text{dist}[y] \geq \text{dist}[u]$,
+because Dijkstra would have picked $y$ before $u$ if $y$ were closer. So the
+assumed shorter path is at least as long as $\text{dist}[u]$ — a contradiction.
+
+This argument fails if any edge weight is negative — a later edge could
+make up for a large earlier one. For graphs with negative weights (but
+no negative-weight cycles), **Bellman-Ford** is the correct algorithm:
+it relaxes all edges $|V|-1$ times, running in $O(|V||E|)$ time rather
+than Dijkstra's $O((|V| + |E|) \log |V|)$. One use case is currency
+arbitrage detection.
+
+## Minimum spanning tree
+
+**Problem.** Given a connected weighted undirected graph, find a
+spanning tree — a tree that includes all vertices — with minimum total
+edge weight.
+
+Two classical algorithms solve this; both are correct, and both rely on
+the same underlying property.
+
+### Cut property
+
+A **cut** is a partition of $V$ into two non-empty sets $S$ and
+$V \setminus S$. An edge **crosses** the cut if one endpoint is in $S$
+and the other is in $V \setminus S$. The cut property states: for any cut $(S, V \setminus S)$, if $e$ is
+the unique minimum-weight edge crossing that cut, then $e$ belongs to
+every minimum spanning tree; more generally, any minimum-weight edge
+crossing a given cut belongs to some minimum spanning tree.
+This is the single fact both Kruskal and Prim exploit.
+
+<!-- STUDENT: The cut property is stated carefully (corrected by math-prof) but it is not immediately obvious how Kruskal uses it. A one-sentence bridge would help: "In Kruskal, each time we consider an edge, we can define a cut that separates its two endpoints' current components; the edge is minimum-weight crossing that cut, so the cut property says it is safe to add." Without this, the cut property reads as abstract machinery that never visibly connects to the steps of the algorithm. -->
+
+Here is how this applies: in Kruskal's algorithm, every time we consider an edge $e = \{u,v\}$, the two components containing $u$ and $v$ define a cut. The edge $e$ is the cheapest edge crossing that cut (because we process edges in weight order and skip any that close a cycle). The cut property says it is safe to include $e$ in the MST. Every addition Kruskal makes is justified by exactly this argument.
+
+### Kruskal's algorithm
+
+1. Sort all edges by weight (ascending).
+2. Initialise $T = \emptyset$ (no edges selected yet).
+3. Consider edges in order. Add edge $e = \{u, v\}$ to $T$ if it does
+   not create a cycle (equivalently, if $u$ and $v$ are in different
+   connected components of $T$).
+4. Stop when $T$ has $n-1$ edges.
+
+Use a **union-find** data structure to test and merge components
+efficiently. Total time: $O(|E| \log |E|)$ (dominated by sorting).
+
+**Worked example.** Six-node graph with edges (sorted by weight):
+
+| Edge | Weight |
+|------|--------|
+| C–E  | 3      |
+| A–C  | 2      |
+| A–B  | 4      |
+| E–D  | 4      |
+| B–C  | 5      |
+| E–F  | 7      |
+| B–D  | 10     |
+| D–F  | 11     |
+
+Sorted: A–C (2), C–E (3), A–B (4), E–D (4), B–C (5), E–F (7), B–D (10), D–F (11).
+
+- Add A–C (2): no cycle. $T = \{$A–C$\}$.
+- Add C–E (3): no cycle. $T = \{$A–C, C–E$\}$.
+- Add A–B (4): no cycle. $T = \{$A–C, C–E, A–B$\}$.
+- Add E–D (4): no cycle. $T = \{$A–C, C–E, A–B, E–D$\}$.
+- Add B–C (5): creates cycle A–B–C–A. Skip.
+- Add E–F (7): no cycle. $T = \{$A–C, C–E, A–B, E–D, E–F$\}$. Now $|T| = 5 = n-1$. Done.
+
+MST total weight: $2+3+4+4+7 = 20$.
+
+### Prim's algorithm
+
+1. Start from an arbitrary seed vertex $r$. Mark $r$ as in the tree.
+2. At each step, add the minimum-weight edge that connects a vertex
+   inside the current tree to one outside it.
+3. Repeat until all vertices are in the tree.
+
+**Worked example** (same graph, starting from $A$):
+
+- Tree: $\{A\}$. Cheapest crossing edge: A–C (2). Add C.
+- Tree: $\{A, C\}$. Cheapest crossing edge: C–E (3). Add E.
+- Tree: $\{A, C, E\}$. Cheapest crossing edge: A–B (4) or E–D (4). Take A–B. Add B.
+- Tree: $\{A, C, E, B\}$. Cheapest crossing edge: E–D (4). Add D.
+- Tree: $\{A, C, E, B, D\}$. Cheapest crossing edge: E–F (7). Add F.
+
+MST edges: A–C, C–E, A–B, E–D, E–F. Total weight: 20. Same result as Kruskal.
+
+Both algorithms always produce an MST. When the minimum-weight crossing
+edge for any cut is unique, the MST is unique. With ties, multiple MSTs
+of the same total weight may exist.
+
+## Network flows
+
+**Problem.** A directed weighted graph has a distinguished **source** $s$
+(supply) and **sink** $t$ (demand). Each directed edge $(u,v)$ has a
+**capacity** $c(u,v) \geq 0$ — the maximum flow it can carry. The **flow**
+$f(u,v)$ on each edge must satisfy:
+
+- **Capacity constraint:** $0 \leq f(u,v) \leq c(u,v)$ for all edges.
+- **Flow conservation:** for every vertex $v \neq s, t$, the total flow
+  in equals the total flow out: $\sum_u f(u,v) = \sum_w f(v,w)$.
+
+The **value of the flow** is the total flow leaving $s$ (equivalently,
+arriving at $t$). The problem is to maximise this value.
+
+### Ford-Fulkerson method
+
+<!-- STUDENT: The residual graph is defined here in terms of two quantities — forward residual capacity c(u,v) − f(u,v) and reverse residual capacity f(u,v) — but it is not yet clear why the reverse edge exists at all. The idea that reverse edges let you "undo" a routing decision is mentioned afterwards, but a reader working through step 2 for the first time will be confused by why you can send flow "backwards." Moving the one-sentence explanation ("reverse edges let the algorithm correct earlier routing decisions") to here, before the formal definition, would help. -->
+
+The key idea behind Ford-Fulkerson is that earlier routing decisions can be wrong, and the algorithm needs a way to undo them. If we sent flow along a path that turned out to block a better option, we want to be able to redirect it. The **residual graph** makes this possible by including a reverse edge for every forward edge: sending flow "backwards" on a reverse edge is equivalent to cancelling some previously routed flow.
+
+1. Start with zero flow on all edges.
+2. Find an **augmenting path** — any directed path from $s$ to $t$ in
+   the **residual graph** $G_f$, where edge $(u,v)$ has residual
+   capacity $c(u,v) - f(u,v)$ (how much more we can send forward) and
+   the reverse edge $(v,u)$ has residual capacity $f(u,v)$ (how much
+   previously routed flow we can cancel).
+3. Send as much flow along the augmenting path as the bottleneck edge
+   allows.
+4. Repeat until no augmenting path exists.
+
+### Max-flow min-cut theorem
+
+A **cut** $(S, T)$ with $s \in S$ and $t \in T$ separates source from
+sink. The **capacity of the cut** is the sum of capacities of edges
+going from $S$ to $T$. The max-flow min-cut theorem states:
+
+> **The maximum flow value equals the minimum cut capacity.**
+
+The forward direction is clear: no flow can exceed the capacity of any
+cut separating $s$ from $t$, because every unit of flow must cross the
+cut. The deep direction is that Ford-Fulkerson achieves this bound — when
+no augmenting path remains, the set of vertices reachable from $s$ in
+the residual graph defines a cut whose capacity equals the current flow
+value.
+
+In practice: to find the bottleneck in a network, find the minimum cut.
+The edges in the minimum cut are the ones whose capacity, if increased,
+would allow more total flow.
+
+### Worked example — 5-node network
+
+Directed graph: source $S$, sink $T$, intermediate vertices $A$, $B$, $C$.
+
+| Edge | Capacity |
+|------|----------|
+| S→A  | 10       |
+| S→B  | 8        |
+| A→C  | 9        |
+| A→B  | 3        |
+| B→T  | 10       |
+| C→T  | 7        |
+| C→B  | 2        |
+
+**Round 1.** Augmenting path $S \to A \to C \to T$. Bottleneck: $\min(10,9,7) = 7$.
+Send 7 units. Updated flows: S→A = 7, A→C = 7, C→T = 7.
+
+**Round 2.** Augmenting path $S \to A \to B \to T$. Bottleneck: $\min(3,3,10) = 3$.
+Send 3 units. Updated flows: S→A = 10, A→B = 3, B→T = 3.
+
+**Round 3.** Augmenting path $S \to B \to T$. Bottleneck: $\min(8,7) = 7$.
+Send 7 units. Updated flows: S→B = 7, B→T = 10.
+
+**Round 4.** Path $S \to A$: S→A is saturated (10/10). $S \to B$: B→T is
+saturated (10/10). No augmenting path exists. Done.
+
+Maximum flow = 7 + 3 + 7 = 17 units.
+
+**Minimum cut.** After Round 3, the residual capacities are:
+S→A: 0, S→B: 1, A→C: 2, A→B: 0, B→T: 0, C→T: 0, C→B: 2,
+plus reverse edges A←S: 10, B←S: 7, C←A: 7, B←A: 3, T←B: 10, T←C: 7.
+
+Starting from $S$ in the residual graph: S→B has residual 1, so $B$ is
+reachable. From $B$: B→T has residual 0 (blocked); the reverse edge
+B←A carries residual 3, so $A$ is reachable. From $A$: A→C has
+residual 2, so $C$ is reachable. From $C$: C→T has residual 0 (blocked);
+C→B forward has residual 2 but $B$ is already in the set.
+
+Reachable set: $\{S, B, A, C\}$. Non-reachable: $\{T\}$.
+
+The minimum cut consists of the edges crossing from $\{S,B,A,C\}$ to
+$\{T\}$: that is B→T (capacity 10) and C→T (capacity 7). Min cut
+capacity $= 10 + 7 = 17$, which equals the max flow.
+
+The minimum cut $\{$B→T, C→T$\}$ identifies the bottleneck: these are
+the edges whose capacity limits the total throughput of the network.
+
+<!-- VIZ: network flow explorer — 5-node directed graph (S, A, B, C, T) with edge capacities from the worked example, capacity sliders on each edge, live display of current flow (updated by running Ford-Fulkerson) and the residual graph, highlights the min-cut edges when flow is maximal -->
+
+::: {.callout-note appearance="simple"}
+**Why Ford-Fulkerson terminates**
+
+With integer capacities, each augmentation increases the flow by at
+least 1. Since the flow is bounded above by the sum of capacities out of
+$s$, the algorithm terminates. The reverse edges in the residual graph
+are what make it work correctly: they allow the algorithm to "undo" a
+routing decision and reroute flow along a more productive path.
+:::
+
+## Where this goes
+
+The three problems in this chapter — shortest path, MST, network flow —
+are the foundational problems of **combinatorial optimisation**. They
+appear directly inside more complex algorithms: Dijkstra is the inner
+loop of many routing protocols; MST computation underlies Christofides'
+approximation algorithm for the travelling salesman problem; max-flow
+is equivalent to maximum bipartite matching via a reduction. If you
+proceed to the study of algorithms or operations research, you will see
+all three again.
+
+The other extension worth knowing is **integer programming**, where
+variables are constrained to take integer values. Many practical network
+problems — crew scheduling, facility location, vehicle routing — are
+integer programs. Chapter 1 of this section covered the continuous
+relaxation; the integer case is in general NP-hard, but the network
+structure of the problems above makes them tractable.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A civil engineer routing roads or pipelines through terrain minimises
+  a weighted path or tree.
+- A telecoms network engineer provisioning bandwidth uses max-flow to
+  find the network's throughput limit.
+- A supply-chain analyst models goods movement as a flow problem and
+  finds bottleneck warehouse links.
+- A machine learning engineer working on graph neural networks needs
+  the adjacency matrix representation as the input to the network.
+- A biologist mapping evolutionary relationships uses minimum spanning
+  trees on genetic distance matrices.
+:::
+
+## Exercises
+
+These are convergent problems. Each has a definite answer. The work is
+in applying the algorithm correctly and reading the result.
+
+**Exercise 1.** Run Dijkstra's algorithm on the following 5-node
+undirected weighted graph, starting from vertex $P$.
+
+| Edge | Weight |
+|------|--------|
+| P–Q  | 6      |
+| P–R  | 2      |
+| R–Q  | 3      |
+| R–S  | 7      |
+| Q–S  | 1      |
+| Q–T  | 5      |
+| S–T  | 4      |
+
+Trace all distance updates. State the final shortest distance to each
+vertex and give the shortest path to $T$.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Initialise distances"
+    eq: "d[P]=0,\\ d[Q]=\\infty,\\ d[R]=\\infty,\\ d[S]=\\infty,\\ d[T]=\\infty"
+    note: "Source gets distance 0; all others start at infinity."
+  - op: "Finalise P (dist 0); update neighbours"
+    eq: "d[Q] \\leftarrow 6,\\quad d[R] \\leftarrow 2"
+  - op: "Finalise R (dist 2); update neighbours"
+    eq: "d[Q]: 2+3=5 < 6 \\Rightarrow d[Q]\\leftarrow 5;\\quad d[S]\\leftarrow 2+7=9"
+  - op: "Finalise Q (dist 5); update neighbours"
+    eq: "d[S]: 5+1=6 < 9 \\Rightarrow d[S]\\leftarrow 6;\\quad d[T]\\leftarrow 5+5=10"
+  - op: "Finalise S (dist 6); update neighbours"
+    eq: "d[T]: 6+4=10 = 10,\\ \\text{no change}"
+  - op: "Finalise T (dist 10)"
+    eq: "d[P]=0,\\ d[R]=2,\\ d[Q]=5,\\ d[S]=6,\\ d[T]=10"
+  - op: "Read shortest path to T"
+    eq: "P \\to R \\to Q \\to S \\to T,\\quad \\text{total weight } 2+3+1+4=10"
+  - op: "Check"
+    eq: "2+3+1+4=10 \\checkmark"
+-->
+
+**Exercise 2.** Find the MST of the following 6-node graph using
+Kruskal's algorithm. List the edges in the order they are added to the
+tree and give the total MST weight.
+
+| Edge | Weight |
+|------|--------|
+| 1–2  | 7      |
+| 1–3  | 5      |
+| 2–4  | 8      |
+| 2–3  | 9      |
+| 3–4  | 15     |
+| 3–5  | 6      |
+| 4–5  | 4      |
+| 4–6  | 5      |
+| 5–6  | 2      |
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Sort edges by weight"
+    eq: "5\\text{–}6(2),\\ 4\\text{–}5(4),\\ 1\\text{–}3(5),\\ 4\\text{–}6(5),\\ 3\\text{–}5(6),\\ 1\\text{–}2(7),\\ 2\\text{–}4(8),\\ 2\\text{–}3(9),\\ 3\\text{–}4(15)"
+  - op: "Add 5–6 (weight 2)"
+    eq: "T = \\{5\\text{--}6\\}"
+    note: "No cycle — different components."
+  - op: "Add 4–5 (weight 4)"
+    eq: "T = \\{5\\text{--}6,\\ 4\\text{--}5\\}"
+  - op: "Add 1–3 (weight 5)"
+    eq: "T = \\{5\\text{--}6,\\ 4\\text{--}5,\\ 1\\text{--}3\\}"
+  - op: "Skip 4–6 (weight 5) — creates cycle 4–5–6–4"
+    eq: "T = \\{5\\text{--}6,\\ 4\\text{--}5,\\ 1\\text{--}3\\}"
+    note: "Edges 4–5 and 5–6 already put vertices 4, 5, 6 in the same component; adding 4–6 would close a cycle."
+  - op: "Add 3–5 (weight 6)"
+    eq: "T = \\{5\\text{--}6,\\ 4\\text{--}5,\\ 1\\text{--}3,\\ 3\\text{--}5\\}"
+    note: "Merges component {1,3} with component {4,5,6}."
+  - op: "Add 1–2 (weight 7)"
+    eq: "T = \\{5\\text{--}6,\\ 4\\text{--}5,\\ 1\\text{--}3,\\ 3\\text{--}5,\\ 1\\text{--}2\\}"
+    note: "Now |T| = 5 = n−1. Done."
+  - op: "Compute total weight"
+    eq: "2+4+5+6+7 = 24"
+  - op: "Check"
+    eq: "5 \\text{ edges on } 6 \\text{ vertices} \\Rightarrow \\text{tree}\\checkmark,\\quad \\text{total weight }24"
+-->
+
+**Exercise 3.** Find the MST of the same 6-node graph from Exercise 2
+using Prim's algorithm, starting from vertex 1. Verify that the total
+MST weight equals the result from Exercise 2.
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Start with tree = {1}"
+    eq: "\\text{Candidates: } 1\\text{--}2\\ (7),\\ 1\\text{--}3\\ (5)"
+  - op: "Add cheapest crossing edge: 1–3 (weight 5)"
+    eq: "T = \\{1\\text{--}3\\},\\quad \\text{tree vertices } \\{1,3\\}"
+  - op: "Update candidates"
+    eq: "1\\text{--}2\\ (7),\\ 3\\text{--}2\\ (9),\\ 3\\text{--}4\\ (15),\\ 3\\text{--}5\\ (6)"
+  - op: "Add cheapest: 3–5 (weight 6)"
+    eq: "T = \\{1\\text{--}3,\\ 3\\text{--}5\\},\\quad \\text{tree vertices }\\{1,3,5\\}"
+  - op: "Update candidates"
+    eq: "1\\text{--}2\\ (7),\\ 4\\text{--}5\\ (4),\\ 5\\text{--}6\\ (2)"
+  - op: "Add cheapest: 5–6 (weight 2)"
+    eq: "T = \\{1\\text{--}3,\\ 3\\text{--}5,\\ 5\\text{--}6\\},\\quad \\text{tree vertices }\\{1,3,5,6\\}"
+  - op: "Update candidates; add cheapest: 4–5 (weight 4)"
+    eq: "T = \\{1\\text{--}3,\\ 3\\text{--}5,\\ 5\\text{--}6,\\ 4\\text{--}5\\},\\quad \\text{tree vertices }\\{1,3,4,5,6\\}"
+  - op: "Add cheapest crossing edge to vertex 2: 1–2 (weight 7)"
+    eq: "T = \\{1\\text{--}3,\\ 3\\text{--}5,\\ 5\\text{--}6,\\ 4\\text{--}5,\\ 1\\text{--}2\\},\\quad |T|=5"
+  - op: "Compute total weight"
+    eq: "5+6+2+4+7 = 24"
+  - op: "Check"
+    eq: "\\text{Same edges as Kruskal (different order), same total weight } 24 \\checkmark"
+-->
+
+**Exercise 4.** Find the maximum flow from $S$ to $T$ in the following
+4-node network. Identify the minimum cut.
+
+| Edge | Capacity |
+|------|----------|
+| S→A  | 8        |
+| S→B  | 6        |
+| A→T  | 5        |
+| A→B  | 4        |
+| B→T  | 9        |
+
+<!-- STEPPER
+exercise: 4
+steps:
+  - op: "Initialise: zero flow on all edges"
+    eq: "f(S{\\to}A)=f(S{\\to}B)=f(A{\\to}T)=f(A{\\to}B)=f(B{\\to}T)=0"
+  - op: "Augment along S→A→T; bottleneck min(8,5)=5"
+    eq: "f(S{\\to}A)=5,\\ f(A{\\to}T)=5;\\quad \\text{flow value}=5"
+  - op: "Augment along S→A→B→T; bottleneck min(3,4,9)=3"
+    eq: "f(S{\\to}A)=8,\\ f(A{\\to}B)=3,\\ f(B{\\to}T)=3;\\quad \\text{flow value}=8"
+    note: "Residual on S→A is now 0 — saturated."
+  - op: "Augment along S→B→T; bottleneck min(6,6)=6"
+    eq: "f(S{\\to}B)=6,\\ f(B{\\to}T)=9;\\quad \\text{flow value}=14"
+  - op: "Check for augmenting paths: S→A saturated, S→B saturated. No path."
+    eq: "\\text{Max flow} = 14"
+  - op: "Find min cut: reachable from S in residual graph"
+    eq: "S{\\to}A:\\ \\text{residual }0;\\ S{\\to}B:\\ \\text{residual }0.\\ \\text{Reachable set} = \\{S\\}"
+    note: "Both edges out of S are saturated, so S is isolated in the residual graph."
+  - op: "Min cut edges: S→A (cap 8) and S→B (cap 6)"
+    eq: "\\text{Min cut capacity} = 8+6 = 14"
+  - op: "Check"
+    eq: "\\text{Max flow} = 14 = \\text{min cut capacity} \\checkmark"
+-->
+
+**Exercise 5.** Let $G$ be a tree on $n$ vertices. Prove that the
+adjacency matrix $A$ of $G$ contains exactly $n-1$ ones in each of its
+upper and lower triangular parts (i.e., $G$ has exactly $n-1$ edges),
+using only the definition of a tree as a connected acyclic graph.
+
+<!-- STEPPER
+exercise: 5
+steps:
+  - op: "State what must be shown"
+    eq: "\\text{A tree on }n\\text{ vertices has exactly }n-1\\text{ edges.}"
+    note: "This is equivalent to showing the adjacency matrix has exactly n−1 ones in its upper triangle (since it is symmetric for an undirected graph)."
+  - op: "Lower bound: connectivity requires at least n−1 edges"
+    eq: "\\text{Any connected graph on }n\\text{ vertices has }\\geq n-1\\text{ edges.}"
+    note: "By induction: a connected graph on 2 vertices needs 1 edge. Adding a vertex while maintaining connectivity requires at least 1 new edge."
+  - op: "Upper bound: acyclicity means at most n−1 edges"
+    eq: "\\text{An acyclic graph on }n\\text{ vertices has }\\leq n-1\\text{ edges.}"
+    note: "Inductive argument: a single vertex has 0 edges (= n−1 with n=1). Adding a new vertex to an acyclic graph without creating a cycle adds at most one edge (connecting the new vertex to exactly one existing vertex; a second edge to an existing vertex would create a cycle through the new vertex). By induction the acyclic graph on n vertices has at most n−1 edges."
+  - op: "Combine bounds"
+    eq: "n-1 \\leq |E| \\leq n-1 \\Rightarrow |E| = n-1"
+  - op: "Translate to adjacency matrix"
+    eq: "A_{ij}=1 \\iff \\{i,j\\}\\in E,\\quad A_{ij}=A_{ji},\\quad \\sum_{i<j} A_{ij} = |E| = n-1"
+  - op: "Check"
+    eq: "n=4,\\ n-1=3:\\ \\text{path graph }1{-}2{-}3{-}4 \\text{ has edges }\\{1,2\\},\\{2,3\\},\\{3,4\\} \\checkmark"
+-->
+
+**Exercise 6 (Engineering application).** A water treatment facility
+distributes purified water via a network of pipes from a treatment
+plant (source $S$) to a distribution reservoir (sink $T$). The
+intermediate pump stations are $P$, $Q$, $R$.
+
+| Pipe | Capacity (ML/day) |
+|------|-------------------|
+| S→P  | 12                |
+| S→Q  | 10                |
+| P→Q  | 3                 |
+| P→R  | 8                 |
+| Q→T  | 7                 |
+| R→Q  | 4                 |
+| R→T  | 9                 |
+
+Model this as a max-flow problem. Find the maximum daily throughput
+from $S$ to $T$ and identify the bottleneck cut — the set of pipes that,
+if their capacity were increased, would allow more water to reach $T$.
+
+<!-- STEPPER
+exercise: 6
+steps:
+  - op: "Model: directed weighted graph with source S, sink T"
+    eq: "G=(V,E),\\quad V=\\{S,P,Q,R,T\\},\\quad c \\text{ as given}"
+  - op: "Augment S→P→R→T; bottleneck min(12,8,9)=8"
+    eq: "f(S{\\to}P)=8,\\ f(P{\\to}R)=8,\\ f(R{\\to}T)=8;\\quad \\text{value}=8"
+  - op: "Augment S→Q→T; bottleneck min(10,7)=7"
+    eq: "f(S{\\to}Q)=7,\\ f(Q{\\to}T)=7;\\quad \\text{value}=15"
+  - op: "Augment S→P→R→Q→T via residual: S→P residual 4, P→R residual 0 — blocked"
+    eq: "\\text{Try }S{\\to}P{\\to}Q{\\to}T:\\ S{\\to}P \\text{ residual }4,\\ P{\\to}Q \\text{ residual }3,\\ Q{\\to}T \\text{ residual }0 — \\text{blocked}"
+    note: "Q→T is saturated (7/7)."
+  - op: "Try S→P→Q path with reversed R→Q: too complex; check saturated edges"
+    eq: "\\text{Saturated: }P{\\to}R\\ (8/8),\\ Q{\\to}T\\ (7/7),\\ R{\\to}T\\ (8/9)"
+  - op: "Augment S→P→R→T residual (R→T has 1 remaining): S→P residual 4, P→R residual 0 — blocked"
+    eq: "\\text{No further augmenting path from }S\\text{ to }T"
+  - op: "Max flow = 15 ML/day"
+    eq: "\\text{Max flow} = 8 + 7 = 15 \\text{ ML/day}"
+  - op: "Find min cut: reachable from S in residual graph"
+    eq: "S{\\to}P \\text{ residual }4\\ \\Rightarrow P \\text{ reachable};\\ P{\\to}Q \\text{ residual }3\\ \\Rightarrow Q \\text{ reachable};\\ P{\\to}R \\text{ residual }0,\\ Q{\\to}T \\text{ residual }0"
+    note: "R and T are not reachable from S."
+  - op: "Min cut: edges from {S,P,Q} to {R,T}"
+    eq: "\\{P{\\to}R\\ (\\text{cap }8),\\ Q{\\to}T\\ (\\text{cap }7)\\},\\quad \\text{capacity} = 8+7=15"
+  - op: "Check"
+    eq: "15 = \\text{max flow} \\checkmark;\\quad \\text{bottleneck pipes: }P{\\to}R\\text{ and }Q{\\to}T"
+    note: "Upgrading either pipe (e.g. expanding P→R to 10 ML/day) would allow more flow through the network."
+-->
+
+<!-- MATH-PROF REVIEW
+Date: 2026-04-01
+Reviewer: math-prof agent
+
+VERIFIED — All numerical traces checked and confirmed correct:
+
+  Dijkstra (6-node, source A):
+    All six finalisation steps correct. Final distances B=4, C=2, D=9, E=5, F=12.
+    Shortest path to F: A→C→E→F = 12. PASS.
+
+  Kruskal MST (6-node):
+    Sort order correct. Edge selections and cycle-detection decisions all correct.
+    Total weight 2+3+4+4+7 = 20. PASS.
+
+  Prim MST (6-node):
+    Traversal steps correct. Same MST edge set as Kruskal.
+    Total weight 20. PASS.
+
+  Ford-Fulkerson (5-node, S/A/B/C/T):
+    Round 1–3 augmentations correct. Max flow = 17.
+    Min-cut analysis: reachable set {S,B,A,C}, cut edges {B→T, C→T},
+    cut capacity = 10+7 = 17. Equals max flow. PASS.
+
+  Exercise 1 Dijkstra stepper: Final distances P=0, R=2, Q=5, S=6, T=10.
+    Shortest path P→R→Q→S→T = 2+3+1+4 = 10. PASS.
+
+  Exercise 2 Kruskal stepper: Total weight 2+4+5+6+7 = 24 on 6 vertices. PASS.
+
+  Exercise 3 Prim stepper: Same MST, total 5+6+2+4+7 = 24. PASS.
+
+  Exercise 4 Ford-Fulkerson stepper: Max flow 14, min cut S→A + S→B = 8+6 = 14. PASS.
+
+  Exercise 5 tree proof: Structure is sound. FIXED (see below).
+
+  Exercise 6 engineering application: Max flow 15, min cut {P→R, Q→T} = 8+7 = 15.
+    Trace is correct (S→P→R→T bottleneck 8, S→Q→T bottleneck 7, no further path). PASS.
+
+FIXES APPLIED:
+
+  [BLOCKER fixed] Cut property statement (line ~231):
+    Original: "if e is the minimum-weight edge crossing any cut, then e
+    belongs to some minimum spanning tree."
+    Problem: "any cut" reads as an existential claim (the edge that minimises
+    globally belongs to some MST) rather than the universal quantification
+    needed for correctness proofs of Kruskal and Prim (for EVERY cut, the
+    min-weight crossing edge is safe). Kruskal uses the cut property on many
+    different cuts in sequence; the weaker reading would not justify that.
+    Fixed to: "for any cut (S, V∖S), if e is the unique minimum-weight edge
+    crossing that cut, then e belongs to every MST; more generally, any
+    minimum-weight edge crossing a given cut belongs to some MST."
+
+  [WARN fixed] Exercise 5 upper-bound justification (stepper step 3):
+    Original: "by a counting argument (or Euler's formula for trees) there
+    would be a cycle."
+    Problem: "Euler's formula for trees" is e = n−1, which is precisely what
+    is being proved — citing it in the proof is circular. The "counting
+    argument" phrase was too vague to stand alone.
+    Fixed to: an explicit inductive argument showing an acyclic graph on n
+    vertices can gain at most one edge per vertex added without creating a cycle.
+
+REMAINING ISSUES:
+
+  [WARN] front matter — prerequisite_ids lists `optimisation` as a prerequisite
+    of this chapter, but this chapter IS the optimisation node (or part of it).
+    The intended dependency is likely the previous chapter in this section
+    (ch 01, linear programming). Recommend replacing `optimisation` with the
+    correct prerequisite id once the chapter-01 id is established in topology.yml.
+    Not fixed here as it requires author decision on chapter id assignment.
+
+  [NOTE] front matter — destinations includes field `sci` (with a valid hook
+    about protein interaction networks). The topology.yml `optimisation` node
+    lists fields [eng, biz, comp] only — `sci` is not in that list. Either
+    topology.yml should be updated to add `sci` to the optimisation node, or
+    the `sci` destination should be removed. Not changed here; author to decide.
+
+  [NOTE] Correctness sketch for Dijkstra (line ~207): the proof-by-contradiction
+    argument is correct in spirit but elides a detail — the argument assumes
+    that the alternative path enters the non-S part at y and that dist[y] ≥
+    dist[u]. The argument should clarify that at the moment u is selected,
+    dist[y] ≥ dist[u] follows from the selection rule (u was the minimum),
+    so the path through y has length ≥ dist[y] ≥ dist[u]. The current text
+    states this but somewhat informally. Acceptable at engineering layer;
+    flagged for awareness only.
+
+VERDICT: PASS WITH NOTES
+-->
+
+<!--
+ENGINEER-PROF REVIEW
+====================
+
+NO DIRECT FIXES REQUIRED
+
+ENGINEERING FRAMING — PASSED
+------------------------------
+1. [PASS] Engineering hook: "Pipeline and power-grid routing problems are minimum
+   spanning tree and max-flow problems." MST is used for network design (minimum cable
+   to connect all nodes); max-flow for throughput analysis. Both are accurate.
+
+2. [PASS] Telecomms example: "provisioning bandwidth uses max-flow to find the
+   network's throughput limit." Accurate. Max-flow is used in network capacity
+   planning; the min-cut directly identifies the bottleneck link set.
+
+3. [PASS] Supply chain: "models goods movement as a flow problem and finds bottleneck
+   warehouse links." Accurate.
+
+4. [PASS] Dijkstra's algorithm presented as O((|V| + |E|) log |V|) with a priority
+   queue. This is the standard result for a binary-heap implementation. Accurate.
+
+5. [PASS] Bellman-Ford presented as O(|V||E|), used for graphs with negative weights.
+   Currency arbitrage detection noted. All accurate.
+
+6. [PASS] Kruskal O(|E| log |E|) dominated by sorting — correct.
+
+7. [PASS] Ford-Fulkerson termination argument: "with integer capacities, each
+   augmentation increases the flow by at least 1." Correct; with real-valued
+   capacities Ford-Fulkerson can fail to terminate (use Edmonds-Karp for a
+   guaranteed O(|V||E|²) bound). The integer caveat is correctly stated.
+
+8. [PASS] Max-flow min-cut theorem statement and proof sketch are correct.
+
+9. [PASS] Kreyszig Ch 23 for graph theory — correct.
+
+NOTES
+-----
+10. [NOTE] The Christofides algorithm reference (in "Where this goes"): described as
+    an "approximation algorithm for the travelling salesman problem" using MST. Accurate —
+    Christofides (1976) achieves a 3/2 approximation for metric TSP using an MST plus
+    minimum-weight perfect matching. The description is brief but correct.
+
+11. [NOTE] The Ford-Fulkerson worked example uses Edmonds-Karp style (BFS augmentation
+    is implied but not stated). The path choices in Rounds 1–3 are consistent with a
+    specific path ordering but not explicitly with BFS. At engineering layer this is fine;
+    a precise treatment would specify the augmenting-path selection rule.
+
+12. [NOTE] The graph neural network mention ("ML engineer working on graph neural networks
+    needs the adjacency matrix representation") is accurate but thin. GNNs use the
+    adjacency matrix or normalised Laplacian as the graph signal propagation operator.
+    Could be made more precise if desired.
+
+VERDICT: PASS — all engineering examples and algorithm descriptions accurate.
+-->
+
+<!-- STUDENT REVIEW
+Chapter: Graphs and networks (Vol 7, Optimisation Ch 2)
+Layer: engineering
+Reviewer: student agent
+Date: 2026-04-01
+
+VERDICT: READABLE WITH FIXES
+
+FRICTION POINTS (inline comments inserted above each):
+
+1. Dijkstra correctness sketch — proof step is compressed (§Correctness sketch):
+   The proof by contradiction introduces variable $y$ and then makes a leap: "extending
+   the path beyond $y$ can only increase its length." This is true because edge weights
+   are non-negative, but a reader who has not done proof-by-contradiction before will
+   lose the thread here. The logical chain could be made explicit in one more sentence.
+
+2. Cut property not visibly connected to Kruskal (§Cut property / Kruskal):
+   The cut property is stated abstractly and then the algorithm starts. The link between
+   "any cut's minimum crossing edge is safe" and "Kruskal adds the global minimum safe
+   edge each step" is left implicit. A one-sentence bridge would make the property feel
+   like a working tool rather than an unconnected theorem.
+
+3. Residual graph reverse edges — motivation deferred (§Ford-Fulkerson method):
+   The reverse edge in the residual graph is defined before the reader is told why it
+   exists. The explanation ("lets you undo a routing decision") comes after the formal
+   definition. Moving it earlier — even as a parenthetical in the definition — would
+   prevent readers from stalling on a directed edge going "the wrong way."
+
+REASSURANCE GAPS:
+- The "Why Ford-Fulkerson terminates" callout is well-placed and correct. Good.
+- The adjacency matrix example (4-vertex graph) is concise and helpful as a notation
+  anchor. Readers new to graph notation will appreciate the concrete matrix.
+
+EXERCISE CALIBRATION:
+- Exercises 1–3 (Dijkstra, Kruskal, Prim on the same graph) form an excellent
+  trio: the reader sees two MST algorithms produce the same result, which is itself
+  a reassurance point.
+- Exercise 4 (Ford-Fulkerson, 4-node) is tractable and well-matched to the worked
+  example's 5-node trace.
+- Exercise 5 (tree edge-count proof) is the only proof exercise and is harder in
+  character than the algorithm exercises. It is appropriate at engineering layer but
+  the induction structure may not be familiar to all readers — some readers will
+  need to recall or look up induction before attempting it.
+- Exercise 6 (water network max-flow) is the best engineering application in the
+  chapter. The physical framing (pump stations, ML/day) is vivid and directly
+  connects to the hook.
+
+WAYFINDING:
+- "Where this goes" correctly points to combinatorial optimisation, integer programming,
+  and the LP connection from Ch 1. The mentions of Christofides' algorithm and
+  bipartite matching as downstream uses give an engineering reader a sense of
+  trajectory without requiring them to understand those algorithms now.
+- The chapter has no "opens_to" links in the front matter (opens_to: []). For a
+  reader looking at the topology map this means the chapter appears as a leaf.
+  That is accurate for the series as structured, but a note that the chapter
+  opens to the study of algorithms courses or operations research (outside the
+  series) would give a motivated reader somewhere to go next.
+-->
+
+<!--
+EDIT LOG (editor agent)
+=======================
+
+- [§Dijkstra correctness sketch] Rewrote to earn the proof rather than append it.
+  Added a motivating question ("why would the greedy choice ever go wrong?") and
+  answered it before the formal argument begins. The contradiction proof now spells
+  out the non-negative-weight step — "any further edges from y to u have non-negative
+  weight, so the full path is at least dist[y] in length" — which was the step the
+  STUDENT comment identified as losing the reader. The proof structure (by
+  contradiction, identifying vertex y) is unchanged.
+
+- [§Cut property — bridge to Kruskal] Added a paragraph before the Kruskal algorithm
+  heading showing exactly how the cut property justifies each Kruskal addition: the
+  two components containing the endpoints define a cut; the edge being considered is
+  the cheapest one crossing it; therefore the cut property says it is safe to add.
+  The cut property was stated clearly but then left hanging as abstract machinery.
+
+- [§Ford-Fulkerson — residual graph] Moved the reverse-edge motivation ahead of the
+  formal definition. Previously, the definition listed "the reverse edge $(v,u)$ has
+  residual capacity $f(u,v)$" and only afterwards explained what reverse edges are
+  for. A reader working through step 2 for the first time will ask "why can I send
+  flow backwards?" before they encounter the answer. The new structure: motivation
+  first (reverse edges let the algorithm undo earlier routing decisions), then the
+  formal definition with each term labelled.
+-->
+
+

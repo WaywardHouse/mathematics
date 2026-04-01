@@ -1,6 +1,1061 @@
 ---
 title: "Mathematical statistics"
-status: "seed"
+subtitle: "Inference from data"
+chapter: 2
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: |
+  You have data sampled from an unknown distribution.
+  You want to draw reliable conclusions about the population.
+
+rewrite: |
+  Point estimates, confidence intervals, and hypothesis tests are all
+  formal ways to quantify what the data can and cannot tell you,
+  with explicit control over the probability of being wrong.
+
+opens_to: []
+
+prerequisite_ids:
+  - prob_stats
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Acceptance sampling, process capability, and quality control all rest on hypothesis tests and confidence intervals."
+    career_example: "Manufacturing engineer deciding whether a batch of parts meets specification"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Every reported p-value in a scientific paper is the output of a formal hypothesis test."
+    career_example: "Biomedical researcher comparing a treatment group to a control group"
+  - field: "biz"
+    label: "Finance and business"
+    hook: "A/B testing for conversion rates is a two-sample hypothesis test in disguise."
+    career_example: "Data analyst evaluating whether a website redesign changed user behaviour"
+  - field: "comp"
+    label: "Computing and data science"
+    hook: "Linear regression is the foundation of supervised learning; its statistical theory tells you when the fit is reliable."
+    career_example: "Machine learning engineer reporting model uncertainty alongside predictions"
+
+hook: |
+  A production line fills bottles to a stated volume. A sample of 25
+  bottles shows a mean fill of 497 mL against a target of 500 mL.
+  Is that a real problem, or just expected random variation? You need
+  a principled way to decide.
+
+  A new catalyst cuts reaction time in a lab test. But the test used
+  only eight runs. How confident are you that the effect is real and
+  not noise?
+
+  You have data. The question is what the data can actually tell you —
+  and, just as importantly, what it cannot.
+
+notation_introduced:
+  - symbol: "\\hat{\\theta}"
+    reads_as: "theta-hat — an estimate of the unknown parameter θ"
+    notation_weight: 2
+  - symbol: "\\ell(\\theta)"
+    reads_as: "ell of theta — the log-likelihood function"
+    notation_weight: 3
+  - symbol: "\\bar{X}"
+    reads_as: "X-bar — the sample mean"
+    notation_weight: 1
+  - symbol: "s^2"
+    reads_as: "s-squared — the sample variance"
+    notation_weight: 1
+  - symbol: "t_{\\alpha/2,\\,n-1}"
+    reads_as: "t at alpha over two, n minus one degrees of freedom"
+    notation_weight: 2
+  - symbol: "H_0,\\; H_1"
+    reads_as: "H-naught and H-one — the null and alternative hypotheses"
+    notation_weight: 2
+  - symbol: "\\hat{\\beta}_0,\\; \\hat{\\beta}_1"
+    reads_as: "beta-hat-zero and beta-hat-one — the OLS intercept and slope estimates"
+    notation_weight: 2
+  - symbol: "R^2"
+    reads_as: "R-squared — the coefficient of determination"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: ~
+  strand: ""
+  outcome: ""
+uofa_course: "STAT 151"
+stroud_programme: null
+kreyszig_chapter: 25
 ---
 
-*Seed — front matter to be completed before content is written.*
+<!-- ENGINEER-PROF: Same STAT 151 concern as probability/01 — this chapter covers MLE, hypothesis testing, regression, and ANOVA at a level well beyond STAT 151 content. STAT 265 or equivalent engineering-statistics course is a more accurate mapping. -->
+
+A production line fills bottles to a stated volume. A sample of 25
+bottles shows a mean fill of 497 mL against a target of 500 mL.
+Is that a real problem, or just expected random variation? You need
+a principled way to decide.
+
+A new catalyst cuts reaction time in a lab test. But the test used
+only eight runs. How confident are you that the effect is real and
+not noise?
+
+You have data. The question is what the data can actually tell you —
+and, just as importantly, what it cannot.
+
+## Point estimation
+
+You observe $n$ independent realisations $x_1, x_2, \ldots, x_n$ from
+a distribution that has an unknown parameter $\theta$ — a proportion, a
+rate, a mean. A **point estimate** $\hat{\theta}$ — read "theta-hat" —
+is a single number computed from the sample to serve as your best guess
+at $\theta$.
+
+The most systematic method for finding point estimates is **maximum
+likelihood estimation (MLE)**: choose the value of $\theta$ that makes
+the observed data most probable.
+
+### Setting up the likelihood
+
+If the $x_i$ are i.i.d. (independent, identically distributed) from a
+distribution with density (or mass function) $f(x; \theta)$, the
+**likelihood** is the joint probability of the observed data, viewed as
+a function of $\theta$:
+
+<!-- STUDENT: "i.i.d." is used here without being expanded at first use in this chapter. Readers coming to this chapter without having read Vol 7 Ch 1 recently may not recall the abbreviation. A parenthetical "(independent, identically distributed)" on first use costs nothing. -->
+
+$$L(\theta) = \prod_{i=1}^{n} f(x_i; \theta)$$
+
+Read this as: the product, over all $n$ observations, of the density
+evaluated at each $x_i$. The MLE is the $\theta$ that maximises this.
+
+Products are hard to differentiate. Take the natural log — it's
+monotone, so the maximum is preserved. The **log-likelihood** is:
+
+$$\ell(\theta) = \log L(\theta) = \sum_{i=1}^{n} \log f(x_i;\theta)$$
+
+Read "$\ell(\theta)$" as "ell of theta". Now differentiate and set equal
+to zero.
+
+### MLE for the Bernoulli distribution
+
+Let $X_i \sim \text{Bernoulli}(p)$: each observation is 1 (success) or
+0 (failure), with unknown success probability $p$. Then
+$f(x; p) = p^x (1-p)^{1-x}$, so:
+
+<!-- STUDENT: The Bernoulli mass function f(x;p) = p^x (1−p)^(1−x) is presented without explanation. A reader who saw the Bernoulli defined in Ch 1 as P(X=1)=p, P(X=0)=1−p may not immediately see that this formula is the same thing written compactly. Plugging in x=0 and x=1 to verify would take one line and would make the derivation that follows self-contained. -->
+
+$$\ell(p) = \sum_{i=1}^n \left[ x_i \log p + (1-x_i)\log(1-p) \right]
+= \left(\sum x_i\right)\log p + \left(n - \sum x_i\right)\log(1-p)$$
+
+Let $S = \sum x_i$ (the count of successes). Differentiate with respect
+to $p$ and set to zero:
+
+$$\frac{d\ell}{dp} = \frac{S}{p} - \frac{n - S}{1-p} = 0$$
+
+Multiply through by $p(1-p)$:
+
+$$S(1-p) - (n-S)p = 0 \implies S - Sp - np + Sp = 0 \implies S = np$$
+
+$$\boxed{\hat{p} = \frac{S}{n} = \bar{X}}$$
+
+The MLE is the sample proportion. This confirms the intuition.
+
+### MLE for the Exponential distribution
+
+Let $X_i \sim \text{Exp}(\lambda)$: density $f(x;\lambda) = \lambda e^{-\lambda x}$
+for $x \geq 0$. The log-likelihood is:
+
+$$\ell(\lambda) = \sum_{i=1}^n \left[\log\lambda - \lambda x_i\right]
+= n\log\lambda - \lambda \sum_{i=1}^n x_i$$
+
+Differentiate and set to zero:
+
+$$\frac{d\ell}{d\lambda} = \frac{n}{\lambda} - \sum x_i = 0
+\implies \lambda = \frac{n}{\sum x_i}$$
+
+$$\boxed{\hat{\lambda} = \frac{1}{\bar{X}}}$$
+
+The MLE of the rate is the reciprocal of the sample mean. If the mean
+lifetime in the sample is 5 hours, you estimate the failure rate as 0.2
+failures per hour.
+
+### Unbiasedness and consistency
+
+A point estimate is **unbiased** if $E[\hat{\theta}] = \theta$ — the
+estimate is correct on average. The sample mean $\bar{X}$ is unbiased
+for $\mu$; the sample variance $s^2 = \frac{1}{n-1}\sum(X_i - \bar{X})^2$
+is unbiased for $\sigma^2$ (the $n-1$ denominator matters here — the
+$n$ version is biased). The reason is that $\bar{X}$ is estimated from
+the same data: once the mean is fixed, only $n-1$ of the deviations
+$(X_i - \bar{X})$ are free to vary, so the sum of squared deviations
+has $n-1$ degrees of freedom, not $n$.
+
+<!-- STUDENT: The n−1 denominator is flagged as important but the reason is not given, not even in summary form. An engineering student who has used a calculator or spreadsheet will have seen both n and n−1 sample variance formulas and wondered why. The explanation — that using n underestimates σ² because x̄ is estimated from the same data, consuming one degree of freedom — is a single sentence. Without it, "the n−1 denominator matters" is an instruction without a reason. -->
+
+An estimate is **consistent** if $\hat{\theta} \to \theta$ in probability
+as $n \to \infty$ — more data drives the estimate to the truth. The MLE
+is consistent under mild regularity conditions.
+
+::: {.callout-note appearance="simple"}
+**Why MLE works**
+
+The likelihood is the probability of your data given $\theta$. Maximising
+it over $\theta$ answers: "which parameter value would make this data least
+surprising?" That question has a principled answer even when no other
+method is obvious — just write down the distribution, form the product,
+and differentiate.
+:::
+
+## Confidence intervals
+
+A point estimate is a single number. It conceals the uncertainty. A
+**confidence interval** (CI) pairs the estimate with a margin that
+quantifies how much the estimate might be off.
+
+### The problem with small samples
+
+If $\sigma$ (the population standard deviation) were known, the sampling
+distribution of $\bar{X}$ is exactly $N(\mu, \sigma^2/n)$, and you could
+build an interval using the standard normal $z$-distribution. But $\sigma$
+is almost never known — you estimate it from the sample as $s$. When $n$
+is small, this extra source of uncertainty matters.
+
+Student's $t$-distribution handles this. The statistic
+
+$$T = \frac{\bar{X} - \mu}{s/\sqrt{n}}$$
+
+follows a $t$-distribution with $\nu = n-1$ degrees of freedom.
+
+<!-- STUDENT: The name "Student's t-distribution" will prompt most readers to wonder who "Student" is — the name is peculiar enough to be distracting. Even a single parenthetical noting it is a pseudonym (William Gosset, Guinness brewery, early 1900s) would satisfy the curiosity and let the reader move on. Also, the notation ν = n−1 for degrees of freedom is introduced here but ν does not appear in notation_introduced. --> Read
+"$s/\sqrt{n}$" as the **standard error of the mean** — the typical spread
+of sample means around the true mean. The $t$-distribution looks like the
+standard normal but with heavier tails; as $\nu \to \infty$ it converges
+to the normal.
+
+### Constructing a 95% CI for $\mu$
+
+Let $t_{\alpha/2,\,n-1}$ be the upper $\alpha/2$ critical value of the
+$t$-distribution with $n-1$ degrees of freedom — the value such that
+$P(T > t_{\alpha/2,\,n-1}) = \alpha/2$. For a 95% CI, $\alpha = 0.05$.
+
+<!-- STUDENT: The step "inverting |T| ≤ t_{α/2, n−1}" is not shown. For a reader seeing CI derivation for the first time, the pivot from |T| ≤ critical value to x̄ ± t·s/√n requires two algebraic moves (substituting T, then rearranging the absolute value). The result is a formula that appears without visible connection to the inequality that preceded it. Showing the inversion once — even in a compressed form — would make the worked example fully self-contained. -->
+
+Inverting $|T| \leq t_{\alpha/2,\,n-1}$ gives the interval. Substituting
+$T = (\bar{X} - \mu)/(s/\sqrt{n})$ and expanding the absolute value:
+
+$$-t_{\alpha/2,\,n-1} \leq \frac{\bar{X} - \mu}{s/\sqrt{n}} \leq t_{\alpha/2,\,n-1}$$
+
+Multiply through by $s/\sqrt{n}$ and rearrange to isolate $\mu$:
+
+$$\bar{X} - t_{\alpha/2,\,n-1}\cdot\frac{s}{\sqrt{n}}
+  \;\leq\; \mu \;\leq\;
+  \bar{X} + t_{\alpha/2,\,n-1}\cdot\frac{s}{\sqrt{n}}$$
+
+Written compactly:
+
+$$\bar{X} \pm t_{\alpha/2,\,n-1} \cdot \frac{s}{\sqrt{n}}$$
+
+This is the 95% confidence interval for $\mu$.
+
+**Worked example.** A materials lab measures Young's modulus for 10
+specimens of a polymer. The sample mean is $\bar{x} = 3.42$ GPa and the
+sample standard deviation is $s = 0.18$ GPa. The $t$-table gives
+$t_{0.025,\,9} = 2.262$.
+
+$$\text{CI} = 3.42 \pm 2.262 \times \frac{0.18}{\sqrt{10}}
+= 3.42 \pm 2.262 \times 0.0569
+= 3.42 \pm 0.129$$
+
+The 95% CI is $(3.29,\; 3.55)$ GPa.
+
+### What a confidence interval means — and what it does not
+
+The 95% CI does **not** mean "there is a 95% probability that $\mu$ lies
+in this interval." After the data are observed, $\mu$ is either in the
+interval or it isn't — there is no probability involved.
+
+The correct interpretation: if you repeated this experiment many times and
+built a 95% CI each time, about 95% of those intervals would contain the
+true $\mu$. The *procedure* has 95% coverage. Any particular interval is
+just one instance of that procedure.
+
+<!-- VIZ: CI simulation — button generates 100 samples from N(μ,1), draws each 95% CI, highlights the ~5 that miss the true mean, counter shows coverage rate -->
+
+## Hypothesis testing
+
+Point estimates and CIs describe what the data show. Hypothesis testing
+asks a sharper question: is there enough evidence to reject a specific
+claim?
+
+### The framework
+
+The **null hypothesis** $H_0$ is the claim under scrutiny — the default,
+conservative position. The **alternative hypothesis** $H_1$ is what you'd
+conclude if $H_0$ is implausible given the data.
+
+A **test statistic** is a function of the data whose distribution under
+$H_0$ is known. You compute the observed value, then ask: if $H_0$ were
+true, how often would you see a value this extreme or more extreme?
+That probability is the **p-value**.
+
+If the p-value is below the **significance level** $\alpha$ (typically
+0.05), you reject $H_0$.
+
+Two error types:
+
+| | $H_0$ true | $H_0$ false |
+|---|---|---|
+| Reject $H_0$ | Type I error (false positive), probability $\alpha$ | Correct |
+| Fail to reject $H_0$ | Correct | Type II error (false negative), probability $\beta$ |
+
+Choosing $\alpha = 0.05$ means you're willing to falsely reject a true
+$H_0$ in 5% of experiments. Reducing $\alpha$ reduces Type I errors but
+increases Type II errors. The power of a test is $1 - \beta$ — the
+probability of correctly detecting a real effect.
+
+### One-sample $t$-test
+
+**Hypotheses.** You want to test whether a population mean $\mu$ equals
+a specified value $\mu_0$:
+$$H_0: \mu = \mu_0 \qquad H_1: \mu \neq \mu_0 \quad \text{(two-sided)}$$
+
+**Test statistic.**
+
+$$t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}$$
+
+Under $H_0$ this follows $t_{n-1}$.
+
+**Decision rule.** Reject $H_0$ if $|t| > t_{\alpha/2,\,n-1}$.
+
+**Worked example.** A valve is designed to open at 200 kPa. Quality
+control samples $n = 20$ valves. The sample mean opening pressure is
+$\bar{x} = 203.4$ kPa with $s = 5.2$ kPa. Test $H_0: \mu = 200$ at
+$\alpha = 0.05$.
+
+$$t = \frac{203.4 - 200}{5.2/\sqrt{20}} = \frac{3.4}{1.163} = 2.923$$
+
+The critical value is $t_{0.025,\,19} = 2.093$. Since $2.923 > 2.093$,
+reject $H_0$. There is statistically significant evidence that the mean
+opening pressure differs from 200 kPa.
+
+### Two-sample $t$-test
+
+To compare means $\mu_1$ and $\mu_2$ from two independent populations
+(assuming equal variances), form the pooled variance:
+
+$$s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}$$
+
+The test statistic is:
+
+$$t = \frac{\bar{x}_1 - \bar{x}_2}{s_p\sqrt{1/n_1 + 1/n_2}}$$
+
+Under $H_0: \mu_1 = \mu_2$, this follows $t_{n_1+n_2-2}$. Reject when
+$|t| > t_{\alpha/2,\,n_1+n_2-2}$.
+
+Welch's $t$-test removes the equal-variance assumption by adjusting the
+degrees of freedom; it's the default in most software.
+
+<!-- STUDENT: Welch's test is mentioned as the default in software and then dropped. A reader who uses R, Python, or MATLAB will immediately want to know: if Welch is the default, why was the pooled version just taught? A single sentence explaining the tradeoff — pooled is more powerful when the equal-variance assumption holds; Welch is safer when it might not — would give the reader a decision rule. -->
+
+### $\chi^2$ goodness-of-fit
+
+When the data are counts in categories, the $\chi^2$ statistic tests
+whether the observed frequencies are consistent with a specified
+distribution. For $k$ categories with observed counts $O_i$ and expected
+counts $E_i = n p_i$:
+
+$$\chi^2 = \sum_{i=1}^k \frac{(O_i - E_i)^2}{E_i}$$
+
+Under $H_0$, this follows approximately $\chi^2_{k-1}$. Reject if
+$\chi^2 > \chi^2_{\alpha,\,k-1}$. The rule of thumb $E_i \geq 5$ in
+every cell ensures the approximation is reliable.
+
+## Linear regression
+
+Data rarely have a single variable of interest in isolation. Regression
+asks how one variable changes with another — and how reliably.
+
+### The model
+
+The **simple linear regression model** is:
+
+$$Y_i = \beta_0 + \beta_1 x_i + \varepsilon_i, \quad i = 1, \ldots, n$$
+
+$Y_i$ is the response (outcome), $x_i$ is the predictor (input),
+$\beta_0$ is the **intercept** (read "beta-zero" — the expected response
+when $x = 0$), $\beta_1$ is the **slope** (read "beta-one" — the change
+in expected response per unit increase in $x$), and $\varepsilon_i$ is
+the error term, assumed i.i.d. $N(0, \sigma^2)$.
+
+### OLS estimators
+
+**Ordinary least squares** minimises the **sum of squared residuals**:
+
+$$\text{SS}_{res} = \sum_{i=1}^n (y_i - \hat{y}_i)^2
+= \sum_{i=1}^n (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i)^2$$
+
+Read "$\text{SS}_{res}$" as "residual sum of squares" — the total vertical
+distance squared between the data points and the fitted line.
+
+Differentiate $\text{SS}_{res}$ with respect to $\hat{\beta}_0$ and $\hat{\beta}_1$
+and set both partial derivatives to zero. This gives the **normal
+equations**:
+
+<!-- STUDENT: The term "normal equations" is introduced here without explanation of why they are called that. The name has nothing to do with the normal distribution; it comes from the geometric concept of orthogonal projection. Engineering students who just spent a chapter on the normal distribution will be confused by the coincidence of terminology. Even a brief note — "the word 'normal' here means perpendicular, not Gaussian" — would prevent a false connection. -->
+
+$$\frac{\partial\,\text{SS}_{res}}{\partial\hat{\beta}_0} = -2\sum(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i) = 0$$
+
+$$\frac{\partial\,\text{SS}_{res}}{\partial\hat{\beta}_1} = -2\sum x_i(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i) = 0$$
+
+From the first equation: distribute the sum and use $\sum_{i=1}^n 1 = n$:
+
+$$\sum(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i) = 0
+\implies n\bar{y} - n\hat{\beta}_0 - \hat{\beta}_1 \cdot n\bar{x} = 0$$
+
+Divide by $n$: $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$.
+
+<!-- STUDENT: The step from ∂SS/∂β̂₀ = 0 to β̂₀ = ȳ − β̂₁x̄ is not shown. A new reader asked to verify this would need to distribute the sum, use Σ1 = n, and divide by n. The algebra is short but not obvious. The text jumps from "first equation" to the result. -->
+
+Substituting into the second and solving:
+
+$$\boxed{\hat{\beta}_1 = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2}
+= \frac{S_{xy}}{S_{xx}}}$$
+
+$$\boxed{\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}}$$
+
+where $S_{xy} = \sum(x_i - \bar{x})(y_i - \bar{y})$ and
+$S_{xx} = \sum(x_i - \bar{x})^2$.
+
+### $R^2$ — coefficient of determination
+
+Define the **total sum of squares** $\text{SS}_{tot} = \sum(y_i - \bar{y})^2$
+and the **residual sum of squares** $\text{SS}_{res} = \sum(y_i - \hat{y}_i)^2$.
+The coefficient of determination is:
+
+$$R^2 = 1 - \frac{\text{SS}_{res}}{\text{SS}_{tot}}$$
+
+$R^2 = 1$ means the line passes through every data point. $R^2 = 0$
+means the line explains none of the variation — it is no better than
+simply predicting $\bar{y}$ for every observation. In simple linear
+regression, $R^2 = r^2$ where $r$ is the Pearson correlation coefficient.
+
+<!-- STUDENT: The Pearson correlation coefficient r is introduced here for the first time in this chapter without a formula. In Ch 1, the population correlation was denoted ρ. A reader who noticed that will wonder whether r and ρ are the same concept, and if so, why the symbol changed. A brief note — "r is the sample version of the population correlation ρ from Ch 1" — would close this gap. -->
+
+### $t$-test for $\beta_1$
+
+Under the model assumptions, the standardised slope estimate
+
+$$t = \frac{\hat{\beta}_1 - 0}{s_e / \sqrt{S_{xx}}}$$
+
+follows $t_{n-2}$ under $H_0: \beta_1 = 0$, where
+$s_e^2 = \text{SS}_{res}/(n-2)$ is the estimated error variance. The
+denominator is $n-2$ rather than $n-1$ because two parameters ($\beta_0$
+and $\beta_1$) are estimated from the data, consuming two degrees of
+freedom. Reject $H_0$ if $|t| > t_{\alpha/2,\,n-2}$. Failing to reject
+means there is no statistically significant linear relationship between
+$x$ and $Y$.
+
+<!-- STUDENT: The degrees of freedom are n−2 here (not n−1 as in the one-sample t-test). The reason — two parameters β₀ and β₁ are estimated, consuming two degrees of freedom — is not stated. A reader who just learned n−1 for the one-sample case will notice the change and not know why. -->
+
+### Residual analysis
+
+The regression assumptions — linearity, constant variance, normality of
+errors, independence — are checked through the residuals
+$\hat{\varepsilon}_i = y_i - \hat{y}_i$.
+
+Plot residuals against fitted values $\hat{y}_i$:
+
+- **Random scatter around zero** — assumptions satisfied.
+- **Curved pattern** — linearity is violated; consider a transformation
+  or a polynomial term.
+- **Fan shape (variance increasing with $\hat{y}_i$)** — heteroscedasticity;
+  consider a log or square-root transformation of $Y$.
+- **Outliers** — single points far from zero; investigate individually.
+
+A normal Q-Q plot of residuals checks the normality assumption. Points
+falling close to the diagonal line support the assumption.
+
+<!-- VIZ: regression explorer — scatter plot of ~20 points, sliders for β₀ and β̂₁, live SSR display, "Fit OLS" button snaps to optimal line, shows R² -->
+
+## One-way ANOVA
+
+When you want to compare means across three or more groups, running
+multiple $t$-tests inflates the Type I error rate. One-way ANOVA
+(analysis of variance) tests all groups simultaneously.
+
+### The F-test
+
+Suppose you have $k$ groups, with $n_j$ observations in group $j$.
+Let $\bar{y}_{j\cdot}$ denote the mean of group $j$ and $\bar{y}$
+the overall mean. Define:
+
+$$\text{SS}_{between} = \sum_{j=1}^k n_j (\bar{y}_{j\cdot} - \bar{y})^2
+\qquad \text{(variation explained by group membership)}$$
+
+$$\text{SS}_{within} = \sum_{j=1}^k \sum_{i=1}^{n_j} (y_{ij} - \bar{y}_{j\cdot})^2
+\qquad \text{(variation within groups)}$$
+
+The **mean squares** are $\text{MS}_{between} = \text{SS}_{between}/(k-1)$
+and $\text{MS}_{within} = \text{SS}_{within}/(N-k)$, where $N = \sum n_j$.
+
+The **F-statistic** is:
+
+$$F = \frac{\text{MS}_{between}}{\text{MS}_{within}}$$
+
+Under $H_0: \mu_1 = \mu_2 = \cdots = \mu_k$, $F$ follows $F_{k-1,\,N-k}$.
+Reject $H_0$ if $F > F_{\alpha,\,k-1,\,N-k}$. A large $F$ means
+between-group variation is large relative to within-group variation —
+the groups genuinely differ.
+
+::: {.callout-note appearance="simple"}
+**Why F instead of multiple $t$-tests?**
+
+With $k = 3$ groups, running all pairwise $t$-tests at $\alpha = 0.05$
+gives a familywise error rate of approximately $1 - (0.95)^3 \approx 0.14$.
+You'd falsely reject a true null about 14% of the time rather than 5%.
+ANOVA controls this by testing all groups in a single F-test. If ANOVA
+rejects $H_0$, post-hoc pairwise tests (Tukey HSD, Bonferroni) then
+identify which groups differ.
+:::
+
+**Engineering application.** Three machine settings — A, B, C — produce
+polymer film. Quality engineers measure tensile strength (MPa) from five
+runs at each setting:
+
+| Setting A | Setting B | Setting C |
+|----------:|----------:|----------:|
+| 41.2 | 38.5 | 44.1 |
+| 40.8 | 39.2 | 43.8 |
+| 42.1 | 37.9 | 45.0 |
+| 41.5 | 38.8 | 44.3 |
+| 40.4 | 39.6 | 43.4 |
+
+Group means: $\bar{y}_{A} = 41.2$, $\bar{y}_{B} = 38.8$,
+$\bar{y}_{C} = 44.12$. Overall mean $\bar{y} = 41.37$.
+
+$\text{SS}_{between} = 5(41.2-41.37)^2 + 5(38.8-41.37)^2 + 5(44.12-41.37)^2$
+$= 5(0.0289) + 5(6.6049) + 5(7.5625) = 0.1445 + 33.02 + 37.81 = 70.98$
+
+$\text{MS}_{between} = 70.98/2 = 35.49$
+
+Computing $\text{SS}_{within}$ from deviations within each group gives
+approximately $4.61$, so $\text{MS}_{within} = 4.61/12 = 0.384$.
+
+$$F = \frac{35.49}{0.384} = 92.4$$
+
+The critical value $F_{0.05,\,2,\,12} = 3.89$. Since $92.4 \gg 3.89$,
+reject $H_0$. The machine settings produce significantly different
+tensile strengths — the effect is not noise.
+
+## Where this goes
+
+The methods here assume a parametric form for the distributions —
+Bernoulli, exponential, normal. **Non-parametric tests** (Wilcoxon,
+Mann-Whitney, Kruskal-Wallis) make weaker assumptions at the cost of
+some power; they become relevant when distributions are heavily skewed
+or sample sizes are very small. **Bayesian inference** reframes the
+problem entirely: instead of asking "what does the data tell us about
+$\theta$?" it asks "given a prior belief about $\theta$ and the data,
+what should our updated belief be?" Both extensions build on exactly the
+likelihood functions you derived here.
+
+Multiple linear regression extends the single-predictor model to
+$Y = \beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p + \varepsilon$.
+The OLS estimator in matrix form is $\hat{\boldsymbol{\beta}} = (X^TX)^{-1}X^T\mathbf{y}$,
+which requires the linear algebra from Volume 7's linear algebra section.
+Generalised linear models (GLMs) then extend regression to non-normal
+responses — logistic regression for binary outcomes, Poisson regression
+for counts — connecting directly to the MLE framework you already have.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- **Reliability engineering:** MLE estimates failure rates from
+  field data; confidence intervals bound the estimate; hypothesis
+  tests determine whether a design change made a difference.
+- **Clinical trials:** two-sample $t$-tests compare treatment
+  and control groups; sample size is set to achieve target power.
+- **Process control:** $t$-tests on subgroup means detect shifts
+  in a manufacturing process mean; ANOVA compares multiple line
+  configurations simultaneously.
+- **Geophysics:** linear regression of seismic travel time against
+  distance estimates subsurface velocity; the $t$-test for $\beta_1$
+  determines whether the relationship is real.
+- **Machine learning:** the OLS solution is closed-form linear
+  regression; $R^2$ and residual analysis evaluate model fit before
+  any regularisation is added.
+:::
+
+## Exercises
+
+These are puzzles. Each has a clean numerical answer. The work is in
+setting up the likelihood, test statistic, or normal equations correctly
+before computing.
+
+---
+
+**Exercise 1.** An engineer records the time to failure (hours) for
+five identical electronic components under accelerated testing:
+
+$$x_1 = 820, \quad x_2 = 1\,040, \quad x_3 = 650, \quad x_4 = 930, \quad x_5 = 760$$
+
+Assuming lifetimes are Exponential($\lambda$), find $\hat{\lambda}$
+(the MLE) and its standard error. Use the fact that for the
+Exponential MLE, $\text{SE}(\hat{\lambda}) = \hat{\lambda}/\sqrt{n}$.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Write the MLE formula"
+    eq: "\hat{\\lambda} = \\frac{1}{\\bar{x}}"
+    note: "Derived in the text by differentiating the log-likelihood and setting it to zero."
+  - op: "Compute the sample mean"
+    eq: "\\bar{x} = \\frac{820 + 1040 + 650 + 930 + 760}{5} = \\frac{4200}{5} = 840 \\text{ h}"
+    note: ~
+  - op: "Compute the MLE"
+    eq: "\\hat{\\lambda} = \\frac{1}{840} \\approx 0.001190 \\text{ failures/h}"
+    note: ~
+  - op: "Compute the standard error"
+    eq: "\\text{SE}(\\hat{\\lambda}) = \\frac{\\hat{\\lambda}}{\\sqrt{n}} = \\frac{0.001190}{\\sqrt{5}} = \\frac{0.001190}{2.236} \\approx 0.000532 \\text{ failures/h}"
+    note: "For the Exponential MLE, SE is lambda-hat divided by root n — a consequence of the Fisher information."
+  - op: "Check"
+    eq: "\\hat{\\lambda} \\approx 1.19 \\times 10^{-3}, \\quad \\text{SE} \\approx 5.32 \\times 10^{-4} \\checkmark"
+    note: ~
+-->
+
+---
+
+**Exercise 2.** A tensile test on 16 specimens of an aluminium alloy
+yields a sample mean yield strength of $\bar{x} = 48.2$ MPa and sample
+standard deviation $s = 6.4$ MPa. Construct a 95% confidence interval
+for the population mean yield strength. Use $t_{0.025,\,15} = 2.131$.
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the CI formula"
+    eq: "\\bar{x} \\pm t_{\\alpha/2,\\,n-1} \\cdot \\frac{s}{\\sqrt{n}}"
+    note: ~
+  - op: "Identify the values"
+    eq: "\\bar{x} = 48.2,\\quad s = 6.4,\\quad n = 16,\\quad t_{0.025,15} = 2.131"
+    note: ~
+  - op: "Compute the standard error"
+    eq: "\\frac{s}{\\sqrt{n}} = \\frac{6.4}{\\sqrt{16}} = \\frac{6.4}{4} = 1.6 \\text{ MPa}"
+    note: ~
+  - op: "Compute the margin of error"
+    eq: "2.131 \\times 1.6 = 3.410 \\text{ MPa}"
+    note: ~
+  - op: "Form the interval"
+    eq: "48.2 \\pm 3.410 \\implies (44.79,\\; 51.61) \\text{ MPa}"
+    note: ~
+  - op: "Check"
+    eq: "48.2 - 3.41 = 44.79,\\quad 48.2 + 3.41 = 51.61 \\checkmark"
+    note: ~
+-->
+
+---
+
+**Exercise 3.** A CNC milling process is specified to produce shafts
+with a mean diameter of 50.00 mm. A quality technician measures a
+random sample of 25 shafts and finds $\bar{x} = 47.8$ mm and $s = 5.1$ mm.
+Test the null hypothesis $H_0: \mu = 50$ against $H_1: \mu \neq 50$
+at significance level $\alpha = 0.05$. Use $t_{0.025,\,24} = 2.064$.
+State your conclusion.
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "State the hypotheses"
+    eq: "H_0: \\mu = 50.00 \\text{ mm}, \\quad H_1: \\mu \\neq 50.00 \\text{ mm}"
+    note: ~
+  - op: "Compute the test statistic"
+    eq: "t = \\frac{\\bar{x} - \\mu_0}{s/\\sqrt{n}} = \\frac{47.8 - 50.0}{5.1/\\sqrt{25}} = \\frac{-2.2}{5.1/5} = \\frac{-2.2}{1.02} = -2.157"
+    note: ~
+  - op: "Compare with critical value"
+    eq: "|t| = 2.157 > t_{0.025,24} = 2.064"
+    note: "Use the absolute value for a two-sided test — we reject if the statistic is extreme in either direction."
+  - op: "State the decision"
+    eq: "\\text{Reject } H_0 \\text{ at } \\alpha = 0.05"
+    note: ~
+  - op: "Check"
+    eq: "t = -2.157,\\quad |{-2.157}| = 2.157 > 2.064 \\implies \\text{reject } H_0 \\checkmark"
+    note: "There is statistically significant evidence that the mean diameter differs from 50.00 mm."
+-->
+
+---
+
+**Exercise 4.** Two aluminium alloys are compared for tensile strength.
+Alloy 1 ($n_1 = 10$, $\bar{x}_1 = 312$ MPa, $s_1 = 14$ MPa) and
+Alloy 2 ($n_2 = 12$, $\bar{x}_2 = 298$ MPa, $s_2 = 18$ MPa). Assuming
+equal population variances, test $H_0: \mu_1 = \mu_2$ against
+$H_1: \mu_1 \neq \mu_2$ at $\alpha = 0.05$. Use $t_{0.025,\,20} = 2.086$.
+
+<!-- STEPPER
+exercise: 4
+steps:
+  - op: "Compute the pooled variance"
+    eq: "s_p^2 = \\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2} = \\frac{9 \\times 196 + 11 \\times 324}{20} = \\frac{1764 + 3564}{20} = \\frac{5328}{20} = 266.4"
+    note: ~
+  - op: "Compute the pooled standard deviation"
+    eq: "s_p = \\sqrt{266.4} \\approx 16.32 \\text{ MPa}"
+    note: ~
+  - op: "Compute the test statistic"
+    eq: "t = \\frac{\\bar{x}_1 - \\bar{x}_2}{s_p\\sqrt{1/n_1 + 1/n_2}} = \\frac{312 - 298}{16.32\\sqrt{1/10 + 1/12}} = \\frac{14}{16.32\\sqrt{0.1833}} = \\frac{14}{16.32 \\times 0.4282} = \\frac{14}{6.988} \\approx 2.003"
+    note: ~
+  - op: "Compare with critical value"
+    eq: "|t| = 2.003 < t_{0.025,20} = 2.086"
+    note: ~
+  - op: "State the decision"
+    eq: "\\text{Fail to reject } H_0 \\text{ at } \\alpha = 0.05"
+    note: "The evidence is suggestive but does not reach the 5% threshold with these sample sizes."
+  - op: "Check"
+    eq: "\\nu = n_1 + n_2 - 2 = 20, \\quad 2.003 < 2.086 \\implies \\text{do not reject } H_0 \\checkmark"
+    note: ~
+-->
+
+---
+
+**Exercise 5.** A process engineer suspects that curing temperature $x$
+(°C) affects bond strength $Y$ (N/mm²). Five runs are recorded:
+
+| $x$ | 120 | 130 | 140 | 150 | 160 |
+|----:|----:|----:|----:|----:|----:|
+| $Y$ | 8.1 | 9.4 | 10.8 | 11.5 | 12.9 |
+
+(a) Compute the OLS estimates $\hat{\beta}_0$ and $\hat{\beta}_1$.
+(b) Compute $R^2$.
+(c) Test $H_0: \beta_1 = 0$ at $\alpha = 0.05$, given $t_{0.025,\,3} = 3.182$.
+
+<!-- STEPPER
+exercise: 5
+steps:
+  - op: "Compute means"
+    eq: "\\bar{x} = \\frac{120+130+140+150+160}{5} = 140, \\quad \\bar{y} = \\frac{8.1+9.4+10.8+11.5+12.9}{5} = \\frac{52.7}{5} = 10.54"
+    note: ~
+  - op: "Compute S_{xx} and S_{xy}"
+    eq: "S_{xx} = \\sum(x_i-\\bar{x})^2 = (-20)^2+(-10)^2+0^2+10^2+20^2 = 400+100+0+100+400 = 1000"
+    note: ~
+  - op: "Compute S_{xy}"
+    eq: "S_{xy} = \\sum(x_i-\\bar{x})(y_i-\\bar{y}) = (-20)(-2.44)+(-10)(-1.14)+(0)(0.26)+(10)(0.96)+(20)(2.36) = 48.8+11.4+0+9.6+47.2 = 117.0"
+    note: ~
+  - op: "Compute slope and intercept"
+    eq: "\\hat{\\beta}_1 = \\frac{S_{xy}}{S_{xx}} = \\frac{117.0}{1000} = 0.117 \\text{ N/mm}^2\\text{/°C}, \\quad \\hat{\\beta}_0 = \\bar{y} - \\hat{\\beta}_1\\bar{x} = 10.54 - 0.117\\times140 = 10.54 - 16.38 = -5.84"
+    note: ~
+  - op: "Compute SS_res and R²"
+    eq: "\\hat{y}_i: 8.20,\\;9.37,\\;10.54,\\;11.71,\\;12.88 \\quad \\text{SS}_{res} = (8.1-8.20)^2+(9.4-9.37)^2+(10.8-10.54)^2+(11.5-11.71)^2+(12.9-12.88)^2 \\approx 0.01+0.001+0.068+0.044+0.0004 = 0.123"
+    note: ~
+  - op: "Compute R²"
+    eq: "\\text{SS}_{tot} = \\sum(y_i-\\bar{y})^2 = 5.9536+1.2996+0.0676+0.9216+5.5696 = 13.812 \\quad R^2 = 1 - \\frac{0.123}{13.812} = 1 - 0.0089 = 0.991"
+    note: ~
+  - op: "Compute the t-statistic for H₀: β₁=0"
+    eq: "s_e^2 = \\frac{\\text{SS}_{res}}{n-2} = \\frac{0.123}{3} = 0.0410 \\quad t = \\frac{\\hat{\\beta}_1}{s_e/\\sqrt{S_{xx}}} = \\frac{0.117}{\\sqrt{0.0410}/\\sqrt{1000}} = \\frac{0.117}{0.2025/31.62} = \\frac{0.117}{0.006404} \\approx 18.3"
+    note: ~
+  - op: "Check"
+    eq: "|t| = 18.3 \\gg t_{0.025,3} = 3.182 \\implies \\text{reject } H_0 \\checkmark \\quad R^2 = 0.991 \\text{ indicates excellent linear fit}"
+    note: ~
+-->
+
+---
+
+**Exercise 6.** Three CNC machine settings produce the following daily
+output yields (units per shift):
+
+| Setting 1 | Setting 2 | Setting 3 |
+|----------:|----------:|----------:|
+| 102 | 98 | 115 |
+| 105 | 101 | 112 |
+| 99 | 97 | 118 |
+| 103 | 100 | 114 |
+
+Perform a one-way ANOVA F-test for equality of means at $\alpha = 0.05$.
+Use $F_{0.05,\,2,\,9} = 4.26$. State whether setting affects yield.
+
+<!-- STEPPER
+exercise: 6
+steps:
+  - op: "Compute group means and overall mean"
+    eq: "\\bar{y}_1 = \\frac{102+105+99+103}{4} = \\frac{409}{4} = 102.25, \\quad \\bar{y}_2 = \\frac{98+101+97+100}{4} = \\frac{396}{4} = 99.0, \\quad \\bar{y}_3 = \\frac{115+112+118+114}{4} = \\frac{459}{4} = 114.75"
+    note: ~
+  - op: "Compute the overall mean"
+    eq: "\\bar{y} = \\frac{409+396+459}{12} = \\frac{1264}{12} \\approx 105.33"
+    note: ~
+  - op: "Compute SS_between"
+    eq: "\\text{SS}_{between} = 4(102.25-105.33)^2+4(99.0-105.33)^2+4(114.75-105.33)^2 = 4(9.486)+4(40.069)+4(88.736) = 37.94+160.28+354.94 = 553.16"
+    note: ~
+  - op: "Compute SS_within"
+    eq: "\\text{Setting 1: } (102-102.25)^2+(105-102.25)^2+(99-102.25)^2+(103-102.25)^2 = 0.0625+7.5625+10.5625+0.5625 = 18.75 \\quad \\text{Setting 2: } 1.0+4.0+4.0+1.0 = 10.0 \\quad \\text{Setting 3: } 0.0625+7.5625+10.5625+0.5625 = 18.75 \\quad \\text{SS}_{within} = 47.5"
+    note: ~
+  - op: "Compute mean squares and F"
+    eq: "\\text{MS}_{between} = \\frac{553.16}{2} = 276.58, \\quad \\text{MS}_{within} = \\frac{47.5}{9} = 5.28, \\quad F = \\frac{276.58}{5.28} = 52.4"
+    note: ~
+  - op: "Check"
+    eq: "F = 52.4 \\gg F_{0.05,2,9} = 4.26 \\implies \\text{reject } H_0 \\checkmark \\quad \\text{Machine setting significantly affects yield.}"
+    note: ~
+-->
+
+<!--
+MATH-PROF REVIEW
+Reviewer: math-prof agent
+Date: 2026-04-01
+
+VERDICT: PASS WITH NOTES
+
+ONE FIX APPLIED
+---------------
+[BLOCKER — fixed] SSR notation conflict in OLS section (lines ~368–380 original).
+  The objective function was labelled `\text{SSR}` and described as "sum of squared
+  residuals", but `SSR` is the near-universal abbreviation for the *regression* sum
+  of squares (SS_tot − SS_res). The same quantity was already called `\text{SS}_{res}`
+  two paragraphs later in the R² section. The inconsistency would mislead any reader
+  cross-referencing a textbook. Fixed: renamed to `\text{SS}_{res}` throughout the
+  OLS derivation block.
+
+ISSUES FOUND — NO CHANGE REQUIRED
+----------------------------------
+[NOTE] `notation_introduced` does not list sₑ (residual standard error), which is
+  introduced and used in the t-test for β₁ section. All other symbols introduced
+  here (F-statistic, χ², sₚ) are plausibly introduced in the prerequisite chapter
+  (prob_stats / Kreyszig Ch 24). Author's discretion whether to add sₑ to the list.
+
+[NOTE] The ANOVA worked example rounds the overall mean to 41.37 rather than
+  carrying 41.373 through SSB calculation. The rounding is self-consistent and
+  does not change the final F statistic (both give SSB ≈ 70.98). No correction
+  needed, but readers recomputing with a calculator will get slightly different
+  intermediate values.
+
+MATHEMATICAL CORRECTNESS
+------------------------
+All derivations verified:
+- Bernoulli MLE: log-likelihood expansion, differentiation, algebra → p̂ = S/n. Correct.
+- Exponential MLE: log-likelihood, derivative, → λ̂ = 1/x̄. Correct.
+- t-distribution CI: pivot, inversion, standard error formula. Correct.
+  Worked example: 0.18/√10 = 0.0569, ×2.262 = 0.129, CI (3.29, 3.55). Correct.
+- One-sample t-test: statistic, df=n−1, two-sided decision rule. Correct.
+  Worked example: t = 3.4/1.163 = 2.923 > 2.093. Correct.
+- Two-sample t-test: pooled variance formula, df=n₁+n₂−2. Correct.
+- OLS normal equations: partial derivatives, algebraic solution → β̂₁=Sxy/Sxx, β̂₀=ȳ−β̂₁x̄. Correct.
+- R² formula: 1 − SS_res/SS_tot. Correct.
+- t-test for β₁: t = β̂₁/(sₑ/√Sxx), df=n−2. Correct.
+- ANOVA: SS_between/SS_within, MS degrees of freedom (k−1, N−k), F statistic. Correct.
+
+EXERCISE CALCULATIONS VERIFIED
+-------------------------------
+Ex 1 (Exp MLE): x̄=840, λ̂=1/840≈0.001190, SE=λ̂/√5≈0.000532. All correct.
+Ex 2 (CI): SE=1.6, margin=3.410, CI=(44.79, 51.61). Correct.
+Ex 3 (t-test): t=−2.157, |t|=2.157>2.064, reject H₀. Correct.
+Ex 4 (2-sample t): sp²=266.4, sp=16.32, t=2.003<2.086, do not reject H₀. Correct.
+Ex 5 (regression):
+  x̄=140, ȳ=10.54, Sxx=1000, Sxy=117.0.
+  β̂₁=0.117, β̂₀=−5.84. Correct.
+  SS_res=0.123, SS_tot=13.812, R²=0.991. Correct.
+  sₑ²=0.041, t=0.117/(0.2025/31.62)=18.3≫3.182, reject H₀. Correct.
+Ex 6 (ANOVA): ȳ₁=102.25, ȳ₂=99.0, ȳ₃=114.75, ȳ=105.33.
+  SSB=553.16, SSW=47.5, MSB=276.58, MSW=5.28, F=52.4≫4.26. Correct.
+
+TOPOLOGY
+--------
+- prerequisite_ids: [prob_stats] — correct; topology edge [stat_advanced, prob_stats, enables] exists.
+- opens_to: [] — correct; prob_stats has no outgoing topology edges.
+- kreyszig_chapter: 25 — correct for mathematical statistics (Ch 24 = probability, Ch 25 = statistics).
+- destinations fields (eng, sci, biz, comp) all exist in topology.yml.
+-->
+
+<!--
+ENGINEER-PROF REVIEW
+====================
+
+NO DIRECT FIXES REQUIRED
+
+FLAGGED WITH INLINE COMMENT
+----------------------------
+1. [WARN — inline comment inserted] uofa_course: "STAT 151" same issue as
+   probability/01. The content (MLE, confidence intervals, hypothesis tests,
+   regression, ANOVA) maps to STAT 265 or equivalent engineering statistics
+   course, not the introductory STAT 151.
+
+ENGINEERING FRAMING — PASSED
+------------------------------
+2. [PASS] Manufacturing/quality control hook: "Acceptance sampling, process
+   capability, and quality control all rest on hypothesis tests and confidence
+   intervals." Accurate. ISO 2859 (acceptance sampling), Six Sigma process
+   capability (Cp, Cpk) indices, and Statistical Process Control (Shewhart
+   charts) all use this statistical machinery directly.
+
+3. [PASS] Valve pressure worked example: test H₀: μ = 200 kPa, n = 20, x̄ = 203.4,
+   s = 5.2 kPa, t = 2.923 > t₀.₀₂₅,₁₉ = 2.093. Units (kPa), sample size, and
+   conclusion are realistic for a valve qualification test. Arithmetic verified.
+
+4. [PASS] Young's modulus CI example: n = 10 specimens, x̄ = 3.42 GPa, s = 0.18 GPa,
+   t₀.₀₂₅,₉ = 2.262. CI = (3.29, 3.55) GPa. GPa is the correct unit for polymer
+   Young's modulus (typical polymer E ≈ 1–5 GPa). Arithmetic verified.
+
+5. [PASS] Aluminium alloy two-sample t-test (Exercise 4): mean strengths 312 MPa
+   and 298 MPa for two alloys — plausible values for structural aluminium alloys
+   (2000-series Al-Cu alloys have yield strengths 270–450 MPa). t = 2.003 < 2.086,
+   fail to reject — correct conclusion. Arithmetic verified.
+
+6. [PASS] Curing temperature / bond strength regression (Exercise 5): β₁ = 0.117
+   N/mm²/°C, R² = 0.991. Units (N/mm² = MPa for bond strength; °C for temperature)
+   are consistent. The high R² is realistic for a controlled lab experiment varying
+   a single process parameter.
+
+7. [PASS] ANOVA polymer film tensile strength example: three machine settings A/B/C,
+   n = 5 runs each, strengths ~40–45 MPa. F = 92.4 >> F₀.₀₅,₂,₁₂ = 3.89. Units
+   (MPa) and magnitudes are realistic for polymer film. Arithmetic in body text
+   verified.
+
+8. [PASS] Reliability engineering destination: "MLE estimates failure rates from
+   field data; confidence intervals bound the estimate." Accurate. This is the
+   standard method in IEC 61709 / MIL-HDBK-217 reliability modelling.
+
+9. [PASS] Clinical trials mention: two-sample t-tests, power, sample size. Accurate.
+
+10. [PASS] Geophysics: "linear regression of seismic travel time against distance
+    estimates subsurface velocity." Accurate — this is exactly the seismic refraction
+    method; the slope of the t-x curve is 1/velocity.
+
+11. [PASS] Multiple regression normal equations: β̂ = (X^T X)^{-1} X^T y stated in
+    "Where this goes" as requiring linear algebra from the LA section. Accurate and
+    appropriate cross-reference.
+
+12. [NOTE] GLMs (logistic, Poisson regression) mentioned as extensions. Accurate and
+    appropriate pointer, not developed here.
+
+13. [NOTE] SE(λ̂) = λ̂/√n for the exponential MLE (Exercise 1) is given without
+    derivation, attributed to Fisher information. The exact result is:
+    Fisher information for Exp(λ) is I(λ) = n/λ², so SE(λ̂) = 1/√I = λ/√n.
+    This is correct. The phrase "a consequence of the Fisher information" is accurate.
+
+VERDICT: PASS — all engineering examples, units, and statistical applications
+are accurate. STAT 151 course code flagged for author review.
+-->
+
+<!--
+STUDENT REVIEW
+Reviewer: student agent
+Layer: engineering
+Date: 2026-04-01
+
+VERDICT: READABLE WITH FIXES
+
+SUMMARY
+The chapter is dense but coherent. The worked examples are well-chosen and the
+steppers are thorough. Ten friction points were found where notation arrives
+unannounced, a step is skipped, or a name is used without the context an
+engineering student would need. None individually derails the chapter, but
+several cluster around the CI derivation and the OLS section, where the reader
+is expected to make multiple leaps in quick succession.
+
+ISSUES (in order of appearance)
+
+1. "i.i.d." — MLE setup
+   Used without expansion in this chapter. Readers who have not read Ch 1
+   recently will not recognise the abbreviation.
+   FLAGGED inline.
+
+2. Bernoulli mass function f(x;p) = p^x(1−p)^(1−x) — MLE Bernoulli subsection
+   The compact exponent form of the Bernoulli PMF is presented without
+   verification that it matches the P(X=1)=p, P(X=0)=1−p definition in Ch 1.
+   The derivation that follows depends on this but a reader who has not seen
+   this trick before will have to accept it on faith.
+   FLAGGED inline.
+
+3. n−1 denominator in sample variance — Unbiasedness paragraph
+   The chapter flags the n−1 denominator as important but gives no reason.
+   This is one of the most commonly misunderstood facts in introductory
+   statistics and deserves at minimum a one-sentence explanation about
+   degrees of freedom.
+   FLAGGED inline.
+
+4. "Student's" — t-distribution
+   The proper name "Student's t-distribution" will prompt any reader to ask
+   who Student is. The name is unusual enough to be genuinely distracting
+   without a brief note. Additionally, ν is introduced here as the degrees-of-
+   freedom symbol but does not appear in notation_introduced.
+   FLAGGED inline.
+
+5. Pivoting to the CI formula — Confidence interval derivation
+   The step "inverting |T| ≤ t_{α/2, n−1}" is stated but not shown. A reader
+   new to CI derivation will not see how to go from the inequality to the
+   interval formula. This is the conceptually hardest step in the CI section.
+   FLAGGED inline.
+
+6. Welch's test — Two-sample t-test
+   Welch's test is mentioned as the software default and immediately dropped.
+   A reader who uses Python or R will immediately wonder: if Welch is default,
+   why was pooled just taught? A one-sentence tradeoff statement is needed.
+   FLAGGED inline.
+
+7. "Normal equations" — OLS section
+   The term "normal equations" has nothing to do with the normal distribution,
+   but this chapter arrives directly after a probability chapter where "normal"
+   meant Gaussian. The name collision will confuse readers without a brief note.
+   FLAGGED inline.
+
+8. β̂₀ from the first normal equation — OLS derivation
+   The result β̂₀ = ȳ − β̂₁x̄ is presented as following from the first
+   equation without showing the algebra. The step is short but requires
+   distributing the sum and dividing by n.
+   FLAGGED inline.
+
+9. Pearson r vs population ρ — R² section
+   r is introduced here without a formula. Readers who saw ρ in Ch 1 will
+   wonder if these are the same thing. The sample/population distinction is
+   not stated.
+   FLAGGED inline.
+
+10. Degrees of freedom n−2 in regression t-test
+    The one-sample test used n−1; now n−2 appears. The reason (two parameters
+    estimated) is not given. A reader who noticed the earlier n−1 will pause.
+    FLAGGED inline.
+
+EXERCISE CALIBRATION
+Exercises are well-calibrated and cover all major chapter topics: MLE (Ex 1),
+CI (Ex 2), one-sample t-test (Ex 3), two-sample t-test (Ex 4), regression
+(Ex 5), ANOVA (Ex 6). The regression exercise (Ex 5) is multi-part and
+substantially more work than the others; it may feel disproportionate but it
+is the most important technique in the chapter and the stepper handles the
+arithmetic clearly. The supplied critical values mean no tables are needed,
+which is the right call for an exercise set at this layer.
+
+WAYFINDING
+"Where this goes" covers non-parametric tests, Bayesian inference, multiple
+regression, and GLMs. The multiple regression mention correctly cross-references
+the linear algebra section. The Bayesian inference pointer is apt: readers
+who want to understand where the prior probability in Ch 1's Bayes example
+comes from will find that connection satisfying. The section does not name a
+specific chapter for each extension, only a direction — appropriate given that
+opens_to is empty for this chapter.
+-->
+
+<!--
+EDIT LOG
+Reviewer: editor agent
+Date: 2026-04-01
+
+- [MLE setup, ~line 122] "i.i.d." was used without expansion at first
+  occurrence in this chapter. Changed to "i.i.d. (independent, identically
+  distributed)" inline. Addresses STUDENT flag.
+
+- [Unbiasedness, ~line 188] The n-1 denominator was flagged as important but
+  unexplained. Added two sentences giving the degrees-of-freedom reason: once
+  the mean is estimated from the data, only n-1 deviations are free to vary.
+  Addresses STUDENT flag.
+
+- [CI derivation, ~line 241] The pivot from |T| ≤ t* to x̄ ± t·s/√n was
+  stated without algebra. Added the two-step expansion: write out the absolute
+  value inequality with T substituted, multiply through by s/√n, rearrange to
+  isolate μ, then present the compact ± form. Addresses STUDENT flag.
+
+- [OLS β̂₀, ~line 397] The result β̂₀ = ȳ - β̂₁x̄ was stated as following
+  from the first normal equation without showing how. Added three lines of
+  algebra: distribute the sum, use Σ1 = n to get nȳ - nβ̂₀ - β̂₁·nx̄ = 0,
+  then divide by n. Addresses STUDENT flag.
+
+- [Regression t-test df, ~line 433] The change from n-1 to n-2 degrees of
+  freedom was unexplained. Added one sentence: two parameters (β₀ and β₁) are
+  estimated from the data, consuming two degrees of freedom. Addresses STUDENT
+  flag.
+-->

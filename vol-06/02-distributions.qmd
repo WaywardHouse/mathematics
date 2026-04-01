@@ -1,6 +1,1106 @@
 ---
-title: "Distributions"
-status: "seed"
+title: "Probability distributions"
+subtitle: "How probability spreads across possible values"
+
+volume: 6
+chapter: 2
+layer: "pre-university"
+status: "review"
+
+hook: |
+  You flip ten coins before you start, knowing five heads is most likely —
+  but not knowing how likely, or how surprising eight heads would be. A gym
+  full of teenagers all cluster near some average height, spreading out in
+  both directions in a shape you could sketch from memory. Both situations
+  need the same thing: a complete picture of how probability is spread
+  across every possible value.
+
+axiom: |
+  You can assign probabilities to individual events. Sometimes a
+  quantity can take many possible values, each with its own probability.
+
+rewrite: |
+  A distribution is the complete description of how probability is
+  spread across all possible values. Two distributions dominate
+  pre-university statistics: the binomial (counting successes in repeated
+  trials) and the normal (the bell curve that emerges when many small
+  effects add up).
+
+opens_to:
+  - id: "v6c3-statistical-inference"
+    label: "Statistical inference"
+    volume: 6
+    relationship: "enables"
+
+prerequisite_ids:
+  - "stat_basic"
+  - "exp_log"
+
+destinations:
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Particle counts, mutation rates, and error distributions in measurement all follow recognisable distributions."
+    career_example: "Biologist modelling mutation rates in a population genetics study"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Stock returns, insurance claim counts, and call centre volumes are modelled with specific distributions."
+    career_example: "Actuary modelling insurance claim frequency"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Random number generators, Monte Carlo simulations, and noise models all require specific distributions."
+    career_example: "Data scientist modelling user behaviour"
+  - field: "geo"
+    label: "Geography and environment"
+    hook: "Rainfall totals, flood peaks, and earthquake magnitudes follow distributions used for hazard assessment."
+    career_example: "Hydrologist estimating 100-year flood return period"
+
+notation_introduced:
+  - symbol: "P(X = k)"
+    reads_as: "the probability that the random variable X equals k"
+    notation_weight: 3
+  - symbol: "\\mu"
+    reads_as: "mu — the mean (expected value) of a distribution"
+    notation_weight: 2
+  - symbol: "\\sigma"
+    reads_as: "sigma — the standard deviation of a distribution"
+    notation_weight: 2
+  - symbol: "\\sigma^2"
+    reads_as: "sigma-squared — the variance"
+    notation_weight: 2
+  - symbol: "\\binom{n}{k}"
+    reads_as: "n choose k — the number of ways to choose k items from n"
+    notation_weight: 3
+  - symbol: "X \\sim B(n, p)"
+    reads_as: "X follows a binomial distribution with n trials and success probability p"
+    notation_weight: 2
+  - symbol: "X \\sim N(\\mu, \\sigma^2)"
+    reads_as: "X follows a normal distribution with mean mu and variance sigma-squared"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 11
+  strand: "Statistics"
+  outcome: "S2"
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You flip a fair coin 10 times. Before you do it, you know 5 heads seems
+most likely — but what exactly is the probability of getting 5? What
+about 8? And should 8 heads make you suspicious, or does it happen
+often enough that you'd expect it occasionally? Without knowing the
+full shape of the probability — who gets what share — you can't answer
+any of those questions.
+
+Here is a different situation. You're standing in a school gymnasium
+with every 17-year-old in the district. Their heights spread out around
+some average. A few people are very tall, a few very short, most cluster
+near the middle. That familiar bell shape is not a coincidence — it
+emerges every time many small independent factors (genetics, nutrition,
+sleep, dozens of other things) pile on top of each other.
+
+One more. A website gets an average of 100 visitors per hour. One night
+at 2am, the server logs show 140. Is that suspicious — a bot attack,
+maybe — or just the kind of natural swing you'd expect? You need to
+know how much variation is normal before you can say whether 140 is
+alarming.
+
+All three situations share the same underlying need: a complete picture
+of how probability is spread across every possible value. That picture
+is a **probability distribution**.
+
+## What the notation is saying
+
+### Random variables
+
+A **random variable** is a quantity whose value is determined by a
+random process. We write it with a capital letter — usually $X$.
+
+- $X$ = the number of heads in 10 coin flips. $X$ could be 0, 1, 2, ..., 10.
+- $X$ = the height of a randomly chosen 17-year-old. $X$ could be any
+  value in some continuous range.
+
+The notation $P(X = k)$ means: the probability that the random variable
+$X$ takes the specific value $k$.
+
+For 10 coin flips, $P(X = 5)$ is the probability of getting exactly 5
+heads. You'll calculate this shortly.
+
+One constraint: all the probabilities must add up to 1. If you list
+every value $X$ could possibly take, the probabilities must account for
+the whole picture.
+
+We'll write $\sum$ (capital sigma, the Greek letter S) to mean "add up all the terms that follow — here, over every possible value $k$":
+
+$$\sum_{\text{all } k} P(X = k) = 1$$
+
+This is just saying that *something* must happen.
+
+### Mean, variance, and standard deviation
+
+Once you have a distribution, you can summarise it with two numbers.
+
+**The mean** (also called the **expected value**) tells you the
+long-run average — what value you'd get if you ran the random process
+over and over and averaged the results. Written $\mu$ (the Greek letter
+*mu*):
+
+$$\mu = \sum_k k \cdot P(X = k)$$
+
+Read this as: multiply each possible value by its probability, then add
+everything up. It is a probability-weighted average.
+
+**The variance** $\sigma^2$ (sigma-squared) measures how spread out the
+distribution is — how far values tend to stray from the mean on average.
+**The standard deviation** $\sigma$ is the square root of the variance,
+putting it back in the same units as $X$ itself.
+
+The key intuition: $\sigma$ measures spread, not location. Two
+distributions can have the same mean but look completely different.
+
+| Distribution | Mean $\mu$ | Std dev $\sigma$ | What it looks like |
+|---|---|---|---|
+| A | 50 | 2 | Narrow spike near 50 |
+| B | 50 | 15 | Wide, flat spread |
+
+If you're measuring exam scores and $\sigma = 2$, almost everyone
+scored within 4 marks of the average. If $\sigma = 15$, scores are all
+over the place. Same average, completely different distributions.
+
+## The binomial distribution
+
+The binomial distribution answers one specific question:
+
+> If I repeat an experiment $n$ times, and each time the probability of
+> success is $p$, what is the probability of getting exactly $k$
+> successes?
+
+**The conditions:**
+1. Fixed number of trials: $n$
+2. Each trial has the same two outcomes: success or failure
+3. The probability of success is the same on every trial: $p$
+4. The trials are independent — the result of one doesn't affect another
+
+If your situation fits all four, the count of successes $X$ follows a
+**binomial distribution**, written $X \sim B(n, p)$.
+
+### Deriving the formula
+
+Suppose $n = 3$ and you want exactly $k = 2$ successes (call them S)
+and 1 failure (F). One specific sequence of outcomes that gives this
+is: S, S, F.
+
+The probability of that exact sequence is $p \cdot p \cdot (1-p) = p^2(1-p)$.
+
+But that's only one arrangement. You could also have: S, F, S or F, S, S.
+There are 3 arrangements that give exactly 2 successes in 3 trials.
+
+So the total probability is $3 \times p^2(1-p)$.
+
+The number 3 came from counting arrangements. In general, the number of
+ways to arrange $k$ successes in $n$ trials is written $\binom{n}{k}$
+(read "n choose k") and calculated as:
+
+$$\binom{n}{k} = \frac{n!}{k!(n-k)!}$$
+
+where $n! = n \times (n-1) \times \cdots \times 2 \times 1$ is
+"n factorial" — the number of ways to order $n$ distinct items.
+
+::: {.callout-tip}
+**Calculating $\binom{n}{k}$**
+
+$\binom{5}{2} = \frac{5!}{2! \cdot 3!} = \frac{5 \times 4 \times 3 \times 2 \times 1}{(2 \times 1)(3 \times 2 \times 1)} = \frac{120}{2 \times 6} = \frac{120}{12} = 10$
+
+A shortcut: $\binom{n}{k} = \frac{n \times (n-1) \times \cdots \times (n-k+1)}{k!}$ —
+multiply $k$ descending numbers from $n$, divide by $k!$.
+
+For $\binom{5}{2}$: $\frac{5 \times 4}{2 \times 1} = \frac{20}{2} = 10$. Same answer, less work.
+:::
+
+Putting it together:
+
+$$\boxed{P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}}$$
+
+Three parts:
+- $\binom{n}{k}$: the number of arrangements of $k$ successes in $n$ trials
+- $p^k$: the probability that each of those $k$ trials is a success
+- $(1-p)^{n-k}$: the probability that each of the remaining trials is a failure
+
+Multiply the parts: count of arrangements × probability of each arrangement.
+
+### Mean and variance of the binomial
+
+You could compute $\mu = \sum k \cdot P(X = k)$ directly, but the
+algebra is tedious. The results come out cleanly:
+
+$$\mu = np \qquad \sigma^2 = np(1-p) \qquad \sigma = \sqrt{np(1-p)}$$
+
+These make intuitive sense. If you flip a fair coin 100 times ($n=100$,
+$p=0.5$), you'd expect 50 heads on average: $\mu = 100 \times 0.5 = 50$.
+The standard deviation is $\sqrt{100 \times 0.5 \times 0.5} = \sqrt{25} = 5$,
+meaning a "typical" result is within about 5 heads of 50.
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  // --- layout constants ---
+  const W = 660, H = 340;
+  const margin = { top: 30, right: 20, bottom: 50, left: 55 };
+  const innerW = W - margin.left - margin.right;
+  const innerH = H - margin.top - margin.bottom;
+
+  // --- helper: log-factorial (for large n) ---
+  function logFactorial(n) {
+    let v = 0;
+    for (let i = 2; i <= n; i++) v += Math.log(i);
+    return v;
+  }
+  function logBinom(n, k) {
+    return logFactorial(n) - logFactorial(k) - logFactorial(n - k);
+  }
+  function binomPMF(n, p, k) {
+    if (k < 0 || k > n) return 0;
+    return Math.exp(logBinom(n, k) + k * Math.log(p) + (n - k) * Math.log(1 - p));
+  }
+  function normalPDF(x, mu, sigma) {
+    const z = (x - mu) / sigma;
+    return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+  }
+
+  // --- controls ---
+  const nSlider = Inputs.range([1, 30], { step: 1, value: 10, label: "n (trials)" });
+  const pSlider = Inputs.range([0.01, 0.99], { step: 0.01, value: 0.5, label: "p (success prob)" });
+  const normToggle = Inputs.toggle({ label: "Show normal approximation", value: false });
+
+  // --- SVG ---
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .style("font-family", "inherit");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // axes groups
+  const xAxisG = g.append("g").attr("transform", `translate(0,${innerH})`);
+  const yAxisG = g.append("g");
+
+  // axis labels
+  g.append("text")
+    .attr("x", innerW / 2).attr("y", innerH + 42)
+    .attr("text-anchor", "middle").attr("font-size", 13)
+    .text("k (number of successes)");
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -44)
+    .attr("text-anchor", "middle").attr("font-size", 13)
+    .text("P(X = k)");
+
+  // bars group
+  const barsG = g.append("g");
+  // normal curve
+  const curvePath = g.append("path")
+    .attr("fill", "none")
+    .attr("stroke", "#e55")
+    .attr("stroke-width", 2.5)
+    .attr("stroke-dasharray", "6,3")
+    .attr("opacity", 0);
+
+  // stats text
+  const statsText = svg.append("text")
+    .attr("x", margin.left + innerW - 4)
+    .attr("y", margin.top + 16)
+    .attr("text-anchor", "end")
+    .attr("font-size", 13)
+    .attr("fill", "#374151");
+
+  function update() {
+    const n = nSlider.value;
+    const p = pSlider.value;
+    const showNorm = normToggle.value;
+
+    const mu = n * p;
+    const sigma = Math.sqrt(n * p * (1 - p));
+
+    // pmf data
+    const data = d3.range(0, n + 1).map(k => ({ k, prob: binomPMF(n, p, k) }));
+
+    const maxProb = d3.max(data, d => d.prob);
+    const yMax = Math.max(maxProb * 1.15, 0.05);
+
+    // scales
+    const xScale = d3.scaleBand()
+      .domain(d3.range(0, n + 1))
+      .range([0, innerW])
+      .padding(0.1);
+
+    const yScale = d3.scaleLinear()
+      .domain([0, yMax])
+      .range([innerH, 0]);
+
+    // axes
+    const xTick = n <= 15 ? 1 : n <= 22 ? 2 : 3;
+    xAxisG.call(
+      d3.axisBottom(xScale)
+        .tickValues(d3.range(0, n + 1).filter(k => k % xTick === 0))
+        .tickFormat(d3.format("d"))
+    );
+    yAxisG.call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format(".3f")));
+
+    // bars
+    const bars = barsG.selectAll("rect").data(data, d => d.k);
+    bars.enter().append("rect")
+      .attr("fill", "#3b82f6")
+      .attr("opacity", 0.8)
+      .merge(bars)
+      .attr("x", d => xScale(d.k))
+      .attr("width", xScale.bandwidth())
+      .attr("y", d => yScale(d.prob))
+      .attr("height", d => innerH - yScale(d.prob));
+    bars.exit().remove();
+
+    // normal overlay
+    if (showNorm && sigma > 0.3) {
+      const xMin = xScale(0) + xScale.bandwidth() / 2;
+      const xMax = xScale(n) + xScale.bandwidth() / 2;
+      const pts = d3.range(200).map(i => {
+        const xVal = mu - 4 * sigma + (i / 199) * 8 * sigma;
+        const screenX = (xVal / n) * innerW; // linear position across bar centres
+        // map xVal to screen: bar centre for integer k is xScale(k) + bw/2
+        // approximate as linear interpolation
+        const bw = xScale.bandwidth();
+        const screenXv = xScale(0) + bw / 2 + (xVal / 1) * (xScale(1) - xScale(0));
+        return [xScale(0) + bw / 2 + xVal * (xScale.step()), yScale(normalPDF(xVal, mu, sigma))];
+      });
+      const line = d3.line().x(d => d[0]).y(d => d[1]).curve(d3.curveBasis);
+      curvePath.attr("d", line(pts)).attr("opacity", 1);
+    } else {
+      curvePath.attr("opacity", 0);
+    }
+
+    statsText.text(`μ = ${mu.toFixed(2)}   σ = ${sigma.toFixed(3)}`);
+  }
+
+  nSlider.addEventListener("input", update);
+  pSlider.addEventListener("input", update);
+  normToggle.addEventListener("input", update);
+
+  update();
+
+  const container = html`<div style="border:1px solid #e5e7eb;border-radius:8px;padding:1rem 1.25rem;margin:0.75rem 0;">
+    <div style="font-weight:600;margin-bottom:0.5rem;font-size:0.95em;">Binomial distribution explorer</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem 1.5rem;margin-bottom:0.75rem;">
+      ${nSlider}
+      ${pSlider}
+      ${normToggle}
+    </div>
+    ${svg.node()}
+    <p style="font-size:0.82em;color:#6b7280;margin-top:0.4rem;">
+      Bar heights show P(X = k). The dashed red curve (when toggled) is the normal approximation N(np, np(1−p)).
+      For large n and moderate p the two shapes converge — this is the central limit theorem in action.
+    </p>
+  </div>`;
+  return container;
+}
+```
+
+## The normal distribution
+
+The binomial counts discrete things — 0 heads, 1 head, 2 heads. But
+heights, weights, temperatures, and exam scores can take any value in a
+continuous range. For these, you need a different model.
+
+The **normal distribution** $N(\mu, \sigma^2)$ is a continuous bell
+curve centred at $\mu$ and spreading out by $\sigma$ in each direction
+(the second parameter is the variance $\sigma^2$, not the standard
+deviation — to find the spread in the original units, take the square
+root: $\sigma = \sqrt{\sigma^2}$).
+You specify it by two numbers only: the mean and the variance.
+
+### Why the bell curve appears everywhere
+
+This is one of the most remarkable results in all of probability: when
+you add up many independent random influences, the total tends toward
+the normal distribution — regardless of what the individual influences
+look like. A person's height is the sum of contributions from hundreds
+of genes, years of nutrition, sleep patterns, and dozens of other
+factors. None of those individually looks like a bell curve. Their sum
+does.
+
+This is the **central limit theorem**. You won't prove it at this stage,
+but you'll use it, and you'll see it confirmed every time you look at
+data from a natural process.
+
+### The 68-95-99.7 rule
+
+For any normal distribution $N(\mu, \sigma^2)$:
+
+| Range | Probability |
+|---|---|
+| $\mu - \sigma$ to $\mu + \sigma$ (within 1 std dev) | **68%** |
+| $\mu - 2\sigma$ to $\mu + 2\sigma$ (within 2 std dev) | **95%** |
+| $\mu - 3\sigma$ to $\mu + 3\sigma$ (within 3 std dev) | **99.7%** |
+
+This is sometimes called the **empirical rule**. It gives you a quick
+sense of what is "normal" variation and what is surprising.
+
+If exam scores are $N(65, 144)$ — so $\mu = 65$ and $\sigma = 12$ —
+then about 95% of students score between $65 - 24 = 41$ and
+$65 + 24 = 89$. A score of 20 would be genuinely extraordinary (more
+than 3 standard deviations below the mean), occurring less than 0.15%
+of the time.
+
+### Standardising: the z-score
+
+A practical problem: there is a different normal distribution for every
+combination of $\mu$ and $\sigma$. You can't carry a different table
+for each one.
+
+The solution is to convert any normal distribution to a single standard
+one. The **standard normal** distribution is $N(0, 1)$ — mean 0,
+variance 1.
+
+To convert a value $x$ from any normal distribution to its standard
+normal equivalent, compute:
+
+$$z = \frac{x - \mu}{\sigma}$$
+
+The value $z$ is called a **z-score**. It tells you how many standard
+deviations above (positive) or below (negative) the mean the value $x$
+sits.
+
+Once you have $z$, you look up $P(Z \leq z)$ in a standard normal
+table or compute it on a calculator. This single table handles all
+normal distributions.
+
+**Example.** Scores are $N(65, 144)$, so $\mu = 65$, $\sigma = 12$.
+For a score of $x = 83$:
+
+$$z = \frac{83 - 65}{12} = \frac{18}{12} = 1.5$$
+
+A score of 83 sits 1.5 standard deviations above the mean. A table gives
+$P(Z \leq 1.5) \approx 0.933$, so about 93.3% of students scored 83
+or below — and about 6.7% scored above 83.
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  // --- layout ---
+  const W = 660, H = 320;
+  const margin = { top: 30, right: 20, bottom: 50, left: 55 };
+  const innerW = W - margin.left - margin.right;
+  const innerH = H - margin.top - margin.bottom;
+
+  // --- normal CDF (erf approximation) ---
+  function erf(x) {
+    const a1 =  0.254829592, a2 = -0.284496736, a3 =  1.421413741;
+    const a4 = -1.453152027, a5 =  1.061405429, p  =  0.3275911;
+    const sign = x < 0 ? -1 : 1;
+    const t = 1 / (1 + p * Math.abs(x));
+    const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+    return sign * y;
+  }
+  function normalCDF(x, mu, sigma) {
+    return 0.5 * (1 + erf((x - mu) / (sigma * Math.sqrt(2))));
+  }
+  function normalPDF(x, mu, sigma) {
+    const z = (x - mu) / sigma;
+    return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+  }
+
+  // --- mode state ---
+  let mode = "sigma"; // "sigma" | "interval"
+
+  // --- controls ---
+  const muSlider  = Inputs.range([-10, 10],  { step: 0.5,  value: 0,   label: "μ (mean)" });
+  const sigSlider = Inputs.range([0.5, 5],   { step: 0.1,  value: 1,   label: "σ (std dev)" });
+  const bandSel   = Inputs.select(["1σ", "2σ", "3σ"], { label: "Shade within", value: "1σ" });
+  const aInput    = Inputs.number({ label: "a", value: -1, step: 0.1 });
+  const bInput    = Inputs.number({ label: "b", value:  1, step: 0.1 });
+  const modeBtn   = document.createElement("button");
+  modeBtn.textContent = "Switch to P(a < X < b) mode";
+  modeBtn.style.cssText = "padding:0.3rem 0.8rem;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:0.87em;margin-top:0.3rem;";
+
+  // sigma-mode controls wrapper
+  const sigmaControls = html`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem 1.5rem;">${muSlider}${sigSlider}${bandSel}</div>`;
+  const intervalControls = html`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem 1.5rem;">${muSlider}${sigSlider}<div style="display:flex;gap:0.75rem;">${aInput}${bInput}</div></div>`;
+  intervalControls.style.display = "none";
+
+  // --- SVG ---
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .style("font-family", "inherit");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const xAxisG = g.append("g").attr("transform", `translate(0,${innerH})`);
+  const yAxisG = g.append("g");
+
+  g.append("text")
+    .attr("x", innerW / 2).attr("y", innerH + 42)
+    .attr("text-anchor", "middle").attr("font-size", 13).text("x");
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -44)
+    .attr("text-anchor", "middle").attr("font-size", 13).text("f(x)");
+
+  const shadeArea = g.append("path").attr("fill", "#3b82f6").attr("opacity", 0.25);
+  const curvePath = g.append("path").attr("fill", "none").attr("stroke", "#1d4ed8").attr("stroke-width", 2.5);
+  const meanLine  = g.append("line").attr("stroke", "#374151").attr("stroke-width", 1.5).attr("stroke-dasharray", "5,3");
+
+  // sigma band lines
+  const bandLines = [-3,-2,-1,1,2,3].map(m =>
+    g.append("line").attr("stroke", "#9ca3af").attr("stroke-width", 1).attr("stroke-dasharray", "3,3").attr("opacity", 0)
+  );
+
+  const probLabel = svg.append("text")
+    .attr("x", margin.left + innerW - 4)
+    .attr("y", margin.top + 18)
+    .attr("text-anchor", "end")
+    .attr("font-size", 13)
+    .attr("fill", "#1d4ed8")
+    .attr("font-weight", "600");
+
+  const statsLabel = svg.append("text")
+    .attr("x", margin.left + 6)
+    .attr("y", margin.top + 18)
+    .attr("font-size", 12)
+    .attr("fill", "#6b7280");
+
+  const N_CURVE = 400;
+
+  function getRange(mu, sigma) {
+    return [mu - 4.5 * sigma, mu + 4.5 * sigma];
+  }
+
+  function update() {
+    const mu  = muSlider.value;
+    const sig = sigSlider.value;
+    const [xMin, xMax] = getRange(mu, sig);
+    const yMax = normalPDF(mu, mu, sig) * 1.15;
+
+    const xScale = d3.scaleLinear().domain([xMin, xMax]).range([0, innerW]);
+    const yScale = d3.scaleLinear().domain([0, yMax]).range([innerH, 0]);
+
+    xAxisG.call(d3.axisBottom(xScale).ticks(8).tickFormat(d3.format(".1f")));
+    yAxisG.call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format(".3f")));
+
+    // curve
+    const curveData = d3.range(N_CURVE).map(i => {
+      const x = xMin + (i / (N_CURVE - 1)) * (xMax - xMin);
+      return [xScale(x), yScale(normalPDF(x, mu, sig))];
+    });
+    const line = d3.line().x(d => d[0]).y(d => d[1]).curve(d3.curveBasis);
+    curvePath.attr("d", line(curveData));
+
+    // mean line
+    meanLine
+      .attr("x1", xScale(mu)).attr("x2", xScale(mu))
+      .attr("y1", 0).attr("y2", innerH);
+
+    statsLabel.text(`μ = ${mu.toFixed(1)}   σ = ${sig.toFixed(1)}`);
+
+    if (mode === "sigma") {
+      const bandMap = { "1σ": 1, "2σ": 2, "3σ": 3 };
+      const k = bandMap[bandSel.value];
+      const lo = mu - k * sig;
+      const hi = mu + k * sig;
+
+      // shade
+      const shadeData = d3.range(200).map(i => {
+        const x = lo + (i / 199) * (hi - lo);
+        return [xScale(x), yScale(normalPDF(x, mu, sig))];
+      });
+      const area = d3.area()
+        .x(d => d[0]).y0(innerH).y1(d => d[1]).curve(d3.curveBasis);
+      shadeArea.attr("d", area(shadeData));
+
+      const prob = normalCDF(hi, mu, sig) - normalCDF(lo, mu, sig);
+      probLabel.text(`P(within ${bandSel.value}) = ${(prob * 100).toFixed(2)}%`);
+
+      // band dashed lines
+      [-k, k].forEach((m, i) => {
+        bandLines[i].attr("x1", xScale(mu + m * sig)).attr("x2", xScale(mu + m * sig))
+          .attr("y1", 0).attr("y2", innerH).attr("opacity", 0.7);
+      });
+      bandLines.slice(2).forEach(l => l.attr("opacity", 0));
+
+    } else {
+      // interval mode
+      const a = Math.min(aInput.value, bInput.value);
+      const b = Math.max(aInput.value, bInput.value);
+      const lo = Math.max(xMin, a);
+      const hi = Math.min(xMax, b);
+      if (lo < hi) {
+        const shadeData = d3.range(200).map(i => {
+          const x = lo + (i / 199) * (hi - lo);
+          return [xScale(x), yScale(normalPDF(x, mu, sig))];
+        });
+        const area = d3.area()
+          .x(d => d[0]).y0(innerH).y1(d => d[1]).curve(d3.curveBasis);
+        shadeArea.attr("d", area(shadeData));
+        const prob = normalCDF(b, mu, sig) - normalCDF(a, mu, sig);
+        probLabel.text(`P(${a.toFixed(1)} < X < ${b.toFixed(1)}) = ${(prob * 100).toFixed(2)}%`);
+      } else {
+        shadeArea.attr("d", null);
+        probLabel.text("—");
+      }
+      bandLines.forEach(l => l.attr("opacity", 0));
+    }
+  }
+
+  muSlider.addEventListener("input",  update);
+  sigSlider.addEventListener("input", update);
+  bandSel.addEventListener("input",   update);
+  aInput.addEventListener("input",    update);
+  bInput.addEventListener("input",    update);
+
+  modeBtn.addEventListener("click", () => {
+    mode = mode === "sigma" ? "interval" : "sigma";
+    modeBtn.textContent = mode === "sigma"
+      ? "Switch to P(a < X < b) mode"
+      : "Switch to σ-band mode";
+    sigmaControls.style.display   = mode === "sigma"    ? "" : "none";
+    intervalControls.style.display = mode === "interval" ? "" : "none";
+    update();
+  });
+
+  update();
+
+  const container = html`<div style="border:1px solid #e5e7eb;border-radius:8px;padding:1rem 1.25rem;margin:0.75rem 0;">
+    <div style="font-weight:600;margin-bottom:0.5rem;font-size:0.95em;">Normal distribution explorer</div>
+    ${sigmaControls}
+    ${intervalControls}
+    <div style="margin-top:0.5rem;">${modeBtn}</div>
+    ${svg.node()}
+    <p style="font-size:0.82em;color:#6b7280;margin-top:0.4rem;">
+      Shaded region shows the selected probability. The dashed vertical line marks μ.
+      Adjust μ to shift the curve left/right; adjust σ to widen or narrow it.
+    </p>
+  </div>`;
+  return container;
+}
+```
+
+## Worked examples
+
+### Example 1 — Binomial exact (quality control)
+
+A manufacturing line produces components. Historical data shows that
+15% of components are defective. A quality inspector takes a batch of 8
+components. What is the probability that exactly 2 are defective?
+
+Here $X$ = number of defectives, $n = 8$, $p = 0.15$, and we want
+$P(X = 2)$.
+
+$$P(X = 2) = \binom{8}{2}(0.15)^2(0.85)^6$$
+
+Calculate each part:
+
+$$\binom{8}{2} = \frac{8 \times 7}{2 \times 1} = 28$$
+
+$$(0.15)^2 = 0.0225$$
+
+$$(0.85)^6 = 0.85 \times 0.85 \times 0.85 \times 0.85 \times 0.85 \times 0.85 \approx 0.3771$$
+
+$$P(X = 2) = 28 \times 0.0225 \times 0.3771 \approx 28 \times 0.008485 \approx 0.2376$$
+
+About 24% of batches of 8 will contain exactly 2 defectives.
+
+Check: the mean number of defectives is $\mu = np = 8 \times 0.15 = 1.2$,
+so 2 is slightly above average — a 24% probability is plausible.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.5rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Identify the distribution",    eq: "X \\sim B(8,\\, 0.15),\\quad n=8,\\; p=0.15,\\; k=2" },
+  { op: "Write the formula",            eq: "P(X=2) = \\binom{8}{2}(0.15)^2(0.85)^6" },
+  { op: "Compute the combination",      eq: "\\binom{8}{2} = \\frac{8 \\times 7}{2 \\times 1} = 28" },
+  { op: "Compute p^k",                  eq: "(0.15)^2 = 0.0225" },
+  { op: "Compute (1-p)^{n-k}",          eq: "(0.85)^6 \\approx 0.3771" },
+  { op: "Multiply all three parts",     eq: "P(X=2) = 28 \\times 0.0225 \\times 0.3771 \\approx 0.2376", note: "About 24% of batches will contain exactly 2 defectives." },
+  { op: "Sanity check via mean",        eq: "\\mu = np = 8 \\times 0.15 = 1.2", note: "k = 2 is just above average, so ~24% is a plausible probability." }
+])
+```
+
+### Example 2 — Binomial complement (healthcare)
+
+A new drug cures 70% of patients. In a clinical trial, 10 patients
+receive the drug. What is the probability that at least 8 are cured?
+
+$X \sim B(10, 0.7)$. We want $P(X \geq 8) = P(X=8) + P(X=9) + P(X=10)$.
+
+With only 3 terms, direct calculation is manageable:
+
+$$P(X=8) = \binom{10}{8}(0.7)^8(0.3)^2 = 45 \times 0.05765 \times 0.09 \approx 0.2335$$
+
+$$P(X=9) = \binom{10}{9}(0.7)^9(0.3)^1 = 10 \times 0.04035 \times 0.3 \approx 0.1211$$
+
+$$P(X=10) = \binom{10}{10}(0.7)^{10}(0.3)^0 = 1 \times 0.02825 \times 1 \approx 0.0282$$
+
+$$P(X \geq 8) \approx 0.2335 + 0.1211 + 0.0282 = 0.3828$$
+
+There is about a 38% probability that at least 8 of 10 patients are
+cured. Note: you would use the complement approach when the "at least"
+threshold is low — e.g., $P(X \geq 2)$ is much easier to compute as
+$1 - P(X=0) - P(X=1)$ than to sum 9 terms directly.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Identify the distribution",    eq: "X \\sim B(10,\\, 0.7)" },
+  { op: "Write as a sum",               eq: "P(X \\geq 8) = P(X=8) + P(X=9) + P(X=10)" },
+  { op: "Compute P(X = 8)",             eq: "\\binom{10}{8}(0.7)^8(0.3)^2 = 45 \\times 0.05765 \\times 0.09 \\approx 0.2335" },
+  { op: "Compute P(X = 9)",             eq: "\\binom{10}{9}(0.7)^9(0.3)^1 = 10 \\times 0.04035 \\times 0.3 \\approx 0.1211" },
+  { op: "Compute P(X = 10)",            eq: "\\binom{10}{10}(0.7)^{10}(0.3)^0 = 1 \\times 0.02825 \\times 1 \\approx 0.0282" },
+  { op: "Sum the three terms",          eq: "P(X \\geq 8) \\approx 0.2335 + 0.1211 + 0.0282 = 0.3828", note: "About 38% probability at least 8 patients are cured." }
+])
+```
+
+### Example 3 — Normal z-score (education)
+
+End-of-year exam scores in a large district are approximately normally
+distributed with mean $\mu = 65$ and standard deviation $\sigma = 12$.
+What fraction of students scored above 80?
+
+We want $P(X > 80)$.
+
+**Step 1: Standardise.**
+
+$$z = \frac{80 - 65}{12} = \frac{15}{12} = 1.25$$
+
+**Step 2: Look up $P(Z \leq 1.25)$.**
+
+From a standard normal table (or calculator): $P(Z \leq 1.25) \approx 0.8944$.
+
+**Step 3: Convert to the required probability.**
+
+$$P(X > 80) = 1 - P(X \leq 80) = 1 - 0.8944 = 0.1056$$
+
+About 10.6% of students scored above 80.
+
+A quick check with the 68-95-99.7 rule: 80 is $\frac{15}{12} = 1.25$
+standard deviations above the mean, which is between 1$\sigma$ and
+2$\sigma$. The rule says about 16% of values lie beyond 1$\sigma$, so
+10.6% beyond 1.25$\sigma$ is consistent.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "State the distribution",       eq: "X \\sim N(65,\\, 144),\\quad \\mu=65,\\; \\sigma=12" },
+  { op: "Standardise x = 80",           eq: "z = \\frac{80 - 65}{12} = \\frac{15}{12} = 1.25" },
+  { op: "Look up cumulative prob",      eq: "P(Z \\leq 1.25) \\approx 0.8944", note: "From a standard normal table or calculator." },
+  { op: "Use the complement",           eq: "P(X > 80) = 1 - 0.8944 = 0.1056", note: "About 10.6% of students scored above 80." },
+  { op: "Sanity check",                 eq: "1.25\\sigma > \\mu \\Rightarrow \\text{between 16\\% and 2.5\\% tail} \\checkmark", note: "10.6% sits between those bounds, so the answer is consistent." }
+])
+```
+
+### Example 4 — Normal reverse lookup (pass with distinction)
+
+Using the same exam distribution ($\mu = 65$, $\sigma = 12$), the
+school awards "distinction" to the top 10% of students. What score is
+the distinction threshold?
+
+We want the value $x$ such that $P(X > x) = 0.10$, i.e., $P(X \leq x) = 0.90$.
+
+**Step 1: Find the z-score for the 90th percentile.**
+
+From a standard normal table, find $z$ such that $P(Z \leq z) = 0.90$.
+
+Looking up 0.90: $z \approx 1.282$.
+
+**Step 2: Unstandardise — convert back to the original scale.**
+
+Since $z = \frac{x - \mu}{\sigma}$, rearranging gives:
+
+$$x = \mu + z\sigma = 65 + 1.282 \times 12 = 65 + 15.38 \approx 80.4$$
+
+A score of about 80 is the distinction threshold.
+
+Note the structure: for a forward problem you go $x \to z \to$ probability.
+For a reverse problem you go probability $\to z \to x$. The formula
+$x = \mu + z\sigma$ is just the standardisation formula solved for $x$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "State the goal",               eq: "P(X > x) = 0.10 \\Leftrightarrow P(X \\leq x) = 0.90" },
+  { op: "Find the 90th-percentile z",   eq: "z_{0.90} \\approx 1.282", note: "Look up 0.90 in the body of a standard normal table." },
+  { op: "Unstandardise",               eq: "x = \\mu + z\\sigma = 65 + 1.282 \\times 12", note: "Rearrange z = (x − μ)/σ to get x = μ + zσ." },
+  { op: "Compute the threshold",        eq: "x = 65 + 15.38 \\approx 80.4", note: "A score of about 80 is the distinction threshold." }
+])
+```
+
+## Where this goes
+
+**Statistical inference (Chapter 3)** is the direct next step. A
+distribution gives you the expected shape of data from a random process.
+Inference asks the reverse question: your actual data has a shape —
+is that consistent with what you'd expect from the assumed distribution,
+or is something else going on? Every hypothesis test you'll ever run
+is answering that question.
+
+**Volume 7 probability** builds the mathematical foundations underneath
+what you've been using here. Why does the normal distribution have
+exactly the bell-curve formula it does? What does "continuous
+probability" mean rigorously? The answers require calculus — integration
+gives you the area under the bell curve — but you can use the results
+now.
+
+## Applications
+
+::: {.callout-note}
+**Where these distributions appear in practice**
+
+**A/B testing.** A website tests two versions of a button. 200 users
+see version A, 200 see version B. Is the difference in click rates real
+or just chance? Binomial distributions tell you what click-rate
+differences to expect from chance alone.
+
+**Quality control charts.** Manufacturing uses Shewhart control charts:
+plot each batch measurement, mark lines at $\mu \pm 2\sigma$ and
+$\mu \pm 3\sigma$. A point outside the $3\sigma$ line has less than a
+0.3% chance of occurring naturally — strong evidence something has gone
+wrong in the process.
+
+**Weather forecasting.** A "70% chance of rain" is a probability from a
+distribution over possible outcomes. Forecast *skill* — whether forecasts
+are actually calibrated — is assessed using statistics built on the
+normal distribution.
+
+**Clinical trial power.** Before running a drug trial, statisticians
+calculate how many patients they need to have a reasonable chance of
+detecting a real effect if one exists. That calculation requires knowing
+the distribution of outcomes under both the null hypothesis and the
+alternative. You're one chapter away from doing this.
+:::
+
+## Exercises
+
+**Exercise 1.** A student guesses randomly on a 12-question true/false
+quiz. Let $X$ be the number of correct answers.
+
+(a) State the distribution of $X$, giving $n$ and $p$.
+(b) Calculate $P(X = 6)$.
+(c) Calculate the mean and standard deviation of $X$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Identify the distribution",    eq: "X \\sim B(12,\\, 0.5)" },
+  { op: "Write the formula for P(X=6)", eq: "P(X=6) = \\binom{12}{6}(0.5)^6(0.5)^6 = \\binom{12}{6}(0.5)^{12}" },
+  { op: "Compute the combination",      eq: "\\binom{12}{6} = \\frac{12!}{6!\\,6!} = 924" },
+  { op: "Compute (0.5)^{12}",           eq: "(0.5)^{12} = \\frac{1}{4096} \\approx 0.000244" },
+  { op: "Multiply",                     eq: "P(X=6) = 924 \\times 0.000244 \\approx 0.2256", note: "About 22.6% chance of getting exactly 6 correct by pure guessing." },
+  { op: "Mean and standard deviation",  eq: "\\mu = np = 12 \\times 0.5 = 6,\\quad \\sigma = \\sqrt{12 \\times 0.5 \\times 0.5} = \\sqrt{3} \\approx 1.73" }
+])
+```
+
+---
+
+**Exercise 2.** In a city, 20% of households own an electric vehicle.
+A researcher surveys 15 randomly chosen households.
+
+(a) Let $X$ be the number of households with an electric vehicle.
+    State the distribution of $X$.
+(b) Find $P(X = 3)$.
+(c) Find $P(X \leq 1)$ using the complement or direct calculation.
+(d) Find the mean and variance of $X$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Identify the distribution",    eq: "X \\sim B(15,\\, 0.2)" },
+  { op: "Formula for P(X = 3)",         eq: "P(X=3) = \\binom{15}{3}(0.2)^3(0.8)^{12}" },
+  { op: "Compute combination",          eq: "\\binom{15}{3} = \\frac{15 \\times 14 \\times 13}{3 \\times 2 \\times 1} = 455" },
+  { op: "Compute each power",           eq: "(0.2)^3 = 0.008,\\quad (0.8)^{12} \\approx 0.06872" },
+  { op: "Multiply",                     eq: "P(X=3) = 455 \\times 0.008 \\times 0.06872 \\approx 0.2501" },
+  { op: "P(X ≤ 1) directly",            eq: "P(X=0) = (0.8)^{15} \\approx 0.03518,\\quad P(X=1) = 15(0.2)(0.8)^{14} \\approx 0.13194" },
+  { op: "Sum for P(X ≤ 1)",             eq: "P(X \\leq 1) \\approx 0.03518 + 0.13194 = 0.1671", note: "About 16.7% chance of at most 1 EV household." },
+  { op: "Mean and variance",            eq: "\\mu = np = 15 \\times 0.2 = 3,\\quad \\sigma^2 = np(1-p) = 15 \\times 0.2 \\times 0.8 = 2.4" }
+])
+```
+
+---
+
+**Exercise 3.** A coin is known to be biased: it shows heads with
+probability $p = 0.4$. The coin is flipped 20 times.
+
+(a) Write down the mean and variance of the number of heads.
+(b) Without calculating individual probabilities, explain whether you
+    would be surprised to get 14 heads. (Use $\sigma$ to guide your
+    reasoning.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(7, [
+  { op: "Identify the distribution",    eq: "X \\sim B(20,\\, 0.4)" },
+  { op: "Mean",                         eq: "\\mu = np = 20 \\times 0.4 = 8" },
+  { op: "Variance",                     eq: "\\sigma^2 = np(1-p) = 20 \\times 0.4 \\times 0.6 = 4.8" },
+  { op: "Standard deviation",          eq: "\\sigma = \\sqrt{4.8} \\approx 2.19" },
+  { op: "How far is 14 from the mean?", eq: "14 - 8 = 6 = \\frac{6}{2.19} \\approx 2.74\\,\\sigma \\text{ above the mean}" },
+  { op: "Assess surprise",              eq: "P(|X - \\mu| \\geq 2.74\\sigma) < 0.006", note: "A value almost 3σ from the mean is very unusual — you would be surprised to see 14 heads with a p = 0.4 coin." }
+])
+```
+
+---
+
+**Exercise 4.** The resting heart rate of adults in a large study is
+approximately normally distributed with mean $\mu = 72$ beats per
+minute and standard deviation $\sigma = 10$ bpm.
+
+(a) Find the probability that a randomly chosen adult has a resting
+    heart rate above 90 bpm.
+(b) Find the probability that a randomly chosen adult has a resting
+    heart rate between 62 and 82 bpm. (You may use the 68-95-99.7
+    rule for this part.)
+(c) What percentage of adults have resting heart rates below 55 bpm?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(8, [
+  { op: "State the distribution",       eq: "X \\sim N(72,\\, 100),\\quad \\mu=72,\\; \\sigma=10" },
+  { op: "(a) Standardise x = 90",       eq: "z = \\frac{90 - 72}{10} = 1.8" },
+  { op: "(a) Look up and complement",   eq: "P(X > 90) = 1 - P(Z \\leq 1.8) = 1 - 0.9641 = 0.0359", note: "About 3.6% of adults have a resting heart rate above 90 bpm." },
+  { op: "(b) Recognise the interval",   eq: "[62,\\,82] = [\\mu - \\sigma,\\; \\mu + \\sigma]", note: "62 = 72 − 10 and 82 = 72 + 10, so this is exactly 1σ either side." },
+  { op: "(b) Apply empirical rule",     eq: "P(62 < X < 82) \\approx 0.68", note: "68% of adults have resting heart rates in this range." },
+  { op: "(c) Standardise x = 55",       eq: "z = \\frac{55 - 72}{10} = -1.7" },
+  { op: "(c) Look up",                  eq: "P(X < 55) = P(Z < -1.7) = 1 - P(Z \\leq 1.7) \\approx 1 - 0.9554 = 0.0446", note: "About 4.5% of adults have resting heart rates below 55 bpm." }
+])
+```
+
+---
+
+**Exercise 5.** Graduate entry to a university programme requires a
+score in the top 5% of a standardised test. Scores are normally
+distributed with $\mu = 500$ and $\sigma = 100$.
+
+(a) Find the z-score corresponding to the 95th percentile.
+    (Use $z_{0.95} \approx 1.645$.)
+(b) What is the minimum score needed for entry?
+(c) A student scores 620. What percentile does this correspond to?
+    (Find $z$, then use a table or calculator.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(9, [
+  { op: "State the distribution",       eq: "X \\sim N(500,\\, 100^2),\\quad \\mu=500,\\; \\sigma=100" },
+  { op: "(a) 95th-percentile z-score",  eq: "z_{0.95} \\approx 1.645", note: "Given in the problem; top 5% means P(Z ≤ z) = 0.95." },
+  { op: "(b) Unstandardise",           eq: "x = \\mu + z\\sigma = 500 + 1.645 \\times 100 = 664.5" },
+  { op: "(b) Minimum entry score",      eq: "x \\approx 665", note: "A score of at least 665 is needed to be in the top 5%." },
+  { op: "(c) Standardise score 620",    eq: "z = \\frac{620 - 500}{100} = 1.2" },
+  { op: "(c) Look up CDF",             eq: "P(Z \\leq 1.2) \\approx 0.8849", note: "A score of 620 sits at roughly the 88th percentile." }
+])
+```
+
+---
+
+**Exercise 6.** A marine biologist is studying kelp-eating urchins on
+a reef. She records the number of urchins found in each of 50 one-metre
+quadrats. Historical data for this reef type suggests urchin counts
+per quadrat follow a distribution with $\mu = 8$ and $\sigma = 2.8$.
+
+(a) A count of 15 urchins is recorded in one quadrat. How many standard
+    deviations above the mean is this?
+(b) Using the 68-95-99.7 rule, roughly what fraction of quadrats would
+    you expect to contain more than 13.6 urchins?
+(c) The biologist suspects a disturbance has shifted urchin density.
+    She finds 12 quadrats (out of 50) with counts above 13.6. Based on
+    your answer to (b), does this seem consistent with the historical
+    distribution? Explain briefly.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(10, [
+  { op: "State the parameters",         eq: "\\mu = 8,\\quad \\sigma = 2.8" },
+  { op: "(a) z-score for count 15",     eq: "z = \\frac{15 - 8}{2.8} = \\frac{7}{2.8} = 2.5", note: "A count of 15 is 2.5 standard deviations above the mean." },
+  { op: "(b) Identify 13.6 in σ units", eq: "13.6 = \\mu + 2\\sigma = 8 + 2 \\times 2.8 = 13.6" },
+  { op: "(b) Apply 95% rule",           eq: "P(\\mu - 2\\sigma < X < \\mu + 2\\sigma) \\approx 0.95" },
+  { op: "(b) Tail fraction",            eq: "P(X > \\mu + 2\\sigma) \\approx \\frac{1 - 0.95}{2} = 0.025", note: "About 2.5% of quadrats expected above 13.6 under historical conditions." },
+  { op: "(c) Expected vs observed",     eq: "0.025 \\times 50 = 1.25 \\text{ quadrats expected};\\quad 12 \\text{ observed}" },
+  { op: "(c) Conclusion",               eq: "\\frac{12}{50} = 24\\% \\gg 2.5\\%", note: "12 quadrats is far more than the 1–2 expected by chance. This is strong evidence the distribution has shifted — a disturbance is a plausible explanation." }
+])
+```

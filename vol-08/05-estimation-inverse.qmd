@@ -1,0 +1,439 @@
+---
+title: "Estimation, inverse problems, and filtering"
+subtitle: "Recovering hidden states from noisy measurements"
+chapter: 5
+volume: 8
+layer: "discipline"
+status: "draft"
+
+axiom: |
+  You can observe outputs, but not always the state or parameter you actually
+  care about.
+
+rewrite: |
+  Estimation turns uncertain observations into defensible inferences about
+  hidden states, parameters, and trajectories.
+
+opens_to:
+  - id: reliability
+    label: "Reliability, stochastic systems, and quality"
+    volume: 8
+    relationship: enriches
+
+prerequisite_ids:
+  - prob_stats
+  - control_feedback
+  - discrete_systems
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "State estimation underlies process monitoring, navigation, robotics, and condition assessment."
+    career_example: "Process or robotics engineer recovering hidden state from noisy sensor measurements"
+  - field: geo
+    label: Geography and environment
+    hook: "Remote sensing and data assimilation are inverse problems built on the same mathematics."
+    career_example: "Remote sensing analyst inferring soil moisture or snow properties from indirect measurements"
+  - field: comp
+    label: Computing and data
+    hook: "Kalman filtering, Bayesian filtering, and latent-variable models are all variants of the same predict-update logic — tools that appear in sensor fusion, streaming anomaly detection, and sequential probabilistic models."
+    career_example: "Data scientist building a streaming latent-state model for time-series anomaly detection or sensor fusion"
+
+hook: |
+  You can measure vibration but not crack length. You can observe GPS, camera,
+  and IMU signals but not the true state of the vehicle. You can see reflected
+  radiation from a landscape but not the quantity you really care about on the
+  ground. Inverse mathematics begins when the thing you want is not the thing
+  you can measure.
+
+notation_introduced:
+  - symbol: "\\mathbf{x}"
+    reads_as: "x bold — the hidden state"
+    notation_weight: 2
+  - symbol: "\\mathbf{y}"
+    reads_as: "y bold — the observed measurement"
+    notation_weight: 2
+  - symbol: "\\theta"
+    reads_as: "theta — an unknown parameter"
+    notation_weight: 2
+  - symbol: "H"
+    reads_as: "H — the observation operator or measurement matrix"
+    notation_weight: 3
+  - symbol: "\\hat{\\mathbf{x}}"
+    reads_as: "x hat — the estimated state"
+    notation_weight: 2
+  - symbol: "\\mathbf{y} = H\\mathbf{x} + \\varepsilon"
+    reads_as: "measurement equals observation map applied to the state plus noise"
+    notation_weight: 3
+  - symbol: "K"
+    reads_as: "K — the Kalman gain or update weight"
+    notation_weight: 3
+
+exercises:
+  type: "project"
+  real_world_context: true
+
+uofa_course: "CH E 358B"
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+You can measure vibration but not crack length. You can observe GPS, camera,
+and IMU signals but not the true state of the vehicle. You can see reflected
+radiation from a landscape but not the quantity you really care about on the
+ground. Inverse mathematics begins when the thing you want is not the thing
+you can measure.
+
+This chapter is about that gap between observation and quantity of interest.
+Forward modelling asks: if the state were known, what measurements would it
+produce? Inverse work asks the harder question: given the measurements, what
+can you recover about the state or parameters?
+
+That harder question is unstable unless handled carefully. Small measurement
+errors can create large errors in the recovered quantity. A good estimation
+method therefore does two jobs at once: it produces an estimate and it keeps
+track of how much trust the data deserves.
+
+---
+
+## Forward and inverse viewpoints
+
+Let $\mathbf{x}$ be the hidden state you care about and $\mathbf{y}$ the
+measured data you actually have. A simple measurement model is
+
+$$\mathbf{y} = H\mathbf{x} + \varepsilon$$
+
+where $H$ maps the state into observation space and $\varepsilon$ represents
+measurement noise.
+
+The **forward problem** is:
+
+- given $\mathbf{x}$, compute $\mathbf{y}$
+
+The **inverse problem** is:
+
+- given $\mathbf{y}$, estimate $\mathbf{x}$
+
+The inverse direction is harder because the map may be noisy, incomplete, or
+many-to-one. Some parts of the state may be visible in the data. Others may be
+weakly observable or not observable at all.
+
+This is why estimation is not just algebraic rearrangement. It is controlled
+inference under limited information.
+
+<!-- VIZ: Hidden-state estimation board. Show a latent state evolving in time, a noisy measurement stream, and an updated estimate. Let the reader vary measurement noise and update weight K, and display the true state, measured data, and estimate together so the idea of filtering is visible as a compromise between trust in the model and trust in the sensor. -->
+
+## The simplest update logic
+
+Suppose you have a prior estimate $\hat{x}^-$ and then receive a new
+measurement $y$. In the scalar case where the measurement directly observes the
+state ($H = 1$), a simple update rule is
+
+$$\hat{x}^+ = \hat{x}^- + K(y - \hat{x}^-)$$
+
+where:
+
+- $\hat{x}^-$ is the estimate before the measurement update
+- $y - \hat{x}^-$ is the innovation or residual
+- $K$ is the **update weight** — the same letter used for control gain in
+  Chapter 1 and for the stiffness matrix in Chapter 4; here it plays a
+  different role as a scalar between 0 and 1
+
+In the general case with a non-trivial observation operator $H$, the innovation
+becomes $y - H\hat{x}^-$, but the structure of the weighted update is the same.
+
+If $K$ is close to 1, you trust the new measurement strongly. If $K$ is close
+to 0, you trust the existing estimate strongly. Filtering methods differ in how
+they compute or adapt this weight, but the logic is already visible here.
+
+This update rule is useful because it makes the compromise explicit. Estimation
+is never "use the measurement" or "use the model." It is always some weighted
+combination of the two.
+
+## Parameter estimation and state estimation
+
+Not every inverse problem asks for the same thing.
+
+**State estimation**
+
+You want the current hidden state of a dynamic system: position, velocity,
+temperature field, internal concentration, or machine condition.
+
+**Parameter estimation**
+
+You want the unknown constant or slowly varying quantity in the model:
+diffusivity, drag coefficient, reaction rate, calibration factor.
+
+**Inverse field recovery**
+
+You want an entire spatially distributed quantity from indirect measurements:
+subsurface moisture, atmospheric state, or interior temperature.
+
+The mathematics overlaps, but the interpretation changes. This chapter keeps
+the common structure in view so those problems do not feel unrelated.
+
+::: {.callout-note appearance="simple"}
+## Why This Works
+
+An estimate improves when it combines two pieces of information that fail in
+different ways: a model prediction and a measurement. The model is coherent but
+incomplete. The measurement is immediate but noisy. Filtering succeeds when the
+weights are chosen so each source corrects the other's weakness.
+
+That is the deeper reason estimation sits between control, signal processing,
+and statistics. It uses all three.
+:::
+
+## The core method
+
+A first pass through an estimation or inverse problem usually goes like this:
+
+1. Decide whether the unknown is a state, a parameter, or a field.
+2. Write the forward relation from hidden quantity to measurement.
+3. Name the main source of uncertainty: measurement noise, model error,
+   missing data, or poor observability.
+4. Choose an update or fitting rule.
+5. Interpret the residuals, not just the estimate.
+6. Ask what information the data still cannot recover.
+
+That last question matters. A polished estimate can still be misleading if the
+measurements never contained the needed information in the first place.
+
+## Worked example 1: one-step scalar filter
+
+Suppose the prior estimate of a temperature is
+
+$$\hat{x}^- = 18$$
+
+degrees, a new sensor reading is
+
+$$y = 20$$
+
+degrees, and the update weight is
+
+$$K = 0.3$$
+
+Then
+
+$$\hat{x}^+ = \hat{x}^- + K(y - \hat{x}^-)
+= 18 + 0.3(20 - 18)
+= 18 + 0.6
+= 18.6$$
+
+The updated estimate moves toward the measurement, but does not jump all the
+way there. That is exactly what you want when the sensor is informative but not
+perfect.
+
+If the sensor were known to be extremely reliable, a larger $K$ would make
+sense. If the measurement were very noisy, a smaller $K$ would be more honest.
+
+## Worked example 2: linear least-squares parameter fit
+
+Suppose a calibration model predicts measurements by
+
+$$y_i \approx \theta x_i$$
+
+for known inputs $x_i$ and unknown scale parameter $\theta$. With observations
+
+$$
+(x_i, y_i) = (1, 2.1), (2, 3.9), (3, 6.2)
+$$
+
+the least-squares estimate minimises
+
+$$\sum_i (y_i - \theta x_i)^2$$
+
+Setting $\dfrac{d}{d\theta}\sum_i (y_i - \theta x_i)^2 = 0$ gives
+$-2\sum_i x_i(y_i - \theta x_i) = 0$, which rearranges to
+
+$$\hat{\theta}
+=
+\frac{\sum_i x_i y_i}{\sum_i x_i^2}
+=
+\frac{1(2.1) + 2(3.9) + 3(6.2)}{1^2 + 2^2 + 3^2}
+=
+\frac{28.5}{14}
+\approx 2.036$$
+
+This is parameter estimation rather than state estimation, but the structure is
+the same: use noisy measurements to infer a hidden quantity in the model.
+
+## Worked example 3: remote sensing as an inverse problem
+
+A satellite does not measure soil moisture directly. It measures reflected or
+emitted radiation. A forward model links surface state to what the instrument
+would see. The inverse problem works backward from the measured signal toward
+the surface property of interest.
+
+The mathematics is the same as in engineering system identification:
+
+- there is a hidden state or parameter
+- there is an observation operator
+- there is noise and model mismatch
+- the estimate must balance data fit against plausibility
+
+This is why optional viewpoints matter in Volume 8. Remote sensing and process
+monitoring can look unrelated socially, but mathematically they are close
+relatives.
+
+## The Kalman filter as the canonical example
+
+The update rule in Worked Example 1 is not just a pedagogical toy. It is the
+core of the **Kalman filter**, which structures estimation around a
+predict-then-update cycle:
+
+1. **Predict**: use the system model to propagate the state estimate forward
+   one step, together with an estimate of how uncertain that prediction is.
+2. **Update**: when a measurement arrives, compute how much to trust it relative
+   to the prediction. The Kalman gain $K$ sets that weight optimally when the
+   noise is Gaussian.
+
+The two-step pattern generalises. Extended Kalman filters handle nonlinear
+models by linearising around the current estimate. Particle filters handle
+non-Gaussian noise by representing uncertainty as a cloud of samples. Variational
+data assimilation in weather prediction is a related method at continental scale.
+Hidden Markov models in ML use the same predict-update logic for discrete state
+spaces, and Bayesian filtering is the general probabilistic framing that includes
+all of these.
+
+The scalar example in this chapter already shows the logic. The rest is
+bookkeeping to handle vectors, covariances, and system models.
+
+## Where this goes
+
+The next natural continuation is
+[Reliability, stochastic systems, and quality](06-reliability-stochastic.qmd).
+Once you are estimating hidden states and parameters from uncertain data, the
+next question is often what that uncertainty means for failure, quality, risk,
+or operational decision-making over time.
+
+This chapter also loops backward toward control. Modern control systems often
+need estimated states rather than directly measured ones. Estimation is not a
+sidebar to control. It is often the missing half.
+
+::: {.callout-tip appearance="simple"}
+## Applications
+
+- condition monitoring in machines and structures
+- navigation and sensor fusion
+- process monitoring and soft sensing
+- parameter estimation in simulation models
+- remote sensing and environmental inversion
+- streaming latent-state estimation in data systems
+:::
+
+## Exercises
+
+These are project-style exercises. State what the estimate means and what the
+data still does not tell you.
+
+### Exercise 1
+
+Use the scalar update rule
+
+$$\hat{x}^+ = \hat{x}^- + K(y - \hat{x}^-)$$
+
+with $\hat{x}^- = 12$, $y = 15$, and $K = 0.4$.
+
+Compute the updated estimate and explain whether the update trusts the
+measurement strongly or cautiously.
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Write the update rule"
+    eq: "\\hat{x}^+ = 12 + 0.4(15-12)"
+    note: ~
+  - op: "Compute the innovation"
+    eq: "15-12 = 3"
+    note: ~
+  - op: "Apply the weight"
+    eq: "\\hat{x}^+ = 12 + 0.4(3) = 12 + 1.2 = 13.2"
+    note: ~
+  - op: "Interpret the weight"
+    eq: "K=0.4 \\text{ moves the estimate partway, not all the way, to the measurement}"
+    note: "The update is cautious rather than fully trusting."
+  - op: "Check"
+    eq: "12 < 13.2 < 15"
+    note: "A sensible weighted update lies between prior estimate and measurement."
+-->
+
+### Exercise 2
+
+Given data
+
+$$
+(x_i, y_i) = (1, 1.8), (2, 4.1), (4, 8.3),
+$$
+
+estimate $\theta$ in the model $y_i \approx \theta x_i$ using
+
+$$\hat{\theta} = \frac{\sum_i x_i y_i}{\sum_i x_i^2}$$
+
+and explain what the parameter means physically.
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Compute the numerator"
+    eq: "\\sum_i x_i y_i = 1(1.8) + 2(4.1) + 4(8.3) = 43.2"
+    note: ~
+  - op: "Compute the denominator"
+    eq: "\\sum_i x_i^2 = 1^2 + 2^2 + 4^2 = 21"
+    note: ~
+  - op: "Form the estimate"
+    eq: "\\hat{\\theta} = \\dfrac{43.2}{21} \\approx 2.057"
+    note: ~
+  - op: "Interpret"
+    eq: "\\hat{\\theta} \\text{ is the fitted proportional scale linking input and measurement}"
+    note: "Its physical meaning depends on the calibration model."
+  - op: "Check"
+    eq: "\\text{the estimate is close to the slope suggested by the data cloud}"
+    note: "A value near 2 matches the rough visual pattern."
+-->
+
+### Exercise 3
+
+A monitoring system can measure motor current and casing temperature, but not
+bearing wear directly.
+
+Write a short systems note answering:
+
+1. what the hidden state is
+2. what the measurements are
+3. one plausible forward model relation
+4. one reason the inverse problem may be ill-conditioned or ambiguous
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Name the hidden quantity"
+    eq: "\\text{hidden state: bearing wear or machine health condition}"
+    note: ~
+  - op: "Name the measurements"
+    eq: "\\text{measured signals: motor current and casing temperature}"
+    note: ~
+  - op: "State a forward relation"
+    eq: "\\text{wear affects friction, which changes current draw and thermal output}"
+    note: "The model links hidden degradation to observable signals."
+  - op: "State the ambiguity"
+    eq: "\\text{load changes can mimic the same measurement pattern as wear}"
+    note: "Different causes can map to similar observations."
+  - op: "Check"
+    eq: "\\text{inverse problems fail when distinct hidden states look too similar in measurement space}"
+    note: ~
+-->
+
+### Exercise 4
+
+Choose one inverse problem from your own field and prepare a one-page model
+brief naming:
+
+1. the hidden quantity
+2. the measured quantity
+3. the forward map
+4. the main noise source
+5. one update or fitting rule you would try first
+6. one thing the estimate still cannot guarantee
+
+<!-- VIZ: Observation-versus-state explorer. Let the reader choose among three contexts (process monitoring, navigation, remote sensing) and show the same abstract pipeline: hidden state -> observation operator -> noisy measurement -> updated estimate. Keep the diagram identical in structure while only the labels and example signals change. -->

@@ -72,6 +72,7 @@ stub vol-06/04-data-analysis.qmd "Data analysis"
 
 # vol-07
 stub vol-07/index.qmd "Volume 7 — Engineering mathematics" index
+stub vol-08/index.qmd "Volume 8 — Upper-year engineering mathematics" index
 stub vol-07/odes/01-first-order.qmd "First-order ODEs"
 stub vol-07/odes/02-second-order.qmd "Second-order ODEs"
 stub vol-07/odes/03-systems-phase-plane.qmd "Systems and phase plane"

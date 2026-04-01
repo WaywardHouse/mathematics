@@ -103,6 +103,16 @@ book:
         - vol-07/optimisation/02-graphs-networks.qmd
         - vol-07/probability/01-probability-theory.qmd
         - vol-07/probability/02-mathematical-statistics.qmd
+    - part: "Volume 8 — Upper-year engineering mathematics"
+      chapters:
+        - vol-08/index.qmd
+        - vol-08/01-control-feedback.qmd
+        - vol-08/02-discrete-systems-signals.qmd
+        - vol-08/03-continuum-transport.qmd
+        - vol-08/04-computational-methods.qmd
+        - vol-08/05-estimation-inverse.qmd
+        - vol-08/06-reliability-stochastic.qmd
+        - vol-08/07-nonlinear-optimisation.qmd
 
 format:
   html:

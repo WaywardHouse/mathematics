@@ -1,6 +1,1001 @@
 ---
 title: "Integral calculus"
-status: "seed"
+subtitle: "Accumulation"
+
+volume: 5
+chapter: 3
+layer: "university"
+status: "review"
+
+axiom: |
+  You know how to find the instantaneous rate of change from a function.
+  A different problem: given the rate, recover the total. Given velocity,
+  find distance. Given marginal cost, find total cost.
+
+rewrite: |
+  Integration is accumulation. It answers: how much has accumulated over
+  an interval? The definite integral is area under a curve. The
+  indefinite integral is the antiderivative. The Fundamental Theorem
+  of Calculus connects them — and connects differentiation and integration
+  as inverse operations.
+
+opens_to:
+  - id: "v7c3-multivariable-calculus"
+    label: "Multivariable calculus"
+    volume: 7
+    relationship: "enables"
+  - id: "v7c1-first-order-odes"
+    label: "First-order ODEs"
+    volume: 7
+    relationship: "enables"
+  - id: "v7c4-fourier-series"
+    label: "Fourier series"
+    volume: 7
+    relationship: "enables"
+
+prerequisite_ids:
+  - "diff_calc"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Stress over a cross-section, charge accumulated from a current, work done by a variable force — all integrals."
+    career_example: "Mechanical engineer computing work done by a non-constant load"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Total radioactive decay, probability from a density function, area under a spectral curve — all integrals."
+    career_example: "Physicist computing expected particle positions from a wave function"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Consumer surplus, total revenue from a flow, present value of a continuous income stream — all definite integrals."
+    career_example: "Economist computing welfare gains from a price change"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Probability distributions (the CDF is the integral of the PDF), expected values, and Monte Carlo methods all depend on integration."
+    career_example: "Data scientist computing expected values from continuous distributions"
+
+hook: |
+  Your car's speedometer shows 80 km/h. Two minutes later it shows 95 km/h.
+  How far have you travelled? You cannot just multiply speed by time — the
+  speed was changing the whole way. What you need is a way to add up all
+  those instantaneous velocities over the interval. That is integration.
+
+  A water tank fills at a rate that varies with time — fast at first, slower
+  as back-pressure builds. You want to know how much water is in the tank
+  after an hour. You know the rate at each moment. You need the total.
+
+  These are the same problem. This chapter builds the tool.
+
+notation_introduced:
+  - symbol: "\\int f(x)\\,dx"
+    reads_as: "the integral of f of x with respect to x"
+    notation_weight: 3
+  - symbol: "\\int_a^b f(x)\\,dx"
+    reads_as: "the definite integral of f from a to b"
+    notation_weight: 3
+  - symbol: "F(x)"
+    reads_as: "an antiderivative of f — F prime equals f"
+    notation_weight: 2
+  - symbol: "\\left[F(x)\\right]_a^b"
+    reads_as: "F evaluated from a to b — F(b) minus F(a)"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+uofa_course: "MATH 101"
+alberta_curriculum:
+  grade: null
+  strand: ""
+  outcome: ""
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+Your car's speedometer shows 80 km/h. Two minutes later it shows 95 km/h.
+How far have you travelled? You cannot just multiply speed by time — the
+speed was changing the whole way. What you need is a way to add up all
+those instantaneous velocities over the interval. That is integration.
+
+A water tank fills at a rate that varies with time — fast at first, slower
+as back-pressure builds. You want to know how much water is in the tank
+after an hour. You know the rate at each moment. You need the total.
+
+These are the same problem. This chapter builds the tool.
+
+## What the notation is saying
+
+The integral sign $\int$ is an elongated S — it stands for *sum*. The
+$dx$ at the end names the variable we are integrating with respect to.
+The expression
+
+$$\int_a^b f(x)\,dx$$
+
+reads: *"the integral of $f(x)$ with respect to $x$, from $a$ to $b$."*
+Picture many thin rectangles, each with height $f(x)$ and width $\Delta x$
+— we'll shrink $\Delta x$ to zero in the limit, so the strips get thinner
+and thinner until they fit exactly under the curve. The integral adds up
+the areas of all of them. The result is the total area between the curve
+$y = f(x)$ and the $x$-axis, between $x = a$ and $x = b$.
+
+That is the geometric picture. The computational meaning follows from
+Riemann sums.
+
+### Riemann sums
+
+Partition the interval $[a, b]$ into $n$ equal subintervals, each of
+width
+
+$$\Delta x = \frac{b - a}{n}$$
+
+Pick a sample point $x_i$ in each subinterval — say the left endpoint,
+the right endpoint, or the midpoint. At each sample point, the rectangle
+has height $f(x_i)$ and width $\Delta x$. Sum all $n$ rectangles:
+
+$$\text{Area} \approx \sum_{i=1}^{n} f(x_i)\,\Delta x$$
+
+This is a Riemann sum — you saw the idea of summing up many small terms
+in Volume 4, and the same question of what happens as the number of terms
+grows without bound applies here too. The definite integral is the limit
+of this sum as the rectangles get infinitely thin:
+
+$$\int_a^b f(x)\,dx = \lim_{n \to \infty} \sum_{i=1}^{n} f(x_i)\,\Delta x$$
+
+For well-behaved functions, this limit exists and is a single, precise number.
+
+**Interactive: Riemann sum builder.** Adjust the number of rectangles and choose a sum type to see how the approximation converges to the exact value.
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+viewof riemannN = Inputs.range([1, 50], {
+  label: "n (number of rectangles)",
+  step: 1,
+  value: 5
+})
+```
+
+```{ojs}
+//| echo: false
+viewof riemannType = Inputs.select(["Left", "Right", "Midpoint"], {
+  label: "Sum type",
+  value: "Left"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const W = 560, H = 320;
+  const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+  const innerW = W - margin.left - margin.right;
+  const innerH = H - margin.top - margin.bottom;
+
+  const a = 0, b = 3;
+  const f = x => x * x + 1;
+  const exactArea = 12; // ∫₀³ (x²+1) dx = [x³/3 + x]₀³ = 9 + 3 = 12
+
+  const n = Math.max(1, Math.round(riemannN));
+  const type = riemannType;
+  const dx = (b - a) / n;
+
+  // Compute approximate area
+  let approxArea = 0;
+  for (let i = 0; i < n; i++) {
+    let xSample;
+    if (type === "Left")     xSample = a + i * dx;
+    else if (type === "Right") xSample = a + (i + 1) * dx;
+    else                     xSample = a + (i + 0.5) * dx; // Midpoint
+    approxArea += f(xSample) * dx;
+  }
+
+  const xScale = d3.scaleLinear().domain([a, b]).range([0, innerW]);
+  const yScale = d3.scaleLinear().domain([0, 11]).range([innerH, 0]);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Draw rectangles
+  for (let i = 0; i < n; i++) {
+    let xSample;
+    if (type === "Left")       xSample = a + i * dx;
+    else if (type === "Right") xSample = a + (i + 1) * dx;
+    else                       xSample = a + (i + 0.5) * dx;
+
+    const rectX = xScale(a + i * dx);
+    const rectW = xScale(a + (i + 1) * dx) - rectX;
+    const rectH = innerH - yScale(f(xSample));
+
+    g.append("rect")
+      .attr("x", rectX)
+      .attr("y", yScale(f(xSample)))
+      .attr("width", rectW)
+      .attr("height", rectH)
+      .attr("fill", "#bfdbfe")
+      .attr("stroke", "#2563eb")
+      .attr("stroke-width", 0.8)
+      .attr("opacity", 0.7);
+  }
+
+  // Draw x-axis
+  g.append("line")
+    .attr("x1", 0).attr("y1", innerH)
+    .attr("x2", innerW).attr("y2", innerH)
+    .attr("stroke", "#374151").attr("stroke-width", 1.5);
+
+  // Draw y-axis
+  g.append("line")
+    .attr("x1", 0).attr("y1", 0)
+    .attr("x2", 0).attr("y2", innerH)
+    .attr("stroke", "#374151").attr("stroke-width", 1.5);
+
+  // X-axis ticks
+  [0, 1, 2, 3].forEach(v => {
+    g.append("line")
+      .attr("x1", xScale(v)).attr("y1", innerH)
+      .attr("x2", xScale(v)).attr("y2", innerH + 5)
+      .attr("stroke", "#374151");
+    g.append("text")
+      .attr("x", xScale(v)).attr("y", innerH + 18)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#374151").attr("font-size", "12px")
+      .text(v);
+  });
+
+  // Y-axis ticks
+  [0, 2, 4, 6, 8, 10].forEach(v => {
+    g.append("line")
+      .attr("x1", -5).attr("y1", yScale(v))
+      .attr("x2", 0).attr("y2", yScale(v))
+      .attr("stroke", "#374151");
+    g.append("text")
+      .attr("x", -10).attr("y", yScale(v) + 4)
+      .attr("text-anchor", "end")
+      .attr("fill", "#374151").attr("font-size", "11px")
+      .text(v);
+  });
+
+  // Draw curve on top
+  const curvePoints = d3.range(0, b + 0.01, 0.02).map(x => [xScale(x), yScale(f(x))]);
+  const linePath = d3.line()(curvePoints);
+  g.append("path")
+    .attr("d", linePath)
+    .attr("fill", "none")
+    .attr("stroke", "#1e40af")
+    .attr("stroke-width", 2.5);
+
+  // Axis labels
+  g.append("text")
+    .attr("x", innerW / 2).attr("y", innerH + 40)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#374151").attr("font-size", "13px")
+    .text("x");
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -36)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#374151").attr("font-size", "13px")
+    .text("f(x) = x² + 1");
+
+  // Stats display below chart
+  const statsY = innerH + 52;
+  const error = Math.abs(approxArea - exactArea);
+
+  svg.append("text")
+    .attr("x", margin.left).attr("y", margin.top + statsY)
+    .attr("fill", "#1d4ed8").attr("font-size", "13px").attr("font-weight", "600")
+    .text(`Approximate area ≈ ${approxArea.toFixed(4)}`);
+
+  svg.append("text")
+    .attr("x", margin.left + 220).attr("y", margin.top + statsY)
+    .attr("fill", "#374151").attr("font-size", "13px")
+    .text(`Exact area = ${exactArea.toFixed(3)}`);
+
+  svg.append("text")
+    .attr("x", margin.left + 400).attr("y", margin.top + statsY)
+    .attr("fill", error < 0.01 ? "#059669" : "#b45309").attr("font-size", "13px")
+    .text(`|Error| = ${error.toFixed(4)}`);
+
+  return svg.node();
+}
+```
+
+## The Fundamental Theorem of Calculus
+
+The Riemann sum definition is conceptually important but computationally
+brutal — you would need to take a limit every time you evaluate an integral.
+The Fundamental Theorem of Calculus (FTC) is the result that makes
+integration tractable. It has two parts.
+
+### Part 1 — Differentiation undoes integration
+
+Define a function $F$ by accumulating area from a fixed point $a$:
+
+$$F(x) = \int_a^x f(t)\,dt$$
+
+Part 1 says: *differentiate $F$ and you get $f$ back.*
+
+$$F'(x) = f(x)$$
+
+In words: the rate at which accumulated area grows at $x$ is exactly $f(x)$.
+If $f(x)$ is large and positive, area accumulates quickly; if $f(x)$ is
+zero, the accumulated area is momentarily flat; if $f(x)$ is negative, the
+running total is decreasing. The integral of a rate is an accumulation
+function, and its derivative returns the original rate.
+
+This is the theoretical bridge between differentiation and integration.
+They are inverse operations — like squaring and taking a square root —
+but with a subtlety: integration produces a *family* of antiderivatives
+differing by a constant. We'll see why immediately.
+
+### Part 2 — Evaluating definite integrals
+
+Part 2 is the computational workhorse. If $F$ is any antiderivative of $f$
+(meaning $F'(x) = f(x)$), then:
+
+$$\int_a^b f(x)\,dx = F(b) - F(a)$$
+
+The shorthand $\bigl[F(x)\bigr]_a^b$ means *evaluate $F$ at the top limit,
+subtract $F$ at the bottom limit*:
+
+$$\bigl[F(x)\bigr]_a^b = F(b) - F(a)$$
+
+In words: to evaluate a definite integral, find any antiderivative of the
+integrand, plug in the upper and lower limits, and subtract. You never need
+to sum up rectangles explicitly.
+
+**A quick example.** Evaluate $\displaystyle\int_0^3 2x\,dx$.
+
+An antiderivative of $2x$ is $x^2$ (because the derivative of $x^2$ is $2x$).
+Apply Part 2:
+
+$$\int_0^3 2x\,dx = \bigl[x^2\bigr]_0^3 = 3^2 - 0^2 = 9$$
+
+The area under the line $y = 2x$ between $x = 0$ and $x = 3$ is exactly $9$.
+
+## Integration rules
+
+Building antiderivatives is the reverse of differentiation. Where
+differentiation had rules for breaking functions apart, integration has
+rules for putting them back together. These five cover most of first-year
+calculus.
+
+**1. Power rule (reversed)**
+
+$$\int x^n\,dx = \frac{x^{n+1}}{n+1} + C \qquad (n \neq -1)$$
+
+Check it: differentiate $\dfrac{x^{n+1}}{n+1}$ using the power rule and
+you recover $x^n$.
+
+**2. Exponential**
+
+$$\int e^x\,dx = e^x + C$$
+
+The exponential function is its own derivative, so it is also its own
+antiderivative.
+
+**3. Reciprocal**
+
+$$\int \frac{1}{x}\,dx = \ln|x| + C$$
+
+The absolute value handles negative $x$. The derivative of $\ln|x|$ is
+$1/x$ for all $x \neq 0$.
+
+**4. Sine**
+
+$$\int \sin(x)\,dx = -\cos(x) + C$$
+
+Check: the derivative of $-\cos(x)$ is $\sin(x)$.
+
+**5. Cosine**
+
+$$\int \cos(x)\,dx = \sin(x) + C$$
+
+Check: the derivative of $\sin(x)$ is $\cos(x)$.
+
+::: {.callout-note}
+## Why the constant of integration?
+
+Every antiderivative of a function $f$ differs from every other by a
+constant. If $F'(x) = f(x)$, then $(F(x) + 7)' = f(x)$ too. And
+$(F(x) - 3)' = f(x)$. They all work.
+
+Writing $+C$ after an indefinite integral captures the entire *family*
+of valid antiderivatives at once. The $+C$ is not optional decoration —
+omitting it loses real solutions. For example, if you are solving a
+differential equation and need to apply an initial condition, the value
+of $C$ is determined by that condition. Dropping $C$ before you apply
+the condition makes the problem unsolvable.
+
+For *definite* integrals the constant cancels. When you compute
+$F(b) - F(a)$, the $+C$ appears in both terms and vanishes:
+$(F(b) + C) - (F(a) + C) = F(b) - F(a)$. The area between two limits
+is uniquely defined.
+:::
+
+## Integration by substitution
+
+Substitution is the chain rule running in reverse. Recall that the chain
+rule for differentiation says:
+
+$$\frac{d}{dx}\bigl[f(g(x))\bigr] = f'(g(x)) \cdot g'(x)$$
+
+If you see a product where one factor looks like the derivative of what
+is inside a function, you can reverse this process.
+
+**The method, step by step:**
+
+1. Identify a substitution $u = g(x)$ — usually the "inside" function.
+2. Differentiate to find $du = g'(x)\,dx$, then solve for $dx$.
+3. Rewrite the entire integrand in terms of $u$ and $du$.
+4. Integrate with respect to $u$.
+5. Substitute back to express the answer in terms of $x$.
+
+**Worked example:** Evaluate $\displaystyle\int 2x\cos(x^2)\,dx$.
+
+**Step 1.** The inside function is $x^2$. Let $u = x^2$.
+
+**Step 2.** Differentiate: $\dfrac{du}{dx} = 2x$, so $du = 2x\,dx$.
+
+**Step 3.** Notice that $2x\,dx$ appears in the integrand. Substitute:
+
+$$\int 2x\cos(x^2)\,dx = \int \cos(u)\,du$$
+
+**Step 4.** Integrate using the cosine rule:
+
+$$\int \cos(u)\,du = \sin(u) + C$$
+
+**Step 5.** Substitute back $u = x^2$:
+
+$$\int 2x\cos(x^2)\,dx = \sin(x^2) + C$$
+
+**Check:** Differentiate $\sin(x^2)$ using the chain rule:
+$\dfrac{d}{dx}\bigl[\sin(x^2)\bigr] = \cos(x^2) \cdot 2x = 2x\cos(x^2)$. Correct.
+
+The substitution worked because the factor $2x$ outside the cosine was
+exactly the derivative of $x^2$ inside it. When that match exists,
+substitution unravels the integral cleanly.
+
+**Interactive: Area under a curve with sign.** Move the sliders to set the limits $a$ and $b$. Positive area (above the axis) is shaded blue; negative area (below the axis) is shaded red. The integral value updates live.
+
+```{ojs}
+//| echo: false
+viewof sinA = Inputs.range([-Math.PI, 2 * Math.PI], {
+  label: "a (lower limit)",
+  step: 0.05,
+  value: 0
+})
+```
+
+```{ojs}
+//| echo: false
+viewof sinB = Inputs.range([-Math.PI, 2 * Math.PI], {
+  label: "b (upper limit)",
+  step: 0.05,
+  value: Math.PI
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const W = 560, H = 300;
+  const margin = { top: 20, right: 20, bottom: 55, left: 50 };
+  const innerW = W - margin.left - margin.right;
+  const innerH = H - margin.top - margin.bottom;
+
+  const xMin = -Math.PI, xMax = 2 * Math.PI;
+  const f = x => Math.sin(x);
+
+  // Clamp and order a, b
+  const aRaw = Math.max(xMin, Math.min(xMax, sinA));
+  const bRaw = Math.max(xMin, Math.min(xMax, sinB));
+  const lo = Math.min(aRaw, bRaw);
+  const hi = Math.max(aRaw, bRaw);
+
+  // Exact integral: ∫sin(x)dx = -cos(x), so F(b) - F(a) = -cos(b) + cos(a)
+  const integralValue = -Math.cos(bRaw) + Math.cos(aRaw);
+
+  const xScale = d3.scaleLinear().domain([xMin, xMax]).range([0, innerW]);
+  const yScale = d3.scaleLinear().domain([-1.4, 1.4]).range([innerH, 0]);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Shaded area — split into positive and negative segments
+  const steps = 600;
+  const dx = (hi - lo) / steps;
+
+  if (hi > lo) {
+    // Build positive-area path
+    let posPath = "";
+    let inPos = false;
+    let posStart = lo;
+
+    for (let i = 0; i <= steps; i++) {
+      const x = lo + i * dx;
+      const y = f(x);
+      if (y >= 0) {
+        if (!inPos) { posStart = x; inPos = true; }
+        if (i === steps || f(lo + (i+1)*dx) < 0) {
+          // close this positive segment
+          const segPoints = d3.range(0, 1.001, 1/60).map(t => {
+            const sx = posStart + t * (x - posStart);
+            return [xScale(sx), yScale(f(sx))];
+          });
+          const baseline = [[xScale(x), yScale(0)], [xScale(posStart), yScale(0)]];
+          g.append("path")
+            .attr("d", "M" + segPoints.map(p => p.join(",")).join("L") + "L" + baseline.map(p => p.join(",")).join("L") + "Z")
+            .attr("fill", "#3b82f6").attr("opacity", 0.35);
+          inPos = false;
+        }
+      }
+    }
+
+    // Build negative-area path segments
+    inPos = false;
+    let negStart = lo;
+    for (let i = 0; i <= steps; i++) {
+      const x = lo + i * dx;
+      const y = f(x);
+      if (y < 0) {
+        if (!inPos) { negStart = x; inPos = true; }
+        if (i === steps || f(lo + (i+1)*dx) >= 0) {
+          const segPoints = d3.range(0, 1.001, 1/60).map(t => {
+            const sx = negStart + t * (x - negStart);
+            return [xScale(sx), yScale(f(sx))];
+          });
+          const baseline = [[xScale(x), yScale(0)], [xScale(negStart), yScale(0)]];
+          g.append("path")
+            .attr("d", "M" + segPoints.map(p => p.join(",")).join("L") + "L" + baseline.map(p => p.join(",")).join("L") + "Z")
+            .attr("fill", "#ef4444").attr("opacity", 0.35);
+          inPos = false;
+        }
+      }
+    }
+  }
+
+  // X-axis line
+  g.append("line")
+    .attr("x1", 0).attr("y1", yScale(0))
+    .attr("x2", innerW).attr("y2", yScale(0))
+    .attr("stroke", "#374151").attr("stroke-width", 1.5);
+
+  // Y-axis line
+  g.append("line")
+    .attr("x1", xScale(0)).attr("y1", 0)
+    .attr("x2", xScale(0)).attr("y2", innerH)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1);
+
+  // Draw curve
+  const curvePoints = d3.range(xMin, xMax + 0.01, 0.02).map(x => [xScale(x), yScale(f(x))]);
+  g.append("path")
+    .attr("d", d3.line()(curvePoints))
+    .attr("fill", "none")
+    .attr("stroke", "#1e40af")
+    .attr("stroke-width", 2.5);
+
+  // Limit markers
+  [aRaw, bRaw].forEach((v, idx) => {
+    g.append("line")
+      .attr("x1", xScale(v)).attr("y1", 0)
+      .attr("x2", xScale(v)).attr("y2", innerH)
+      .attr("stroke", "#6b7280").attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,3");
+    g.append("text")
+      .attr("x", xScale(v)).attr("y", -6)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#374151").attr("font-size", "11px").attr("font-weight", "600")
+      .text(idx === 0 ? "a" : "b");
+  });
+
+  // X-axis tick labels
+  const ticks = [
+    { v: -Math.PI, label: "−π" },
+    { v: 0,        label: "0" },
+    { v: Math.PI,  label: "π" },
+    { v: 2 * Math.PI, label: "2π" }
+  ];
+  ticks.forEach(({ v, label }) => {
+    g.append("line")
+      .attr("x1", xScale(v)).attr("y1", yScale(0))
+      .attr("x2", xScale(v)).attr("y2", yScale(0) + 5)
+      .attr("stroke", "#374151");
+    g.append("text")
+      .attr("x", xScale(v)).attr("y", yScale(0) + 18)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#374151").attr("font-size", "12px")
+      .text(label);
+  });
+
+  // Integral value display
+  const absVal = Math.abs(integralValue);
+  const sign = integralValue > 0.0005 ? "positive" : integralValue < -0.0005 ? "negative" : "zero";
+  const signColour = sign === "positive" ? "#2563eb" : sign === "negative" ? "#dc2626" : "#059669";
+
+  svg.append("text")
+    .attr("x", margin.left).attr("y", margin.top + innerH + 46)
+    .attr("fill", signColour).attr("font-size", "13px").attr("font-weight", "600")
+    .text(`∫ sin(x) dx from a to b  =  ${integralValue.toFixed(4)}   (${sign})`);
+
+  return svg.node();
+}
+```
+
+## Worked examples
+
+### Example 1 — Power rule and the FTC (computing / probability)
+
+**Problem.** Find the indefinite integral $\displaystyle\int (3x^2 - 4x + 1)\,dx$,
+then evaluate the definite integral from $x = 0$ to $x = 2$.
+
+A probability density function for a random variable on $[0, 2]$ might
+have this polynomial form; the definite integral would give the total
+probability mass over that interval.
+
+**Indefinite integral.** Apply the power rule term by term:
+
+$$\int (3x^2 - 4x + 1)\,dx = \frac{3x^3}{3} - \frac{4x^2}{2} + x + C = x^3 - 2x^2 + x + C$$
+
+**Definite integral.** Apply FTC Part 2 with $F(x) = x^3 - 2x^2 + x$:
+
+$$\int_0^2 (3x^2 - 4x + 1)\,dx = \bigl[x^3 - 2x^2 + x\bigr]_0^2$$
+
+Evaluate at the upper limit:
+
+$$F(2) = 2^3 - 2(2^2) + 2 = 8 - 8 + 2 = 2$$
+
+Evaluate at the lower limit:
+
+$$F(0) = 0 - 0 + 0 = 0$$
+
+The definite integral equals $F(2) - F(0) = 2 - 0 = 2$.
+
+---
+
+### Example 2 — FTC Part 2 (science / measurement)
+
+**Problem.** A radioactive tracer is administered to a patient and its
+concentration in the bloodstream decays in a way modelled by
+$c(x) = x^{-1/2}$ (in appropriate units, for $x > 0$). Compute the
+total exposure — the area under the concentration curve — between
+$x = 1$ and $x = 4$.
+
+$$\int_1^4 \frac{1}{\sqrt{x}}\,dx = \int_1^4 x^{-1/2}\,dx$$
+
+Apply the power rule with $n = -\tfrac{1}{2}$:
+
+$$\int x^{-1/2}\,dx = \frac{x^{-1/2 + 1}}{-1/2 + 1} = \frac{x^{1/2}}{1/2} = 2\sqrt{x} + C$$
+
+Apply the limits:
+
+$$\bigl[2\sqrt{x}\bigr]_1^4 = 2\sqrt{4} - 2\sqrt{1} = 2(2) - 2(1) = 4 - 2 = 2$$
+
+Total exposure over the interval is $2$ (in the model's units).
+
+---
+
+### Example 3 — Substitution (engineering / signals)
+
+**Problem.** In signal processing, an engineer needs to evaluate
+$\displaystyle\int x\,e^{x^2}\,dx$ as part of computing the energy in
+a modulated waveform.
+
+Let $u = x^2$, so $du = 2x\,dx$, which gives $x\,dx = \dfrac{du}{2}$.
+
+$$\int x\,e^{x^2}\,dx = \int e^u \cdot \frac{du}{2} = \frac{1}{2}\int e^u\,du = \frac{1}{2}e^u + C$$
+
+Substitute back $u = x^2$:
+
+$$\int x\,e^{x^2}\,dx = \frac{1}{2}e^{x^2} + C$$
+
+**Check:** Differentiate $\tfrac{1}{2}e^{x^2}$ with the chain rule:
+$\dfrac{d}{dx}\bigl[\tfrac{1}{2}e^{x^2}\bigr] = \tfrac{1}{2} \cdot e^{x^2} \cdot 2x = x\,e^{x^2}$. Correct.
+
+---
+
+### Example 3b — Area between two curves
+
+**Problem.** Find the area enclosed between $f(x) = x + 3$ and $g(x) = x^2 + 1$.
+
+**Step 1 — Find intersections:**
+
+$$x + 3 = x^2 + 1 \implies x^2 - x - 2 = 0 \implies (x-2)(x+1) = 0$$
+
+Intersections at $x = -1$ and $x = 2$.
+
+**Step 2 — Identify which is on top:** At $x = 0$, $f(0) = 3$ and $g(0) = 1$,
+so $f > g$ on $[-1, 2]$.
+
+**Step 3 — Integrate:**
+
+$$\int_{-1}^{2} \bigl[(x+3) - (x^2+1)\bigr]\,dx = \int_{-1}^{2} (2 + x - x^2)\,dx$$
+
+$$= \left[2x + \frac{x^2}{2} - \frac{x^3}{3}\right]_{-1}^{2}$$
+
+$$= \left(4 + 2 - \frac{8}{3}\right) - \left(-2 + \frac{1}{2} + \frac{1}{3}\right)$$
+
+$$= \frac{10}{3} - \left(-\frac{7}{6}\right) = \frac{20}{6} + \frac{7}{6} = \frac{27}{6} = \frac{9}{2}$$
+
+The enclosed area is $\dfrac{9}{2}$.
+
+---
+
+### Example 4 — Area between two curves (business / economic surplus)
+
+**Problem.** In a competitive market, the demand curve is $p_D(q) = 8 - q^2$
+and the supply curve is $p_S(q) = 2q$. Find the consumer surplus — the
+area between the demand curve and the equilibrium price, from zero to the
+equilibrium quantity.
+
+**Step 1. Find the equilibrium.** Set $p_D = p_S$:
+
+$$8 - q^2 = 2q \implies q^2 + 2q - 8 = 0 \implies (q+4)(q-2) = 0$$
+
+Equilibrium is at $q^* = 2$ (taking the positive root), equilibrium
+price $p^* = 4$.
+
+**Step 2. Consumer surplus** is the area between the demand curve and
+the equilibrium price from $q = 0$ to $q = 2$:
+
+$$\text{CS} = \int_0^2 \bigl[(8 - q^2) - 4\bigr]\,dq = \int_0^2 (4 - q^2)\,dq$$
+
+**Step 3. Evaluate:**
+
+$$\int_0^2 (4 - q^2)\,dq = \bigl[4q - \tfrac{q^3}{3}\bigr]_0^2 = \left(8 - \frac{8}{3}\right) - 0 = \frac{16}{3} \approx 5.33$$
+
+Consumer surplus is $\tfrac{16}{3}$ (in the model's currency units per
+unit quantity). This is the aggregate benefit consumers receive by paying
+the equilibrium price rather than their maximum willingness to pay.
+
+## Where this goes
+
+**Multivariable calculus (Vol 7).** A single integral accumulates a
+function over an interval — a one-dimensional slice. In two and three
+dimensions you can integrate over areas, volumes, and surfaces — the same
+idea of accumulation, applied to more variables. Those tools (Vol 7) are
+the language of electromagnetism, fluid dynamics, and heat flow.
+
+**Ordinary differential equations (Vol 7).** A differential equation
+relates a function to its own derivatives. The simplest case —
+*separable* equations — is solved by moving all the $y$-terms to one
+side and all the $x$-terms to the other, then integrating both sides.
+Every technique in this chapter applies directly. The ability to
+integrate is the ability to solve differential equations.
+
+## Applications
+
+- **Distance from velocity (physics).** Integrate $v(t)$ over a time
+  interval to recover displacement. If $v(t) = 9.8t$ (free fall from
+  rest), then $\int_0^T 9.8t\,dt = 4.9T^2$ — the familiar kinematic
+  formula, derived by integration.
+
+- **Work by a variable force (mechanics).** Work is $W = \int_a^b F(x)\,dx$
+  when force $F$ varies with position $x$. Compressing a spring,
+  pumping water from a tank — both are definite integrals.
+
+- **Consumer and producer surplus (economics).** The area between a
+  demand (or supply) curve and the equilibrium price is a definite
+  integral. It measures welfare.
+
+- **Probability from a density function (statistics).** If $f(x)$ is a
+  probability density function, then $P(a \leq X \leq b) = \int_a^b f(x)\,dx$.
+  The cumulative distribution function is $F(x) = \int_{-\infty}^x f(t)\,dt$ —
+  literally the FTC in action.
+
+- **Average value of a function.** The average value of $f$ over $[a,b]$
+  is $\dfrac{1}{b-a}\int_a^b f(x)\,dx$ — the integral normalised by
+  the length of the interval.
+
+---
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**Exercise 1.** Find the indefinite integral:
+
+$$\int \left(5x^4 - 3x^2 + 2\right)dx$$
+
+Include the constant of integration in your answer.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Apply power rule term by term",       eq: "\\int 5x^4\\,dx - \\int 3x^2\\,dx + \\int 2\\,dx", note: "Integration is linear: split across addition and pull out constants." },
+  { op: "Integrate each term",                 eq: "\\frac{5x^5}{5} - \\frac{3x^3}{3} + 2x + C" },
+  { op: "Simplify coefficients",               eq: "x^5 - x^3 + 2x + C" },
+  { op: "Check by differentiating",            eq: "\\frac{d}{dx}\\left(x^5 - x^3 + 2x + C\\right) = 5x^4 - 3x^2 + 2 \\checkmark" }
+])
+```
+
+---
+
+**Exercise 2.** Evaluate the definite integral using the Fundamental
+Theorem of Calculus Part 2:
+
+$$\int_1^9 \frac{3}{\sqrt{x}}\,dx$$
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Rewrite as a power",                  eq: "\\int_1^9 3x^{-1/2}\\,dx", note: "1/√x = x^{-1/2} — apply the power rule." },
+  { op: "Find antiderivative",                 eq: "3 \\cdot \\frac{x^{1/2}}{1/2} = 6x^{1/2} = 6\\sqrt{x}" },
+  { op: "Apply FTC Part 2",                    eq: "\\left[6\\sqrt{x}\\right]_1^9 = 6\\sqrt{9} - 6\\sqrt{1}" },
+  { op: "Evaluate at limits",                  eq: "6(3) - 6(1) = 18 - 6 = 12" },
+  { op: "Answer",                              eq: "\\int_1^9 \\frac{3}{\\sqrt{x}}\\,dx = 12" }
+])
+```
+
+---
+
+**Exercise 3.** Use $u$-substitution to evaluate:
+
+$$\int 3x^2\sin(x^3)\,dx$$
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Choose substitution",                 eq: "u = x^3", note: "The inside function of sin is x³. Its derivative 3x² appears outside." },
+  { op: "Differentiate",                       eq: "\\frac{du}{dx} = 3x^2 \\implies du = 3x^2\\,dx" },
+  { op: "Substitute into integral",            eq: "\\int \\sin(u)\\,du" },
+  { op: "Integrate",                           eq: "-\\cos(u) + C" },
+  { op: "Substitute back",                     eq: "-\\cos(x^3) + C" },
+  { op: "Check by differentiating",            eq: "\\frac{d}{dx}\\left[-\\cos(x^3)\\right] = \\sin(x^3) \\cdot 3x^2 = 3x^2\\sin(x^3) \\checkmark" }
+])
+```
+
+---
+
+**Exercise 4.** Find the area under the curve $f(x) = x^2 + 2x$ between
+$x = 0$ and $x = 3$. Sketch the region (or describe it in words) before
+computing.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Set up the definite integral",        eq: "\\int_0^3 (x^2 + 2x)\\,dx", note: "f(x) ≥ 0 on [0,3], so the integral gives the geometric area." },
+  { op: "Find the antiderivative",             eq: "F(x) = \\frac{x^3}{3} + x^2" },
+  { op: "Apply FTC Part 2",                    eq: "\\left[\\frac{x^3}{3} + x^2\\right]_0^3 = F(3) - F(0)" },
+  { op: "Evaluate at upper limit",             eq: "F(3) = \\frac{27}{3} + 9 = 9 + 9 = 18" },
+  { op: "Evaluate at lower limit",             eq: "F(0) = 0 + 0 = 0" },
+  { op: "Compute the area",                    eq: "18 - 0 = 18" }
+])
+```
+
+---
+
+**Exercise 5.** Find the area enclosed between $f(x) = 4 - x^2$ and
+$g(x) = x + 2$.
+
+*Hint: find the intersection points first. The area between two curves
+is $\int_a^b \bigl[f(x) - g(x)\bigr]dx$ when $f(x) \geq g(x)$ on
+$[a, b]$.*
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Find intersections",                  eq: "4 - x^2 = x + 2 \\implies x^2 + x - 2 = 0 \\implies (x+2)(x-1) = 0", note: "Intersections at x = −2 and x = 1." },
+  { op: "Check which is on top",               eq: "\\text{At } x=0:\\; f(0)=4,\\; g(0)=2 \\implies f > g \\text{ on } [-2,1]" },
+  { op: "Set up integral of difference",       eq: "\\int_{-2}^{1} \\bigl[(4-x^2) - (x+2)\\bigr]\\,dx = \\int_{-2}^{1} (2 - x - x^2)\\,dx" },
+  { op: "Find antiderivative",                 eq: "F(x) = 2x - \\frac{x^2}{2} - \\frac{x^3}{3}" },
+  { op: "Evaluate at upper limit",             eq: "F(1) = 2 - \\tfrac{1}{2} - \\tfrac{1}{3} = \\tfrac{12-3-2}{6} = \\tfrac{7}{6}" },
+  { op: "Evaluate at lower limit",             eq: "F(-2) = -4 - 2 + \\tfrac{8}{3} = \\tfrac{-18+8}{3} = -\\tfrac{10}{3}" },
+  { op: "Compute the area",                    eq: "\\tfrac{7}{6} - \\left(-\\tfrac{10}{3}\\right) = \\tfrac{7}{6} + \\tfrac{20}{6} = \\tfrac{27}{6} = \\tfrac{9}{2}" }
+])
+```
+
+---
+
+**Exercise 6 — Accumulation in context.** A solar panel generates
+electricity at a rate of $P(t) = 4\sin\!\left(\dfrac{\pi t}{12}\right)$
+kilowatts, where $t$ is hours after sunrise ($0 \leq t \leq 12$).
+
+(a) Find the total energy (in kilowatt-hours) generated over the full
+12-hour day: $\displaystyle\int_0^{12} P(t)\,dt$.
+
+(b) Interpret the result: what does the definite integral represent
+physically?
+
+*(Your answer will be in terms of $\pi$ — that is expected.)*
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Set up the integral",                 eq: "\\int_0^{12} 4\\sin\\!\\left(\\frac{\\pi t}{12}\\right)dt" },
+  { op: "Choose substitution",                 eq: "u = \\frac{\\pi t}{12} \\implies du = \\frac{\\pi}{12}\\,dt \\implies dt = \\frac{12}{\\pi}\\,du", note: "u-substitution clears the coefficient inside sin." },
+  { op: "Change limits",                       eq: "t=0 \\Rightarrow u=0;\\quad t=12 \\Rightarrow u=\\pi" },
+  { op: "Substitute and simplify",             eq: "4 \\cdot \\frac{12}{\\pi} \\int_0^{\\pi} \\sin(u)\\,du = \\frac{48}{\\pi}\\int_0^{\\pi} \\sin(u)\\,du" },
+  { op: "Integrate sin",                       eq: "\\frac{48}{\\pi}\\left[-\\cos(u)\\right]_0^{\\pi}" },
+  { op: "Evaluate at limits",                  eq: "\\frac{48}{\\pi}\\left(-\\cos(\\pi) + \\cos(0)\\right) = \\frac{48}{\\pi}(1+1) = \\frac{96}{\\pi}" },
+  { op: "Interpret the result",                eq: "\\text{Total energy} = \\frac{96}{\\pi} \\approx 30.6 \\text{ kWh}", note: "The definite integral sums the instantaneous power output over the full day — the accumulated energy." }
+])
+```

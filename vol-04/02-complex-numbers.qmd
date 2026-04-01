@@ -1,6 +1,802 @@
 ---
 title: "Complex numbers"
-status: "seed"
+subtitle: "What lives where the number line doesn't go"
+
+volume: 4
+chapter: 2
+layer: "pre-university"
+status: "review"
+
+axiom: |
+  Numbers are what we need them to be.
+  Every time mathematics hit a wall — negative numbers, fractions,
+  irrational numbers — the answer was: name the thing that breaks the rule,
+  then work out its arithmetic.
+
+rewrite: |
+  i is not a number on the number line. It is a new direction.
+  Complex numbers extend arithmetic into a plane, and that plane
+  turns out to be the natural language of oscillation, rotation,
+  and waves.
+
+opens_to:
+  - id: "v3c3-polynomials-factoring"
+    label: "Polynomials and factoring"
+    volume: 3
+    relationship: "enriches"
+  - id: "v7c1-complex-analysis"
+    label: "Complex analysis"
+    volume: 7
+    relationship: "motivates"
+  - id: "v5c2-differential-calculus"
+    label: "Differential calculus"
+    volume: 5
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "poly"
+  - "graphing"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "AC circuit analysis uses complex impedance — the j-notation in electrical engineering is i."
+    career_example: "Electrical engineer analysing AC circuits with impedance"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Quantum mechanics is written in complex numbers. The wavefunction is complex-valued."
+    career_example: "Physicist computing the probability amplitude of a quantum state"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "The Fast Fourier Transform is an algorithm on complex numbers. Signal processing depends on it."
+    career_example: "Software engineer implementing a digital audio filter"
+
+notation_introduced:
+  - symbol: "i"
+    reads_as: "the imaginary unit — the number whose square is negative one"
+    notation_weight: 1
+  - symbol: "a + bi"
+    reads_as: "a complex number: real part a, imaginary part b"
+    notation_weight: 1
+  - symbol: "\\operatorname{Re}(z)"
+    reads_as: "the real part of z — the a in a + bi"
+    notation_weight: 1
+  - symbol: "\\operatorname{Im}(z)"
+    reads_as: "the imaginary part of z — the b in a + bi"
+    notation_weight: 1
+  - symbol: "|z|"
+    reads_as: "the modulus of z — its distance from the origin"
+    notation_weight: 2
+  - symbol: "arg(z)"
+    reads_as: "the argument of z — its angle from the positive real axis"
+    notation_weight: 2
+  - symbol: "r(cos θ + i sin θ)"
+    reads_as: "polar form of a complex number"
+    notation_weight: 3
+  - symbol: "e^(iθ)"
+    reads_as: "Euler's formula: e to the power i theta equals cos theta plus i sin theta"
+    notation_weight: 3
+  - symbol: "z̄"
+    reads_as: "the complex conjugate of z — the real part unchanged, imaginary part negated"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 12
+  strand: "Relations and Functions"
+  outcome: "RF12"
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+You've been solving quadratic equations. Most of them have real solutions.
+But every now and then the discriminant — the bit under the square root —
+comes out negative.
+
+Try $x^2 + 1 = 0$. Rearrange: $x^2 = -1$. Take the square root: $x = \sqrt{-1}$.
+
+That's impossible on the number line. There is no real number whose square
+is negative. Positive times positive is positive. Negative times negative
+is also positive. Nothing multiplied by itself gives $-1$.
+
+So for a long time, equations like this were said to have "no solution."
+
+That answer was unsatisfying, and mathematicians knew it. The fix was the
+same fix that introduced negative numbers, fractions, and irrational numbers:
+*give the new thing a name, and work out its arithmetic*.
+
+The name for $\sqrt{-1}$ is $i$.
+
+Once you do that, something unexpected happens. The same number system that
+lets you give $x^2 + 1 = 0$ an answer also turns out to describe oscillating
+voltages in electrical circuits, the quantum states of particles, and the
+algorithm that your phone uses to process audio. None of that was the motivation.
+It fell out of the arithmetic.
+
+There's also this: $e^{i\pi} + 1 = 0$. Five of the most important numbers
+in mathematics — $e$, $i$, $\pi$, $1$, $0$ — in one equation. We'll see why
+by the end of this chapter.
+
+## What the notation is saying
+
+### The imaginary unit
+
+Define $i$ by one rule:
+
+$$i^2 = -1$$
+
+That's the whole definition. $i$ is the number whose square is $-1$. It's not
+a number on the real number line — it's something new.
+
+From this one rule, powers of $i$ cycle in a pattern:
+
+$$i^1 = i \qquad i^2 = -1 \qquad i^3 = -i \qquad i^4 = 1 \qquad i^5 = i \qquad \ldots$$
+
+Every four powers, the cycle repeats. That's a hint that $i$ has something
+to do with rotation — four quarter-turns bring you back to where you started.
+
+### Complex numbers
+
+A **complex number** is a number of the form:
+
+$$z = a + bi$$
+
+Read it as: "the real part $a$, plus $b$ times $i$." Here $a$ and $b$ are
+ordinary real numbers. $a$ is called the **real part** of $z$, written
+$\operatorname{Re}(z)$. $b$ is called the **imaginary part**, written
+$\operatorname{Im}(z)$.
+
+Examples: $3 + 4i$, $-2 + i$, $5$ (which is $5 + 0i$), $3i$ (which is $0 + 3i$).
+
+Real numbers are a special case: they're complex numbers where $b = 0$.
+
+### The complex plane
+
+Every complex number $a + bi$ corresponds to a point in a plane. Put the
+real axis horizontal and the imaginary axis vertical. The number $3 + 4i$
+is the point three units right and four units up.
+
+This is the **Argand diagram**, or the **complex plane**. The horizontal axis
+is the real line you already know. The vertical axis is entirely imaginary
+numbers. Every complex number lives at exactly one point in this plane.
+
+```{ojs}
+//| echo: false
+{
+  const div = document.createElement("div");
+  div.style.cssText = "font-family:inherit; padding:0.5rem 0;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.75rem;";
+
+  function makeSlider(label, min, max, step, val) {
+    const wrap = document.createElement("div");
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "font-size:0.85rem; color:#374151; display:block; margin-bottom:0.2rem;";
+    const span = document.createElement("span"); span.textContent = val;
+    lbl.appendChild(document.createTextNode(label + " = ")); lbl.appendChild(span);
+    const input = document.createElement("input");
+    input.type = "range"; input.min = min; input.max = max; input.step = step; input.value = val;
+    input.style.width = "150px";
+    wrap.appendChild(lbl); wrap.appendChild(input);
+    return {wrap, input, span};
+  }
+
+  const aS = makeSlider("a (real part)", -5, 5, 0.5, 3);
+  const bS = makeSlider("b (imaginary part)", -5, 5, 0.5, 2);
+  controls.appendChild(aS.wrap);
+  controls.appendChild(bS.wrap);
+
+  const infoEl = document.createElement("div");
+  infoEl.style.cssText = "font-size:0.9rem; color:#1d4ed8; margin-bottom:0.5rem; min-height:1.4em;";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 340; canvas.height = 340;
+  canvas.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; display:block; max-width:340px;";
+
+  div.appendChild(controls); div.appendChild(infoEl); div.appendChild(canvas);
+
+  function draw() {
+    const a = parseFloat(aS.input.value);
+    const b = parseFloat(bS.input.value);
+    aS.span.textContent = a.toFixed(1);
+    bS.span.textContent = b.toFixed(1);
+
+    const r = Math.sqrt(a*a + b*b);
+    const theta = Math.atan2(b, a);
+    const thetaDeg = (theta * 180 / Math.PI).toFixed(1);
+    infoEl.textContent = "z = " + a.toFixed(1) + (b>=0?"+":"") + b.toFixed(1) + "i   |z| = " + r.toFixed(2) + "   arg(z) = " + thetaDeg + "°";
+
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const range = 6;
+    function px(x) { return (x + range) / (2*range) * W; }
+    function py(y) { return H - (y + range) / (2*range) * H; }
+
+    // Grid
+    ctx.strokeStyle = "#f3f4f6"; ctx.lineWidth = 1;
+    for (let i = -5; i <= 5; i++) {
+      ctx.beginPath(); ctx.moveTo(px(i), 0); ctx.lineTo(px(i), H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, py(i)); ctx.lineTo(W, py(i)); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, py(0)); ctx.lineTo(W, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), H); ctx.stroke();
+    ctx.fillStyle = "#6b7280"; ctx.font = "11px sans-serif";
+    ctx.fillText("Re", W-20, py(0)-5); ctx.fillText("Im", px(0)+5, 12);
+
+    // Modulus line
+    ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(px(0), py(0)); ctx.lineTo(px(a), py(b)); ctx.stroke();
+
+    // Angle arc
+    if (r > 0.2) {
+      ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px(0), py(0), 30, -Math.atan2(b, a), 0, b > 0);
+      ctx.stroke();
+      ctx.fillStyle = "#d97706"; ctx.font = "11px sans-serif";
+      ctx.fillText("θ", px(0)+34, py(0)-8);
+    }
+
+    // Dashed projection lines
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(px(a), py(0)); ctx.lineTo(px(a), py(b)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), py(b)); ctx.lineTo(px(a), py(b)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Point
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath(); ctx.arc(px(a), py(b), 6, 0, 2*Math.PI); ctx.fill();
+
+    // Labels
+    ctx.fillStyle = "#374151"; ctx.font = "bold 12px sans-serif";
+    ctx.fillText("z = " + a.toFixed(1) + (b>=0?"+":"") + b.toFixed(1) + "i", px(a)+8, py(b)-8);
+    ctx.fillStyle = "#2563eb"; ctx.font = "11px sans-serif";
+    ctx.fillText("|z| = " + r.toFixed(2), px(a/2)-5, py(b/2)-10);
+  }
+
+  aS.input.addEventListener("input", draw);
+  bS.input.addEventListener("input", draw);
+  draw();
+  return div;
+}
+```
+
+## The method
+
+::: {.callout-note appearance="simple"}
+**Complex numbers in 2D graphics**
+
+Complex numbers appear in physics and engineering, but their geometry is
+already useful in 2D graphics. Rotating a sprite on a screen by angle
+$\theta$ is the same as multiplying its position (written as a complex number
+$x + yi$) by $\cos\theta + i\sin\theta$. Game engines doing this in bulk use
+the same arithmetic you are about to practise.
+:::
+
+### Part 1: Arithmetic
+
+**Adding and subtracting** complex numbers works the way you'd expect: add
+the real parts together, add the imaginary parts together.
+
+$$(3 + 4i) + (1 - 2i) = (3 + 1) + (4 - 2)i = 4 + 2i$$
+
+$$(3 + 4i) - (1 - 2i) = (3 - 1) + (4 - (-2))i = 2 + 6i$$
+
+**Multiplying** uses FOIL (expand like brackets), then replace every $i^2$
+with $-1$.
+
+$$(3 + 4i)(1 - 2i) = 3 \cdot 1 + 3 \cdot (-2i) + 4i \cdot 1 + 4i \cdot (-2i)$$
+
+$$= 3 - 6i + 4i - 8i^2$$
+
+Now replace $i^2 = -1$:
+
+$$= 3 - 6i + 4i - 8(-1) = 3 - 6i + 4i + 8 = 11 - 2i$$
+
+The key move: $i^2$ always becomes $-1$. That's the entire rule for complex
+multiplication.
+
+**Dividing** requires a trick. A complex denominator means the fraction can't
+be split into real and imaginary parts yet — you need a real number on the
+bottom. Multiplying by the conjugate achieves this, because
+$(a + bi)(a - bi) = a^2 + b^2$, which is always real. The tool is the
+**complex conjugate**: if $z = a + bi$, its conjugate is
+$\bar{z} = a - bi$ — same real part, imaginary part negated.
+
+Multiplying a complex number by its conjugate always gives a real number:
+
+$$(a + bi)(a - bi) = a^2 - (bi)^2 = a^2 - b^2 i^2 = a^2 + b^2$$
+
+To divide, multiply numerator and denominator by the conjugate of the
+denominator.
+
+$$\frac{3 + 4i}{1 - 2i} \cdot \frac{1 + 2i}{1 + 2i} = \frac{(3 + 4i)(1 + 2i)}{(1 - 2i)(1 + 2i)}$$
+
+Denominator: $(1)^2 + (2)^2 = 5$
+
+Numerator: $3 + 6i + 4i + 8i^2 = 3 + 10i - 8 = -5 + 10i$
+
+Result: $\dfrac{-5 + 10i}{5} = -1 + 2i$
+
+### Part 2: Modulus and argument
+
+The **modulus** of $z = a + bi$, written $|z|$, is its distance from the
+origin in the complex plane. By Pythagoras:
+
+$$|z| = \sqrt{a^2 + b^2}$$
+
+For $z = 3 + 4i$: $|z| = \sqrt{9 + 16} = \sqrt{25} = 5$.
+
+The **argument** of $z$, written $\arg(z)$, is the angle the line from the
+origin to $z$ makes with the positive real axis. Measured in radians
+(or degrees):
+
+$$\arg(z) = \arctan\!\left(\frac{b}{a}\right)$$
+
+Be careful with the quadrant. The $\arctan$ function returns values in the
+range $(-\pi/2, \pi/2)$, so you need to check whether $z$ is in the left
+half of the plane and adjust by $\pm \pi$ if so.
+
+For $z = 3 + 4i$: $\arg(z) = \arctan(4/3) \approx 0.927$ radians ($\approx 53.1°$).
+
+Together, modulus and argument give two ways to describe the same point:
+Cartesian form $a + bi$ and polar form $r \angle \theta$.
+
+### Part 3: Polar form and Euler's formula
+
+On the unit circle (where $r = 1$), the real part of a complex number at
+angle $\theta$ is $\cos\theta$ and the imaginary part is $\sin\theta$ — by
+the same definition of cosine and sine used in trigonometry. So any point
+at distance $r$ from the origin at angle $\theta$ is $r$ times that
+unit-circle point.
+
+A complex number with modulus $r$ and argument $\theta$ can be written as:
+
+$$z = r(\cos\theta + i\sin\theta)$$
+
+This is **polar form**. Read it as: go distance $r$ from the origin, at angle
+$\theta$ from the positive real axis.
+
+Now for the extraordinary fact. **Euler's formula** says:
+
+$$e^{i\theta} = \cos\theta + i\sin\theta$$
+
+This connects the exponential function — which you know from growth and decay —
+to the trigonometric functions. The proof belongs to calculus (it comes from
+comparing the Taylor series of $e^x$, $\cos x$, and $\sin x$), but you can
+use the result here.
+
+With Euler's formula, polar form becomes simply:
+
+$$z = re^{i\theta}$$
+
+This is often the cleanest way to write a complex number when you're
+multiplying, dividing, or raising to a power.
+
+The famous identity $e^{i\pi} + 1 = 0$ is just the special case $\theta = \pi$:
+$e^{i\pi} = \cos\pi + i\sin\pi = -1 + 0i = -1$.
+
+In particular, $i = e^{i\pi/2}$ (since $\cos(\pi/2) = 0$ and $\sin(\pi/2) = 1$).
+Because multiplication adds arguments, multiplying any complex number by $i$
+adds $\pi/2$ to its angle — a 90° anticlockwise rotation in the plane.
+
+```{ojs}
+//| echo: false
+{
+  const div = document.createElement("div");
+  div.style.cssText = "font-family:inherit; padding:0.5rem 0;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.75rem;";
+
+  function makeSlider(label, min, max, step, val) {
+    const wrap = document.createElement("div");
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "font-size:0.85rem; color:#374151; display:block; margin-bottom:0.2rem;";
+    const span = document.createElement("span"); span.textContent = val;
+    lbl.appendChild(document.createTextNode(label + " = ")); lbl.appendChild(span);
+    const input = document.createElement("input");
+    input.type = "range"; input.min = min; input.max = max; input.step = step; input.value = val;
+    input.style.width = "140px";
+    wrap.appendChild(lbl); wrap.appendChild(input);
+    return {wrap, input, span};
+  }
+
+  const r1S = makeSlider("r₁ (|z₁|)", 0.5, 3, 0.5, 1.5);
+  const t1S = makeSlider("θ₁ (arg z₁, °)", 0, 360, 15, 45);
+  const r2S = makeSlider("r₂ (|z₂|)", 0.5, 3, 0.5, 1);
+  const t2S = makeSlider("θ₂ (arg z₂, °)", 0, 360, 15, 30);
+  controls.appendChild(r1S.wrap);
+  controls.appendChild(t1S.wrap);
+  controls.appendChild(r2S.wrap);
+  controls.appendChild(t2S.wrap);
+
+  const infoEl = document.createElement("div");
+  infoEl.style.cssText = "font-size:0.85rem; color:#374151; margin-bottom:0.5rem; min-height:2em; background:#f8fafc; border-radius:6px; padding:0.4rem 0.75rem;";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 360; canvas.height = 360;
+  canvas.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; display:block; max-width:360px;";
+
+  div.appendChild(controls); div.appendChild(infoEl); div.appendChild(canvas);
+
+  function draw() {
+    const r1 = parseFloat(r1S.input.value);
+    const t1d = parseFloat(t1S.input.value);
+    const r2 = parseFloat(r2S.input.value);
+    const t2d = parseFloat(t2S.input.value);
+    r1S.span.textContent = r1S.input.value;
+    t1S.span.textContent = t1S.input.value + "°";
+    r2S.span.textContent = r2S.input.value;
+    t2S.span.textContent = t2S.input.value + "°";
+
+    const t1 = t1d * Math.PI / 180;
+    const t2 = t2d * Math.PI / 180;
+    const z1 = {r: r1, a: r1*Math.cos(t1), b: r1*Math.sin(t1)};
+    const z2 = {r: r2, a: r2*Math.cos(t2), b: r2*Math.sin(t2)};
+    const rp = r1*r2;
+    const tp = t1+t2;
+    const prod = {a: rp*Math.cos(tp), b: rp*Math.sin(tp)};
+
+    infoEl.innerHTML =
+      "z₁ = " + z1.a.toFixed(2) + (z1.b>=0?"+":"") + z1.b.toFixed(2) + "i  |z₁|=" + r1 + "  arg=" + t1d + "°<br>" +
+      "z₂ = " + z2.a.toFixed(2) + (z2.b>=0?"+":"") + z2.b.toFixed(2) + "i  |z₂|=" + r2 + "  arg=" + t2d + "°<br>" +
+      "z₁·z₂ = " + prod.a.toFixed(2) + (prod.b>=0?"+":"") + prod.b.toFixed(2) + "i  |z₁·z₂|=" + rp.toFixed(2) + "  arg=" + (t1d+t2d) + "°";
+
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const range = 5;
+    function px(x) { return (x+range)/(2*range)*W; }
+    function py(y) { return H-(y+range)/(2*range)*H; }
+
+    ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, py(0)); ctx.lineTo(W, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), H); ctx.stroke();
+    ctx.fillStyle = "#9ca3af"; ctx.font = "11px sans-serif";
+    ctx.fillText("Re", W-20, py(0)-4); ctx.fillText("Im", px(0)+4, 12);
+
+    const pts = [
+      {x: z1.a, y: z1.b, color: "#2563eb", label: "z₁"},
+      {x: z2.a, y: z2.b, color: "#059669", label: "z₂"},
+      {x: prod.a, y: prod.b, color: "#ef4444", label: "z₁·z₂"},
+    ];
+    pts.forEach(p => {
+      ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(px(0), py(0)); ctx.lineTo(px(p.x), py(p.y)); ctx.stroke();
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(px(p.x), py(p.y), 5, 0, 2*Math.PI); ctx.fill();
+      ctx.fillStyle = "#374151"; ctx.font = "bold 11px sans-serif";
+      ctx.fillText(p.label, px(p.x)+7, py(p.y)-5);
+    });
+
+    // Angle arcs
+    [t1, t2, tp].forEach((t, i) => {
+      const colors = ["#2563eb","#059669","#ef4444"];
+      ctx.strokeStyle = colors[i]; ctx.lineWidth = 1.5;
+      const arcR = 25 + i*10;
+      ctx.beginPath();
+      ctx.arc(px(0), py(0), arcR, -t, 0, t < 0);
+      ctx.stroke();
+    });
+  }
+
+  r1S.input.addEventListener("input", draw);
+  t1S.input.addEventListener("input", draw);
+  r2S.input.addEventListener("input", draw);
+  t2S.input.addEventListener("input", draw);
+  draw();
+  return div;
+}
+```
+
+### Part 4: De Moivre's theorem
+
+Because $z = re^{i\theta}$, raising $z$ to the power $n$ is clean:
+
+$$z^n = (re^{i\theta})^n = r^n e^{in\theta} = r^n(\cos n\theta + i\sin n\theta)$$
+
+This is **de Moivre's theorem**. To find the $n$th power of a complex number:
+raise the modulus to the $n$th power, multiply the argument by $n$.
+
+Example: find $(1 + i)^4$.
+
+First, convert to polar form. $|1 + i| = \sqrt{2}$. For the argument:
+$\arg(1 + i) = \arctan(1/1) = \arctan(1) = \pi/4$.
+
+So $1 + i = \sqrt{2}\,e^{i\pi/4}$.
+
+Then:
+
+$$(1 + i)^4 = (\sqrt{2})^4 \cdot e^{i \cdot 4 \cdot \pi/4} = 4 \cdot e^{i\pi} = 4 \cdot (-1) = -4$$
+
+Check by direct multiplication: $(1+i)^2 = 1 + 2i - 1 = 2i$. Then
+$(2i)^2 = 4i^2 = -4$. Matches.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+Multiplying any complex number by $i$ adds $\pi/2$ to its angle — a 90°
+anticlockwise rotation in the complex plane. That's why $i^4 = 1$: four
+quarter-turns bring you back.
+
+Complex multiplication in general is a *rotation and scaling* operation.
+When you multiply $z_1 \cdot z_2$, the moduli multiply (scaling) and the
+arguments add (rotation). This is exactly why complex numbers are the natural
+language for anything involving oscillation, phase, and rotation — from AC
+circuits to quantum wavefunctions to signal processing. The arithmetic of
+complex numbers is the arithmetic of rotations.
+:::
+
+## Worked examples
+
+### Example 1 — Engineering: AC circuit impedance
+
+An AC circuit has a resistor and a capacitor in series. The resistor has
+impedance $Z_R = 50\,\Omega$ (purely real). The capacitor has impedance
+$Z_C = -30i\,\Omega$ (purely imaginary, negative because capacitors shift
+the phase of current).
+
+The total series impedance is:
+
+$$Z = Z_R + Z_C = 50 + (-30i) = 50 - 30i\,\Omega$$
+
+The magnitude of the impedance — how much the circuit resists current overall —
+is the modulus:
+
+$$|Z| = \sqrt{50^2 + 30^2} = \sqrt{2500 + 900} = \sqrt{3400} \approx 58.3\,\Omega$$
+
+The phase angle — how much voltage leads current — is the argument:
+
+$$\arg(Z) = \arctan\!\left(\frac{-30}{50}\right) \approx -30.96°$$
+
+The negative angle means the voltage lags behind the current by about 31°,
+which is the expected behaviour for a capacitive circuit.
+
+---
+
+### Example 2 — Physics: Quantum wavefunction amplitude
+
+In quantum mechanics, a particle in a particular state has a probability
+amplitude that is a complex number. The probability of measuring that state
+is the square of the modulus of the amplitude.
+
+Suppose the amplitude is $\psi = \frac{3}{5} + \frac{4}{5}i$.
+
+The probability is:
+
+$$|\psi|^2 = \left(\frac{3}{5}\right)^2 + \left(\frac{4}{5}\right)^2 = \frac{9}{25} + \frac{16}{25} = \frac{25}{25} = 1$$
+
+A probability of 1 means the particle is certain to be found in this state.
+The amplitude is normalised — its modulus is 1. This is a constraint
+quantum mechanics imposes on all valid probability amplitudes: $|\psi| = 1$.
+
+---
+
+### Example 3 — Computing: FFT butterfly
+
+The Fast Fourier Transform (FFT) is an algorithm that decomposes a signal
+into its frequency components. Its key step multiplies a complex number by
+a 'twiddle factor' $W$ — which is just a complex number on the unit circle —
+to rotate it by a precise angle.
+
+The FFT processes a signal by repeatedly multiplying values by twiddle factors
+of the form $W = e^{-2\pi i k/N}$ for various integers $k$ and $N$.
+
+For an 8-point FFT with $k = 1$, $N = 8$:
+
+$$W = e^{-2\pi i / 8} = e^{-i\pi/4} = \cos\!\left(-\frac{\pi}{4}\right) + i\sin\!\left(-\frac{\pi}{4}\right) = \frac{1}{\sqrt{2}} - \frac{i}{\sqrt{2}}$$
+
+One butterfly step multiplies a signal value $X = 3 + 2i$ by this twiddle factor:
+
+$$X \cdot W = (3 + 2i)\!\left(\frac{1}{\sqrt{2}} - \frac{i}{\sqrt{2}}\right)$$
+
+$$= \frac{1}{\sqrt{2}}\bigl(3 + 2i\bigr)(1 - i) = \frac{1}{\sqrt{2}}(3 - 3i + 2i - 2i^2)$$
+
+$$= \frac{1}{\sqrt{2}}(3 - i + 2) = \frac{1}{\sqrt{2}}(5 - i) = \frac{5}{\sqrt{2}} - \frac{i}{\sqrt{2}} \approx 3.54 - 0.71i$$
+
+In polar terms: multiplication by $W$ kept the modulus the same (since
+$|W| = 1$) and rotated the point by $-45°$. The FFT is, at its core, a
+very efficient way to apply many such rotations simultaneously.
+
+## Where this goes
+
+**Polynomials (Vol 3 Ch 3)** — every polynomial with real coefficients that
+has no real roots has complex roots. The quadratic formula $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+gives complex answers when $b^2 - 4ac < 0$. You can now say exactly what those
+answers are and verify them by substituting back in. The discriminant is no
+longer a dead end.
+
+**Complex analysis (Vol 7)** extends calculus to complex-valued functions.
+It turns out that calculus in the complex plane is extraordinarily powerful —
+more constrained than real calculus in ways that produce surprising results,
+including a method for evaluating real integrals that seem impossible by
+ordinary means. The Cauchy integral theorem, residues, and conformal mapping
+all live here. Euler's formula is the entry point.
+
+**Differential calculus (Vol 5)** — Euler's formula $e^{i\theta} = \cos\theta + i\sin\theta$
+is proved by comparing the Taylor series expansions of each side. That proof
+belongs to calculus, but once you have it, it explains why $e$, $i$, $\pi$,
+$1$, and $0$ are connected: they're all special values of the same exponential
+function operating on the complex plane.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- An electrical engineer analysing an AC circuit writes impedance as a complex
+  number, computes its modulus to find the magnitude, and its argument to find
+  the phase shift. The letter $j$ is used instead of $i$ in electrical engineering
+  (because $i$ is already taken for current), but the mathematics is identical.
+
+- A physicist writing down the Schrödinger equation is working with a
+  complex-valued wavefunction. The probability of measurement outcomes is the
+  squared modulus of that function.
+
+- A software engineer implementing a digital audio filter uses the Discrete
+  Fourier Transform — which is an algorithm entirely built on complex multiplication.
+  The FFT makes this computation fast enough to run in real time.
+
+- A control engineer analysing whether a feedback system is stable places poles
+  in the complex plane. Poles in the left half-plane mean the system is stable;
+  poles in the right half-plane mean it oscillates out of control.
+:::
+
+## Exercises
+
+These are puzzles. Each one has a clean answer. The interesting part is
+knowing which form of a complex number to use for which operation.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opEl = document.createElement("span");
+      opEl.style.cssText = "font-size:0.8rem; color:#6b7280; font-style:italic;";
+      opEl.textContent = s.op;
+      const eqEl = document.createElement("span");
+      eqEl.innerHTML = katex.renderToString(s.eq, {throwOnError: false, displayMode: false});
+      row.appendChild(opEl);
+      row.appendChild(eqEl);
+      container.appendChild(row);
+      if (s.note) {
+        const noteEl = document.createElement("p");
+        noteEl.style.cssText = "margin:0.2rem 0 0.5rem 200px; font-size:0.82rem; color:#374151;";
+        noteEl.textContent = s.note;
+        container.appendChild(noteEl);
+      }
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("p");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.85rem; color:#059669; font-weight:600;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; align-items:center; gap:0.75rem; margin-top:0.5rem;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.85rem; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.8rem; color:#6b7280;";
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); counter.textContent = current + " / " + totalSteps; if (current === totalSteps) nextBtn.disabled = true; } };
+  resetBtn.onclick = () => { current = 0; nextBtn.disabled = false; renderSteps(); counter.textContent = "0 / " + totalSteps; };
+  counter.textContent = "0 / " + totalSteps;
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  return container;
+}
+```
+
+**1.** Compute $(2 + 3i)(4 - i)$.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(1, [
+    { op: "Expand using FOIL", eq: "(2 + 3i)(4 - i) = 2 \\cdot 4 + 2 \\cdot (-i) + 3i \\cdot 4 + 3i \\cdot (-i)", note: null },
+    { op: "Collect terms", eq: "= 8 - 2i + 12i - 3i^2", note: null },
+    { op: "Replace i² = −1", eq: "= 8 - 2i + 12i - 3(-1) = 8 + 3 + (-2 + 12)i", note: "Every i² becomes −1; this is the only rule that makes complex arithmetic close." },
+    { op: "Write the answer", eq: "= 11 + 10i", note: null },
+    { op: "Check", eq: "(2 + 3i)(4 - i) = 11 + 10i \\checkmark \\text{ — verify by expanding again}", note: null },
+  ]);
+  return el;
+}
+```
+
+**2.** Find the modulus and argument of $z = -1 + \sqrt{3}\,i$.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(2, [
+    { op: "Identify real and imaginary parts", eq: "a = -1,\\quad b = \\sqrt{3}", note: null },
+    { op: "Compute the modulus", eq: "|z| = \\sqrt{(-1)^2 + (\\sqrt{3})^2} = \\sqrt{1 + 3} = \\sqrt{4} = 2", note: null },
+    { op: "Compute arctan(b/a)", eq: "\\arctan\\!\\left(\\frac{\\sqrt{3}}{-1}\\right) = \\arctan(-\\sqrt{3}) = -\\frac{\\pi}{3}", note: "arctan gives a value in (−π/2, π/2). We must check the quadrant." },
+    { op: "Adjust for correct quadrant", eq: "z \\text{ is in the second quadrant (a < 0, b > 0), so } \\arg(z) = -\\frac{\\pi}{3} + \\pi = \\frac{2\\pi}{3}", note: "Add π when the real part is negative." },
+    { op: "State the answer", eq: "|z| = 2,\\quad \\arg(z) = \\frac{2\\pi}{3} \\approx 120°", note: null },
+    { op: "Check", eq: "2\\!\\left(\\cos\\frac{2\\pi}{3} + i\\sin\\frac{2\\pi}{3}\\right) = 2\\!\\left(-\\frac{1}{2} + \\frac{\\sqrt{3}}{2}i\\right) = -1 + \\sqrt{3}\\,i \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+**3.** Convert $z = 4e^{i\pi/6}$ to Cartesian form $a + bi$.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(3, [
+    { op: "Apply Euler's formula", eq: "z = 4\\!\\left(\\cos\\frac{\\pi}{6} + i\\sin\\frac{\\pi}{6}\\right)", note: "e^{iθ} = cos θ + i sin θ — this is the definition of the exponential on complex numbers." },
+    { op: "Evaluate the trig values", eq: "\\cos\\frac{\\pi}{6} = \\frac{\\sqrt{3}}{2},\\quad \\sin\\frac{\\pi}{6} = \\frac{1}{2}", note: null },
+    { op: "Multiply through by 4", eq: "z = 4 \\cdot \\frac{\\sqrt{3}}{2} + 4 \\cdot \\frac{1}{2}\\,i = 2\\sqrt{3} + 2i", note: null },
+    { op: "Check", eq: "|2\\sqrt{3} + 2i| = \\sqrt{(2\\sqrt{3})^2 + 2^2} = \\sqrt{12 + 4} = \\sqrt{16} = 4 \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+**4.** Compute $(-1 + i)^6$ using de Moivre's theorem.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(4, [
+    { op: "Convert to polar form", eq: "|-1 + i| = \\sqrt{1 + 1} = \\sqrt{2},\\quad \\arg(-1 + i) = \\frac{3\\pi}{4}", note: "Real part negative, imaginary part positive: second quadrant." },
+    { op: "Write in exponential form", eq: "-1 + i = \\sqrt{2}\\,e^{i \\cdot 3\\pi/4}", note: null },
+    { op: "Apply de Moivre: raise modulus to n, multiply argument by n", eq: "(-1 + i)^6 = (\\sqrt{2})^6 \\cdot e^{i \\cdot 6 \\cdot 3\\pi/4} = 8\\,e^{i \\cdot 9\\pi/2}", note: "(\\sqrt{2})^6 = 2^{6/2} = 2^3 = 8." },
+    { op: "Reduce the angle mod 2π", eq: "\\frac{9\\pi}{2} = 4\\pi + \\frac{\\pi}{2},\\quad \\text{so } e^{i \\cdot 9\\pi/2} = e^{i\\pi/2} = i", note: "Angles differing by 2π are identical in the complex plane." },
+    { op: "Write the answer", eq: "(-1 + i)^6 = 8i", note: null },
+    { op: "Check", eq: "(-1+i)^2 = 1 - 2i + i^2 = -2i;\\quad (-2i)^3 = -8i^3 = -8(-i) = 8i \\checkmark", note: null },
+  ]);
+  return el;
+}
+```
+
+**5.** Divide $\dfrac{2 + i}{3 - 4i}$.
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(5, [
+    { op: "Multiply numerator and denominator by the conjugate of the denominator", eq: "\\frac{2 + i}{3 - 4i} \\cdot \\frac{3 + 4i}{3 + 4i}", note: "The conjugate of 3 − 4i is 3 + 4i. This clears i from the denominator." },
+    { op: "Expand the denominator", eq: "(3 - 4i)(3 + 4i) = 9 + 16 = 25", note: "(a − bi)(a + bi) = a² + b² — always real." },
+    { op: "Expand the numerator", eq: "(2 + i)(3 + 4i) = 6 + 8i + 3i + 4i^2 = 6 + 11i - 4 = 2 + 11i", note: null },
+    { op: "Write the answer", eq: "\\frac{2 + 11i}{25} = \\frac{2}{25} + \\frac{11}{25}i", note: null },
+    { op: "Check", eq: "\\left(\\frac{2}{25} + \\frac{11}{25}i\\right)(3 - 4i) = \\frac{1}{25}(2 + 11i)(3 - 4i) = \\frac{1}{25}(6 - 8i + 33i - 44i^2) = \\frac{1}{25}(50 + 25i) = 2 + i \\checkmark", note: null },
+  ]);
+  return el;
+}
+```

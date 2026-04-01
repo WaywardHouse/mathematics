@@ -1,6 +1,1098 @@
 ---
 title: "Laplace transforms"
-status: "seed"
+subtitle: "Converting differential equations to algebra"
+chapter: 4
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: "You can solve constant-coefficient linear ODEs by the characteristic equation and undetermined coefficients. Those methods struggle with discontinuous forcing — a switch thrown at t=3, or a hammer blow at t=5."
+
+rewrite: "The Laplace transform converts the ODE into algebra in the s-domain. Discontinuities become exponential factors. Impulses become constants. Solve algebraically, then invert. Initial conditions enter automatically."
+
+prerequisite_ids:
+  - odes
+  - complex_seed
+
+opens_to:
+  - id: fourier_series
+    label: "Fourier series"
+    volume: 7
+    relationship: motivates
+  - id: complex_analysis
+    label: "Complex analysis"
+    volume: 7
+    relationship: enriches
+  - id: pdes
+    label: "Partial differential equations"
+    volume: 7
+    relationship: enables
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Control engineering runs almost entirely on Laplace transforms. Transfer functions, Bode plots, stability margins, PID tuning — all are s-domain concepts. This is the working language of control systems."
+  - field: sci
+    label: Hard sciences
+    hook: "Nuclear decay chains, chemical reaction kinetics with time-varying inputs, and signal propagation in neural systems are all analysed via Laplace transforms."
+  - field: comp
+    label: Computing and data
+    hook: "Z-transforms (the discrete analogue) underlie digital filters and signal processing algorithms. Understanding the Laplace transform is the gateway to both."
+  - field: biz
+    label: Finance and quant
+    hook: "Option pricing and stochastic control theory use transform methods. The Laplace transform of an asset price process connects to the characteristic function used in FFT-based option pricing."
+
+notation_introduced:
+  - symbol: "\\mathcal{L}\\{f(t)\\}"
+    reads_as: "the Laplace transform of f"
+    meaning: "$F(s) = \\int_0^\\infty e^{-st}f(t)\\,dt$"
+  - symbol: "F(s)"
+    reads_as: "F of s"
+    meaning: "The Laplace transform — a function of the complex variable s"
+  - symbol: "\\mathcal{L}^{-1}\\{F(s)\\}"
+    reads_as: "inverse Laplace transform"
+    meaning: "The function f(t) whose Laplace transform is F(s)"
+  - symbol: "u(t-a)"
+    reads_as: "Heaviside step at a"
+    meaning: "0 for t < a, 1 for t ≥ a — models a switch thrown at t=a"
+  - symbol: "\\delta(t-a)"
+    reads_as: "Dirac delta at a"
+    meaning: "Idealised impulse at t=a — infinite spike with unit area"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  A hydraulic valve is closed. At exactly two seconds it opens, sending a
+  pressure pulse through the system. The governing ODE has discontinuous
+  forcing — the methods from the previous chapters require splitting the
+  problem at the switch point, solving each piece separately, and matching
+  conditions at the join. For one switch that is tedious; for three it is
+  impractical. The Laplace transform handles the whole thing in one pass:
+  the discontinuity becomes an algebraic factor, you solve, you invert, done.
+
+kreyszig_chapter: "Ch 6"
+stroud_programme: "Programmes 2–4"
+uofa_course: "MATH 201"
 ---
 
-*Seed — front matter to be completed before content is written.*
+A solenoid valve in a hydraulic system is closed. At exactly $t = 2$ seconds it opens,
+sending a pressure pulse through the system. The ODE governing the pressure response has
+discontinuous forcing — zero for $t < 2$, nonzero for $t \geq 2$. The characteristic
+equation method does not handle this cleanly; you would need to split the problem at
+$t = 2$, solve each piece separately, then match conditions at the join. For two
+segments that is tedious. For a system that switches at $t = 2$, $t = 5$, and $t = 11$,
+it becomes impractical.
+
+The Laplace transform handles it in one pass. The discontinuity is encoded as an
+exponential factor $e^{-2s}$ inside an algebraic expression in $s$. Solve the algebra.
+Invert. Done.
+
+This chapter develops that mechanism from the integral definition through to impulse
+response and the convolution theorem.
+
+## Definition and motivation
+
+The Laplace transform of a function $f(t)$ defined for $t \geq 0$ is
+
+$$\mathcal{L}\{f(t)\} = F(s) = \int_0^\infty e^{-st} f(t)\,dt$$
+
+The variable $s$ is a complex number, though for most engineering applications we treat
+it as a real parameter and work in the right half-plane where the integral converges.
+
+**Why does this turn a differential equation into algebra?** Two reasons.
+
+First, the transform converts differentiation in $t$ into multiplication by $s$ in the
+frequency domain (plus boundary terms carrying the initial conditions). We derive this
+precisely in Section 3.
+
+Second, the transform is linear:
+
+$$\mathcal{L}\{af(t) + bg(t)\} = aF(s) + bG(s)$$
+
+This follows directly from linearity of the integral. So a linear ODE in $t$ becomes a
+linear algebraic equation in $s$. Solve for $Y(s)$, then invert.
+
+The four-step method, which we will use throughout this chapter:
+
+1. **Take the Laplace transform** of both sides of the ODE.
+2. **Apply the initial conditions** — they appear automatically in the boundary terms.
+3. **Solve algebraically** for $Y(s)$.
+4. **Invert** $Y(s)$ to find $y(t)$.
+
+## Table of transforms
+
+We build the table entry by entry from the integral definition.
+
+**Transform of 1**
+
+$$\mathcal{L}\{1\} = \int_0^\infty e^{-st}\,dt = \left[-\frac{e^{-st}}{s}\right]_0^\infty = \frac{1}{s}, \quad s > 0$$
+
+The boundary term at $t \to \infty$ vanishes because $e^{-st} \to 0$ for $s > 0$.
+
+**Transform of $e^{at}$**
+
+$$\mathcal{L}\{e^{at}\} = \int_0^\infty e^{-st} e^{at}\,dt = \int_0^\infty e^{-(s-a)t}\,dt = \frac{1}{s-a}, \quad s > a$$
+
+The same calculation as above but with $s$ replaced by $s - a$.
+
+**Transform of $\sin(\omega t)$**
+
+Use the identity $\sin(\omega t) = \frac{e^{i\omega t} - e^{-i\omega t}}{2i}$, or
+integrate directly using integration by parts twice. The direct route:
+
+$$\mathcal{L}\{\sin(\omega t)\} = \int_0^\infty e^{-st}\sin(\omega t)\,dt$$
+
+Let $I$ denote the integral. For the first integration by parts, set $u = e^{-st}$ and $dv = \sin(\omega t)\,dt$, so $du = -se^{-st}\,dt$ and $v = -\cos(\omega t)/\omega$:
+
+$$I = \left[-\frac{e^{-st}\cos(\omega t)}{\omega}\right]_0^\infty - \int_0^\infty \frac{s}{\omega}e^{-st}\cos(\omega t)\,dt = \frac{1}{\omega} - \frac{s}{\omega}\int_0^\infty e^{-st}\cos(\omega t)\,dt$$
+
+(The boundary term at $t = 0$ gives $1/\omega$; at $t \to \infty$ the exponential kills the cosine.)
+
+Applying IBP again to $\int e^{-st}\cos(\omega t)\,dt$ by symmetry (set $u = e^{-st}$, $dv = \cos(\omega t)\,dt$, $v = \sin(\omega t)/\omega$) returns the original integral $I$ with a coefficient. After two applications the integral $I$ reappears on the right:
+
+$$I = \frac{\omega}{s^2} - \frac{\omega^2}{s^2}I$$
+
+Solving for $I$:
+
+$$I\left(1 + \frac{\omega^2}{s^2}\right) = \frac{\omega}{s^2} \implies I = \frac{\omega}{s^2 + \omega^2}$$
+
+Similarly, integrating $e^{-st}\cos(\omega t)$ by parts (or using the derivative
+relation) gives $\mathcal{L}\{\cos(\omega t)\} = \dfrac{s}{s^2 + \omega^2}$.
+
+**Transform of $t^n$**
+
+Integrate by parts, reducing the power of $t$ by one at each step. The result is
+
+$$\mathcal{L}\{t^n\} = \frac{n!}{s^{n+1}}, \quad s > 0$$
+
+For $n = 1$: $\mathcal{L}\{t\} = 1/s^2$. For $n = 2$: $\mathcal{L}\{t^2\} = 2/s^3$.
+
+**Reference table**
+
+| $f(t)$ | $F(s) = \mathcal{L}\{f(t)\}$ | Condition |
+|---|---|---|
+| $1$ | $\dfrac{1}{s}$ | $s > 0$ |
+| $t$ | $\dfrac{1}{s^2}$ | $s > 0$ |
+| $t^n$ | $\dfrac{n!}{s^{n+1}}$ | $s > 0$ |
+| $e^{at}$ | $\dfrac{1}{s-a}$ | $s > a$ |
+| $te^{at}$ | $\dfrac{1}{(s-a)^2}$ | $s > a$ |
+| $\sin(\omega t)$ | $\dfrac{\omega}{s^2+\omega^2}$ | $s > 0$ |
+| $\cos(\omega t)$ | $\dfrac{s}{s^2+\omega^2}$ | $s > 0$ |
+| $e^{at}\sin(\omega t)$ | $\dfrac{\omega}{(s-a)^2+\omega^2}$ | $s > a$ |
+| $e^{at}\cos(\omega t)$ | $\dfrac{s-a}{(s-a)^2+\omega^2}$ | $s > a$ |
+| $u(t-a)$ | $\dfrac{e^{-as}}{s}$ | $s > 0$ |
+| $\delta(t-a)$ | $e^{-as}$ | all $s$ |
+
+```{ojs}
+//| echo: false
+viewof ltFunc = Inputs.select(
+  ["1 (unit step)", "e^{at} (a=-1)", "sin(ωt) (ω=2)", "cos(ωt) (ω=2)", "t"],
+  {label: "f(t)"}
+)
+```
+
+```{ojs}
+//| echo: false
+viewof ltS = Inputs.range([0.1, 5], {step: 0.1, value: 1, label: "s"})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  // Function definitions
+  const funcs = {
+    "1 (unit step)":    { ft: t => 1,          Fs: s => 1/s,              yMax: 1.4 },
+    "e^{at} (a=-1)":   { ft: t => Math.exp(-t), Fs: s => 1/(s+1),         yMax: 1.4 },
+    "sin(ωt) (ω=2)":   { ft: t => Math.sin(2*t), Fs: s => 2/(s*s+4),      yMax: 1.4 },
+    "cos(ωt) (ω=2)":   { ft: t => Math.cos(2*t), Fs: s => s/(s*s+4),      yMax: 1.4 },
+    "t":               { ft: t => t,            Fs: s => 1/(s*s),          yMax: 6.5 }
+  };
+
+  const def = funcs[ltFunc];
+  const ft = def.ft;
+  const Fs = def.Fs;
+  const s  = ltS;
+
+  // Layout
+  const panelW = 260, panelH = 240;
+  const margin = {top: 20, right: 15, bottom: 35, left: 42};
+  const innerW = panelW - margin.left - margin.right;
+  const innerH = panelH - margin.top - margin.bottom;
+  const totalW = panelW * 2 + 20;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${totalW} ${panelH}`)
+    .attr("width", totalW)
+    .attr("style", "font-family: sans-serif; font-size: 11px;");
+
+  // ── LEFT PANEL: f(t) and e^{-st}·f(t) ────────────────────────────────
+  const tDomain = [0, 6];
+  const tValues = d3.range(tDomain[0], tDomain[1], 0.02);
+
+  const yMax = def.yMax;
+  const yMin = ltFunc === "cos(ωt) (ω=2)" || ltFunc === "sin(ωt) (ω=2)" ? -yMax * 0.6 : -0.15;
+
+  const xL = d3.scaleLinear().domain(tDomain).range([0, innerW]);
+  const yL = d3.scaleLinear().domain([yMin, yMax]).range([innerH, 0]);
+
+  const gL = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Shaded area under e^{-st}·f(t)
+  const areaGen = d3.area()
+    .x(t => xL(t))
+    .y0(yL(0))
+    .y1(t => yL(Math.exp(-s * t) * ft(t)));
+
+  gL.append("path")
+    .datum(tValues)
+    .attr("d", areaGen)
+    .attr("fill", "orange")
+    .attr("opacity", 0.18);
+
+  // Axes
+  gL.append("g").attr("transform", `translate(0,${yL(0)})`).call(d3.axisBottom(xL).ticks(5));
+  gL.append("g").call(d3.axisLeft(yL).ticks(5));
+
+  // Axis labels
+  gL.append("text").attr("x", innerW / 2).attr("y", innerH + 28)
+    .attr("text-anchor", "middle").text("t");
+  gL.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -32)
+    .attr("text-anchor", "middle").text("value");
+
+  // f(t) in blue
+  const lineL = d3.line().x(t => xL(t)).y(t => yL(ft(t)));
+  gL.append("path")
+    .datum(tValues)
+    .attr("d", lineL)
+    .attr("fill", "none")
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 2);
+
+  // e^{-st}·f(t) in orange
+  const lineI = d3.line().x(t => xL(t)).y(t => yL(Math.exp(-s * t) * ft(t)));
+  gL.append("path")
+    .datum(tValues)
+    .attr("d", lineI)
+    .attr("fill", "none")
+    .attr("stroke", "orange")
+    .attr("stroke-width", 2);
+
+  // Legend
+  gL.append("line").attr("x1", 4).attr("y1", 8).attr("x2", 20).attr("y2", 8)
+    .attr("stroke", "steelblue").attr("stroke-width", 2);
+  gL.append("text").attr("x", 23).attr("y", 12).text("f(t)").attr("fill", "steelblue");
+  gL.append("line").attr("x1", 55).attr("y1", 8).attr("x2", 71).attr("y2", 8)
+    .attr("stroke", "orange").attr("stroke-width", 2);
+  gL.append("text").attr("x", 74).attr("y", 12).text("e⁻ˢᵗf(t)").attr("fill", "orange");
+
+  // Panel title
+  gL.append("text").attr("x", innerW / 2).attr("y", -6)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("font-weight", "bold")
+    .text("Time domain");
+
+  // ── RIGHT PANEL: F(s) vs s ────────────────────────────────────────────
+  const gapX = panelW + 20;
+  const sValues = d3.range(0.1, 5.05, 0.05);
+
+  const fsValues = sValues.map(sv => Fs(sv));
+  const fsFinite = fsValues.filter(v => isFinite(v) && !isNaN(v));
+  const fsMax = Math.min(d3.max(fsFinite) * 1.1, 10);
+  const fsMin = Math.max(d3.min(fsFinite) * 1.1, -2);
+
+  const xR = d3.scaleLinear().domain([0.1, 5]).range([0, innerW]);
+  const yR = d3.scaleLinear().domain([fsMin, fsMax]).range([innerH, 0]);
+
+  const gR = svg.append("g")
+    .attr("transform", `translate(${gapX + margin.left},${margin.top})`);
+
+  // Axes
+  gR.append("g").attr("transform", `translate(0,${yR(0)})`).call(d3.axisBottom(xR).ticks(5));
+  gR.append("g").call(d3.axisLeft(yR).ticks(5));
+
+  // Axis labels
+  gR.append("text").attr("x", innerW / 2).attr("y", innerH + 28)
+    .attr("text-anchor", "middle").text("s");
+  gR.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -32)
+    .attr("text-anchor", "middle").text("F(s)");
+
+  // F(s) curve
+  const lineR = d3.line()
+    .defined((_, i) => isFinite(fsValues[i]) && fsValues[i] <= fsMax + 1 && fsValues[i] >= fsMin - 1)
+    .x((_, i) => xR(sValues[i]))
+    .y((_, i) => yR(fsValues[i]));
+
+  gR.append("path")
+    .datum(sValues)
+    .attr("d", lineR)
+    .attr("fill", "none")
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 2);
+
+  // Vertical dashed line at current s
+  const currentFs = Fs(s);
+  if (isFinite(currentFs) && currentFs <= fsMax + 0.5) {
+    gR.append("line")
+      .attr("x1", xR(s)).attr("y1", 0)
+      .attr("x2", xR(s)).attr("y2", innerH)
+      .attr("stroke", "#999")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-dasharray", "4,3");
+
+    // Dot on curve
+    const dotY = Math.max(0, Math.min(innerH, yR(currentFs)));
+    gR.append("circle")
+      .attr("cx", xR(s)).attr("cy", dotY)
+      .attr("r", 5)
+      .attr("fill", "steelblue");
+
+    // Label
+    const labelVal = currentFs.toFixed(3);
+    gR.append("text")
+      .attr("x", Math.min(xR(s) + 6, innerW - 80))
+      .attr("y", Math.max(dotY - 8, 14))
+      .attr("fill", "steelblue")
+      .attr("font-size", "11px")
+      .text(`F(${s.toFixed(1)}) = ${labelVal}`);
+  }
+
+  // Panel title
+  gR.append("text").attr("x", innerW / 2).attr("y", -6)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("font-weight", "bold")
+    .text("s-domain: F(s)");
+
+  return svg.node();
+}
+```
+
+## The transform of derivatives
+
+This is the mechanism that converts ODEs into algebra.
+
+**First derivative.** Integrate by parts with $u = f(t)$, $dv = e^{-st}\,dt$:
+
+$$\mathcal{L}\{f'(t)\} = \int_0^\infty e^{-st} f'(t)\,dt = \left[e^{-st}f(t)\right]_0^\infty + s\int_0^\infty e^{-st}f(t)\,dt$$
+
+The boundary term: at $t \to \infty$ the factor $e^{-st}$ kills $f(t)$ (for functions of exponential order — meaning $|f(t)| \leq Me^{ct}$ for some constants $M > 0$ and $c$; essentially, $f(t)$ does not grow faster than some exponential, and all functions you will encounter in practice satisfy this); at $t = 0$ we get $-f(0)$. Therefore:
+
+$$\boxed{\mathcal{L}\{f'(t)\} = sF(s) - f(0)}$$
+
+The initial condition $f(0)$ appears automatically as part of the algebra.
+
+**Second derivative.** Apply the first-derivative rule to $f'$, treating $f'$ as a
+function in its own right:
+
+$$\mathcal{L}\{f''(t)\} = s\mathcal{L}\{f'(t)\} - f'(0) = s[sF(s) - f(0)] - f'(0)$$
+
+$$\boxed{\mathcal{L}\{f''(t)\} = s^2 F(s) - s f(0) - f'(0)}$$
+
+Both initial conditions appear. This is why the Laplace transform method is particularly
+clean for IVPs: the boundary data enters the algebra rather than being appended at the
+end.
+
+The pattern continues: $\mathcal{L}\{f^{(n)}\} = s^n F(s) - s^{n-1}f(0) - \cdots - f^{(n-1)}(0)$.
+
+## Solving initial value problems
+
+We now apply the four-step method.
+
+### First-order example
+
+**Solve** $y' + 3y = 6$, $y(0) = 1$.
+
+**Step 1: Take the Laplace transform of both sides.**
+
+$$\mathcal{L}\{y'\} + 3\mathcal{L}\{y\} = \mathcal{L}\{6\}$$
+
+$$[sY(s) - y(0)] + 3Y(s) = \frac{6}{s}$$
+
+**Step 2: Apply the initial condition $y(0) = 1$.**
+
+$$sY(s) - 1 + 3Y(s) = \frac{6}{s}$$
+
+**Step 3: Solve algebraically for $Y(s)$.**
+
+$$Y(s)(s + 3) = \frac{6}{s} + 1 = \frac{6 + s}{s}$$
+
+$$Y(s) = \frac{s + 6}{s(s+3)}$$
+
+**Step 4: Invert.** We need partial fractions:
+
+$$\frac{s+6}{s(s+3)} = \frac{A}{s} + \frac{B}{s+3}$$
+
+Multiply through: $s + 6 = A(s+3) + Bs$.
+
+- Set $s = 0$: $6 = 3A$, so $A = 2$.
+- Set $s = -3$: $3 = -3B$, so $B = -1$.
+
+Therefore:
+
+$$Y(s) = \frac{2}{s} - \frac{1}{s+3}$$
+
+Inverting term by term using the table ($\mathcal{L}^{-1}\{1/s\} = 1$, $\mathcal{L}^{-1}\{1/(s+3)\} = e^{-3t}$):
+
+$$y(t) = 2 - e^{-3t}$$
+
+Check: $y(0) = 2 - 1 = 1$ ✓. As $t \to \infty$, $y \to 2$ (the steady state, consistent
+with $3 \times 2 = 6$) ✓.
+
+### Second-order example
+
+**Solve** $y'' + 5y' + 6y = e^{-t}$, $y(0) = 1$, $y'(0) = 0$.
+
+**Step 1: Transform.**
+
+$$[s^2 Y - sy(0) - y'(0)] + 5[sY - y(0)] + 6Y = \frac{1}{s+1}$$
+
+**Step 2: Apply initial conditions.**
+
+$$s^2 Y - s - 0 + 5sY - 5 + 6Y = \frac{1}{s+1}$$
+
+$$(s^2 + 5s + 6)Y = \frac{1}{s+1} + s + 5$$
+
+**Step 3: Solve for $Y(s)$.**
+
+$$Y(s) = \frac{1}{(s+1)(s+2)(s+3)} + \frac{s+5}{(s+2)(s+3)}$$
+
+Combine over the common denominator $(s+1)(s+2)(s+3)$:
+
+$$Y(s) = \frac{1 + (s+5)(s+1)}{(s+1)(s+2)(s+3)} = \frac{s^2 + 6s + 6}{(s+1)(s+2)(s+3)}$$
+
+**Step 4: Partial fractions.**
+
+$$\frac{s^2+6s+6}{(s+1)(s+2)(s+3)} = \frac{A}{s+1} + \frac{B}{s+2} + \frac{C}{s+3}$$
+
+- $s = -1$: $1 - 6 + 6 = A(1)(2) \Rightarrow A = \tfrac{1}{2}$
+- $s = -2$: $4 - 12 + 6 = B(-1)(1) \Rightarrow B = 2$
+- $s = -3$: $9 - 18 + 6 = C(-2)(-1) \Rightarrow C = -\tfrac{3}{2}$
+
+$$y(t) = \frac{1}{2}e^{-t} + 2e^{-2t} - \frac{3}{2}e^{-3t}$$
+
+## Partial fractions
+
+Inverting $Y(s)$ almost always requires decomposing a rational function into terms
+matching the table. Two cases arise repeatedly.
+
+### Distinct real poles
+
+Given $\dfrac{N(s)}{(s - r_1)(s - r_2)\cdots(s - r_n)}$ with distinct roots, write
+
+$$\frac{N(s)}{(s-r_1)\cdots(s-r_n)} = \frac{A_1}{s-r_1} + \cdots + \frac{A_n}{s-r_n}$$
+
+Each coefficient: $A_k = \dfrac{N(r_k)}{\prod_{j \neq k}(r_k - r_j)}$, or equivalently
+multiply both sides by $(s - r_k)$ and set $s = r_k$. We did this in both worked
+examples above.
+
+### Complex conjugate poles
+
+When the denominator has a quadratic factor $s^2 + bs + c$ with no real roots (complex
+conjugate poles), keep the quadratic together and write a linear numerator:
+
+$$\frac{N(s)}{(s-r)(s^2+bs+c)} = \frac{A}{s-r} + \frac{Bs + C}{s^2+bs+c}$$
+
+After finding $A$, $B$, $C$ by equating coefficients or substituting convenient values
+of $s$, complete the square in the denominator and match to the $\sin$ and $\cos$ entries
+in the table.
+
+**Example.** Invert $\dfrac{s}{(s+1)(s^2+4)}$.
+
+$$\frac{s}{(s+1)(s^2+4)} = \frac{A}{s+1} + \frac{Bs+C}{s^2+4}$$
+
+Multiply through: $s = A(s^2+4) + (Bs+C)(s+1)$.
+
+- $s = -1$: $-1 = 5A$, so $A = -\tfrac{1}{5}$.
+- $s = 0$: $0 = 4A + C$, so $C = \tfrac{4}{5}$.
+- $s^2$ coefficient: here we equate coefficients of each power of $s$ rather than substituting a specific value — both methods work; coefficient matching is more systematic when substitution would give $0 = 0$. Equating $s^2$ terms: $0 = A + B$, so $B = \tfrac{1}{5}$.
+
+$$Y(s) = \frac{-1/5}{s+1} + \frac{(1/5)s + 4/5}{s^2+4} = -\frac{1}{5}\cdot\frac{1}{s+1} + \frac{1}{5}\cdot\frac{s}{s^2+4} + \frac{2}{5}\cdot\frac{2}{s^2+4}$$
+
+Inverting:
+
+$$y(t) = -\frac{1}{5}e^{-t} + \frac{1}{5}\cos(2t) + \frac{2}{5}\sin(2t)$$
+
+## The Heaviside step function and piecewise forcing
+
+Engineering systems are often forced by signals that switch on or off at a specific time.
+The Heaviside unit step function captures this:
+
+$$u(t-a) = \begin{cases} 0 & t < a \\ 1 & t \geq a \end{cases}$$
+
+Its Laplace transform is
+
+$$\mathcal{L}\{u(t-a)\} = \int_a^\infty e^{-st}\,dt = \frac{e^{-as}}{s}$$
+
+**Writing piecewise functions using $u(t-a)$.** Any function that switches on at $t = a$
+can be written using the Heaviside function. The piecewise function
+
+$$f(t) = \begin{cases} g(t) & 0 \leq t < a \\ h(t) & t \geq a \end{cases}$$
+
+equals $g(t) + [h(t) - g(t)]u(t-a)$.
+
+**Second shifting theorem.** If $\mathcal{L}\{f(t)\} = F(s)$, then
+
+$$\mathcal{L}\{f(t-a)\,u(t-a)\} = e^{-as}F(s)$$
+
+A time delay by $a$ in the $t$-domain multiplies the transform by $e^{-as}$. This is the
+mechanism that keeps piecewise forcing contained in a single algebraic expression.
+
+### Worked example: RC circuit with a step input
+
+**Problem.** An RC circuit with $R = 1\,\Omega$ and $C = 1\,\text{F}$ has the voltage
+equation
+
+$$\frac{dv}{dt} + v = V_\text{in}(t), \quad v(0) = 0$$
+
+where $V_\text{in}(t) = u(t - 2)$ — a unit voltage step applied at $t = 2$.
+
+**Step 1: Transform.**
+
+$$sV(s) - v(0) + V(s) = \frac{e^{-2s}}{s}$$
+
+**Step 2: Apply $v(0) = 0$.**
+
+$$V(s)(s+1) = \frac{e^{-2s}}{s}$$
+
+**Step 3: Solve for $V(s)$.**
+
+$$V(s) = \frac{e^{-2s}}{s(s+1)}$$
+
+**Step 4: Invert.** Factor out $e^{-2s}$, invert the rest, then apply the shifting theorem.
+
+The function without the exponential factor is $G(s) = \dfrac{1}{s(s+1)}$. Partial fractions:
+$\dfrac{1}{s(s+1)} = \dfrac{1}{s} - \dfrac{1}{s+1}$, so $g(t) = 1 - e^{-t}$.
+
+By the second shifting theorem:
+
+$$v(t) = g(t-2)\,u(t-2) = \left(1 - e^{-(t-2)}\right)u(t-2)$$
+
+Explicitly:
+
+$$v(t) = \begin{cases} 0 & t < 2 \\ 1 - e^{-(t-2)} & t \geq 2 \end{cases}$$
+
+The circuit is at rest until $t = 2$. After the switch closes, the voltage rises
+exponentially toward 1 with time constant $\tau = RC = 1$ second.
+
+```{ojs}
+//| echo: false
+viewof srW0 = Inputs.range([0.5, 5], {step: 0.1, value: 2, label: "ω₀ (natural frequency)"})
+```
+
+```{ojs}
+//| echo: false
+viewof srZeta = Inputs.range([0.05, 2], {step: 0.05, value: 0.3, label: "ζ (damping ratio)"})
+```
+
+```{ojs}
+//| echo: false
+viewof srA = Inputs.range([0, 8], {step: 0.5, value: 3, label: "Switch time a (s)"})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const w0   = srW0;
+  const zeta = srZeta;
+  const a    = srA;
+
+  // RK4 numerical integration of y'' + 2ζω₀y' + ω₀²y = ω₀²·u(t-a)
+  // State: [y, dy/dt]
+  const dt   = 0.01;
+  const tEnd = 20;
+  const N    = Math.ceil(tEnd / dt);
+
+  const ts = new Float64Array(N + 1);
+  const ys = new Float64Array(N + 1);
+
+  const deriv = (t, y, v) => {
+    const u = t >= a ? 1.0 : 0.0;
+    const dvdt = w0 * w0 * u - 2 * zeta * w0 * v - w0 * w0 * y;
+    return [v, dvdt];
+  };
+
+  let y = 0, v = 0;
+  ts[0] = 0; ys[0] = 0;
+  for (let i = 0; i < N; i++) {
+    const t = ts[i];
+    const [k1y, k1v] = deriv(t,          y,                    v);
+    const [k2y, k2v] = deriv(t + dt/2,   y + dt/2 * k1y,      v + dt/2 * k1v);
+    const [k3y, k3v] = deriv(t + dt/2,   y + dt/2 * k2y,      v + dt/2 * k2v);
+    const [k4y, k4v] = deriv(t + dt,     y + dt * k3y,         v + dt * k3v);
+    y += (dt / 6) * (k1y + 2*k2y + 2*k3y + k4y);
+    v += (dt / 6) * (k1v + 2*k2v + 2*k3v + k4v);
+    ts[i+1] = t + dt;
+    ys[i+1] = y;
+  }
+
+  // Layout
+  const width = 560, height = 300;
+  const margin = {top: 24, right: 24, bottom: 40, left: 50};
+  const innerW = width  - margin.left - margin.right;
+  const innerH = height - margin.top  - margin.bottom;
+
+  const yAll = Array.from(ys);
+  const yMax = Math.max(d3.max(yAll) * 1.15, 1.2);
+  const yMin = Math.min(d3.min(yAll) * 1.1, -0.15);
+
+  const xScale = d3.scaleLinear().domain([0, tEnd]).range([0, innerW]);
+  const yScale = d3.scaleLinear().domain([yMin, yMax]).range([innerH, 0]);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .attr("width", width)
+    .attr("style", "font-family: sans-serif; font-size: 11px;");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Steady-state dashed line
+  g.append("line")
+    .attr("x1", 0).attr("y1", yScale(1))
+    .attr("x2", innerW).attr("y2", yScale(1))
+    .attr("stroke", "#aaa")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "6,4");
+
+  g.append("text")
+    .attr("x", innerW - 4).attr("y", yScale(1) - 5)
+    .attr("text-anchor", "end")
+    .attr("fill", "#888")
+    .text("Steady state (y = 1)");
+
+  // Switch time dashed line
+  if (a <= tEnd) {
+    g.append("line")
+      .attr("x1", xScale(a)).attr("y1", 0)
+      .attr("x2", xScale(a)).attr("y2", innerH)
+      .attr("stroke", "#bbb")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-dasharray", "4,3");
+
+    g.append("text")
+      .attr("x", xScale(a) + 4).attr("y", 14)
+      .attr("fill", "#999")
+      .text(`Switch at t = ${a}`);
+  }
+
+  // Axes
+  g.append("g").attr("transform", `translate(0,${yScale(0)})`).call(d3.axisBottom(xScale).ticks(10));
+  g.append("g").call(d3.axisLeft(yScale).ticks(6));
+
+  // Axis labels
+  g.append("text").attr("x", innerW / 2).attr("y", innerH + 32)
+    .attr("text-anchor", "middle").text("t (s)");
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -38)
+    .attr("text-anchor", "middle").text("y(t)");
+
+  // Response curve
+  const lineGen = d3.line()
+    .x((_, i) => xScale(ts[i]))
+    .y((v) => yScale(v));
+
+  g.append("path")
+    .datum(yAll)
+    .attr("d", lineGen)
+    .attr("fill", "none")
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 2.5);
+
+  // Damping label
+  const dampLabel = zeta < 1 ? `Underdamped (ζ = ${zeta.toFixed(2)})` :
+                    zeta === 1 ? "Critically damped" :
+                    `Overdamped (ζ = ${zeta.toFixed(2)})`;
+  g.append("text")
+    .attr("x", 6).attr("y", 14)
+    .attr("fill", "steelblue")
+    .attr("font-size", "12px")
+    .text(dampLabel);
+
+  return svg.node();
+}
+```
+
+## The Dirac delta function
+
+A solenoid strikes a piston at $t = a$. The contact lasts a fraction of a millisecond
+but delivers a definite impulse — a large force for a very short time. The Dirac delta
+function $\delta(t - a)$ is the mathematical idealisation: an infinitely concentrated
+spike at $t = a$ with unit area.
+
+Formally, $\delta(t-a)$ is defined through its sifting property: for any continuous function $f$,
+
+$$\int_{-\infty}^\infty f(t)\,\delta(t-a)\,dt = f(a)$$
+
+It is not a function in the classical sense — it is a distribution. But for engineering
+purposes, the sifting property is all we need.
+
+**Laplace transform of $\delta(t-a)$** for $a > 0$:
+
+$$\mathcal{L}\{\delta(t-a)\} = \int_0^\infty e^{-st}\delta(t-a)\,dt = e^{-as}$$
+
+The sifting property pulls out the factor $e^{-st}$ evaluated at $t = a$. Notably, the
+transform of an impulse is just an exponential — a constant for any given $a$.
+
+### Impulse response of a second-order system
+
+**Problem.** A mechanical oscillator receives a unit impulse at $t = 1$:
+
+$$\ddot{x} + 2\dot{x} + 5x = \delta(t-1), \quad x(0) = 0,\ \dot{x}(0) = 0$$
+
+**Step 1: Transform.**
+
+$$s^2 X + 2sX + 5X = e^{-s}$$
+
+**Step 2: Initial conditions already zero.**
+
+$$(s^2 + 2s + 5)X(s) = e^{-s}$$
+
+**Step 3: Solve for $X(s)$.**
+
+$$X(s) = \frac{e^{-s}}{s^2 + 2s + 5}$$
+
+**Step 4: Invert using the second shifting theorem.** Complete the square in the
+denominator: $s^2 + 2s + 5 = (s+1)^2 + 4$.
+
+The function without $e^{-s}$ is $G(s) = \dfrac{1}{(s+1)^2+4}$.
+
+From the table: $\mathcal{L}^{-1}\!\left\{\dfrac{\omega}{(s-a)^2+\omega^2}\right\} = e^{at}\sin(\omega t)$,
+so with $a = -1$ and $\omega = 2$:
+
+$$g(t) = \frac{1}{2}e^{-t}\sin(2t)$$
+
+By the second shifting theorem:
+
+$$x(t) = g(t-1)\,u(t-1) = \frac{1}{2}e^{-(t-1)}\sin(2(t-1))\,u(t-1)$$
+
+The system is undisturbed until the impulse at $t = 1$. After the impulse, it responds
+with a damped sinusoidal oscillation — the system's natural behaviour, triggered
+instantaneously.
+
+::: {.callout-note appearance="simple"}
+**Impulse response and system characterisation**
+
+The impulse response $h(t)$ — the output when the input is $\delta(t)$ with zero initial
+conditions — completely characterises a linear time-invariant system. Any input $u(t)$
+produces the output $\int_0^t h(t-\tau)u(\tau)\,d\tau$. This is the convolution
+integral, and it connects directly to the convolution theorem below.
+:::
+
+## Convolution theorem
+
+For two functions $f$ and $g$, the convolution is
+
+$$(f * g)(t) = \int_0^t f(t-\tau)\,g(\tau)\,d\tau$$
+
+The convolution theorem states:
+
+$$\mathcal{L}\{f * g\} = F(s)\cdot G(s)$$
+
+Multiplication in the $s$-domain corresponds to convolution in the $t$-domain.
+
+**Transfer function interpretation.** If a system has impulse response $h(t)$ with
+transform $H(s)$, then for input $U(s)$ the output is $Y(s) = H(s)\,U(s)$. Here $H(s)$
+is the **transfer function** of the system. Control engineers characterise systems
+entirely through their transfer functions — poles of $H(s)$ determine stability, zeros
+determine how the system shapes the input signal. The step from a differential equation
+to a transfer function is the step from the $t$-domain to the $s$-domain via the Laplace
+transform.
+
+## Where this goes
+
+The Laplace transform is the bridge from time-domain dynamics to the frequency domain.
+The next natural step is **Fourier series** and the **Fourier transform**, which decompose
+periodic or square-integrable signals into frequency components directly — without the
+convergence factor $e^{-st}$. The Fourier transform is obtained by restricting the
+Laplace transform to the imaginary axis $s = i\omega$. That connection, explored in the
+Fourier chapter, motivates the full theory of **complex analysis** (Vol 7): the inverse
+Laplace transform is a contour integral in the complex $s$-plane, the Bromwich integral,
+and understanding it properly requires residue calculus.
+
+For PDEs, the Laplace transform in $t$ reduces certain parabolic and hyperbolic PDEs to
+ODEs in the spatial variable — an approach that reuses everything developed here.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A control engineer designing a PID controller writes the plant as a transfer function
+  $G(s)$ and shapes the closed-loop response in the $s$-domain — poles, zeros, Bode
+  plots, all Laplace-transform concepts.
+- A nuclear engineer modelling a decay chain with time-varying neutron flux uses Laplace
+  transforms to handle the discontinuous source term.
+- A signal processing engineer designing a digital filter uses the Z-transform, the
+  discrete analogue of the Laplace transform: $\mathcal{Z}\{x[n]\} = \sum_{n=0}^\infty x[n]z^{-n}$.
+- A quant analyst pricing exotic options uses the characteristic function of the asset
+  price process — effectively the Laplace transform of the risk-neutral density — with
+  fast Fourier transform inversion.
+:::
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**1.** Compute $\mathcal{L}\{3e^{2t} - 4\sin(3t)\}$ using the table and linearity.
+
+<!-- STEPPER -->
+Step 1 | Apply linearity | $\mathcal{L}\{3e^{2t} - 4\sin(3t)\} = 3\mathcal{L}\{e^{2t}\} - 4\mathcal{L}\{\sin(3t)\}$
+Step 2 | Read $\mathcal{L}\{e^{2t}\}$ from table | $\mathcal{L}\{e^{2t}\} = \dfrac{1}{s-2}$
+Step 3 | Read $\mathcal{L}\{\sin(3t)\}$ from table | $\mathcal{L}\{\sin(3t)\} = \dfrac{3}{s^2+9}$
+Step 4 | Combine | $\dfrac{3}{s-2} - \dfrac{12}{s^2+9}$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Apply linearity",
+    eq: "\\mathcal{L}\\{3e^{2t} - 4\\sin(3t)\\} = 3\\mathcal{L}\\{e^{2t}\\} - 4\\mathcal{L}\\{\\sin(3t)\\}" },
+  { op: "Read e^{2t} from table",
+    eq: "\\mathcal{L}\\{e^{2t}\\} = \\frac{1}{s-2}",
+    note: "Standard entry: ℒ{e^{at}} = 1/(s−a), here a = 2." },
+  { op: "Read sin(3t) from table",
+    eq: "\\mathcal{L}\\{\\sin(3t)\\} = \\frac{3}{s^2+9}",
+    note: "Standard entry: ℒ{sin(ωt)} = ω/(s²+ω²), here ω = 3." },
+  { op: "Combine",
+    eq: "\\frac{3}{s-2} - \\frac{12}{s^2+9}" }
+])
+```
+
+---
+
+**2.** Solve $y' + 3y = 6$, $y(0) = 1$.
+
+<!-- STEPPER -->
+Step 1 | Transform both sides | $sY - 1 + 3Y = \dfrac{6}{s}$
+Step 2 | Collect $Y$ terms | $(s+3)Y = \dfrac{6}{s} + 1 = \dfrac{s+6}{s}$
+Step 3 | Solve for $Y(s)$ | $Y(s) = \dfrac{s+6}{s(s+3)}$
+Step 4 | Partial fractions | $Y(s) = \dfrac{2}{s} - \dfrac{1}{s+3}$
+Step 5 | Invert | $y(t) = 2 - e^{-3t}$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Transform both sides",
+    eq: "sY - 1 + 3Y = \\frac{6}{s}",
+    note: "ℒ{y'} = sY − y(0) = sY − 1. Right side: ℒ{6} = 6/s." },
+  { op: "Collect Y terms",
+    eq: "(s+3)Y = \\frac{6}{s} + 1 = \\frac{s+6}{s}" },
+  { op: "Solve for Y(s)",
+    eq: "Y(s) = \\frac{s+6}{s(s+3)}" },
+  { op: "Partial fractions: A/s + B/(s+3)",
+    eq: "A = 2,\\quad B = -1 \\implies Y(s) = \\frac{2}{s} - \\frac{1}{s+3}",
+    note: "Set s=0: 6=3A; set s=−3: 3=−3B." },
+  { op: "Invert term by term",
+    eq: "y(t) = 2 - e^{-3t}" }
+])
+```
+
+---
+
+**3.** Solve $y'' + 4y = \sin(2t)$, $y(0) = 0$, $y'(0) = 1$.
+
+<!-- STEPPER -->
+Step 1 | Transform | $s^2 Y - 1 + 4Y = \dfrac{2}{s^2+4}$
+Step 2 | Solve for $Y(s)$ | $Y(s) = \dfrac{1}{s^2+4} + \dfrac{2}{(s^2+4)^2}$
+Step 3 | Invert first term | $\mathcal{L}^{-1}\!\left\{\dfrac{1}{s^2+4}\right\} = \dfrac{1}{2}\sin(2t)$
+Step 4 | Invert second term (table or integration) | $\mathcal{L}^{-1}\!\left\{\dfrac{2}{(s^2+4)^2}\right\} = \dfrac{1}{8}(\sin 2t - 2t\cos 2t)$
+Step 5 | Combine | $y(t) = \dfrac{1}{2}\sin(2t) + \dfrac{1}{8}\sin(2t) - \dfrac{1}{4}t\cos(2t) = \dfrac{5}{8}\sin(2t) - \dfrac{1}{4}t\cos(2t)$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Transform both sides",
+    eq: "s^2 Y - s\\cdot 0 - 1 + 4Y = \\frac{2}{s^2+4}",
+    note: "ℒ{y''} = s²Y − sy(0) − y'(0) = s²Y − 1." },
+  { op: "Collect and solve for Y",
+    eq: "(s^2+4)Y = \\frac{2}{s^2+4} + 1 \\implies Y(s) = \\frac{1}{s^2+4} + \\frac{2}{(s^2+4)^2}" },
+  { op: "Invert first term",
+    eq: "\\mathcal{L}^{-1}\\!\\left\\{\\frac{1}{s^2+4}\\right\\} = \\frac{1}{2}\\sin(2t)",
+    note: "ℒ{sin(ωt)} = ω/(s²+ω²) with ω=2." },
+  { op: "Invert second term",
+    eq: "\\mathcal{L}^{-1}\\!\\left\\{\\frac{2}{(s^2+4)^2}\\right\\} = \\frac{1}{8}(\\sin 2t - 2t\\cos 2t)",
+    note: "Using ℒ{sin(ωt) − ωt cos(ωt)} = 2ω³/(s²+ω²)² with ω=2; scale: 2/(s²+4)² = (1/16)·(2·8)/(s²+4)², giving factor 1/8." },
+  { op: "Combine",
+    eq: "y(t) = \\tfrac{5}{8}\\sin(2t) - \\tfrac{1}{4}t\\cos(2t)" }
+])
+```
+
+---
+
+**4.** Write $f(t) = \begin{cases}0 & t<2\\t-2 & t\geq 2\end{cases}$ in terms of $u(t-2)$ and find $\mathcal{L}\{f(t)\}$.
+
+<!-- STEPPER -->
+Step 1 | Express using Heaviside | $f(t) = (t-2)\,u(t-2)$
+Step 2 | Identify the underlying function | $g(t) = t$, so $f(t) = g(t-2)\,u(t-2)$
+Step 3 | Apply second shifting theorem | $\mathcal{L}\{g(t-2)\,u(t-2)\} = e^{-2s}\mathcal{L}\{g(t)\} = e^{-2s}\mathcal{L}\{t\}$
+Step 4 | Read $\mathcal{L}\{t\}$ from table | $\mathcal{L}\{t\} = \dfrac{1}{s^2}$
+Step 5 | Final answer | $\mathcal{L}\{f(t)\} = \dfrac{e^{-2s}}{s^2}$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Express using Heaviside",
+    eq: "f(t) = (t-2)\\,u(t-2)",
+    note: "The factor u(t−2) switches the function on at t=2." },
+  { op: "Identify g(t)",
+    eq: "f(t) = g(t-2)\\,u(t-2) \\text{ where } g(t) = t" },
+  { op: "Apply second shifting theorem",
+    eq: "\\mathcal{L}\\{g(t-2)\\,u(t-2)\\} = e^{-2s}\\mathcal{L}\\{g(t)\\} = e^{-2s}\\mathcal{L}\\{t\\}",
+    note: "ℒ{f(t−a)u(t−a)} = e^{−as}F(s)." },
+  { op: "Read ℒ{t} from table",
+    eq: "\\mathcal{L}\\{t\\} = \\frac{1}{s^2}" },
+  { op: "Final answer",
+    eq: "\\mathcal{L}\\{f(t)\\} = \\frac{e^{-2s}}{s^2}" }
+])
+```
+
+---
+
+**5.** Solve $y'' + y = u(t - \pi)$, $y(0) = 0$, $y'(0) = 0$.
+The system is at rest; a step input arrives at $t = \pi$.
+
+<!-- STEPPER -->
+Step 1 | Transform | $s^2 Y + Y = \dfrac{e^{-\pi s}}{s}$
+Step 2 | Solve for $Y(s)$ | $Y(s) = \dfrac{e^{-\pi s}}{s(s^2+1)}$
+Step 3 | Partial fractions on $G(s) = \dfrac{1}{s(s^2+1)}$ | $G(s) = \dfrac{1}{s} - \dfrac{s}{s^2+1}$
+Step 4 | Invert $G(s)$ | $g(t) = 1 - \cos t$
+Step 5 | Apply shifting theorem | $y(t) = [1 - \cos(t-\pi)]\,u(t-\pi)$
+Step 6 | Simplify using $\cos(t-\pi) = -\cos t$ | $y(t) = [1 + \cos t]\,u(t-\pi)$
+(using $\cos(t-\pi) = -\cos t$, from the cosine addition formula)
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Transform (zero ICs)",
+    eq: "s^2 Y + Y = \\frac{e^{-\\pi s}}{s}",
+    note: "Both initial conditions are zero, so no boundary terms." },
+  { op: "Solve for Y(s)",
+    eq: "Y(s) = \\frac{e^{-\\pi s}}{s(s^2+1)}" },
+  { op: "Partial fractions on G(s) = 1/[s(s²+1)]",
+    eq: "\\frac{1}{s(s^2+1)} = \\frac{1}{s} - \\frac{s}{s^2+1}",
+    note: "Check: 1/(s·…) at s=0 gives A=1; equate s² gives B=−1." },
+  { op: "Invert G(s)",
+    eq: "g(t) = 1 - \\cos t" },
+  { op: "Apply second shifting theorem",
+    eq: "y(t) = [1 - \\cos(t-\\pi)]\\,u(t-\\pi)" },
+  { op: "Simplify: cos(t−π) = −cos t",
+    eq: "y(t) = [1 + \\cos t]\\,u(t-\\pi)",
+    note: "Using cos(t−π) = −cos t, from the cosine addition formula. For t > π: y oscillates about 1. Before t=π: y=0." }
+])
+```
+
+---
+
+**6.** A mechanical system receives a unit impulse at $t = 1$:
+$\ddot{x} + 2\dot{x} + 5x = \delta(t-1)$, $x(0) = 0$, $\dot{x}(0) = 0$.
+Find $x(t)$ for $t > 1$.
+
+<!-- STEPPER -->
+Step 1 | Transform | $(s^2 + 2s + 5)X = e^{-s}$
+Step 2 | Solve for $X(s)$ | $X(s) = \dfrac{e^{-s}}{s^2+2s+5}$
+Step 3 | Complete the square in denominator | $s^2+2s+5 = (s+1)^2+4$
+Step 4 | Invert $G(s) = \dfrac{1}{(s+1)^2+4}$ | $g(t) = \dfrac{1}{2}e^{-t}\sin(2t)$
+Step 5 | Apply shifting theorem | $x(t) = \dfrac{1}{2}e^{-(t-1)}\sin(2(t-1))\,u(t-1)$
+<!-- END STEPPER -->
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Transform: ℒ{δ(t−1)} = e^{−s}",
+    eq: "(s^2 + 2s + 5)X = e^{-s}",
+    note: "Zero initial conditions; impulse transform is e^{−as} with a=1." },
+  { op: "Solve for X(s)",
+    eq: "X(s) = \\frac{e^{-s}}{s^2+2s+5}" },
+  { op: "Complete the square",
+    eq: "s^2+2s+5 = (s+1)^2+4" },
+  { op: "Invert G(s) = 1/[(s+1)²+4]",
+    eq: "g(t) = \\frac{1}{2}e^{-t}\\sin(2t)",
+    note: "Match to ℒ{e^{at}sin(ωt)} = ω/[(s−a)²+ω²] with a=−1, ω=2." },
+  { op: "Apply second shifting theorem",
+    eq: "x(t) = \\tfrac{1}{2}e^{-(t-1)}\\sin\\bigl(2(t-1)\\bigr)\\,u(t-1)",
+    note: "For t > 1: damped sinusoid with natural frequency 2 rad/s, decay rate 1." }
+])
+```

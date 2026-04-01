@@ -1,6 +1,951 @@
 ---
 title: "Differential calculus"
-status: "seed"
+subtitle: "The instantaneous rate of change"
+volume: 5
+chapter: 2
+layer: "university"
+status: "review"
+
+axiom: |
+  You know how to find the average rate of change of a function over an
+  interval. At every point on a smooth curve, that average has a limit
+  as the interval shrinks to zero.
+
+rewrite: |
+  That limit is the derivative. It measures the instantaneous rate of
+  change — how fast the output is changing relative to the input, right
+  now. Every dynamic system in engineering and science runs on this idea.
+
+opens_to:
+  - id: "v5c3-integral-calculus"
+    label: "Integral calculus"
+    volume: 5
+    relationship: "enables"
+  - id: "v7c1-first-order-odes"
+    label: "First-order ODEs"
+    volume: 7
+    relationship: "enables"
+
+prerequisite_ids:
+  - "limits"
+  - "func"
+  - "exp_log"
+  - "trig"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Velocity, acceleration, current, pressure gradients — every dynamic quantity in engineering is a derivative."
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "Rate of radioactive decay, population growth rate, reaction velocity — science describes change using derivatives."
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Marginal cost and marginal revenue are derivatives — optimising profit means finding where they're equal."
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Gradient descent — the engine of machine learning — is a derivative applied iteratively."
+
+notation_introduced:
+  - symbol: "f'(x)"
+    reads_as: "f prime of x — the derivative of f"
+    notation_weight: 3
+  - symbol: "\\frac{dy}{dx}"
+    reads_as: "dy by dx — Leibniz notation for the derivative"
+    notation_weight: 3
+  - symbol: "\\frac{d}{dx}[f(x)]"
+    reads_as: "d by dx of f — the derivative operator applied to f"
+    notation_weight: 2
+  - symbol: "f''(x)"
+    reads_as: "f double-prime of x — the second derivative of f"
+    notation_weight: 2
+  - symbol: "\\frac{d^2y}{dx^2}"
+    reads_as: "d-squared y by dx-squared — Leibniz notation for the second derivative"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+uofa_course: "MATH 100"
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+Your car's GPS records your average speed over the entire trip: 62 km/h.
+But your speedometer, right now, reads 90 km/h. These are different
+quantities. The GPS average looks back over the whole journey; the
+speedometer is telling you something about *this instant*. The question
+"how fast am I going right now?" is not the same question as "how fast
+did I go on average?" — and answering it requires a fundamentally
+different tool.
+
+Here is a sharper version of the same problem. A drug is injected into
+the bloodstream. A doctor monitors its concentration — measured in
+milligrams per litre — every hour. She can compute the average rate of
+clearance over a two-hour window. But what determines the dosing schedule
+is the *instantaneous* rate of clearance right now: how fast is the
+concentration dropping at this moment? If that rate is too slow, the drug
+accumulates to toxic levels. Too fast, and the dose is ineffective before
+the next one can be given. The decision is made on the basis of a rate at
+a point in time, not an average across an interval.
+
+Both situations share the same mathematical structure. In chapter 1 you
+met limits: the value that a function approaches as the input gets
+arbitrarily close to some point. The speedometer reading *is* a limit —
+the limit of average speeds over shorter and shorter time intervals. This
+chapter builds that limit into a systematic tool.
+
+## The limit definition of the derivative
+
+The derivative has a precise definition as a limit. Start with the
+**average rate of change** of $f$ over the interval from $x$ to $x + h$:
+
+$$\frac{f(x+h) - f(x)}{h}$$
+
+The numerator $f(x+h) - f(x)$ is the change in output. The denominator
+$h$ is the change in input. Their ratio is the slope of the **secant
+line** connecting the two points $(x,\, f(x))$ and $(x+h,\, f(x+h))$ on
+the graph.
+
+Now let $h \to 0$. The second point slides toward the first. The secant
+line tilts and, in the limit, becomes the **tangent line** at $x$. The
+slope of that tangent line is the derivative:
+
+$$\boxed{f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}}$$
+
+This is the formal definition. Every differentiation rule derived later
+is a consequence of it. The definition itself is the limit you saw in
+chapter 1, applied to a specific quotient.
+
+## What the notation is saying
+
+Two notations for the derivative are standard. You will need both.
+
+**Prime notation** (Newton): $f'(x)$, read *f prime of x*. Clean and
+fast to write. Used when there is no ambiguity about which variable
+you're differentiating with respect to.
+
+**Leibniz notation**: $\dfrac{dy}{dx}$, read *dy by dx*. More verbose but
+carries structural information — it names both the output variable ($y$)
+and the input variable ($x$). When a problem involves several variables,
+or when you need to keep track of units, Leibniz notation makes the
+algebra clearer. Most science and engineering texts default to it.
+
+Both mean the same thing. If $y = f(x)$, then:
+
+$$f'(x) = \frac{dy}{dx} = \frac{d}{dx}\bigl[f(x)\bigr]$$
+
+The expression $\dfrac{d}{dx}[\,\cdot\,]$ is an **operator** — it takes
+a function as input and produces its derivative as output. Think of $d/dx$
+as an instruction: *differentiate with respect to $x$*.
+
+```{ojs}
+//| echo: false
+viewof x2_secant = Inputs.range([1.01, 3.0], {
+  step: 0.01,
+  value: 3.0,
+  label: "x₂ (drag toward 1)"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const width = 560, height = 320;
+  const margin = { top: 24, right: 32, bottom: 44, left: 52 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const f = x => x * x + 1;
+  const x1 = 1, y1 = f(x1);
+  const x2 = x2_secant, y2 = f(x2);
+  const slope = (y2 - y1) / (x2 - x1);
+  const nearTangent = x2 < 1.05;
+
+  const xScale = d3.scaleLinear().domain([-0.5, 3]).range([0, innerW]);
+  const yScale = d3.scaleLinear().domain([0, 11]).range([innerH, 0]);
+
+  const svg = d3.create("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .style("font-family", "inherit");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Axes
+  g.append("g")
+    .attr("transform", `translate(0,${innerH})`)
+    .call(d3.axisBottom(xScale).ticks(7))
+    .call(ax => ax.select(".domain").attr("stroke", "#9ca3af"))
+    .call(ax => ax.selectAll("line").attr("stroke", "#9ca3af"))
+    .call(ax => ax.selectAll("text").attr("fill", "#6b7280").attr("font-size", "11"));
+
+  g.append("g")
+    .call(d3.axisLeft(yScale).ticks(6))
+    .call(ax => ax.select(".domain").attr("stroke", "#9ca3af"))
+    .call(ax => ax.selectAll("line").attr("stroke", "#9ca3af"))
+    .call(ax => ax.selectAll("text").attr("fill", "#6b7280").attr("font-size", "11"));
+
+  // Axis labels
+  g.append("text").attr("x", innerW / 2).attr("y", innerH + 38)
+    .attr("text-anchor", "middle").attr("fill", "#6b7280").attr("font-size", "12").text("x");
+  g.append("text").attr("transform", "rotate(-90)").attr("x", -innerH / 2).attr("y", -38)
+    .attr("text-anchor", "middle").attr("fill", "#6b7280").attr("font-size", "12").text("y");
+
+  // Grid lines
+  g.append("g").attr("class", "grid")
+    .call(d3.axisLeft(yScale).ticks(6).tickSize(-innerW).tickFormat(""))
+    .call(ax => ax.select(".domain").remove())
+    .call(ax => ax.selectAll("line").attr("stroke", "#f3f4f6").attr("stroke-dasharray", "3,3"));
+
+  // Curve f(x) = x² + 1
+  const lineGen = d3.line()
+    .x(d => xScale(d))
+    .y(d => yScale(f(d)))
+    .curve(d3.curveBasis);
+
+  const xs = d3.range(-0.5, 3.02, 0.02);
+  g.append("path")
+    .datum(xs)
+    .attr("fill", "none")
+    .attr("stroke", "#2563eb")
+    .attr("stroke-width", 2.5)
+    .attr("d", lineGen);
+
+  // Curve label
+  g.append("text")
+    .attr("x", xScale(2.7))
+    .attr("y", yScale(f(2.7)) - 10)
+    .attr("fill", "#2563eb")
+    .attr("font-size", "12")
+    .text("f(x) = x² + 1");
+
+  // Draw line (secant or tangent) extended across the visible range
+  const drawLine = (slope, passX, passY, color, dash) => {
+    const xLeft = -0.5, xRight = 3;
+    const yLeft = passY + slope * (xLeft - passX);
+    const yRight = passY + slope * (xRight - passX);
+    g.append("line")
+      .attr("x1", xScale(xLeft)).attr("y1", yScale(yLeft))
+      .attr("x2", xScale(xRight)).attr("y2", yScale(yRight))
+      .attr("stroke", color)
+      .attr("stroke-width", nearTangent ? 2 : 1.5)
+      .attr("stroke-dasharray", dash || "none")
+      .attr("opacity", 0.85);
+  };
+
+  if (nearTangent) {
+    // Show tangent line
+    drawLine(2, x1, y1, "#10b981", null);
+    g.append("text")
+      .attr("x", xScale(2.2))
+      .attr("y", yScale(2 * (2.2 - 1) + y1) - 10)
+      .attr("fill", "#10b981")
+      .attr("font-size", "12")
+      .attr("font-weight", "600")
+      .text("tangent slope → 2");
+  } else {
+    // Show secant line
+    drawLine(slope, x1, y1, "#ef4444", null);
+  }
+
+  // P₁ dot (fixed)
+  g.append("circle")
+    .attr("cx", xScale(x1)).attr("cy", yScale(y1))
+    .attr("r", 5).attr("fill", "#2563eb").attr("stroke", "#fff").attr("stroke-width", 1.5);
+  g.append("text")
+    .attr("x", xScale(x1) - 14).attr("y", yScale(y1) - 9)
+    .attr("fill", "#2563eb").attr("font-size", "12").attr("font-weight", "600")
+    .text("P₁");
+
+  // P₂ dot (moving)
+  if (!nearTangent) {
+    g.append("circle")
+      .attr("cx", xScale(x2)).attr("cy", yScale(y2))
+      .attr("r", 5).attr("fill", "#ef4444").attr("stroke", "#fff").attr("stroke-width", 1.5);
+    g.append("text")
+      .attr("x", xScale(x2) + 7).attr("y", yScale(y2) - 6)
+      .attr("fill", "#ef4444").attr("font-size", "12").attr("font-weight", "600")
+      .text("P₂");
+  }
+
+  // Slope readout
+  const slopeText = nearTangent
+    ? "secant slope → 2.000  (tangent)"
+    : `secant slope = ${slope.toFixed(4)}`;
+  const slopeColor = nearTangent ? "#10b981" : "#ef4444";
+
+  g.append("text")
+    .attr("x", innerW - 4).attr("y", 14)
+    .attr("text-anchor", "end")
+    .attr("fill", slopeColor)
+    .attr("font-size", "13")
+    .attr("font-weight", "600")
+    .text(slopeText);
+
+  return svg.node();
+}
+```
+
+::: {.callout-note appearance="simple"}
+**The tangent line**
+
+The derivative $f'(a)$ is the slope of the **tangent line** to the graph
+of $f$ at the point $(a, f(a))$ — the straight line through $(a, f(a))$
+with slope $f'(a)$, which is the best linear approximation to $f$ near
+$x = a$.
+
+Unlike the informal picture, a tangent line can cross the curve —
+$f(x) = x^3$ at the origin has a tangent line that crosses. What defines
+a tangent is its slope, not whether it crosses.
+
+This is why a function fails to be differentiable at a corner or cusp:
+no unique tangent line exists there.
+:::
+
+## The method — differentiation rules
+
+Computing every derivative from the limit definition would be
+exhausting. Fortunately, the limit has been worked out once for each
+class of function, packaged into rules, and those rules can be applied
+mechanically. The skill in differentiation is knowing which rule to
+reach for.
+
+### Power rule
+
+For any function $f(x) = x^n$, where $n$ is a real number:
+
+$$\frac{d}{dx}\bigl[x^n\bigr] = n x^{n-1}$$
+
+This is the most-used rule in calculus. It applies to positive integers,
+negative integers, fractions — any real exponent.
+
+**Derivation for positive integer $n$.** Start from the limit definition:
+
+$$f'(x) = \lim_{h \to 0} \frac{(x+h)^n - x^n}{h}$$
+
+To make progress, we need to expand $(x+h)^n$. For small $n$ you can do
+this by multiplying out, but the pattern for general $n$ comes from
+the binomial theorem — covered in Vol 3 polynomials. For $n = 2$:
+$(x+h)^2 = x^2 + 2xh + h^2$. For $n = 3$: $(x+h)^3 = x^3 + 3x^2h + 3xh^2 + h^3$.
+In general:
+
+$$(x+h)^n = x^n + n x^{n-1} h + \frac{n(n-1)}{2} x^{n-2} h^2 + \cdots + h^n$$
+
+Subtract $x^n$ and divide by $h$:
+
+$$\frac{(x+h)^n - x^n}{h} = n x^{n-1} + \frac{n(n-1)}{2} x^{n-2} h + \cdots + h^{n-1}$$
+
+Every term except the first contains at least one factor of $h$. As
+$h \to 0$, all those terms vanish:
+
+$$f'(x) = \lim_{h \to 0} \left( n x^{n-1} + \text{terms with } h \right) = n x^{n-1}$$
+
+The rule is proved. Notice what happened: the limit killed every term
+except the leading one. This is why the power rule is so clean.
+
+**Examples:**
+
+| $f(x)$ | $f'(x)$ |
+|---|---|
+| $x^5$ | $5x^4$ |
+| $x^{-2}$ | $-2x^{-3}$ |
+| $\sqrt{x} = x^{1/2}$ | $\tfrac{1}{2} x^{-1/2}$ |
+| $1 = x^0$ | $0$ |
+
+The last row says: the derivative of any constant is zero. A constant
+function has zero slope everywhere — that makes sense.
+
+### Sum/difference and constant multiple rules
+
+These follow directly from the limit definition: because the limit of a
+sum is the sum of the limits, and a constant factor passes through a
+limit.
+
+**Constant multiple rule:**
+$$\frac{d}{dx}\bigl[c \cdot f(x)\bigr] = c \cdot f'(x)$$
+
+**Sum/difference rule:**
+$$\frac{d}{dx}\bigl[f(x) \pm g(x)\bigr] = f'(x) \pm g'(x)$$
+
+Together these mean you can differentiate a polynomial term by term.
+For $p(x) = 3x^4 - 2x^2 + 5x - 1$:
+
+$$p'(x) = 3 \cdot 4x^3 - 2 \cdot 2x + 5 \cdot 1 - 0 = 12x^3 - 4x + 5$$
+
+### Product rule
+
+The derivative of a product is *not* the product of the derivatives.
+That failure is easy to verify: $\tfrac{d}{dx}[x \cdot x] = \tfrac{d}{dx}[x^2] = 2x$,
+but $\tfrac{d}{dx}[x] \times \tfrac{d}{dx}[x] = 1 \times 1 = 1$. Different answers.
+
+The correct rule: if $f$ and $g$ are both differentiable, then:
+
+$$\frac{d}{dx}\bigl[f(x)\cdot g(x)\bigr] = f'(x)\cdot g(x) + f(x)\cdot g'(x)$$
+
+A useful mnemonic: *derivative of first times second, plus first times
+derivative of second.* The rule accounts for how both factors are
+changing simultaneously.
+
+**Check:** $\tfrac{d}{dx}[x \cdot x] = 1 \cdot x + x \cdot 1 = 2x$. Correct.
+
+### Chain rule
+
+The chain rule handles **composite functions** — functions of functions.
+If $y = f(u)$ and $u = g(x)$, so that $y = f(g(x))$, then:
+
+$$\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}$$
+
+In prime notation: $\bigl(f \circ g\bigr)'(x) = f'\bigl(g(x)\bigr) \cdot g'(x)$.
+
+This is the most important and most commonly misapplied rule in calculus.
+The key skill is **identifying the outer and inner functions** before
+differentiating.
+
+**Example.** Differentiate $y = \sin(x^2)$.
+
+- Outer function: $f(u) = \sin(u)$, so $\dfrac{dy}{du} = \cos(u)$.
+- Inner function: $g(x) = x^2$, so $\dfrac{du}{dx} = 2x$.
+- Chain rule: $\dfrac{dy}{dx} = \cos(x^2) \cdot 2x = 2x\cos(x^2)$.
+
+The notation $\dfrac{dy}{dx} = \dfrac{dy}{du} \cdot \dfrac{du}{dx}$ looks
+like the $du$'s cancel — and you can use it as if they do. The reason it
+works is multiplicative structure in the limit, not literal fraction
+cancellation, but the practical result is the same: set up the product
+and compute.
+
+```{ojs}
+//| echo: false
+viewof chainFunc = Inputs.select(
+  ["sin(x²)", "e^(2x)", "(3x+1)⁴"],
+  { label: "Composite function", value: "sin(x²)" }
+)
+```
+
+```{ojs}
+//| echo: false
+viewof chainX = Inputs.range([-2, 2], {
+  step: 0.01,
+  value: 0,
+  label: "x"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const katexLib = await require("katex@0.16");
+
+  const defs = {
+    "sin(x²)": {
+      fgx:    "\\sin(x^2)",
+      gx:     "x^2",
+      fu:     "\\sin(u)",
+      fprimeGx: "\\cos(x^2)",
+      gprime: "2x",
+      product: "\\cos(x^2) \\cdot 2x",
+      numericFn: x => Math.cos(x * x) * 2 * x,
+    },
+    "e^(2x)": {
+      fgx:    "e^{2x}",
+      gx:     "2x",
+      fu:     "e^{u}",
+      fprimeGx: "e^{2x}",
+      gprime: "2",
+      product: "e^{2x} \\cdot 2",
+      numericFn: x => Math.exp(2 * x) * 2,
+    },
+    "(3x+1)⁴": {
+      fgx:    "(3x+1)^4",
+      gx:     "3x+1",
+      fu:     "u^4",
+      fprimeGx: "4(3x+1)^3",
+      gprime: "3",
+      product: "12(3x+1)^3",
+      numericFn: x => 12 * Math.pow(3 * x + 1, 3),
+    },
+  };
+
+  const d = defs[chainFunc];
+  const numVal = d.numericFn(chainX);
+  const numDisplay = isFinite(numVal) ? numVal.toFixed(4) : "undefined";
+
+  const render = (tex, display = false) =>
+    katexLib.renderToString(tex, { throwOnError: false, displayMode: display });
+
+  const box = document.createElement("div");
+  box.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit; max-width:560px;";
+
+  const row = (label, tex) => {
+    const r = document.createElement("div");
+    r.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.3rem 0.75rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+    const lEl = document.createElement("span");
+    lEl.style.cssText = "font-size:0.8rem; color:#6b7280; font-style:italic;";
+    lEl.textContent = label;
+    const rEl = document.createElement("span");
+    rEl.innerHTML = render(tex);
+    r.appendChild(lEl);
+    r.appendChild(rEl);
+    return r;
+  };
+
+  const heading = document.createElement("p");
+  heading.style.cssText = "margin:0 0 0.6rem 0; font-size:0.9rem; color:#374151; font-weight:600;";
+  heading.innerHTML = "Chain rule: " + render(`\\dfrac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)`);
+  box.appendChild(heading);
+
+  box.appendChild(row("function f(g(x))", d.fgx));
+  box.appendChild(row("inner: g(x)", d.gx));
+  box.appendChild(row("outer: f(u)", d.fu));
+  box.appendChild(row("f′(g(x))", d.fprimeGx));
+  box.appendChild(row("g′(x)", d.gprime));
+  box.appendChild(row("product f′(g(x))·g′(x)", d.product));
+
+  const divider = document.createElement("div");
+  divider.style.cssText = "margin:0.6rem 0 0.4rem 0; border-top:1px solid #e5e7eb;";
+  box.appendChild(divider);
+
+  const valRow = document.createElement("div");
+  valRow.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.3rem 0.75rem; align-items:baseline; padding:0.25rem 0;";
+  const valLabel = document.createElement("span");
+  valLabel.style.cssText = "font-size:0.8rem; color:#6b7280; font-style:italic;";
+  valLabel.textContent = `numeric value at x = ${chainX.toFixed(2)}`;
+  const valNum = document.createElement("span");
+  valNum.style.cssText = "font-weight:600; color:#2563eb; font-size:0.95rem;";
+  valNum.textContent = numDisplay;
+  valRow.appendChild(valLabel);
+  valRow.appendChild(valNum);
+  box.appendChild(valRow);
+
+  return box;
+}
+```
+
+### Derivatives of key functions
+
+These are stated here without proof. Each can be derived from the limit
+definition, but the derivations involve limits of trigonometric quotients
+and the definition of $e$ — both of which are established results.
+
+| Function | Derivative | Read the derivative as |
+|---|---|---|
+| $\sin x$ | $\cos x$ | Cosine is the rate of change of sine — maximum slope at $x=0$, zero slope at the peaks |
+| $\cos x$ | $-\sin x$ | Sine with a sign flip — sine is decreasing where cosine reaches its peak |
+| $e^x$ | $e^x$ | The exponential is its own derivative — the rate of growth equals the current value |
+| $\ln x$ | $\dfrac{1}{x}$ | Valid for $x > 0$ — the domain of $\ln x$. For $x < 0$, use $\ln\lvert x\rvert$, whose derivative is also $\frac{1}{x}$ |
+
+The self-referential property of $e^x$ — that it equals its own derivative —
+is why $e$ appears everywhere in physics and engineering. Any system
+whose rate of change is proportional to its current value is governed
+by an exponential, and the differential equation describing it is
+$\dfrac{dy}{dx} = y$.
+
+## Higher derivatives
+
+The derivative of $f$ is itself a function. You can differentiate it
+again. The **second derivative** $f''(x)$ (or $\dfrac{d^2y}{dx^2}$) is
+the rate of change of the rate of change.
+
+The clearest physical example: if $s(t)$ is position at time $t$, then
+$s'(t)$ is velocity and $s''(t)$ is acceleration. Acceleration is how
+quickly velocity is changing.
+
+The second derivative also carries geometric information:
+
+- $f''(x) > 0$: the curve is **concave up** at $x$ — the slope is
+  increasing, the curve bends upward like a bowl.
+- $f''(x) < 0$: the curve is **concave down** at $x$ — the slope is
+  decreasing, the curve bends downward like an arch.
+
+This is what the second derivative test uses.
+
+## Applications: optimisation
+
+One of the most immediate uses of calculus is finding where a function
+reaches its maximum or minimum value.
+
+**Critical points.** If $f$ is differentiable and has a local maximum or
+minimum at $x = c$, then the tangent line at $c$ must be horizontal —
+a tilted tangent would mean the function is still rising or falling, so
+$c$ couldn't be an extreme point. Therefore:
+
+$$f'(c) = 0 \implies c \text{ is a critical point}$$
+
+Not every critical point is a maximum or minimum — it could be a
+**saddle point** (like $x = 0$ for $f(x) = x^3$, where the function
+is neither increasing nor decreasing at that instant but continues in
+the same direction on both sides). The second derivative distinguishes
+the cases.
+
+**Second derivative test.** If $f'(c) = 0$:
+
+- If $f''(c) > 0$: concave up at $c$, so the tangent is at the bottom
+  of a bowl — **local minimum**.
+- If $f''(c) < 0$: concave down at $c$, so the tangent is at the top
+  of an arch — **local maximum**.
+- If $f''(c) = 0$: the test is inconclusive. What to do when $f''(c) = 0$
+  is deferred to multivariable calculus — the tools for that case are
+  richer there. In single-variable calculus, if the second derivative
+  test is inconclusive, you check the sign of $f'$ on either side of
+  $c$ directly.
+
+**Worked procedure.** Find the local extrema of $f(x) = x^3 - 6x^2 + 9x + 1$.
+
+Step 1. Differentiate: $f'(x) = 3x^2 - 12x + 9$.
+
+Step 2. Set $f'(x) = 0$: $3x^2 - 12x + 9 = 0 \implies x^2 - 4x + 3 = 0 \implies (x-1)(x-3) = 0$.
+
+Critical points: $x = 1$ and $x = 3$.
+
+Step 3. Compute $f''(x) = 6x - 12$.
+
+Step 4. Test each critical point:
+
+- $f''(1) = 6(1) - 12 = -6 < 0$: local maximum at $x = 1$.
+  Value: $f(1) = 1 - 6 + 9 + 1 = 5$.
+- $f''(3) = 6(3) - 12 = 6 > 0$: local minimum at $x = 3$.
+  Value: $f(3) = 27 - 54 + 27 + 1 = 1$.
+
+The function rises to a local maximum of 5 at $x = 1$, falls to a local
+minimum of 1 at $x = 3$, then rises again.
+
+## Worked examples
+
+---
+
+**Example 1 (Computing/data).** Differentiate $f(x) = 3x^4 - 2x^2 + 5x - 1$.
+
+Apply the power rule term by term, with the constant multiple and sum
+rules:
+
+$$f'(x) = 3 \cdot 4x^3 - 2 \cdot 2x^1 + 5 \cdot 1 - 0$$
+
+$$f'(x) = 12x^3 - 4x + 5$$
+
+This is a polynomial — differentiating a polynomial always produces a
+polynomial of degree one lower. The constant term $-1$ vanishes: a
+constant has zero slope everywhere.
+
+---
+
+**Example 2 (Science).** Differentiate $f(x) = x^2 \sin(x)$.
+
+This is a product. Identify $f(x) = x^2$ (the first factor) and
+$g(x) = \sin(x)$ (the second). Apply the product rule:
+
+$$\frac{d}{dx}\bigl[x^2 \sin x\bigr] = 2x \cdot \sin x + x^2 \cdot \cos x$$
+
+$$= 2x\sin x + x^2 \cos x$$
+
+This kind of function appears in wave mechanics: $x^2 \sin x$ models
+an oscillation whose amplitude grows quadratically with distance from
+the source.
+
+---
+
+**Example 3 (Engineering).** Differentiate $f(x) = e^{3x^2}$.
+
+This is a composite function. Identify the outer and inner functions:
+
+- Outer: $f(u) = e^u$, which has derivative $e^u$.
+- Inner: $g(x) = 3x^2$, which has derivative $6x$.
+
+Chain rule:
+
+$$\frac{d}{dx}\bigl[e^{3x^2}\bigr] = e^{3x^2} \cdot 6x = 6x\,e^{3x^2}$$
+
+Functions of this form appear in Gaussian distributions, heat diffusion
+kernels, and signal-processing windows. The chain rule is the only way
+to differentiate them correctly.
+
+---
+
+**Example 4 (Real-world optimisation).** A farmer has 80 m of fencing
+and wants to enclose a rectangular paddock. One side is a riverbank,
+which needs no fence. What dimensions maximise the enclosed area?
+
+**Set up.** Let the side perpendicular to the river have length $x$ (metres).
+Two of these sides are needed. The side parallel to the river, call it
+$y$, uses the remaining fencing:
+
+$$2x + y = 80 \implies y = 80 - 2x$$
+
+The area is:
+
+$$A(x) = x \cdot y = x(80 - 2x) = 80x - 2x^2$$
+
+**Differentiate and find critical points:**
+
+$$A'(x) = 80 - 4x$$
+
+Setting $A'(x) = 0$: $80 - 4x = 0 \implies x = 20$.
+
+**Classify:** $A''(x) = -4 < 0$ everywhere, so $x = 20$ is a local
+(and global) maximum.
+
+**Dimensions:** $x = 20$ m, $y = 80 - 2(20) = 40$ m.
+
+**Maximum area:** $A = 20 \times 40 = 800\text{ m}^2$.
+
+The shape that maximises the area is twice as wide as it is deep — a
+result that appears in architectural and agricultural optimisation
+problems wherever one boundary is free.
+
+## Where this goes
+
+**Integral calculus (ch03):** Integration inverts differentiation. Where
+this chapter asked "given a function, find its rate of change," the next
+chapter asks "given the rate of change, recover the original function."
+The Fundamental Theorem of Calculus — the deepest result in the subject —
+shows these two operations are inverses of each other. Every calculation
+of area, volume, work, and accumulated change runs through it.
+
+**Ordinary differential equations (Vol 7):** A differential equation is
+a relationship between a function and its own derivative — an equation
+that says something like "the rate of change of this quantity is
+proportional to the quantity itself." Everything in this chapter is
+prerequisite: you need to know what a derivative is, how to compute one,
+and how the chain rule works, before a differential equation makes sense.
+The entire Vol 7 ODE sequence begins here.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- **Velocity and acceleration.** If $s(t)$ is the position of an object
+  at time $t$, then $s'(t)$ is its velocity and $s''(t)$ is its
+  acceleration. Every problem in Newtonian mechanics is stated in
+  these terms.
+- **Marginal analysis.** In economics, marginal cost is the derivative
+  of total cost with respect to quantity. Profit is maximised where
+  marginal revenue equals marginal cost — a critical point of the
+  profit function.
+- **Newton's law of cooling.** The rate of heat loss of an object is
+  proportional to the difference between the object's temperature and
+  the ambient temperature. That "rate of heat loss" is a derivative.
+  The law is $\tfrac{dT}{dt} = -k(T - T_\text{ambient})$ — a
+  differential equation that lives in Vol 7.
+- **Gradient descent.** The optimisation algorithm that trains neural
+  networks works by computing the derivative of the loss function with
+  respect to each model parameter, then updating the parameters in the
+  direction of steepest descent. The chain rule — applied thousands of
+  times through a deep network — is called backpropagation.
+:::
+
+## Exercises
+
+These are puzzles. Each has a clean answer, but the interesting part is
+choosing the right rule and executing the steps carefully before you
+reach for the result.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opEl = document.createElement("span");
+      opEl.style.cssText = "font-size:0.8rem; color:#6b7280; font-style:italic;";
+      opEl.textContent = s.op;
+      const eqEl = document.createElement("span");
+      eqEl.innerHTML = katex.renderToString(s.eq, {throwOnError: false, displayMode: false});
+      row.appendChild(opEl);
+      row.appendChild(eqEl);
+      stepsDiv.appendChild(row);
+      if (s.note) {
+        const noteEl = document.createElement("p");
+        noteEl.style.cssText = "margin:0.2rem 0 0.5rem 220px; font-size:0.82rem; color:#374151;";
+        noteEl.textContent = s.note;
+        stepsDiv.appendChild(noteEl);
+      }
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("p");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.85rem; color:#059669; font-weight:600;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; align-items:center; gap:0.75rem; margin-top:0.5rem;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.85rem; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:0.85rem;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.8rem; color:#6b7280;";
+  nextBtn.onclick = () => {
+    if (current < totalSteps) {
+      current++;
+      renderSteps();
+      counter.textContent = current + " / " + totalSteps;
+      if (current === totalSteps) nextBtn.disabled = true;
+    }
+  };
+  resetBtn.onclick = () => {
+    current = 0;
+    nextBtn.disabled = false;
+    renderSteps();
+    counter.textContent = "0 / " + totalSteps;
+  };
+  counter.textContent = "0 / " + totalSteps;
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  return container;
+}
+```
+
+**Exercise 1.** Differentiate $f(x) = 4x^5 - 3x^3 + 7x - 2$ using the
+power rule.
+
+<!-- STEPPER -->
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(1, [
+    { op: "Identify each term", eq: "4x^5,\\quad -3x^3,\\quad 7x,\\quad -2", note: "Differentiate term by term using the sum and constant multiple rules." },
+    { op: "Power rule on 4x⁵", eq: "\\frac{d}{dx}[4x^5] = 4 \\cdot 5x^4 = 20x^4", note: null },
+    { op: "Power rule on −3x³", eq: "\\frac{d}{dx}[-3x^3] = -3 \\cdot 3x^2 = -9x^2", note: null },
+    { op: "Power rule on 7x", eq: "\\frac{d}{dx}[7x] = 7 \\cdot 1 = 7", note: "x = x¹, so the power is 1 and the result is the constant coefficient." },
+    { op: "Derivative of constant", eq: "\\frac{d}{dx}[-2] = 0", note: "A constant has zero slope everywhere." },
+    { op: "Combine", eq: "f'(x) = 20x^4 - 9x^2 + 7", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 2.** Differentiate $f(x) = x^3 \cos(x)$ using the product
+rule.
+
+<!-- STEPPER -->
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(2, [
+    { op: "Identify the two factors", eq: "u = x^3,\\quad v = \\cos x", note: null },
+    { op: "Differentiate each factor", eq: "u' = 3x^2,\\quad v' = -\\sin x", note: null },
+    { op: "Apply product rule", eq: "\\frac{d}{dx}[x^3 \\cos x] = u'v + uv'", note: "Derivative of first × second, plus first × derivative of second." },
+    { op: "Substitute", eq: "= 3x^2 \\cos x + x^3 \\cdot (-\\sin x)", note: null },
+    { op: "Write the result", eq: "f'(x) = 3x^2 \\cos x - x^3 \\sin x", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 3.** Differentiate $f(x) = (2x^3 + 1)^5$ using the chain rule.
+
+<!-- STEPPER -->
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(3, [
+    { op: "Identify outer and inner functions", eq: "f(u) = u^5,\\quad g(x) = 2x^3 + 1", note: "The outer function acts on whatever is inside the bracket." },
+    { op: "Differentiate the outer", eq: "\\frac{d}{du}[u^5] = 5u^4", note: null },
+    { op: "Differentiate the inner", eq: "\\frac{d}{dx}[2x^3 + 1] = 6x^2", note: null },
+    { op: "Apply chain rule", eq: "f'(x) = 5u^4 \\cdot 6x^2", note: "Multiply: derivative of outer (with inner substituted back) × derivative of inner." },
+    { op: "Substitute u = 2x³ + 1", eq: "f'(x) = 5(2x^3+1)^4 \\cdot 6x^2", note: null },
+    { op: "Simplify", eq: "f'(x) = 30x^2(2x^3+1)^4", note: null },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 4.** Find all critical points of $f(x) = x^3 - 3x^2 - 9x + 2$
+and classify each as a local maximum, local minimum, or neither.
+
+<!-- STEPPER -->
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(4, [
+    { op: "Differentiate f", eq: "f'(x) = 3x^2 - 6x - 9", note: null },
+    { op: "Set f'(x) = 0", eq: "3x^2 - 6x - 9 = 0 \\implies x^2 - 2x - 3 = 0", note: "Divide through by 3 to simplify." },
+    { op: "Factorise", eq: "(x-3)(x+1) = 0 \\implies x = 3 \\text{ or } x = -1", note: null },
+    { op: "Compute second derivative", eq: "f''(x) = 6x - 6", note: null },
+    { op: "Test x = −1", eq: "f''(-1) = 6(-1) - 6 = -12 < 0", note: "Concave down → local maximum." },
+    { op: "Value at x = −1", eq: "f(-1) = (-1)^3 - 3(-1)^2 - 9(-1) + 2 = -1 - 3 + 9 + 2 = 7", note: "Local maximum of 7 at x = −1." },
+    { op: "Test x = 3", eq: "f''(3) = 6(3) - 6 = 12 > 0", note: "Concave up → local minimum." },
+    { op: "Value at x = 3", eq: "f(3) = 27 - 27 - 27 + 2 = -25", note: "Local minimum of −25 at x = 3." },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 5.** A manufacturer's total cost in dollars for producing $q$
+units per day is $C(q) = q^3 - 6q^2 + 15q + 50$. At what production
+level is the marginal cost minimised? (Marginal cost is $C'(q)$.)
+
+<!-- STEPPER -->
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(5, [
+    { op: "Find marginal cost C'(q)", eq: "C'(q) = 3q^2 - 12q + 15", note: "Marginal cost is the rate of change of total cost." },
+    { op: "Minimise C'(q): differentiate again", eq: "C''(q) = 6q - 12", note: "To find the minimum of C'(q), treat it as a function and find its critical points." },
+    { op: "Set C''(q) = 0", eq: "6q - 12 = 0 \\implies q = 2", note: null },
+    { op: "Check sign of C'(q) on each side", eq: "C'(1) = 3 - 12 + 15 = 6,\\quad C'(3) = 27 - 36 + 15 = 6", note: "Evaluate C'(q) at points just below and just above q = 2 to confirm this is a minimum." },
+    { op: "Confirm minimum: check C''(q) sign", eq: "C''(q) = 6q - 12 < 0 \\text{ for } q < 2,\\quad C''(q) > 0 \\text{ for } q > 2", note: "C'(q) is decreasing then increasing around q = 2, confirming q = 2 is a local minimum of C'(q)." },
+    { op: "Minimum marginal cost value", eq: "C'(2) = 3(4) - 12(2) + 15 = 12 - 24 + 15 = 3", note: null },
+    { op: "Interpret", eq: "q = 2 \\text{ units/day gives minimum marginal cost of } \\$3 \\text{ per unit}", note: "Below this level, each extra unit is cheaper than the next one will be; above it, costs are rising faster." },
+  ]);
+  return el;
+}
+```
+
+---
+
+**Exercise 6.** A stone is dropped from a bridge. Its height above the
+water at time $t$ seconds is $h(t) = 45 - 4.9t^2$ metres. At what
+speed (in m/s) is it falling at the instant it hits the water?
+
+<!-- STEPPER -->
+
+```{ojs}
+//| echo: false
+{
+  const el = makeStepperHTML(6, [
+    { op: "Find the time of impact", eq: "h(t) = 0 \\implies 45 - 4.9t^2 = 0", note: "The stone hits the water when h(t) = 0." },
+    { op: "Solve for t", eq: "t^2 = \\frac{45}{4.9} \\approx 9.184 \\implies t \\approx 3.031 \\text{ s}", note: null },
+    { op: "Find the velocity function", eq: "h'(t) = -9.8t", note: "Velocity is the derivative of height. The negative sign means the stone is descending." },
+    { op: "Speed at impact", eq: "h'(3.031) = -9.8 \\times 3.031 \\approx -29.7 \\text{ m/s}", note: null },
+    { op: "Interpret", eq: "\\text{Speed} = |h'(3.031)| \\approx 29.7 \\text{ m/s}", note: "Speed is the magnitude of velocity. The stone is falling at approximately 29.7 m/s when it reaches the water — about 107 km/h." },
+  ]);
+  return el;
+}
+```

@@ -1,6 +1,856 @@
 ---
 title: "Functions and relations"
-status: "seed"
+subtitle: "Given this, produce that"
+
+volume: 3
+chapter: 4
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know that some quantities depend on others — speed
+  determines how far you travel, temperature determines how a
+  material expands. You've drawn graphs of those relationships.
+
+rewrite: |
+  A function is a relationship where every input produces exactly
+  one output. That restriction — one in, one out — is what makes
+  functions the right tool for building models. Once you name the
+  relationship, you can evaluate it, reverse it, and chain it with
+  other functions.
+
+opens_to:
+  - id: "v4c1-exponents-logarithms"
+    label: "Exponents and logarithms"
+    volume: 4
+    relationship: "enables"
+  - id: "v5c2-differential-calculus"
+    label: "Differential calculus"
+    volume: 5
+    relationship: "enables"
+  - id: "v5c1-limits"
+    label: "Limits and continuity"
+    volume: 5
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "graphing"
+  - "patterns"
+  - "poly"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Every physical model is a function: given the input conditions, compute the output. Temperature as a function of time. Stress as a function of load."
+    career_example: "Structural engineer computing beam deflection under varying load"
+  - field: "sci"
+    label: "Hard sciences"
+    hook: "All natural laws are functions. F = ma maps mass and acceleration to force. Every formula in physics is a function."
+    career_example: "Physicist modelling radioactive decay as a function of time"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Demand curves, pricing functions, cost models — business decisions are made by evaluating functions."
+    career_example: "Analyst computing revenue as a function of units sold and price"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "A function in code is the same concept: given input, produce output deterministically. Pure functions are the mathematical ideal."
+    career_example: "Software engineer designing a data transformation pipeline"
+  - field: "geo"
+    label: "Geography"
+    hook: "A climate model maps one set of atmospheric inputs to a temperature output — a function."
+    career_example: "Climate scientist modelling how temperature responds to CO₂ concentration"
+
+hook: |
+  Press B4 on a vending machine. One specific drink comes out — not
+  a random choice, not two drinks. One input, one output, every time.
+
+  Type 100 into a Celsius-to-Fahrenheit converter. You get 212. Type
+  100 again tomorrow and you still get 212. The relationship doesn't
+  change. The output is determined entirely by the input.
+
+  A tip calculator takes one number — the bill total — and produces
+  one number: the suggested tip. It doesn't need to know anything else.
+  One input, one output, every time.
+
+  These are all the same structure: a rule that takes an input and
+  produces exactly one output. Mathematicians call that a function.
+  This chapter is about what that means precisely, and why the
+  restriction matters.
+
+notation_introduced:
+  - symbol: "f(x)"
+    reads_as: "f of x — the output of function f when the input is x"
+    notation_weight: 3
+  - symbol: "f: A \\to B"
+    reads_as: "f maps from set A to set B — every element of A gets sent to exactly one element of B"
+    notation_weight: 2
+  - symbol: "f \\circ g"
+    reads_as: "f composed with g — apply g first, then f"
+    notation_weight: 2
+  - symbol: "f^{-1}"
+    reads_as: "f inverse — the function that undoes f"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: 11
+  strand: "Relations and Functions"
+  outcome: "1.1"
+
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+Press B4 on a vending machine. One specific drink comes out — not a random
+choice, not two drinks. One input, one output, every time.
+
+Type 100 into a Celsius-to-Fahrenheit converter. You get 212. Type 100
+again tomorrow and you still get 212. The relationship doesn't change. The
+output is determined entirely by the input.
+
+A tip calculator takes one number — the bill total — and produces one
+number: the suggested tip. It doesn't need to know anything else. One
+input, one output, every time.
+
+These are all the same structure: a rule that takes an input and produces
+exactly one output. Mathematicians call that a function. This chapter is
+about what that means precisely — and why the restriction matters.
+
+## What the notation is saying
+
+Here is a function:
+
+$$f(x) = 2x + 3$$
+
+Read it aloud: "f of x equals 2x plus 3." The letter $f$ is the name of the
+function — you could call it $g$ or $T$ or anything, but $f$ is the default.
+The $x$ inside the parentheses is the input. The right-hand side, $2x + 3$,
+is the rule: whatever you put in, double it and add 3.
+
+The notation $f(x)$ does not mean $f$ multiplied by $x$. It means "the
+output of $f$ when the input is $x$." That's an easy thing to misread the
+first time you see it. Say it in words every time until it's automatic.
+
+You may also see function notation written as $f: A \to B$, which says
+"$f$ maps from set $A$ to set $B$" — every element of $A$ gets sent to
+exactly one element of $B$. For example, the temperature converter maps
+the set of Celsius values to the set of Fahrenheit values.
+
+One thing the definition requires: **every input produces exactly one
+output.** That's what separates a function from a general relation. A
+relation might pair one input with two or more outputs — but then it's
+not a function. The vending machine analogy holds: if pressing B4 sometimes
+gave you a cola and sometimes gave you nothing, or randomly gave you two
+things, you wouldn't call it a reliable machine. A function is a reliable
+machine.
+
+```{ojs}
+//| echo: false
+viewof fmInput = Inputs.range([-5, 5], {
+  value: 2,
+  step: 0.5,
+  label: "Input x"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof fmChoice = Inputs.select(["2x + 1", "x²", "|x|", "√(x+5)"], {
+  label: "Function f(x)"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const x = fmInput;
+  const choice = fmChoice;
+
+  let formula, result, resultStr;
+
+  if (choice === "2x + 1") {
+    formula = "f(x) = 2x + 1";
+    result = 2 * x + 1;
+    resultStr = result.toFixed(3);
+  } else if (choice === "x²") {
+    formula = "f(x) = x²";
+    result = x * x;
+    resultStr = result.toFixed(3);
+  } else if (choice === "|x|") {
+    formula = "f(x) = |x|";
+    result = Math.abs(x);
+    resultStr = result.toFixed(3);
+  } else {
+    formula = "f(x) = √(x + 5)";
+    if (x + 5 < 0) {
+      resultStr = "undefined (√ of negative)";
+      result = null;
+    } else {
+      result = Math.sqrt(x + 5);
+      resultStr = result.toFixed(3);
+    }
+  }
+
+  const svgW = 460, svgH = 160;
+  const svg = d3.create("svg")
+    .attr("width", svgW).attr("height", svgH)
+    .style("font-family", "inherit");
+
+  // Machine box
+  svg.append("rect")
+    .attr("x", 160).attr("y", 40)
+    .attr("width", 140).attr("height", 70)
+    .attr("fill", "#eff6ff").attr("stroke", "#3b82f6").attr("stroke-width", 2)
+    .attr("rx", 8);
+
+  svg.append("text")
+    .attr("x", 230).attr("y", 72)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("font-weight", "600").attr("fill", "#1d4ed8")
+    .text(formula);
+
+  svg.append("text")
+    .attr("x", 230).attr("y", 94)
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#6b7280")
+    .text("function machine");
+
+  // Input arrow
+  svg.append("line")
+    .attr("x1", 60).attr("y1", 75)
+    .attr("x2", 155).attr("y2", 75)
+    .attr("stroke", "#374151").attr("stroke-width", 2)
+    .attr("marker-end", "url(#arrowhead)");
+
+  svg.append("text")
+    .attr("x", 90).attr("y", 65)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#374151")
+    .text(`x = ${x}`);
+
+  // Output arrow
+  svg.append("line")
+    .attr("x1", 305).attr("y1", 75)
+    .attr("x2", 390).attr("y2", 75)
+    .attr("stroke", "#374151").attr("stroke-width", 2)
+    .attr("marker-end", "url(#arrowhead)");
+
+  svg.append("text")
+    .attr("x", 350).attr("y", 65)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "13px")
+    .attr("fill", result === null ? "#dc2626" : "#059669")
+    .text(`f(x) = ${resultStr}`);
+
+  // Arrowhead marker
+  const defs = svg.append("defs");
+  defs.append("marker")
+    .attr("id", "arrowhead")
+    .attr("markerWidth", 8).attr("markerHeight", 6)
+    .attr("refX", 8).attr("refY", 3)
+    .attr("orient", "auto")
+    .append("polygon")
+    .attr("points", "0 0, 8 3, 0 6")
+    .attr("fill", "#374151");
+
+  // Pair display
+  svg.append("text")
+    .attr("x", svgW / 2).attr("y", 140)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#374151")
+    .text(result === null
+      ? `(${x}, undefined)`
+      : `Input: ${x}   →   Output: ${resultStr}   ⟹   (${x}, ${resultStr})`);
+
+  return svg.node();
+}
+```
+
+## The method
+
+### Part 1: Evaluating a function
+
+To evaluate $f(x)$ at a specific input, replace every $x$ in the rule with
+that value and simplify.
+
+If $f(x) = 2x + 3$, then $f(5)$ means: put 5 in place of $x$.
+
+$$f(5) = 2(5) + 3 = 10 + 3 = 13$$
+
+The input was 5, the output is 13.
+
+If the input is negative or a fraction, the same substitution applies:
+
+$$f(-4) = 2(-4) + 3 = -8 + 3 = -5$$
+
+The parentheses around $-4$ are there to keep the sign attached to the
+number. Leave them out and $2-4+3$ is ambiguous. Keep them in and it's clear.
+
+### Part 2: Domain and range
+
+The **domain** of a function is the set of all valid inputs — the values
+of $x$ you're allowed to use.
+
+The **range** is the set of all possible outputs — every value $f(x)$ can
+produce when you run through the domain.
+
+For $f(x) = 2x + 3$, any real number is a valid input and any real number
+is a possible output. The domain and range are both all real numbers,
+written $(-\infty, \infty)$ in interval notation.
+
+Domain restrictions come in two situations:
+
+**Division by zero is not allowed.** For $g(x) = \dfrac{1}{x-2}$, the
+input $x = 2$ makes the denominator zero, which is undefined. The domain
+is all real numbers except 2, written $(-\infty, 2) \cup (2, \infty)$.
+The $\cup$ symbol means "or" — the domain includes numbers from the first
+interval or the second.
+
+**Square roots of negative numbers don't produce real outputs.** For
+$h(x) = \sqrt{x - 1}$, the expression under the root must be non-negative:
+$x - 1 \geq 0$, so $x \geq 1$. The domain is $[1, \infty)$. Why does the
+square root require this? No real number multiplied by itself gives a
+negative result — so the square root of a negative number doesn't land on
+the number line.
+
+Interval notation in brief:
+- $[a, b]$ — includes both endpoints ($a \leq x \leq b$)
+- $(a, b)$ — excludes both endpoints ($a < x < b$)
+- $[a, \infty)$ — from $a$ upward, including $a$
+- $(-\infty, b)$ — everything below $b$, not including $b$
+
+The domain can also be restricted by context — a function describing
+something you can only sell in whole numbers, or a physical measurement
+that can't be negative. That kind of restriction comes from the situation,
+not the algebra.
+
+### Part 3: Composition
+
+You can chain functions together. If $g$ converts one thing and $f$ converts
+another, you can run an input through $g$ first, then feed $g$'s output into
+$f$.
+
+The notation for this is $f(g(x))$, read as "f of g of x." You may also
+see it written $f \circ g$, read as "f composed with g." Both mean the same
+thing: apply $g$ first, then apply $f$ to the result.
+
+If $g(x) = x + 3$ and $f(x) = 2x + 1$:
+
+$$f(g(x)) = f(x + 3) = 2(x + 3) + 1 = 2x + 6 + 1 = 2x + 7$$
+
+The order matters. $f(g(x))$ and $g(f(x))$ are generally different.
+
+$g(f(x)) = g(2x + 1) = (2x + 1) + 3 = 2x + 4$
+
+That is a different function. Get the order right by reading from the
+inside out: in $f(g(x))$, $g$ acts first.
+
+```{ojs}
+//| echo: false
+viewof compF = Inputs.select(["x + 3", "2x", "x²"], { label: "f(x)" })
+```
+
+```{ojs}
+//| echo: false
+viewof compG = Inputs.select(["x − 1", "3x", "x + 2"], { label: "g(x)" })
+```
+
+```{ojs}
+//| echo: false
+viewof compX = Inputs.range([-4, 4], { value: 1, step: 0.5, label: "Input x" })
+```
+
+```{ojs}
+//| echo: false
+{
+  const x = compX;
+  const fName = compF;
+  const gName = compG;
+
+  // Evaluate f and g numerically
+  function evalF(v) {
+    if (fName === "x + 3") return v + 3;
+    if (fName === "2x") return 2 * v;
+    if (fName === "x²") return v * v;
+  }
+  function evalG(v) {
+    if (gName === "x − 1") return v - 1;
+    if (gName === "3x") return 3 * v;
+    if (gName === "x + 2") return v + 2;
+  }
+
+  const gx = evalG(x);
+  const fgx = evalF(gx);
+  const fx = evalF(x);
+  const gfx = evalG(fx);
+
+  // Symbolic composed forms for the 9 combinations
+  const symbolic = {
+    "x + 3|x − 1": { fg: "f(g(x)) = (x−1)+3 = x+2", gf: "g(f(x)) = (x+3)−1 = x+2" },
+    "x + 3|3x":    { fg: "f(g(x)) = 3x+3", gf: "g(f(x)) = 3(x+3) = 3x+9" },
+    "x + 3|x + 2": { fg: "f(g(x)) = (x+2)+3 = x+5", gf: "g(f(x)) = (x+3)+2 = x+5" },
+    "2x|x − 1":    { fg: "f(g(x)) = 2(x−1) = 2x−2", gf: "g(f(x)) = 2x−1" },
+    "2x|3x":       { fg: "f(g(x)) = 2(3x) = 6x", gf: "g(f(x)) = 3(2x) = 6x" },
+    "2x|x + 2":    { fg: "f(g(x)) = 2(x+2) = 2x+4", gf: "g(f(x)) = 2x+2" },
+    "x²|x − 1":   { fg: "f(g(x)) = (x−1)²", gf: "g(f(x)) = x²−1" },
+    "x²|3x":       { fg: "f(g(x)) = (3x)² = 9x²", gf: "g(f(x)) = 3x²" },
+    "x²|x + 2":    { fg: "f(g(x)) = (x+2)²", gf: "g(f(x)) = x²+2" },
+  };
+  const key = `${fName}|${gName}`;
+  const sym = symbolic[key] || { fg: "f(g(x))", gf: "g(f(x))" };
+
+  const svgW = 480, svgH = 210;
+  const svg = d3.create("svg")
+    .attr("width", svgW).attr("height", svgH)
+    .style("font-family", "inherit");
+
+  // Panel background
+  svg.append("rect").attr("x", 10).attr("y", 10)
+    .attr("width", svgW - 20).attr("height", svgH - 20)
+    .attr("fill", "#f8fafc").attr("stroke", "#e2e8f0").attr("rx", 8);
+
+  // Heading
+  svg.append("text").attr("x", 24).attr("y", 36)
+    .attr("font-size", "13px").attr("font-weight", "600").attr("fill", "#111827")
+    .text(`f(x) = ${fName}   g(x) = ${gName}   x = ${x}`);
+
+  // g(x)
+  svg.append("text").attr("x", 24).attr("y", 64)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`g(x) = ${gx.toFixed(3)}`);
+
+  // f(g(x))
+  svg.append("text").attr("x", 24).attr("y", 88)
+    .attr("font-size", "13px").attr("fill", "#2563eb")
+    .text(`f(g(x)) = f(${gx.toFixed(2)}) = ${fgx.toFixed(3)}`);
+
+  svg.append("text").attr("x", 24).attr("y", 108)
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .text(sym.fg);
+
+  // Divider
+  svg.append("line").attr("x1", 24).attr("y1", 120).attr("x2", svgW - 24).attr("y2", 120)
+    .attr("stroke", "#e5e7eb").attr("stroke-width", 1);
+
+  // f(x)
+  svg.append("text").attr("x", 24).attr("y", 142)
+    .attr("font-size", "13px").attr("fill", "#374151")
+    .text(`f(x) = ${fx.toFixed(3)}`);
+
+  // g(f(x))
+  svg.append("text").attr("x", 24).attr("y", 166)
+    .attr("font-size", "13px").attr("fill", "#7c3aed")
+    .text(`g(f(x)) = g(${fx.toFixed(2)}) = ${gfx.toFixed(3)}`);
+
+  svg.append("text").attr("x", 24).attr("y", 186)
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .text(sym.gf);
+
+  return svg.node();
+}
+```
+
+### Part 4: Inverses
+
+The inverse of a function undoes it. If $f$ takes 5 to 13, then
+$f^{-1}$ — read as "f inverse" — takes 13 back to 5.
+
+The notation $f^{-1}(x)$ does not mean $\dfrac{1}{f(x)}$. That's another
+thing that looks like it should mean one thing but means another. The
+superscript $-1$ on a function name means "the inverse function," not
+"one over."
+
+Not every function has an inverse. For an inverse to exist, each output
+must have come from exactly one input — otherwise, when you try to go
+backwards, you don't know which input to return to. A function with this
+property is called **one-to-one**: different inputs produce different
+outputs.
+
+To find the inverse algebraically: write $y = f(x)$, swap $x$ and $y$,
+then solve for $y$.
+
+For $f(x) = 2x + 3$:
+
+Write as: $y = 2x + 3$
+
+Swap $x$ and $y$: $x = 2y + 3$
+
+Solve for $y$:
+
+$$x - 3 = 2y$$
+$$y = \frac{x - 3}{2}$$
+
+So $f^{-1}(x) = \dfrac{x - 3}{2}$.
+
+Check: $f(5) = 13$, and $f^{-1}(13) = \dfrac{13 - 3}{2} = \dfrac{10}{2} = 5$. Yes.
+
+::: {.callout-note appearance="simple"}
+**Why this works: the vertical line test**
+
+Draw the graph of a relation. Draw a vertical line anywhere on the graph.
+
+If any vertical line crosses the graph more than once, the relation is
+not a function — because that input $x$ (the horizontal position of your
+line) maps to two or more outputs (the two crossing points).
+
+If every vertical line crosses the graph at most once, the relation is a
+function. The test is visual and immediate: one crossing means one output
+for that input. That is the requirement.
+:::
+
+## Worked examples
+
+---
+
+**Example 1 (Science) — Temperature conversion and its inverse.**
+
+The formula for converting Celsius to Fahrenheit is:
+
+$$F(c) = \frac{9}{5}c + 32$$
+
+Here $c$ is the input (temperature in °C) and $F(c)$ is the output
+(temperature in °F).
+
+Evaluate at the boiling point of water, $c = 100$:
+
+$$F(100) = \frac{9}{5}(100) + 32 = 180 + 32 = 212$$
+
+Water boils at 212°F. Check: widely known to be correct.
+
+Now find the inverse — the converter run backwards, converting °F to °C.
+
+Write $y = \dfrac{9}{5}c + 32$, swap variables: $c = \dfrac{9}{5}y + 32$.
+
+Solve for $y$:
+
+$$c - 32 = \frac{9}{5}y$$
+$$y = \frac{5}{9}(c - 32)$$
+
+So $F^{-1}(T) = \dfrac{5}{9}(T - 32)$, where $T$ is a temperature in °F.
+
+Verify: $F^{-1}(212) = \dfrac{5}{9}(212 - 32) = \dfrac{5}{9}(180) = 100$. Back to 100°C. Correct.
+
+---
+
+**Example 2 (Computing) — Songs downloaded and storage used.**
+
+Every song downloaded takes up space on a device. For a particular
+music format, the storage used $S$ in megabytes as a function of songs
+downloaded $n$ is:
+
+$$S(n) = 4.5n + 20$$
+
+The 20 MB is the app's base footprint; each song adds 4.5 MB.
+
+At $n = 10$ songs:
+$$S(10) = 4.5(10) + 20 = 45 + 20 = 65 \text{ MB}$$
+
+At $n = 50$ songs:
+$$S(50) = 4.5(50) + 20 = 225 + 20 = 245 \text{ MB}$$
+
+At $n = 100$ songs:
+$$S(100) = 4.5(100) + 20 = 450 + 20 = 470 \text{ MB}$$
+
+The domain has a physical restriction: $n \geq 0$ and $n$ must be a
+whole number. The maximum $n$ depends on the device's storage limit —
+the model stops being useful beyond that point.
+
+---
+
+**Example 3 (Computing) — Function composition in a data pipeline.**
+
+A data pipeline applies two transformations to a raw temperature reading
+from a sensor.
+
+Step 1: the sensor outputs a raw voltage $v$. The first function converts
+voltage to Celsius:
+
+$$g(v) = 25v - 10$$
+
+Step 2: the second function converts Celsius to Fahrenheit (from Example 1):
+
+$$f(c) = \frac{9}{5}c + 32$$
+
+The pipeline composes them: given a raw voltage, produce a Fahrenheit reading.
+
+$$f(g(v)) = f(25v - 10) = \frac{9}{5}(25v - 10) + 32$$
+$$= 45v - 18 + 32 = 45v + 14$$
+
+So the combined function is $h(v) = 45v + 14$.
+
+Test it: at $v = 1.2$ volts:
+
+$$g(1.2) = 25(1.2) - 10 = 30 - 10 = 20 \text{°C}$$
+$$f(20) = \frac{9}{5}(20) + 32 = 36 + 32 = 68 \text{°F}$$
+$$h(1.2) = 45(1.2) + 14 = 54 + 14 = 68 \text{°F}$$
+
+Both paths give the same answer. The composed function works.
+
+---
+
+**Example 4 (Business) — Revenue function with restricted domain.**
+
+A market stall sells handmade notebooks. The revenue $R$ in dollars as a
+function of notebooks sold $n$ is:
+
+$$R(n) = 12n$$
+
+But the domain is restricted: $n$ must be a non-negative integer. You
+can't sell −3 notebooks or 4.7 notebooks.
+
+Revenue at $n = 0$: $R(0) = 0$. Nothing sold, nothing earned.
+
+Revenue at $n = 25$: $R(25) = 12(25) = 300$.
+
+Revenue at $n = 50$: $R(50) = 12(50) = 600$.
+
+The range is $\{0, 12, 24, 36, \ldots\}$ — multiples of 12, starting at 0.
+This is not a continuous range because the domain is discrete.
+
+If the stall owner wants to know how many notebooks to sell to reach a
+revenue target of \$180, that's the inverse:
+
+$$R^{-1}(180) = \frac{180}{12} = 15 \text{ notebooks}$$
+
+## Where this goes
+
+Exponents and logarithms (Volume 4, Chapter 1) are specific function
+families with their own shapes and properties. Once you know what a function
+is and how to evaluate one, invert one, and compose two, you can work with
+any family — exponential, logarithmic, trigonometric — using the same
+framework from this chapter. The function concept doesn't change; only the
+rule inside changes.
+
+Calculus (Volume 5) asks a new question about functions: not "what is the
+output?" but "how fast is the output changing?" That question — the
+derivative — only makes sense if you have a function to begin with. Limits
+(Volume 5, Chapter 1) ask what a function's output approaches as the input
+gets close to a particular value, which requires the same precise notion of
+function you now have. Everything in analysis builds on this chapter.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A structural engineer's load-deflection formula is a function: given
+  load, compute displacement.
+- Every physics formula ($F = ma$, $E = mc^2$, $v = u + at$) is a function
+  expressing one quantity in terms of others.
+- A pricing algorithm that takes customer behaviour and outputs a price is
+  a function — ideally a deterministic one.
+- A compiler transforms source code (input) into machine code (output):
+  a function from programs to programs.
+- A chemist using Beer–Lambert law computes absorbance as a function of
+  concentration. The inverse gives concentration from a measured absorbance.
+:::
+
+## Exercises
+
+These are puzzles. Each one has a clean answer. The interesting part is
+reading the situation carefully before reaching for algebra.
+
+---
+
+**1.** Let $f(x) = 3x^2 - 2x + 1$.
+
+Evaluate: (a) $f(0)$, (b) $f(2)$, (c) $f(-3)$.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write the function", eq: "f(x) = 3x^2 - 2x + 1", note: null },
+  { op: "Evaluate f(0): substitute x = 0", eq: "f(0) = 3(0)^2 - 2(0) + 1 = 0 - 0 + 1 = 1", note: null },
+  { op: "Evaluate f(2): substitute x = 2", eq: "f(2) = 3(2)^2 - 2(2) + 1 = 12 - 4 + 1 = 9", note: null },
+  { op: "Evaluate f(-3): substitute x = -3", eq: "f(-3) = 3(-3)^2 - 2(-3) + 1 = 27 + 6 + 1 = 34", note: "Bracket the negative number before squaring: (-3)^2 = 9, not -9." },
+  { op: "Check by re-substituting f(2)", eq: "3(4) - 2(2) + 1 = 12 - 4 + 1 = 9 \\checkmark", note: null }
+])
+```
+
+---
+
+**2.** State the domain of each function, using interval notation.
+
+(a) $g(x) = \sqrt{x + 4}$
+
+(b) $h(x) = \dfrac{x}{x^2 - 9}$
+
+(c) $k(x) = x^2 + 5$
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "For g(x): the expression under the root must be non-negative", eq: "x + 4 \\geq 0", note: null },
+  { op: "Solve the inequality", eq: "x \\geq -4", note: null },
+  { op: "Write domain of g in interval notation", eq: "[-4, \\infty)", note: null },
+  { op: "For h(x): the denominator cannot be zero", eq: "x^2 - 9 \\neq 0 \\implies x \\neq 3 \\text{ and } x \\neq -3", note: "Factor as (x-3)(x+3) to find the excluded values." },
+  { op: "Write domain of h in interval notation", eq: "(-\\infty, -3) \\cup (-3, 3) \\cup (3, \\infty)", note: null },
+  { op: "For k(x): any real input is valid (squaring never causes division by zero or square roots of negatives)", eq: "(-\\infty, \\infty)", note: null },
+  { op: "Check g at x = -4 (boundary)", eq: "g(-4) = \\sqrt{-4 + 4} = \\sqrt{0} = 0 \\checkmark", note: null }
+])
+```
+
+---
+
+**3.** Let $f(x) = x^2$ and $g(x) = x - 5$.
+
+(a) Find $f(g(x))$ and simplify.
+
+(b) Find $g(f(x))$ and simplify.
+
+(c) Evaluate both $f(g(x))$ and $g(f(x))$ at $x = 3$. Are they equal or different? Then try $x = 2$ — are they still the same?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Write both functions", eq: "f(x) = x^2, \\quad g(x) = x - 5", note: null },
+  { op: "Find f(g(x)): substitute g(x) into f", eq: "f(g(x)) = f(x - 5) = (x - 5)^2", note: "Replace every x in f(x) = x^2 with the expression (x - 5)." },
+  { op: "Expand f(g(x))", eq: "(x - 5)^2 = x^2 - 10x + 25", note: null },
+  { op: "Find g(f(x)): substitute f(x) into g", eq: "g(f(x)) = g(x^2) = x^2 - 5", note: "Replace every x in g(x) = x - 5 with x^2." },
+  { op: "Evaluate both at x = 3", eq: "f(g(3)) = (3-5)^2 = 4, \\quad g(f(3)) = 9 - 5 = 4", note: "They are equal at x = 3 — but that is a coincidence for this specific value." },
+  { op: "Evaluate both at x = 2", eq: "f(g(2)) = (2-5)^2 = 9, \\quad g(f(2)) = 4 - 5 = -1", note: "Different at x = 2. The functions are genuinely distinct — x = 3 was a coincidence." }
+])
+```
+
+---
+
+**4.** A company's profit $P$ in dollars from selling $n$ units is:
+
+$$P(n) = 8n - 150$$
+
+The factory can produce between 0 and 200 units per day.
+
+(a) State the domain given the physical context.
+
+(b) At what number of units does the company break even (profit = 0)?
+
+(c) What is the range of $P$ over this domain?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write the function and note the context", eq: "P(n) = 8n - 150, \\quad n \\in \\{0, 1, 2, \\ldots, 200\\}", note: "n must be a non-negative integer since you can't sell a fraction of a unit." },
+  { op: "Find break-even: set P(n) = 0 and solve for n", eq: "8n - 150 = 0", note: null },
+  { op: "Add 150 to both sides", eq: "8n = 150", note: null },
+  { op: "Divide both sides by 8", eq: "n = 18.75", note: "Since n must be a whole number, the company needs at least 19 units to be in profit." },
+  { op: "Find the range: evaluate P at n = 0 and n = 200", eq: "P(0) = -150, \\quad P(200) = 8(200) - 150 = 1450", note: null },
+  { op: "State the range", eq: "P \\in \\{-150, -142, -134, \\ldots, 1450\\}", note: "Multiples of 8 offset by -150, from -150 to 1450." },
+  { op: "Check break-even at n = 19", eq: "P(19) = 8(19) - 150 = 152 - 150 = 2 \\checkmark", note: "Positive profit at n = 19, confirming 19 units is past break-even." }
+])
+```
+
+---
+
+**5.** Find the inverse of $h(x) = \dfrac{x + 4}{3}$.
+
+Then verify that $h(h^{-1}(x)) = x$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Write as y = h(x)", eq: "y = \\frac{x + 4}{3}", note: null },
+  { op: "Swap x and y to begin finding the inverse", eq: "x = \\frac{y + 4}{3}", note: "Swapping the roles of input and output is what finding an inverse means." },
+  { op: "Multiply both sides by 3", eq: "3x = y + 4", note: null },
+  { op: "Subtract 4 from both sides", eq: "y = 3x - 4", note: null },
+  { op: "Write the inverse function", eq: "h^{-1}(x) = 3x - 4", note: null },
+  { op: "Verify: compute h(h⁻¹(x))", eq: "h(h^{-1}(x)) = h(3x - 4) = \\frac{(3x - 4) + 4}{3} = \\frac{3x}{3} = x \\checkmark", note: null }
+])
+```
+
+---
+
+**6.** The temperature inside a greenhouse over the course of a morning is
+modelled by:
+
+$$T(t) = 0.5t^2 + 2t + 15$$
+
+where $T$ is in °C and $t$ is time in hours after 6 am, with domain
+$0 \leq t \leq 6$.
+
+(a) What is the temperature at 6 am ($t = 0$)?
+
+(b) What is the temperature at 9 am ($t = 3$)?
+
+(c) What is the temperature at noon ($t = 6$)?
+
+(d) Is this function one-to-one over this domain? If so, briefly explain why.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Write the function", eq: "T(t) = 0.5t^2 + 2t + 15", note: null },
+  { op: "Evaluate at t = 0 (6 am)", eq: "T(0) = 0.5(0)^2 + 2(0) + 15 = 15 \\text{ °C}", note: null },
+  { op: "Evaluate at t = 3 (9 am)", eq: "T(3) = 0.5(9) + 2(3) + 15 = 4.5 + 6 + 15 = 25.5 \\text{ °C}", note: null },
+  { op: "Evaluate at t = 6 (noon)", eq: "T(6) = 0.5(36) + 2(6) + 15 = 18 + 12 + 15 = 45 \\text{ °C}", note: null },
+  { op: "Assess whether T is one-to-one on [0, 6]", eq: "x_v = -\\frac{b}{2a} = -\\frac{2}{2 \\times 0.5} = -2", note: "The vertex of T(t) = 0.5t² + 2t + 15 is at t = −2, which is outside the domain [0, 6]. The parabola opens upward (a = 0.5 > 0) and its vertex is to the left of the domain, so T is strictly increasing on [0, 6] — each input gives a different output." },
+  { op: "Check: T is increasing throughout", eq: "T(0) = 15 < T(3) = 25.5 < T(6) = 45 \\checkmark", note: null }
+])
+```

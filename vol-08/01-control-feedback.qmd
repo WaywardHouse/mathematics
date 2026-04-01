@@ -1,0 +1,1307 @@
+---
+title: "Control, feedback, and stability"
+subtitle: "Making a dynamic system behave"
+chapter: 1
+volume: 8
+layer: "discipline"
+status: "draft"
+
+axiom: |
+  A system evolves in time, and its response matters more than its closed-form
+  solution.
+
+rewrite: |
+  Feedback reshapes dynamics. Stability, transient response, and robustness
+  become design questions, not just analytical observations.
+
+opens_to:
+  - id: estimation_inverse
+    label: "Estimation, inverse problems, and filtering"
+    volume: 8
+    relationship: enriches
+
+prerequisite_ids:
+  - laplace
+  - lin_alg_advanced
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Control theory turns differential equations into decisions about actuators, gains, and stability margins."
+    career_example: "Electrical or mechanical engineer tuning a feedback loop for a motor, converter, or process unit"
+  - field: comp
+    label: Computing and data
+    hook: "State-space models and feedback underlie robotics, autonomous systems, and model-based reinforcement learning — anywhere an agent acts on a system and uses the response to update its next action."
+    career_example: "Robotics or ML engineer implementing state-feedback, observers, or model-based RL on a physical or simulated plant"
+  - field: sci
+    label: Hard sciences
+    hook: "Experimental systems are often stabilised and interpreted through the same feedback ideas used in engineering."
+    career_example: "Experimental physicist designing a feedback loop to stabilise a laser or instrument"
+
+hook: |
+  A motor overshoots the target speed. A drone wobbles after a gust. A reactor
+  temperature drifts when the feed changes. In each case the system is already
+  dynamic before anyone touches the controller. Feedback is the act of shaping
+  that behaviour instead of merely watching it happen.
+
+notation_introduced:
+  - symbol: "r(t)"
+    reads_as: "r of t — the reference or target signal"
+    notation_weight: 1
+  - symbol: "y(t)"
+    reads_as: "y of t — the measured output"
+    notation_weight: 1
+  - symbol: "e(t) = r(t) - y(t)"
+    reads_as: "e of t equals the error: target minus output"
+    notation_weight: 2
+  - symbol: "u(t)"
+    reads_as: "u of t — the control input sent to the plant"
+    notation_weight: 1
+  - symbol: "G(s)"
+    reads_as: "G of s — the plant transfer function"
+    notation_weight: 2
+  - symbol: "C(s)"
+    reads_as: "C of s — the controller transfer function"
+    notation_weight: 2
+  - symbol: "T(s) = \\dfrac{C(s)G(s)}{1 + C(s)G(s)}"
+    reads_as: "T of s — the closed-loop transfer function"
+    notation_weight: 3
+  - symbol: "\\lambda(A-BK)"
+    reads_as: "the eigenvalues of A minus B K"
+    notation_weight: 3
+
+exercises:
+  type: "project"
+  real_world_context: true
+
+uofa_course: "ECE 360"
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+A motor overshoots the target speed. A drone wobbles after a gust. A reactor
+temperature drifts when the feed changes. In each case the system is already
+dynamic before anyone touches the controller. Feedback is the act of shaping
+that behaviour instead of merely watching it happen.
+
+Control is not the same thing as solving a differential equation. Solving the
+equation tells you what the system will do. Control asks whether that behaviour
+is acceptable, how fast it settles, how much it overshoots, and how sensitive
+it is to disturbances and modelling error.
+
+This chapter keeps the focus on the central move. You measure the output
+$y(t)$, compare it to the target $r(t)$, form the error
+$e(t) = r(t) - y(t)$, and choose a control input $u(t)$ that changes the
+dynamics in your favour. Once you see that structure clearly, stability and
+transient response stop looking like side remarks and start looking like the
+point of the whole subject.
+
+---
+
+## The control problem
+
+Start with four signals.
+
+- $r(t)$ is the **reference**: what you want.
+- $y(t)$ is the **output**: what the system is actually doing.
+- $e(t) = r(t) - y(t)$ is the **error**.
+- $u(t)$ is the **control input** you apply to the plant.
+
+The **plant** is the system being controlled: a motor, furnace, vehicle,
+converter, or biochemical process. In Laplace-transform language the plant is
+often represented by a transfer function $G(s)$, read "G of s." The controller
+is represented by $C(s)$, read "C of s."
+
+In **open loop**, you choose $u(t)$ without using the measured output. In
+**closed loop**, you feed back the measured output and let the error signal
+drive the control action. That is the essential difference.
+
+**Unity feedback** means the measured output $Y(s)$ is fed back directly into the
+comparison point with no additional gain element in the feedback path. The block-diagram algebra is:
+
+$$E(s) = R(s) - Y(s)$$
+$$U(s) = C(s)E(s)$$
+$$Y(s) = G(s)U(s)$$
+
+Substitute in sequence:
+
+$$Y(s) = G(s)C(s)\bigl(R(s) - Y(s)\bigr)$$
+
+Rearrange:
+
+$$\bigl(1 + C(s)G(s)\bigr)Y(s) = C(s)G(s)R(s)$$
+
+So the closed-loop transfer function is
+
+$$T(s) = \frac{Y(s)}{R(s)} = \frac{C(s)G(s)}{1 + C(s)G(s)}$$
+
+That denominator matters more than it first appears to. The roots of
+$1 + C(s)G(s) = 0$ are the **closed-loop poles**. They decide whether the
+response decays, oscillates, grows, or diverges.
+
+*Adjust the gain K below. Watch the step response, pole location, and error readouts change simultaneously.*
+
+```{ojs}
+//| echo: false
+closedLoopViz = {
+  const d3 = await require("d3@7");
+
+  // ---- Layout constants ----
+  const W = 640, H = 480;
+  const BLUE = "#2563eb", GREEN = "#059669", RED = "#ef4444", AMBER = "#f59e0b";
+  const GREY_DASH = "#9ca3af";
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", W + "px");
+
+  // K slider
+  const sliderRow = container.append("div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "0.75rem")
+    .style("margin-bottom", "0.5rem");
+
+  sliderRow.append("label")
+    .style("font-size", "0.9rem")
+    .style("white-space", "nowrap")
+    .text("Gain K:");
+
+  const slider = sliderRow.append("input")
+    .attr("type", "range")
+    .attr("min", 0.1)
+    .attr("max", 20)
+    .attr("step", 0.1)
+    .attr("value", 2)
+    .style("flex", "1");
+
+  const kLabel = sliderRow.append("span")
+    .style("font-weight", "bold")
+    .style("min-width", "2.5rem");
+
+  // Main SVG
+  const svg = container.append("svg")
+    .attr("width", W)
+    .attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("aria-label", "Closed-loop feedback explorer");
+
+  // ---- Block diagram (top half, y 0-210) ----
+  const BD = svg.append("g").attr("transform", "translate(0,0)");
+
+  // Draw block diagram elements
+  // Signal arrows: r -> summing junction -> controller -> plant -> y (output)
+  // feedback path from y back to summing junction
+
+  // Positions
+  const SJ = {x: 130, y: 80};   // summing junction centre
+  const CB = {x: 260, y: 60, w: 80, h: 40}; // controller box
+  const PB = {x: 420, y: 60, w: 80, h: 40}; // plant box
+  const outX = 550;               // output signal x
+
+  // r arrow
+  BD.append("line")
+    .attr("x1", 50).attr("y1", SJ.y)
+    .attr("x2", SJ.x - 18).attr("y2", SJ.y)
+    .attr("stroke", "#333").attr("stroke-width", 1.5)
+    .attr("marker-end", "url(#arrowBlack)");
+  BD.append("text").attr("x", 30).attr("y", SJ.y - 8)
+    .attr("font-size", "13px").attr("fill", "#333").text("r(t)");
+
+  // summing junction circle
+  BD.append("circle")
+    .attr("cx", SJ.x).attr("cy", SJ.y).attr("r", 18)
+    .attr("fill", "none").attr("stroke", "#333").attr("stroke-width", 1.5);
+  BD.append("text").attr("x", SJ.x - 6).attr("y", SJ.y + 5)
+    .attr("font-size", "14px").attr("fill", "#333").text("+");
+  BD.append("text").attr("x", SJ.x - 5).attr("y", SJ.y + 22)
+    .attr("font-size", "11px").attr("fill", "#ef4444").text("−");
+
+  // e(t) label between SJ and controller
+  BD.append("line")
+    .attr("x1", SJ.x + 18).attr("y1", SJ.y)
+    .attr("x2", CB.x).attr("y2", SJ.y)
+    .attr("stroke", "#333").attr("stroke-width", 1.5)
+    .attr("marker-end", "url(#arrowBlack)");
+  BD.append("text").attr("x", SJ.x + 22).attr("y", SJ.y - 8)
+    .attr("font-size", "12px").attr("fill", "#6b7280").text("e(t)");
+
+  // Controller box
+  BD.append("rect")
+    .attr("x", CB.x).attr("y", CB.y).attr("width", CB.w).attr("height", CB.h)
+    .attr("rx", 6).attr("fill", "#f3f4f6").attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+  const kBoxLabel = BD.append("text")
+    .attr("x", CB.x + CB.w / 2).attr("y", CB.y + CB.h / 2 + 5)
+    .attr("text-anchor", "middle").attr("font-size", "14px").attr("fill", BLUE);
+
+  // Arrow controller to plant
+  BD.append("line")
+    .attr("x1", CB.x + CB.w).attr("y1", SJ.y)
+    .attr("x2", PB.x).attr("y2", SJ.y)
+    .attr("stroke", "#333").attr("stroke-width", 1.5)
+    .attr("marker-end", "url(#arrowBlack)");
+  BD.append("text").attr("x", CB.x + CB.w + 5).attr("y", SJ.y - 8)
+    .attr("font-size", "12px").attr("fill", "#6b7280").text("u(t)");
+
+  // Plant box
+  BD.append("rect")
+    .attr("x", PB.x).attr("y", PB.y).attr("width", PB.w).attr("height", PB.h)
+    .attr("rx", 6).attr("fill", "#f3f4f6").attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+  BD.append("text")
+    .attr("x", PB.x + PB.w / 2).attr("y", PB.y + PB.h / 2 + 5)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#374151")
+    .text("G(s)=1/(5s+1)");
+
+  // Arrow plant to output
+  BD.append("line")
+    .attr("x1", PB.x + PB.w).attr("y1", SJ.y)
+    .attr("x2", outX).attr("y2", SJ.y)
+    .attr("stroke", "#333").attr("stroke-width", 1.5)
+    .attr("marker-end", "url(#arrowBlack)");
+  BD.append("text").attr("x", outX + 5).attr("y", SJ.y + 5)
+    .attr("font-size", "13px").attr("fill", "#333").text("y(t)");
+
+  // Feedback path (y -> down -> left -> up -> summing junction bottom)
+  const fbY = SJ.y + 70;
+  BD.append("polyline")
+    .attr("points", `${outX - 5},${SJ.y} ${outX - 5},${fbY} ${SJ.x},${fbY} ${SJ.x},${SJ.y + 18}`)
+    .attr("fill", "none").attr("stroke", "#333").attr("stroke-width", 1.5)
+    .attr("marker-end", "url(#arrowBlack)");
+  BD.append("text").attr("x", (SJ.x + outX) / 2).attr("y", fbY + 16)
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#6b7280")
+    .text("unity feedback");
+
+  // Arrowhead marker def
+  const defs = svg.append("defs");
+  defs.append("marker")
+    .attr("id", "arrowBlack").attr("markerWidth", 8).attr("markerHeight", 8)
+    .attr("refX", 6).attr("refY", 3).attr("orient", "auto")
+    .append("path").attr("d", "M0,0 L0,6 L8,3 z").attr("fill", "#333");
+
+  // ---- Step response panel (bottom left, y 220-480, x 0-320) ----
+  const SP_X = 30, SP_Y = 200, SP_W = 280, SP_H = 200;
+  const spG = svg.append("g").attr("transform", `translate(${SP_X},${SP_Y})`);
+  spG.append("text").attr("x", SP_W / 2).attr("y", 0)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#374151")
+    .text("Step response y(t)");
+  // Axes
+  spG.append("line").attr("x1", 30).attr("y1", 10).attr("x2", 30).attr("y2", SP_H - 20)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+  spG.append("line").attr("x1", 30).attr("y1", SP_H - 20).attr("x2", SP_W - 10).attr("y2", SP_H - 20)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+  spG.append("text").attr("x", SP_W - 8).attr("y", SP_H - 17)
+    .attr("font-size", "10px").attr("fill", "#6b7280").text("t");
+  spG.append("text").attr("x", 0).attr("y", 10)
+    .attr("font-size", "10px").attr("fill", "#6b7280").text("y");
+
+  // Reference line (dashed grey at y=1)
+  const spXmin = 30, spXmax = SP_W - 10, spYmin = 10, spYmax = SP_H - 20;
+  const yScale = d3.scaleLinear([0, 1.5], [spYmax, spYmin]);
+
+  spG.append("line")
+    .attr("x1", spXmin).attr("y1", yScale(1))
+    .attr("x2", spXmax).attr("y2", yScale(1))
+    .attr("stroke", GREY_DASH).attr("stroke-width", 1).attr("stroke-dasharray", "5,3");
+  spG.append("text").attr("x", spXmax + 2).attr("y", yScale(1) + 4)
+    .attr("font-size", "10px").attr("fill", GREY_DASH).text("r=1");
+
+  // Error shading group and response path
+  const errorShade = spG.append("path")
+    .attr("fill", RED).attr("fill-opacity", 0.12).attr("stroke", "none");
+  const responsePath = spG.append("path")
+    .attr("fill", "none").attr("stroke", BLUE).attr("stroke-width", 2);
+
+  // ---- Pole location panel (bottom right, y 220-480, x 330-640) ----
+  const PP_X = 340, PP_Y = 200, PP_W = 260, PP_H = 200;
+  const ppG = svg.append("g").attr("transform", `translate(${PP_X},${PP_Y})`);
+  ppG.append("text").attr("x", PP_W / 2).attr("y", 0)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#374151")
+    .text("Pole location (real axis)");
+
+  // s-plane: x-axis only, range -6 to 0.5
+  const poleXscale = d3.scaleLinear([-6, 0.5], [10, PP_W - 10]);
+  const poleY = 80;
+  // Stable region shading
+  ppG.append("rect")
+    .attr("x", 10).attr("y", 20)
+    .attr("width", poleXscale(0) - 10).attr("height", 100)
+    .attr("fill", GREEN).attr("fill-opacity", 0.08);
+  // Axis
+  ppG.append("line")
+    .attr("x1", 10).attr("y1", poleY).attr("x2", PP_W - 10).attr("y2", poleY)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+  // Imaginary axis (vertical dashed)
+  ppG.append("line")
+    .attr("x1", poleXscale(0)).attr("y1", 10)
+    .attr("x2", poleXscale(0)).attr("y2", 150)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1).attr("stroke-dasharray", "4,3");
+  ppG.append("text").attr("x", poleXscale(0) + 2).attr("y", 16)
+    .attr("font-size", "9px").attr("fill", "#9ca3af").text("stability boundary");
+
+  // Axis ticks
+  [-5,-4,-3,-2,-1,0].forEach(v => {
+    const x = poleXscale(v);
+    ppG.append("line").attr("x1", x).attr("y1", poleY - 5)
+      .attr("x2", x).attr("y2", poleY + 5).attr("stroke", "#9ca3af");
+    ppG.append("text").attr("x", x).attr("y", poleY + 18)
+      .attr("text-anchor", "middle").attr("font-size", "10px").attr("fill", "#6b7280")
+      .text(v);
+  });
+  ppG.append("text").attr("x", PP_W - 8).attr("y", poleY + 5)
+    .attr("font-size", "10px").attr("fill", "#6b7280").text("Re(s)");
+  ppG.append("text").attr("x", poleXscale(-3)).attr("y", 16)
+    .attr("text-anchor", "middle").attr("font-size", "10px").attr("fill", GREEN)
+    .text("stable region");
+
+  const poleCircle = ppG.append("circle")
+    .attr("cy", poleY).attr("r", 8)
+    .attr("fill", BLUE).attr("stroke", "#1e40af").attr("stroke-width", 1.5);
+  const poleLabelEl = ppG.append("text")
+    .attr("text-anchor", "middle").attr("y", poleY - 15)
+    .attr("font-size", "11px").attr("fill", BLUE).attr("font-weight", "bold");
+
+  // Readouts
+  const readoutG = svg.append("g").attr("transform", `translate(${PP_X}, ${PP_Y + 140})`);
+  const settlingTxt = readoutG.append("text")
+    .attr("font-size", "12px").attr("fill", AMBER);
+  const errorTxt = readoutG.append("text")
+    .attr("y", 20).attr("font-size", "12px").attr("fill", AMBER);
+
+  // ---- Update function ----
+  function update(K) {
+    kLabel.text(K.toFixed(1));
+    kBoxLabel.text(`C(s) = ${K.toFixed(1)}`);
+
+    // Plant G(s) = 1/(5s+1), C(s) = K
+    // Closed-loop pole: s = -(1+K)/5
+    const pole = -(1 + K) / 5;
+    const tau_cl = 5 / (1 + K);          // closed-loop time constant
+    const ss_gain = K / (1 + K);         // steady-state output for unit step
+    const ss_error = 1 / (1 + K);        // steady-state error
+
+    // Settling time approx 4*tau_cl
+    const t_settle = 4 * tau_cl;
+
+    // Step response: y(t) = ss_gain * (1 - e^{-t/tau_cl})
+    const tMax = Math.max(30, t_settle * 1.6);
+    const nPts = 200;
+    const pts = d3.range(nPts).map(i => {
+      const t = (i / (nPts - 1)) * tMax;
+      return [t, ss_gain * (1 - Math.exp(-t / tau_cl))];
+    });
+
+    const tScale = d3.scaleLinear([0, tMax], [spXmin, spXmax]);
+
+    // Error shading area
+    const areaGen = d3.area()
+      .x(d => tScale(d[0]))
+      .y0(yScale(1))
+      .y1(d => yScale(Math.min(d[1], 1.4)));
+    errorShade.attr("d", areaGen(pts));
+
+    // Response path
+    const lineGen = d3.line().x(d => tScale(d[0])).y(d => yScale(Math.min(d[1], 1.4)));
+    responsePath.attr("d", lineGen(pts));
+
+    // Pole position
+    poleCircle.attr("cx", poleXscale(pole));
+    poleLabelEl.attr("x", poleXscale(pole)).text(`s = ${pole.toFixed(2)}`);
+
+    settlingTxt.text(`Settling time ≈ ${t_settle.toFixed(1)} s`);
+    errorTxt.text(`Steady-state error = ${(ss_error * 100).toFixed(1)}%`);
+  }
+
+  slider.on("input", function() { update(+this.value); });
+  update(2);
+
+  return container.node();
+}
+```
+
+## What stability means
+
+A control loop is **stable** if small disturbances do not produce outputs that
+grow without bound. In continuous-time linear systems, the quick rule is:
+
+- if every closed-loop pole has negative real part, the response decays
+- if any closed-loop pole has positive real part, the response grows
+- if poles sit on the imaginary axis, the system is marginal and small model
+  errors may push it into trouble
+
+This is why pole location is not bookkeeping. It is a statement about physical
+behaviour.
+
+The same stability idea appears in state-space notation — the same feedback
+principle, expressed with vectors and matrices instead of transfer functions.
+For a state-space model
+
+$$\dot{x} = Ax + Bu, \qquad u = -Kx$$
+
+the closed-loop dynamics become
+
+$$\dot{x} = (A - BK)x$$
+
+Now the eigenvalues $\lambda(A-BK)$ play the same role that closed-loop poles
+play in transfer-function form. They tell you what the state does in time.
+
+::: {.callout-note appearance="simple"}
+## Why This Works
+
+Feedback changes the equation you are solving. Without control, the plant's
+dynamics are built into $G(s)$ or $A$. With control, the controller feeds the
+measured output back into the input channel, so the effective denominator of
+the system changes from "whatever the plant had" to "plant plus feedback."
+
+That is the whole reason control is powerful. You are not passively accepting
+the poles, modes, or eigenvalues the plant came with. You are moving them.
+:::
+
+## The core method
+
+For a first pass through a control problem, the workflow is usually:
+
+1. Write the plant model in transfer-function or state-space form.
+2. Decide what "good behaviour" means: stable, fast enough, low overshoot,
+   small steady-state error, acceptable control effort.
+3. Choose a controller structure: proportional, PI, PID, state feedback, or
+   another architecture appropriate to the system.
+4. Form the closed-loop model.
+5. Inspect the poles or eigenvalues and connect them back to the time response.
+6. Tune, then check what the tuning costs you elsewhere.
+
+The important habit is to keep the interpretation attached to the algebra. A
+gain value is not just a number. It changes speed, error, sensitivity, and
+sometimes noise amplification.
+
+## Worked example 1: cruise control with proportional feedback
+
+Suppose a simplified vehicle-speed model has plant transfer function
+
+$$G(s) = \frac{1}{5s + 1}$$
+
+where input is throttle command and output is speed deviation from the desired
+operating point. Use a proportional controller
+
+$$C(s) = K$$
+
+with unity feedback.
+
+The closed-loop transfer function is
+
+$$T(s) = \frac{KG(s)}{1 + KG(s)}
+= \frac{K/(5s+1)}{1 + K/(5s+1)}
+= \frac{K}{5s + 1 + K}$$
+
+So the closed-loop pole is at
+
+$$s = -\frac{1+K}{5}$$
+
+For any $K > -1$, the pole is in the left half-plane, so the linear model is
+stable. If $K > 0$, increasing $K$ moves the pole further left, which makes the
+response faster.
+
+The steady-state gain is
+
+$$T(0) = \frac{K}{1+K}$$
+
+so proportional feedback alone does not remove step-tracking error completely.
+For a unit step reference, the steady-state output is $K/(1+K)$ and the
+steady-state error is
+
+$$1 - \frac{K}{1+K} = \frac{1}{1+K}$$
+
+This is the standard tradeoff. Larger $K$ reduces error and speeds the loop,
+but in a more realistic model it also increases sensitivity to unmodelled
+dynamics, actuator limits, and measurement noise.
+
+*The two-panel chart below shows both sides of this tradeoff at once. Drag the cursor to explore.*
+
+```{ojs}
+//| echo: false
+gainTradeoffViz = {
+  const d3 = await require("d3@7");
+
+  const W = 560, H = 340;
+  const BLUE = "#2563eb", RED = "#ef4444", AMBER = "#f59e0b";
+  const ML = 55, MR = 20, panelH = 130, gap = 30;
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", W + "px");
+
+  const svg = container.append("svg")
+    .attr("width", W).attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("aria-label", "Proportional gain tradeoff chart");
+
+  const innerW = W - ML - MR;
+  const Kmax = 20;
+  const kScale = d3.scaleLinear([0, Kmax], [0, innerW]);
+
+  // ---- Top panel: pole location ----
+  const topG = svg.append("g").attr("transform", `translate(${ML}, 20)`);
+  const poleScale = d3.scaleLinear([0, -5], [panelH, 0]);
+
+  // axes
+  topG.append("line").attr("x1", 0).attr("y1", panelH)
+    .attr("x2", innerW).attr("y2", panelH).attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+  topG.append("line").attr("x1", 0).attr("y1", 0)
+    .attr("x2", 0).attr("y2", panelH).attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+
+  topG.append("text").attr("x", innerW / 2).attr("y", panelH + 22)
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#374151").text("K");
+  topG.append("text").attr("x", -40).attr("y", panelH / 2 + 4)
+    .attr("font-size", "11px").attr("fill", "#374151").text("pole s");
+
+  // annotation
+  topG.append("text").attr("x", innerW * 0.55).attr("y", 18)
+    .attr("font-size", "10px").attr("fill", "#6b7280").text("farther left = faster response");
+
+  // pole curve: s = -(1+K)/5
+  const polePts = d3.range(201).map(i => {
+    const K = i / 200 * Kmax;
+    return [kScale(K), poleScale(-(1 + K) / 5)];
+  });
+  topG.append("path")
+    .attr("d", d3.line()(polePts))
+    .attr("fill", "none").attr("stroke", BLUE).attr("stroke-width", 2);
+
+  // y-axis ticks
+  [-1,-2,-3,-4,-5].forEach(v => {
+    topG.append("line").attr("x1", -4).attr("y1", poleScale(v))
+      .attr("x2", 0).attr("y2", poleScale(v)).attr("stroke", "#9ca3af");
+    topG.append("text").attr("x", -8).attr("y", poleScale(v) + 4)
+      .attr("text-anchor", "end").attr("font-size", "9px").attr("fill", "#6b7280").text(v);
+  });
+  // x-axis ticks
+  [0, 5, 10, 15, 20].forEach(v => {
+    topG.append("text").attr("x", kScale(v)).attr("y", panelH + 14)
+      .attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#6b7280").text(v);
+  });
+
+  // cursor line and dot (top)
+  const topCursor = topG.append("line")
+    .attr("y1", 0).attr("y2", panelH)
+    .attr("stroke", AMBER).attr("stroke-width", 1.5).attr("stroke-dasharray", "4,3");
+  const topDot = topG.append("circle").attr("r", 5).attr("fill", AMBER);
+
+  // ---- Bottom panel: steady-state error ----
+  const botG = svg.append("g").attr("transform", `translate(${ML}, ${20 + panelH + gap})`);
+  const errScale = d3.scaleLinear([0, 1], [panelH, 0]);
+
+  botG.append("line").attr("x1", 0).attr("y1", panelH)
+    .attr("x2", innerW).attr("y2", panelH).attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+  botG.append("line").attr("x1", 0).attr("y1", 0)
+    .attr("x2", 0).attr("y2", panelH).attr("stroke", "#6b7280").attr("stroke-width", 1.5);
+
+  botG.append("text").attr("x", innerW / 2).attr("y", panelH + 22)
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("fill", "#374151").text("K");
+  botG.append("text").attr("x", -40).attr("y", panelH / 2 + 4)
+    .attr("font-size", "11px").attr("fill", "#374151").text("error");
+
+  botG.append("text").attr("x", innerW * 0.35).attr("y", panelH - 8)
+    .attr("font-size", "10px").attr("fill", "#6b7280")
+    .text("never reaches zero with proportional control only");
+
+  const errPts = d3.range(201).map(i => {
+    const K = i / 200 * Kmax;
+    return [kScale(K), errScale(1 / (1 + K))];
+  });
+  botG.append("path")
+    .attr("d", d3.line()(errPts))
+    .attr("fill", "none").attr("stroke", RED).attr("stroke-width", 2);
+
+  [0, 5, 10, 15, 20].forEach(v => {
+    botG.append("text").attr("x", kScale(v)).attr("y", panelH + 14)
+      .attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#6b7280").text(v);
+  });
+  [0, 0.5, 1].forEach(v => {
+    botG.append("line").attr("x1", -4).attr("y1", errScale(v))
+      .attr("x2", 0).attr("y2", errScale(v)).attr("stroke", "#9ca3af");
+    botG.append("text").attr("x", -8).attr("y", errScale(v) + 4)
+      .attr("text-anchor", "end").attr("font-size", "9px").attr("fill", "#6b7280")
+      .text(v.toFixed(1));
+  });
+
+  const botCursor = botG.append("line")
+    .attr("y1", 0).attr("y2", panelH)
+    .attr("stroke", AMBER).attr("stroke-width", 1.5).attr("stroke-dasharray", "4,3");
+  const botDot = botG.append("circle").attr("r", 5).attr("fill", AMBER);
+
+  // Readout text
+  const readoutEl = svg.append("text")
+    .attr("x", ML + 10).attr("y", 20 + panelH * 2 + gap * 2 + 10)
+    .attr("font-size", "12px").attr("fill", AMBER);
+
+  // Drag interaction on full SVG
+  let currentK = 5;
+  function updateCursor(K) {
+    K = Math.max(0, Math.min(Kmax, K));
+    currentK = K;
+    const cx = kScale(K);
+    const poleVal = -(1 + K) / 5;
+    const errVal = 1 / (1 + K);
+    topCursor.attr("x1", cx).attr("x2", cx);
+    topDot.attr("cx", cx).attr("cy", poleScale(poleVal));
+    botCursor.attr("x1", cx).attr("x2", cx);
+    botDot.attr("cx", cx).attr("cy", errScale(errVal));
+    readoutEl.text(`K = ${K.toFixed(1)}  |  pole = ${poleVal.toFixed(3)}  |  error = ${(errVal * 100).toFixed(1)}%`);
+  }
+
+  svg.style("cursor", "crosshair")
+    .on("mousemove", function(event) {
+      const [mx] = d3.pointer(event);
+      const K = (mx - ML) / innerW * Kmax;
+      updateCursor(K);
+    });
+
+  updateCursor(5);
+  return container.node();
+}
+```
+
+## Worked example 2: state feedback for a two-state system
+
+Consider the linear system
+
+$$\dot{x} = Ax + Bu$$
+
+with
+
+$$A = \begin{pmatrix} 0 & 1 \\ -2 & -1 \end{pmatrix},
+\qquad
+B = \begin{pmatrix} 0 \\ 1 \end{pmatrix}$$
+
+Choose state feedback
+
+$$u = -Kx, \qquad K = \begin{pmatrix} 3 & 2 \end{pmatrix}$$
+
+Then
+
+$$A - BK
+=
+\begin{pmatrix} 0 & 1 \\ -2 & -1 \end{pmatrix}
+-
+\begin{pmatrix} 0 \\ 1 \end{pmatrix}
+\begin{pmatrix} 3 & 2 \end{pmatrix}
+=
+\begin{pmatrix} 0 & 1 \\ -5 & -3 \end{pmatrix}$$
+
+Its characteristic polynomial comes from the 2×2 determinant:
+
+$$\det(\lambda I - (A-BK))
+= \det\begin{pmatrix} \lambda & -1 \\ 5 & \lambda+3 \end{pmatrix}
+= \lambda(\lambda+3) + 5
+= \lambda^2 + 3\lambda + 5$$
+
+The eigenvalues are
+
+$$\lambda = \frac{-3 \pm \sqrt{9-20}}{2}
+= -\frac{3}{2} \pm \frac{\sqrt{11}}{2}i$$
+
+Both eigenvalues have negative real part, so the closed-loop system is stable.
+Compared with the uncontrolled system, the controller has shifted the system's
+modes. That is the state-space version of pole placement.
+
+*The interactive below lets you explore how the gain vector $K = (k_1, k_2)$ shapes the eigenvalues and phase portrait.*
+
+```{ojs}
+//| echo: false
+stateFeedbackViz = {
+  const d3 = await require("d3@7");
+
+  const W = 640, PH = 280;
+  const BLUE = "#2563eb", GREEN = "#059669", RED = "#ef4444", AMBER = "#f59e0b";
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", W + "px");
+
+  // Sliders
+  const sliderDiv = container.append("div")
+    .style("display", "flex").style("gap", "1.5rem").style("margin-bottom", "0.5rem");
+
+  function makeSlider(parent, label, min, max, step, val) {
+    const wrap = parent.append("div").style("flex", "1");
+    wrap.append("label").style("font-size", "0.88rem").style("display", "block")
+      .text(label);
+    const inp = wrap.append("input").attr("type", "range")
+      .attr("min", min).attr("max", max).attr("step", step).attr("value", val)
+      .style("width", "100%");
+    const lbl = wrap.append("span").style("font-size", "0.88rem").style("font-weight", "bold");
+    return {inp, lbl};
+  }
+
+  const s1 = makeSlider(sliderDiv, "k₁:", 0, 6, 0.1, 3);
+  const s2 = makeSlider(sliderDiv, "k₂:", 0, 6, 0.1, 2);
+
+  const svg = container.append("svg")
+    .attr("width", W).attr("height", PH)
+    .attr("viewBox", `0 0 ${W} ${PH}`)
+    .attr("aria-label", "State feedback phase portrait");
+
+  const panW = W / 2 - 20;
+
+  // ---- Left: s-plane ----
+  const spG = svg.append("g").attr("transform", "translate(10, 10)");
+  const spXsc = d3.scaleLinear([-5, 1], [30, panW - 10]);
+  const spYsc = d3.scaleLinear([-4, 4], [PH - 40, 30]);
+
+  // Stable region shading
+  spG.append("rect").attr("x", 30).attr("y", 30)
+    .attr("width", spXsc(0) - 30).attr("height", PH - 70)
+    .attr("fill", GREEN).attr("fill-opacity", 0.1);
+
+  // Axes
+  spG.append("line").attr("x1", 30).attr("y1", spYsc(0))
+    .attr("x2", panW - 10).attr("y2", spYsc(0)).attr("stroke", "#9ca3af").attr("stroke-width", 1);
+  spG.append("line").attr("x1", spXsc(0)).attr("y1", 30)
+    .attr("x2", spXsc(0)).attr("y2", PH - 40)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1).attr("stroke-dasharray", "4,3");
+
+  spG.append("text").attr("x", panW / 2).attr("y", 18)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#374151")
+    .text("s-plane eigenvalues");
+  spG.append("text").attr("x", spXsc(0) + 2).attr("y", 28)
+    .attr("font-size", "9px").attr("fill", "#9ca3af").text("stability boundary");
+
+  [-4,-3,-2,-1,0].forEach(v => {
+    spG.append("text").attr("x", spXsc(v)).attr("y", spYsc(0) + 14)
+      .attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#9ca3af").text(v);
+  });
+  [-3,-2,-1,1,2,3].forEach(v => {
+    spG.append("text").attr("x", spXsc(0) + 5).attr("y", spYsc(v) + 4)
+      .attr("font-size", "9px").attr("fill", "#9ca3af").text(`${v}i`);
+  });
+  spG.append("text").attr("x", panW - 8).attr("y", spYsc(0) + 4)
+    .attr("font-size", "10px").attr("fill", "#9ca3af").text("Re");
+  spG.append("text").attr("x", spXsc(0) - 14).attr("y", 34)
+    .attr("font-size", "10px").attr("fill", "#9ca3af").text("Im");
+
+  const ev1 = spG.append("circle").attr("r", 7).attr("stroke-width", 2);
+  const ev2 = spG.append("circle").attr("r", 7).attr("stroke-width", 2);
+  const evLabel = spG.append("text")
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("font-weight", "bold");
+  const stabilityAnnot = spG.append("text")
+    .attr("x", spXsc(-2.5)).attr("y", PH - 45)
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("font-weight", "bold");
+
+  // ---- Right: phase portrait ----
+  const ppG = svg.append("g").attr("transform", `translate(${W / 2 + 10}, 10)`);
+  const ppXsc = d3.scaleLinear([-3, 3], [30, panW - 10]);
+  const ppYsc = d3.scaleLinear([-3, 3], [PH - 40, 30]);
+
+  ppG.append("text").attr("x", panW / 2).attr("y", 18)
+    .attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#374151")
+    .text("(x₁, x₂) phase portrait");
+
+  // Axes
+  ppG.append("line").attr("x1", 30).attr("y1", ppYsc(0))
+    .attr("x2", panW - 10).attr("y2", ppYsc(0)).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+  ppG.append("line").attr("x1", ppXsc(0)).attr("y1", 30)
+    .attr("x2", ppXsc(0)).attr("y2", PH - 40).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+  ppG.append("text").attr("x", panW - 5).attr("y", ppYsc(0) + 4)
+    .attr("font-size", "10px").attr("fill", "#9ca3af").text("x₁");
+  ppG.append("text").attr("x", ppXsc(0) + 3).attr("y", 28)
+    .attr("font-size", "10px").attr("fill", "#9ca3af").text("x₂");
+
+  const trajectoryPath = ppG.append("path")
+    .attr("fill", "none").attr("stroke-width", 2);
+  const ppAnnot = ppG.append("text")
+    .attr("x", panW / 2).attr("y", PH - 44)
+    .attr("text-anchor", "middle").attr("font-size", "11px").attr("font-weight", "bold");
+
+  function update(k1, k2) {
+    s1.lbl.text(k1.toFixed(1));
+    s2.lbl.text(k2.toFixed(1));
+
+    // A - BK where A=[[0,1],[-2,-1]], B=[[0],[1]], K=[k1,k2]
+    // A-BK = [[0,1],[-2-k1,-1-k2]]
+    const a = 0, b = 1, c = -2 - k1, d = -1 - k2;
+    // char poly: λ² - (a+d)λ + (ad-bc)
+    const tr = a + d;
+    const det = a * d - b * c;
+    const disc = tr * tr - 4 * det;
+
+    let re1, im1, re2, im2, stable;
+    if (disc >= 0) {
+      re1 = (tr + Math.sqrt(disc)) / 2;
+      re2 = (tr - Math.sqrt(disc)) / 2;
+      im1 = 0; im2 = 0;
+      stable = re1 < 0 && re2 < 0;
+    } else {
+      re1 = re2 = tr / 2;
+      im1 = Math.sqrt(-disc) / 2;
+      im2 = -im1;
+      stable = re1 < 0;
+    }
+
+    const col = stable ? BLUE : RED;
+    ev1.attr("cx", spXsc(re1)).attr("cy", spYsc(im1))
+      .attr("fill", col).attr("stroke", col === BLUE ? "#1e40af" : "#991b1b");
+    ev2.attr("cx", spXsc(re2)).attr("cy", spYsc(im2))
+      .attr("fill", col).attr("stroke", col === BLUE ? "#1e40af" : "#991b1b");
+
+    const evStr = disc < 0
+      ? `λ = ${re1.toFixed(2)} ± ${Math.abs(im1).toFixed(2)}i`
+      : `λ = ${re1.toFixed(2)}, ${re2.toFixed(2)}`;
+    evLabel.attr("x", spXsc(re1)).attr("y", spYsc(im1) - 12)
+      .attr("fill", col).text(evStr);
+
+    stabilityAnnot.attr("fill", stable ? GREEN : RED)
+      .text(stable ? "Re(λ) < 0: decays to origin" : "Re(λ) ≥ 0: grows away from origin");
+
+    // Euler trajectory starting near (1, 1)
+    const dt = 0.02, steps = 600;
+    let x1 = 1.0, x2 = 1.0;
+    const path = [[x1, x2]];
+    const clip = 4;
+    for (let i = 0; i < steps; i++) {
+      const u = -(k1 * x1 + k2 * x2);
+      const dx1 = a * x1 + b * x2;
+      const dx2 = c * x1 + d * x2;
+      x1 += dt * dx1;
+      x2 += dt * dx2;
+      if (Math.abs(x1) > clip || Math.abs(x2) > clip) break;
+      path.push([x1, x2]);
+    }
+
+    const lineGen = d3.line().x(d => ppXsc(d[0])).y(d => ppYsc(d[1]));
+    trajectoryPath.attr("d", lineGen(path)).attr("stroke", stable ? GREEN : RED);
+    ppAnnot.attr("fill", stable ? GREEN : RED)
+      .text(stable ? "decays to origin" : "grows away from origin");
+  }
+
+  s1.inp.on("input", function() { update(+this.value, +s2.inp.property("value")); });
+  s2.inp.on("input", function() { update(+s1.inp.property("value"), +this.value); });
+  update(3, 2);
+
+  return container.node();
+}
+```
+
+This is the language used constantly in robotics, flight control, and embedded
+control software. The code may be digital and the sensors noisy, but the core
+mathematical question is still: what did your feedback law do to the modes?
+
+## Worked example 3: stabilising a scientific instrument
+
+An optics lab wants the intensity of a laser to stay near a target despite
+thermal drift. A simplified linear model of the plant is slow and first-order,
+so the experimentalist begins with a proportional controller for the same
+reason an engineer would: it is cheap to implement and easy to reason about.
+
+If the gain is too low, the output drifts and the reference is not tracked
+closely enough. If the gain is pushed too high, noise and delay in the sensor
+chain start to matter. The mathematics is exactly the same as the motor-speed
+example. What changes is the vocabulary of the lab.
+
+This is the point of the optional viewpoint. Control theory is not owned by
+electrical engineering. It is a general mathematical structure for shaping
+dynamics under measurement.
+
+## Where this goes
+
+The most direct continuation is
+[Estimation, inverse problems, and filtering](05-estimation-inverse.qmd).
+Real control systems rarely have direct access to every state they need. Once
+you start asking how to control a system, the next question is often how to
+estimate the quantities you cannot measure cleanly.
+
+This chapter also sharpens the way you should read later Volume 8 material on
+sampled systems and computational models. A simulation is not yet a controller.
+A model can be numerically stable and still be a bad control design. Volume 8
+keeps returning to that distinction.
+
+::: {.callout-tip appearance="simple"}
+## Applications
+
+- motor-speed control in electric drives
+- altitude hold and attitude stabilisation in drones
+- furnace and reactor temperature control
+- active vibration suppression in flexible structures
+- instrument stabilisation in optics and experimental physics
+- feedback loops inside robotics and autonomous systems
+:::
+
+## Exercises
+
+These are project-style exercises. Each one asks you to connect the algebra to
+behaviour, not just compute a number.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.5rem 1rem; align-items:baseline; padding:0.35rem 0; border-top: 1px solid #f3f4f6;";
+
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+
+      stepsDiv.appendChild(row);
+    }
+
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  nextBtn.onclick = () => {
+    if (current < totalSteps) { current++; renderSteps(); updateButtons(); }
+  };
+
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+### Exercise 1
+
+A thermal plant is modelled by
+
+$$G(s) = \frac{2}{10s + 1}$$
+
+with proportional controller $C(s) = K$ and unity feedback.
+
+1. Derive the closed-loop transfer function.
+2. Find the closed-loop pole.
+3. For a unit-step reference, compute the steady-state error.
+4. Compare what changes when $K = 1$ and when $K = 4$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write the closed-loop formula",
+    eq: "T(s) = \\dfrac{C(s)G(s)}{1 + C(s)G(s)} = \\dfrac{2K/(10s+1)}{1 + 2K/(10s+1)}",
+    note: "Substitute the plant and controller directly into the unity-feedback formula." },
+  { op: "Simplify the fraction",
+    eq: "T(s) = \\dfrac{2K}{10s + 1 + 2K}",
+    note: "Multiply numerator and denominator by 10s+1." },
+  { op: "Read off the pole",
+    eq: "10s + 1 + 2K = 0 \\quad \\Rightarrow \\quad s = -\\dfrac{1+2K}{10}",
+    note: "The pole comes from the denominator." },
+  { op: "Compute the steady-state gain",
+    eq: "T(0) = \\dfrac{2K}{1+2K}",
+    note: "Set s=0 to get the zero-frequency gain." },
+  { op: "Compute the steady-state error for a unit step",
+    eq: "e_{ss} = 1 - \\dfrac{2K}{1+2K} = \\dfrac{1}{1+2K}",
+    note: "Output plus tracking error must sum to the unit reference." },
+  { op: "Check the two gains",
+    eq: "K=1: \\; s=-0.3, \\; e_{ss}=\\tfrac{1}{3} \\qquad K=4: \\; s=-0.9, \\; e_{ss}=\\tfrac{1}{9}",
+    note: "Larger gain speeds the loop and reduces the residual error." }
+])
+```
+
+### Exercise 2
+
+A two-state model has
+
+$$A = \begin{pmatrix} 0 & 1 \\ -1 & -0.5 \end{pmatrix},
+\qquad
+B = \begin{pmatrix} 0 \\ 1 \end{pmatrix},
+\qquad
+K = \begin{pmatrix} 4 & 1.5 \end{pmatrix}$$
+
+Compute $A-BK$ and decide whether the closed-loop system is stable.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Write the closed-loop matrix",
+    eq: "A-BK = \\begin{pmatrix} 0 & 1 \\\\ -1 & -0.5 \\end{pmatrix} - \\begin{pmatrix} 0 \\\\ 1 \\end{pmatrix}\\begin{pmatrix} 4 & 1.5 \\end{pmatrix}",
+    note: "State feedback replaces A with A-BK." },
+  { op: "Multiply BK",
+    eq: "BK = \\begin{pmatrix} 0 & 0 \\\\ 4 & 1.5 \\end{pmatrix}",
+    note: "The outer product fills only the second row because B has zero in its first entry." },
+  { op: "Subtract",
+    eq: "A-BK = \\begin{pmatrix} 0 & 1 \\\\ -5 & -2 \\end{pmatrix}" },
+  { op: "Form the characteristic polynomial",
+    eq: "\\det(\\lambda I - (A-BK)) = \\lambda^2 + 2\\lambda + 5",
+    note: "Take the determinant of the 2x2 matrix \\lambda I-(A-BK)." },
+  { op: "Find the eigenvalues",
+    eq: "\\lambda = -1 \\pm 2i",
+    note: "The real part is negative in both cases." },
+  { op: "Check",
+    eq: "\\Re(\\lambda) = -1 < 0 \\; \\Rightarrow \\; \\text{closed-loop system is stable}",
+    note: "Negative real part means decaying oscillation rather than growing oscillation." }
+])
+```
+
+### Exercise 3
+
+A lab instrument is stable but too slow. The current proportional gain gives a
+closed-loop pole at $s=-0.2$. The engineer proposes increasing the gain so the
+pole moves to $s=-0.8$.
+
+Write a short design note answering:
+
+1. What qualitative change will the lab see in the time response?
+2. Why might this still be a bad idea if the sensor is noisy or delayed?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Interpret the pole location",
+    eq: "s=-0.8 \\text{ is farther left than } s=-0.2",
+    note: "Farther left in the complex plane means faster exponential decay." },
+  { op: "State the time-response consequence",
+    eq: "\\text{settling becomes faster, so the instrument returns to target more quickly}",
+    note: "A more negative real pole gives a shorter time constant." },
+  { op: "State the risk",
+    eq: "\\text{higher gain can amplify measurement noise and expose unmodelled delay}",
+    note: "A controller that looks better in the simple model may behave worse in the real loop." },
+  { op: "Check",
+    eq: "\\text{better nominal speed does not guarantee better robustness}",
+    note: "This is the main control tradeoff the design note should communicate." }
+])
+```
+
+### Exercise 4
+
+Choose one system from your own field: a drive, drone, room heater, queueing
+server with autoscaling, or experimental instrument. Identify:
+
+1. the reference
+2. the measured output
+3. the error signal
+4. the control input
+5. one reason high gain might help
+6. one reason high gain might hurt
+
+Write the answer as a one-page systems sketch, not as prose only.
+
+*The diagram below shows the same unity-feedback loop relabelled for five different domains. Use it as a template for your sketch.*
+
+```{ojs}
+//| echo: false
+feedbackVocabViz = {
+  const d3 = await require("d3@7");
+
+  const W = 620, H = 260;
+  const AMBER = "#f59e0b";
+
+  const domains = {
+    motor: {
+      label: "Motor speed",
+      ref: "target RPM",
+      error: "speed error",
+      ctrl: "drive current",
+      dist: "load torque",
+      out: "measured RPM"
+    },
+    drone: {
+      label: "Drone altitude",
+      ref: "target altitude",
+      error: "altitude error",
+      ctrl: "rotor thrust",
+      dist: "wind gust",
+      out: "measured altitude"
+    },
+    heater: {
+      label: "Room heater",
+      ref: "setpoint temperature",
+      error: "temp error",
+      ctrl: "heating power",
+      dist: "heat loss",
+      out: "measured temp"
+    },
+    instrument: {
+      label: "Lab instrument",
+      ref: "target intensity",
+      error: "intensity error",
+      ctrl: "actuator signal",
+      dist: "thermal drift",
+      out: "measured output"
+    },
+    server: {
+      label: "Server autoscaling",
+      ref: "target QPS",
+      error: "load error",
+      ctrl: "instance count",
+      dist: "traffic spike",
+      out: "measured QPS"
+    }
+  };
+
+  const container = d3.create("div")
+    .style("font-family", "sans-serif")
+    .style("max-width", W + "px");
+
+  // Selector
+  const selRow = container.append("div")
+    .style("display", "flex").style("align-items", "center")
+    .style("gap", "0.75rem").style("margin-bottom", "0.5rem");
+  selRow.append("label").style("font-size", "0.9rem").text("Domain:");
+  const sel = selRow.append("select").style("font-size", "0.9rem").style("padding", "2px 6px");
+  Object.entries(domains).forEach(([k, v]) => {
+    sel.append("option").attr("value", k).text(v.label);
+  });
+
+  const svg = container.append("svg")
+    .attr("width", W).attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("aria-label", "Feedback vocabulary relabeller");
+
+  // Defs for arrowhead
+  const defs = svg.append("defs");
+  defs.append("marker")
+    .attr("id", "arrowFV").attr("markerWidth", 8).attr("markerHeight", 8)
+    .attr("refX", 6).attr("refY", 3).attr("orient", "auto")
+    .append("path").attr("d", "M0,0 L0,6 L8,3 z").attr("fill", "#333");
+
+  // Fixed layout
+  const SJ = {x: 120, y: 120};
+  const CB = {x: 230, y: 100, w: 90, h: 40};
+  const PB = {x: 400, y: 100, w: 90, h: 40};
+  const outX = 540;
+  const fbY = 185;
+
+  // Draw static structure
+  function arrow(x1, y1, x2, y2) {
+    svg.append("line")
+      .attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
+      .attr("stroke", "#374151").attr("stroke-width", 1.5)
+      .attr("marker-end", "url(#arrowFV)");
+  }
+
+  // r -> SJ
+  arrow(40, SJ.y, SJ.x - 18, SJ.y);
+  // SJ -> CB
+  arrow(SJ.x + 18, SJ.y, CB.x, SJ.y);
+  // CB -> PB
+  arrow(CB.x + CB.w, SJ.y, PB.x, SJ.y);
+  // PB -> out
+  arrow(PB.x + PB.w, SJ.y, outX, SJ.y);
+  // feedback
+  svg.append("polyline")
+    .attr("points", `${outX - 5},${SJ.y} ${outX - 5},${fbY} ${SJ.x},${fbY} ${SJ.x},${SJ.y + 18}`)
+    .attr("fill", "none").attr("stroke", "#374151").attr("stroke-width", 1.5)
+    .attr("marker-end", "url(#arrowFV)");
+
+  // Summing junction
+  svg.append("circle").attr("cx", SJ.x).attr("cy", SJ.y).attr("r", 18)
+    .attr("fill", "none").attr("stroke", "#374151").attr("stroke-width", 1.5);
+  svg.append("text").attr("x", SJ.x - 6).attr("y", SJ.y + 5)
+    .attr("font-size", "14px").attr("fill", "#374151").text("+");
+  svg.append("text").attr("x", SJ.x - 5).attr("y", SJ.y + 22)
+    .attr("font-size", "11px").attr("fill", "#ef4444").text("−");
+
+  // Controller box
+  svg.append("rect").attr("x", CB.x).attr("y", CB.y).attr("width", CB.w).attr("height", CB.h)
+    .attr("rx", 6).attr("fill", "#f3f4f6").attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+  svg.append("text").attr("x", CB.x + CB.w / 2).attr("y", CB.y + CB.h / 2 + 5)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#2563eb").text("Controller");
+
+  // Plant box
+  svg.append("rect").attr("x", PB.x).attr("y", PB.y).attr("width", PB.w).attr("height", PB.h)
+    .attr("rx", 6).attr("fill", "#f3f4f6").attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+  svg.append("text").attr("x", PB.x + PB.w / 2).attr("y", PB.y + PB.h / 2 + 5)
+    .attr("text-anchor", "middle").attr("font-size", "13px").attr("fill", "#374151").text("Plant");
+
+  // Dynamic labels
+  const refLbl = svg.append("text").attr("x", 25).attr("y", SJ.y - 10)
+    .attr("font-size", "11px").attr("text-anchor", "middle");
+  const errLbl = svg.append("text").attr("x", SJ.x + 55).attr("y", SJ.y - 10)
+    .attr("font-size", "11px").attr("text-anchor", "middle");
+  const ctrlLbl = svg.append("text").attr("x", CB.x + CB.w + 45).attr("y", SJ.y - 10)
+    .attr("font-size", "11px").attr("text-anchor", "middle");
+  const distLbl = svg.append("text").attr("x", (PB.x + PB.x + PB.w) / 2).attr("y", PB.y - 8)
+    .attr("font-size", "11px").attr("text-anchor", "middle").attr("fill", "#6b7280");
+  const outLbl = svg.append("text").attr("x", outX + 5).attr("y", SJ.y + 5)
+    .attr("font-size", "11px").attr("text-anchor", "start");
+
+  // Disturbance arrow
+  svg.append("line")
+    .attr("x1", (PB.x + PB.x + PB.w) / 2).attr("y1", PB.y - 30)
+    .attr("x2", (PB.x + PB.x + PB.w) / 2).attr("y2", PB.y)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1.2).attr("stroke-dasharray", "3,2")
+    .attr("marker-end", "url(#arrowFV)");
+
+  let prevLabels = {};
+
+  function flashLabel(el, newText) {
+    if (prevLabels[el.attr("class") || el.property("_id")] === newText) return;
+    el.attr("fill", AMBER);
+    el.text(newText);
+    setTimeout(() => el.attr("fill", "#374151"), 800);
+  }
+
+  function updateDomain(key) {
+    const d = domains[key];
+    flashLabel(refLbl, d.ref);
+    flashLabel(errLbl, d.error);
+    flashLabel(ctrlLbl, d.ctrl);
+    flashLabel(distLbl, d.dist);
+    flashLabel(outLbl, d.out);
+    prevLabels = d;
+  }
+
+  sel.on("change", function() { updateDomain(this.value); });
+  updateDomain("motor");
+
+  return container.node();
+}
+```

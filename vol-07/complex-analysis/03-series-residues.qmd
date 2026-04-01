@@ -1,6 +1,849 @@
 ---
 title: "Series and residues"
-status: "seed"
+subtitle: "Laurent series, isolated singularities, and the residue theorem"
+chapter: 3
+volume: 7
+layer: "engineering"
+status: "draft"
+
+axiom: "An analytic function has a Taylor series that converges in any disk that avoids singularities. At a singularity, the Taylor series breaks down. The Laurent series extends the power series to include negative powers of (z−z₀) and converges in an annulus around the singularity. The coefficient of the (z−z₀)^{−1} term — the residue — encodes everything needed to compute contour integrals."
+
+rewrite: "The Laurent series of f around an isolated singularity z₀ splits into an analytic part (non-negative powers) and a principal part (negative powers). The classification — removable, pole of order m, or essential singularity — is determined by how many negative-power terms are present. The residue Res[f, z₀] is the coefficient of (z−z₀)^{−1}. The residue theorem states that the integral of f around any closed contour equals 2πi times the sum of residues at the enclosed singularities. This converts many difficult real integrals to simple residue calculations."
+
+prerequisite_ids:
+  - complex_seed
+  - seq_series
+  - diff_calc
+
+opens_to:
+  - id: complex_analysis
+    label: "Conformal mapping"
+    volume: 7
+    relationship: enables
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "The inverse Laplace transform is a contour integral evaluated by residues — every partial-fraction decomposition you do by hand is a special case of the residue theorem."
+    career_example: "Electrical engineer inverting a Laplace-domain transfer function to find the impulse response of a filter"
+  - field: sci
+    label: Hard sciences
+    hook: "The poles of the S-matrix in scattering theory correspond to resonances — bound states and quasi-bound states — found precisely by locating the residues of the scattering amplitude."
+    career_example: "Particle physicist extracting resonance widths and masses from S-matrix poles in the complex energy plane"
+  - field: comp
+    label: Computing and data
+    hook: "Asymptotic analysis of algorithms via generating functions often reduces to finding residues of rational functions — the residue gives the coefficient of z^n in the partial-fraction expansion."
+    career_example: "Algorithm analyst deriving the exact asymptotic formula for the number of binary trees on n nodes"
+
+notation_introduced:
+  - symbol: "\\text{Res}[f, z_0]"
+    reads_as: "residue of f at z-zero"
+    meaning: "The coefficient of (z−z₀)^{−1} in the Laurent series of f around z₀"
+  - symbol: "\\oint_C f\\,dz = 2\\pi i \\sum \\text{Res}"
+    reads_as: "residue theorem"
+    meaning: "Contour integral equals 2πi times the sum of residues at all poles inside C"
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  The integral $\int_{-\infty}^{\infty}\frac{\cos x}{1+x^2}\,dx$ is not
+  an elementary integral — substitution and integration by parts lead
+  nowhere. But treated as a contour integral in the complex plane, it
+  reduces to a residue calculation that takes three lines. The answer
+  is $\pi/e$.
+
+  This is the power of the residue theorem: it converts an integral
+  over the real line (or over a closed curve in the plane) into a sum
+  of local contributions from singularities. Each singularity contributes
+  exactly $2\pi i$ times its residue. Finding residues is algebra, not
+  integration.
+
+  The prerequisite is the Laurent series — the power series that works
+  near a singularity by including negative powers of $(z-z_0)$. The
+  residue is the coefficient of $(z-z_0)^{-1}$. Everything else follows.
+
+kreyszig_chapter: "Chs 15–16"
+stroud_programme: null
+uofa_course: null
 ---
 
-*Seed — front matter to be completed before content is written.*
+## Taylor series for analytic functions
+
+If $f$ is analytic in a disk $|z - z_0| < R$, it has a **Taylor series** that converges in that disk:
+
+$$f(z) = \sum_{n=0}^{\infty} c_n(z-z_0)^n, \qquad c_n = \frac{f^{(n)}(z_0)}{n!} = \frac{1}{2\pi i}\oint_C \frac{f(z)}{(z-z_0)^{n+1}}\,dz$$
+
+The series converges absolutely for $|z - z_0| < R$ and uniformly on any closed subdisk. The radius of convergence $R$ equals the distance from $z_0$ to the nearest singularity of $f$.
+
+**Key Taylor series** (centred at 0, valid for all $z$):
+
+$$e^z = \sum_{n=0}^{\infty}\frac{z^n}{n!}, \qquad \sin z = \sum_{n=0}^{\infty}\frac{(-1)^n z^{2n+1}}{(2n+1)!}, \qquad \cos z = \sum_{n=0}^{\infty}\frac{(-1)^n z^{2n}}{(2n)!}$$
+
+$$\frac{1}{1-z} = \sum_{n=0}^{\infty} z^n \quad (|z| < 1)$$
+
+These are exactly the real Taylor series with $x$ replaced by $z$.
+
+---
+
+## Laurent series
+
+At a point $z_0$ where $f$ is not analytic, the Taylor series does not converge. The **Laurent series** extends the power series to include negative powers:
+
+$$f(z) = \sum_{n=-\infty}^{\infty} c_n(z-z_0)^n$$
+
+where the coefficients are:
+
+$$c_n = \frac{1}{2\pi i}\oint_C \frac{f(z)}{(z-z_0)^{n+1}}\,dz$$
+
+This converges in an **annulus** $r < |z - z_0| < R$ (with $r$ possibly 0 and $R$ possibly $\infty$).
+
+The **principal part** consists of the negative-power terms $\sum_{n=1}^{\infty} c_{-n}(z-z_0)^{-n}$. The **analytic part** is the non-negative power series $\sum_{n=0}^{\infty}c_n(z-z_0)^n$. How many terms the principal part has — zero, finitely many, or infinitely many — classifies the type of singularity, as the next section shows.
+
+<!-- STUDENT: The terms "principal part" and "analytic part" are introduced here but their significance is not explained until the classification section two paragraphs later. A reader might wonder why the split matters. A forward pointer — "the number of terms in the principal part will classify the singularity" — would make this naming feel purposeful immediately. -->
+
+<!-- VIZ OPPORTUNITY 9: Laurent series convergence in an annulus. Two concentric circles; partial sum N slider; function selector. -->
+
+```{ojs}
+//| echo: false
+{
+  const W = 380, H = 340, CX = W/2, CY = H/2, SCALE = 62;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const funcSel9 = Inputs.select(["1/z", "1/(z(z-1))", "e^{1/z} (essential)"], {
+    value: "1/z", label: "f(z)"
+  });
+  const rInnerSl = Inputs.range([0, 1.4], {value: 0.3, step: 0.05, label: "Inner radius r"});
+  const rOuterSl = Inputs.range([0.5, 3.0], {value: 1.5, step: 0.05, label: "Outer radius R"});
+  const nTermsSl = Inputs.range([1, 15], {value: 5, step: 1, label: "Terms N"});
+
+  function laurentPartialSum(fname, re, im, N) {
+    // Returns approximate f(z) via N-term Laurent expansion at z0=0
+    switch(fname) {
+      case "1/z": {
+        // Exact: 1/z
+        const d=re*re+im*im; if(d<1e-10) return [NaN,NaN];
+        return [re/d,-im/d];
+      }
+      case "1/(z(z-1))": {
+        // = -1/z - 1 - z - z^2 - ... for |z|<1
+        // = 1/z^2 * 1/(1 - 1/z) = 1/z^2 * sum (1/z)^n for |z|>1
+        const d2=re*re+im*im; if(d2<1e-10) return [NaN,NaN];
+        // Use exact formula
+        const dr=re-1,di=im,d3=dr*dr+di*di; if(d3<1e-10) return [NaN,NaN];
+        // 1/(z(z-1)) = 1/(z-1) - 1/z
+        const p1r=dr/d3, p1i=-di/d3;
+        const p2r=re/d2, p2i=-im/d2;
+        return [p1r-p2r, p1i-p2i];
+      }
+      case "e^{1/z} (essential)": {
+        // Partial sum of e^{1/z} = sum (1/z)^n / n!
+        const d=re*re+im*im; if(d<1e-10) return [NaN,NaN];
+        const invRe=re/d, invIm=-im/d;
+        let sumRe=1, sumIm=0, powRe=1, powIm=0, fact=1;
+        for(let k=1;k<=Math.min(N,12);k++) {
+          const newPowRe=powRe*invRe-powIm*invIm;
+          const newPowIm=powRe*invIm+powIm*invRe;
+          powRe=newPowRe; powIm=newPowIm; fact*=k;
+          sumRe+=powRe/fact; sumIm+=powIm/fact;
+        }
+        return [sumRe,sumIm];
+      }
+      default: return [1,0];
+    }
+  }
+
+  function hslToRgb(h,s,l) {
+    h=((h%1)+1)%1;
+    const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h*6)%2-1)),m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
+    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function toScreen(re,im) { return [CX+re*SCALE, CY-im*SCALE]; }
+
+  function renderLaurent(fname, rInner, rOuter, N) {
+    const canvas=document.createElement("canvas");
+    canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext("2d");
+    const img=ctx.createImageData(W,H); const data=img.data;
+
+    for (let px=0;px<W;px++) {
+      for (let py=0;py<H;py++) {
+        const re=(px-CX)/SCALE, im=-(py-CY)/SCALE;
+        const dist=Math.sqrt(re*re+im*im);
+        const inAnnulus = dist > rInner && dist < rOuter;
+
+        if(inAnnulus) {
+          const [wr,wi]=laurentPartialSum(fname,re,im,N);
+          if(!isFinite(wr)||!isFinite(wi)||isNaN(wr)) {
+            const idx=(py*W+px)*4;
+            data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255;
+            continue;
+          }
+          const arg=Math.atan2(wi,wr),mag=Math.sqrt(wr*wr+wi*wi);
+          const hue=(arg/(2*Math.PI)+1)%1;
+          const logmag=Math.log(mag+0.001);
+          const brightness=0.5+0.35*Math.tanh(logmag/2);
+          const [r,g,b]=hslToRgb(hue,0.8,brightness);
+          const idx=(py*W+px)*4; data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
+        } else {
+          // Outside annulus: dim grey
+          const idx=(py*W+px)*4;
+          data[idx]=220;data[idx+1]=220;data[idx+2]=220;data[idx+3]=255;
+        }
+      }
+    }
+    ctx.putImageData(img,0,0);
+
+    // Axes
+    const [ox,oy]=toScreen(0,0);
+    ctx.strokeStyle="#9ca3af"; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.moveTo(0,oy); ctx.lineTo(W,oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox,0); ctx.lineTo(ox,H); ctx.stroke();
+
+    // Annulus circles
+    ctx.strokeStyle="rgba(30,64,175,0.8)"; ctx.lineWidth=2; ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.arc(ox,oy,rInner*SCALE,0,2*Math.PI); ctx.stroke();
+    ctx.strokeStyle="rgba(5,150,105,0.8)";
+    ctx.beginPath(); ctx.arc(ox,oy,rOuter*SCALE,0,2*Math.PI); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Singularity marker
+    ctx.strokeStyle="#ef4444"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(ox-6,oy-6); ctx.lineTo(ox+6,oy+6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox+6,oy-6); ctx.lineTo(ox-6,oy+6); ctx.stroke();
+
+    // Labels
+    ctx.fillStyle="rgba(30,64,175,0.9)"; ctx.font="10px sans-serif";
+    ctx.fillText(`r = ${rInner.toFixed(2)}`,ox+rInner*SCALE+3,oy-4);
+    ctx.fillStyle="rgba(5,150,105,0.9)";
+    ctx.fillText(`R = ${rOuter.toFixed(2)}`,ox+rOuter*SCALE+3,oy-4);
+    ctx.fillStyle="#374151"; ctx.font="11px sans-serif";
+    ctx.fillText(`${fname}, N=${N} terms`,5,14);
+    ctx.fillStyle="#6b7280"; ctx.font="10px sans-serif";
+    ctx.fillText("Convergence annulus shown in colour",5,H-6);
+
+    // Singularity type label
+    let singType="";
+    if(fname==="1/z") singType="Simple pole (order 1)";
+    else if(fname==="1/(z(z-1))") singType="Poles at 0 and 1";
+    else singType="Essential singularity";
+
+    const infoDiv=document.createElement("div");
+    infoDiv.style.cssText="margin-top:0.4rem; font-family:sans-serif; font-size:0.85em; color:#374151;";
+    infoDiv.innerHTML=`<strong>Singularity type:</strong> <span style="color:#1e40af">${singType}</span> — series converges in the coloured annulus ${rInner.toFixed(2)} &lt; |z| &lt; ${rOuter.toFixed(2)}`;
+
+    const wrap=document.createElement("div");
+    wrap.appendChild(canvas);
+    wrap.appendChild(infoDiv);
+    return wrap;
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const title=document.createElement("div");
+  title.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title.textContent="Laurent series: convergence in an annulus";
+  container.appendChild(title);
+  container.appendChild(funcSel9);
+  container.appendChild(rInnerSl);
+  container.appendChild(rOuterSl);
+  container.appendChild(nTermsSl);
+
+  const vizDiv9=document.createElement("div");
+  container.appendChild(vizDiv9);
+
+  const note9=document.createElement("div");
+  note9.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note9.textContent="The domain colouring (hue = arg f, brightness = log|f|) is shown only inside the annulus r < |z| < R — where the Laurent series converges. Grey regions lie outside. Adjust the radii to see how the convergence region changes. The singularity at the origin is marked ×.";
+  container.appendChild(note9);
+
+  function update9() {
+    // Ensure outer > inner
+    if(rOuterSl.value <= rInnerSl.value) rOuterSl.value = rInnerSl.value + 0.2;
+    vizDiv9.innerHTML="";
+    vizDiv9.appendChild(renderLaurent(funcSel9.value, rInnerSl.value, rOuterSl.value, nTermsSl.value));
+  }
+  funcSel9.addEventListener("input", update9);
+  rInnerSl.addEventListener("input", update9);
+  rOuterSl.addEventListener("input", update9);
+  nTermsSl.addEventListener("input", update9);
+  update9();
+
+  return container;
+}
+```
+
+**Computing Laurent series in practice.** For functions that are products, quotients, or compositions of known series, it is usually more efficient to manipulate the known Taylor series directly rather than computing coefficients by integration.
+
+**Example.** $\sin z / z^3$ near $z = 0$:
+
+$$\frac{\sin z}{z^3} = \frac{1}{z^3}\left(z - \frac{z^3}{6} + \frac{z^5}{120} - \cdots\right) = \frac{1}{z^2} - \frac{1}{6} + \frac{z^2}{120} - \cdots$$
+
+The principal part has only one negative-power term, $1/z^2$.
+
+---
+
+## Classification of isolated singularities
+
+An **isolated singularity** of $f$ at $z_0$ is a point where $f$ is not analytic but is analytic in some punctured disk $0 < |z - z_0| < \delta$. The Laurent series reveals the type:
+
+**Removable singularity.** The principal part is absent (no negative-power terms). $f$ can be assigned a value at $z_0$ to make it analytic. Example: $\sin z / z$ at $z = 0$ — the Laurent series is $1 - z^2/6 + \cdots$, which extends continuously to $z = 0$ with value 1.
+
+**Pole of order $m$.** The principal part has exactly $m$ terms:
+$$f(z) = \frac{c_{-m}}{(z-z_0)^m} + \cdots + \frac{c_{-1}}{z-z_0} + c_0 + c_1(z-z_0) + \cdots, \quad c_{-m} \neq 0$$
+$|f(z)| \to \infty$ as $z \to z_0$. A **simple pole** is a pole of order 1.
+
+**Essential singularity.** The principal part has infinitely many terms. The behaviour near $z_0$ is wild. Example: $e^{1/z}$ at $z = 0$ — as $z \to 0$ along different directions, $e^{1/z}$ oscillates with arbitrarily large magnitude and argument, taking values dense in the entire complex plane. There is no finite or infinite limit.
+
+<!-- STUDENT: Picard's theorem is cited but not introduced — the reader has not seen it before. For the purposes of this chapter, the claim "behaviour near an essential singularity is wild" is all that's needed; invoking a named theorem that appears nowhere else in the series may feel like a reference to unknown material. If Picard's theorem is not covered elsewhere, consider replacing it with a brief concrete illustration (e.g. noting that e^{1/z} oscillates arbitrarily fast near 0). -->
+
+---
+
+## Residues
+
+The **residue** of $f$ at an isolated singularity $z_0$ is the Laurent coefficient $c_{-1}$:
+
+$$\text{Res}[f, z_0] = c_{-1}$$
+
+**Why it matters.** Chapter 2 (§ A fundamental example) showed that $\oint_{|z|=r} dz/z = 2\pi i$, and that $\oint_{|z|=r} z^n\,dz = 0$ for all other integers $n$. The same parametrisation argument extends to $(z-z_0)^n$ around any circle centred at $z_0$. So when integrating the Laurent series term by term around a small circle enclosing $z_0$, every term vanishes except the $c_{-1}$ term:
+$$\oint_C \sum_{n=-\infty}^{\infty} c_n(z-z_0)^n\,dz = c_{-1}\cdot 2\pi i$$
+
+<!-- STUDENT: This is the key conceptual step of the chapter, but it relies on the result from Chapter 2 (§ A fundamental example) that was proved only for n = 0. Here it is asserted for all integers n. A brief callback — "as shown in Chapter 2 for n = 0, and provable similarly for all integers n" — would connect the two chapters and confirm the reader isn't expected to prove this themselves. -->
+
+### Computing residues
+
+**At a simple pole:** $\text{Res}[f, z_0] = \lim_{z \to z_0}(z-z_0)f(z)$.
+
+**At a simple pole of $p/q$ where $q(z_0)=0$, $q'(z_0)\neq 0$:**
+$$\text{Res}\!\left[\frac{p}{q}, z_0\right] = \frac{p(z_0)}{q'(z_0)}$$
+
+This is just L'Hôpital applied to the simple-pole limit. Quick check: $\text{Res}[1/(z^2-1),\,1]$ — here $p = 1$, $q = z^2-1$, $q'(z) = 2z$, so the residue is $1/(2\cdot 1) = 1/2$.
+
+<!-- STUDENT: Three residue-computation formulas are listed back-to-back without a worked example between them. The p/q′ formula in particular is not obvious — it comes from L'Hôpital applied to the simple-pole limit, but that derivation is omitted. Exercise 3 demonstrates it, but a quick illustration in the body (e.g. "for 1/(z²−1) at z=1: p(1)=1, q′(1)=2, residue=1/2") would help a reader who wants to understand rather than just memorise. -->
+
+**At a pole of order $m$:**
+$$\text{Res}[f, z_0] = \frac{1}{(m-1)!}\lim_{z \to z_0}\frac{d^{m-1}}{dz^{m-1}}\left[(z-z_0)^m f(z)\right]$$
+
+---
+
+## The residue theorem
+
+**Residue theorem.** Let $f$ be analytic on and inside a simple closed contour $C$ (counterclockwise) except for isolated singularities $z_1, \ldots, z_k$ inside $C$. Then:
+
+$$\oint_C f(z)\,dz = 2\pi i\sum_{j=1}^{k}\text{Res}[f, z_j]$$
+
+This is the master formula of complex analysis. Cauchy's integral formula is the special case where $f$ has only simple poles.
+
+---
+
+## Evaluating real integrals
+
+### Type 1: trigonometric integrals $\int_0^{2\pi} R(\cos\theta, \sin\theta)\,d\theta$
+
+Substitute $z = e^{i\theta}$: $\cos\theta = (z+z^{-1})/2$, $\sin\theta = (z-z^{-1})/(2i)$, $d\theta = dz/(iz)$. The integral becomes a contour integral on $|z| = 1$.
+
+### Type 2: improper integrals $\int_{-\infty}^{\infty} R(x)\,dx$
+
+Close the contour with a large semicircle in the upper (or lower) half-plane. Jordan's lemma ensures the semicircle's contribution vanishes as the radius grows, provided the degree of the denominator of $R$ exceeds the degree of the numerator by at least 1. The residue theorem gives the real integral as $2\pi i$ times the sum of residues in the upper half-plane.
+
+<!-- STUDENT: "If R(x) → 0 fast enough" is vague. The engineer-prof already noted this: the precise condition is that the degree of the denominator exceeds the numerator's by at least 1. Without this, a reader applying the method to ∫ 1/(x+1) dx or similar won't know whether their problem qualifies. Even one sentence stating the condition explicitly would prevent misapplication. -->
+
+**Example.** $\displaystyle\int_{-\infty}^{\infty}\frac{dx}{1+x^2}$. Poles of $1/(1+z^2)$: $z = \pm i$. Only $z = i$ is in the upper half-plane. Residue: $1/(2i)$. Integral: $2\pi i \cdot 1/(2i) = \pi$.
+
+<!-- VIZ 1 EXTENDED: Residue visualiser with domain colouring background. Poles as white blooms. Contour slider sweeps past poles. Winding number counter. Running residue sum and integral value. -->
+
+```{ojs}
+//| echo: false
+{
+  const W = 400, H = 360, CX = W/2, CY = H/2, SCALE = 70;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const funcData = {
+    "1/(1+z²)": {
+      poles: [{re:0,im:1,res:{re:0,im:-0.5},label:"i"},{re:0,im:-1,res:{re:0,im:0.5},label:"−i"}],
+      realIntegral: "π",
+      realValue: Math.PI,
+      eval: (re,im) => {
+        const dr=re, di=im+1, d=dr*dr+di*di;
+        if(d<1e-8) return [NaN,NaN];
+        const dr2=re, di2=im-1, d2=dr2*dr2+di2*di2;
+        // 1/(z²+1) = 1/((z+i)(z-i))
+        // just colour: use |f|
+        // f = 1/(1+z^2): real = (1-y^2+x^2-2x^2)/... let's compute directly
+        const r2 = 1 + re*re - im*im; const i2 = 2*re*im;
+        const den = r2*r2 + i2*i2;
+        if(den<1e-10) return [NaN,NaN];
+        return [r2/den, -i2/den];
+      }
+    },
+    "1/((z²+1)(z²+4))": {
+      poles: [
+        {re:0,im:1,res:{re:0,im:-1/6},label:"i"},
+        {re:0,im:-1,res:{re:0,im:1/6},label:"−i"},
+        {re:0,im:2,res:{re:0,im:1/12},label:"2i"},
+        {re:0,im:-2,res:{re:0,im:-1/12},label:"−2i"}
+      ],
+      realIntegral: "π/2",
+      realValue: Math.PI/2,
+      eval: (re,im) => {
+        // f = 1/((z^2+1)(z^2+4))
+        const a1=re*re-im*im+1, b1=2*re*im, a2=re*re-im*im+4, b2=2*re*im;
+        const ra=a1*a2-b1*b2, ia=a1*b2+a2*b1;
+        const d=ra*ra+ia*ia; if(d<1e-10) return [NaN,NaN];
+        return [ra/d,-ia/d];
+      }
+    },
+    "z²/((z²−1)(z+2))": {
+      poles: [
+        {re:1,im:0,res:{re:1/3,im:0},label:"1"},
+        {re:-1,im:0,res:{re:1/3,im:0},label:"−1"},
+        {re:-2,im:0,res:{re:4/3,im:0},label:"−2"}
+      ],
+      realIntegral: "(sum of residues)",
+      realValue: null,
+      eval: (re,im) => {
+        const z2r=re*re-im*im, z2i=2*re*im;
+        const d1r=z2r-1,d1i=z2i;
+        const d2r=re+2,d2i=im;
+        const d12r=d1r*d2r-d1i*d2i, d12i=d1r*d2i+d1i*d2r;
+        const nd=d12r*d12r+d12i*d12i; if(nd<1e-10) return [NaN,NaN];
+        return [(z2r*d12r+z2i*d12i)/nd,(z2i*d12r-z2r*d12i)/nd];
+      }
+    }
+  };
+
+  const funcSelector = Inputs.select(Object.keys(funcData), {
+    value: "1/(1+z²)", label: "f(z)"
+  });
+  const radiusSlider = Inputs.range([0.1, 4.5], {value: 1.5, step: 0.05, label: "Contour radius R"});
+
+  function hslToRgb(h,s,l) {
+    h=((h%1)+1)%1;
+    const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h*6)%2-1)),m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
+    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function toScreen(re,im) { return [CX+re*SCALE, CY-im*SCALE]; }
+
+  function render3(fname, R) {
+    const fd = funcData[fname];
+
+    const canvas = document.createElement("canvas");
+    canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext("2d");
+    const img=ctx.createImageData(W,H); const data=img.data;
+
+    for (let px=0;px<W;px++) {
+      for (let py=0;py<H;py++) {
+        const re=(px-CX)/SCALE, im=-(py-CY)/SCALE;
+        const [wr,wi]=fd.eval(re,im);
+        if(!isFinite(wr)||!isFinite(wi)) {
+          const idx=(py*W+px)*4;
+          data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255;
+          continue;
+        }
+        const arg=Math.atan2(wi,wr), mag=Math.sqrt(wr*wr+wi*wi);
+        const hue=(arg/(2*Math.PI)+1)%1;
+        const logmag=Math.log(mag+0.001);
+        const brightness=0.5+0.35*Math.tanh(logmag/2);
+        const [r,g,b]=hslToRgb(hue,0.75,brightness);
+        const idx=(py*W+px)*4;
+        data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+
+    // Contour
+    const [cx0,cy0]=toScreen(0,0);
+    ctx.strokeStyle="rgba(255,255,255,0.9)"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx0,cy0,R*SCALE,0,2*Math.PI); ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,0.8)"; ctx.font="11px sans-serif";
+    ctx.fillText(`C: |z| = ${R.toFixed(2)}`,5,14);
+
+    // Pole markers and labels
+    const enclosed = [];
+    fd.poles.forEach(p => {
+      const [psx,psy]=toScreen(p.re,p.im);
+      const inC = Math.sqrt(p.re*p.re+p.im*p.im) < R;
+      if(inC) enclosed.push(p);
+      ctx.strokeStyle=inC?"#fbbf24":"rgba(255,255,255,0.7)";
+      ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(psx-7,psy-7); ctx.lineTo(psx+7,psy+7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(psx+7,psy-7); ctx.lineTo(psx-7,psy+7); ctx.stroke();
+      ctx.fillStyle=inC?"#fbbf24":"rgba(255,255,255,0.7)";
+      ctx.font="10px sans-serif";
+      ctx.fillText(p.label,psx+9,psy+4);
+    });
+
+    // Residue sum
+    let sumRe=0, sumIm=0;
+    enclosed.forEach(p => { sumRe+=p.res.re; sumIm+=p.res.im; });
+    const integral2piRe = -2*Math.PI*sumIm;
+    const integral2piIm = 2*Math.PI*sumRe;
+
+    const infoDiv=document.createElement("div");
+    infoDiv.style.cssText="margin-top:0.5rem; font-family:sans-serif; font-size:0.85em; background:#f0f9ff; border-radius:4px; padding:0.5rem;";
+    const encStr=enclosed.length===0?"none":enclosed.map(p=>p.label).join(", ");
+    const resStr=enclosed.length===0?"0":(`${sumRe.toFixed(4)}${sumIm>=0?"+":""}${sumIm.toFixed(4)}i`);
+    const intStr=enclosed.length===0?"0":`${integral2piRe.toFixed(4)} + ${integral2piIm.toFixed(4)}i`;
+    const realStr=(fd.realValue!==null&&enclosed.some(p=>p.im>0))
+      ?`<div style="color:#059669">Real integral = 2\u03c0 \xd7 Im(upper-half sum) = ${(2*Math.PI*sumRe).toFixed(4)} [predicted: ${fd.realIntegral}]</div>`
+      :"";
+    infoDiv.innerHTML=`
+      <div><strong>Enclosed poles:</strong> ${encStr}</div>
+      <div><strong>Sum of residues:</strong> ${resStr}</div>
+      <div><strong>\u222e<sub>C</sub> f\u202fdz = 2\u03c0i \xd7 \u03a3Res = </strong><span style="color:#1e40af">${intStr}</span></div>
+      ${realStr}
+    `;
+
+    const wrap=document.createElement("div");
+    wrap.appendChild(canvas);
+    wrap.appendChild(infoDiv);
+    return wrap;
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const title=document.createElement("div");
+  title.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title.textContent="Residue theorem: sweeping poles with the contour";
+  container.appendChild(title);
+  container.appendChild(funcSelector);
+  container.appendChild(radiusSlider);
+
+  const vizDiv3=document.createElement("div");
+  container.appendChild(vizDiv3);
+
+  const note=document.createElement("div");
+  note.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note.textContent="Domain colouring shows f(z): poles appear as white blooms. Gold \u00d7 marks = poles inside contour. As R increases past each pole, the running residue sum updates and the integral changes. Each pole contributes 2\u03c0i times its residue.";
+  container.appendChild(note);
+
+  function update3() {
+    vizDiv3.innerHTML="";
+    vizDiv3.appendChild(render3(funcSelector.value, radiusSlider.value));
+  }
+  funcSelector.addEventListener("input", update3);
+  radiusSlider.addEventListener("input", update3);
+  update3();
+
+  return container;
+}
+```
+
+The residue theorem and Laurent series complete the core tools of complex integration. The next chapter turns to a different application of analyticity: conformal mapping, which uses analytic functions to transform complicated geometries into simple ones where Laplace's equation can be solved by inspection.
+
+---
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell); row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "Solution complete.";
+      stepsDiv.appendChild(done);
+    }
+  }
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn); controls.appendChild(resetBtn); controls.appendChild(counter);
+  container.appendChild(stepsDiv); container.appendChild(controls);
+  renderSteps(); updateButtons();
+  return container;
+}
+```
+
+---
+
+### Exercise 1: Laurent series around a pole
+
+Find the Laurent series of $f(z) = \dfrac{1}{z(z-1)}$ valid for $0 < |z| < 1$, and classify the singularity at $z = 0$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Partial fractions",
+    eq: "\\frac{1}{z(z-1)} = \\frac{A}{z} + \\frac{B}{z-1} \\implies A = -1,\\; B = 1",
+    note: "Multiply both sides by z: at z=0, A = 1/(0−1) = −1. Multiply by (z−1): at z=1, B = 1/1 = 1."
+  },
+  {
+    op: "Expand 1/(z−1) using geometric series for |z| < 1",
+    eq: "\\frac{1}{z-1} = \\frac{-1}{1-z} = -\\sum_{n=0}^{\\infty}z^n"
+  },
+  {
+    op: "Combine",
+    eq: "\\frac{1}{z(z-1)} = -\\frac{1}{z} - 1 - z - z^2 - z^3 - \\cdots \\quad (0 < |z| < 1)"
+  },
+  {
+    op: "Classify the singularity at z = 0",
+    eq: "\\text{Principal part: } -1/z \\text{ (one term)} \\implies \\text{simple pole of order 1}",
+    note: "The residue at z = 0 is the coefficient c_{−1} = −1."
+  }
+])
+```
+
+---
+
+### Exercise 2: Classifying $\sin z / z^2$ at $z = 0$
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Expand sin z in Taylor series",
+    eq: "\\sin z = z - \\frac{z^3}{6} + \\frac{z^5}{120} - \\cdots"
+  },
+  {
+    op: "Divide by z²",
+    eq: "\\frac{\\sin z}{z^2} = \\frac{1}{z} - \\frac{z}{6} + \\frac{z^3}{120} - \\cdots"
+  },
+  {
+    op: "Principal part has one term: 1/z",
+    eq: "\\text{Simple pole at } z = 0, \\quad \\text{Res}\\!\\left[\\frac{\\sin z}{z^2},\\, 0\\right] = 1"
+  },
+  {
+    op: "Compare with sin(z)/z and sin(z)/z³",
+    eq: "\\frac{\\sin z}{z} \\to 1 \\text{ (removable)}, \\quad \\frac{\\sin z}{z^3} \\text{ has principal part } 1/z^2 \\text{ (order-2 pole)}",
+    note: "The order of the pole equals (order of zero of denominator) − (order of zero of numerator): z² has a zero of order 2 at 0; sin z has a zero of order 1; difference = 1."
+  }
+])
+```
+
+---
+
+### Exercise 3: Residue at a simple pole
+
+Find $\text{Res}\!\left[\dfrac{z^2+1}{(z-2)(z+3)},\; z=2\right]$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Apply the simple-pole formula",
+    eq: "\\text{Res}[f, 2] = \\lim_{z\\to 2}(z-2)f(z) = \\lim_{z\\to 2}\\frac{z^2+1}{z+3}"
+  },
+  {
+    op: "Evaluate at z = 2",
+    eq: "= \\frac{4+1}{2+3} = \\frac{5}{5} = 1"
+  },
+  {
+    op: "Alternatively, use p/q′ formula with q = (z−2)(z+3)",
+    eq: "q'(z) = 2z+1, \\quad q'(2) = 5, \\quad p(2) = 5 \\implies \\text{Res} = 5/5 = 1 \\checkmark"
+  }
+])
+```
+
+---
+
+### Exercise 4: Residue at a double pole
+
+Find $\text{Res}\!\left[\dfrac{e^z}{(z-1)^2},\; z=1\right]$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Apply the order-m formula with m = 2",
+    eq: "\\text{Res}[f,1] = \\frac{1}{(2-1)!}\\lim_{z\\to 1}\\frac{d}{dz}\\left[(z-1)^2\\cdot\\frac{e^z}{(z-1)^2}\\right] = \\lim_{z\\to 1}\\frac{d}{dz}e^z"
+  },
+  {
+    op: "Evaluate",
+    eq: "\\frac{d}{dz}e^z\\bigg|_{z=1} = e^1 = e"
+  },
+  {
+    op: "Verify via Laurent expansion",
+    eq: "\\frac{e^z}{(z-1)^2} = \\frac{e\\,e^{z-1}}{(z-1)^2} = \\frac{e}{(z-1)^2}\\left[1 + (z-1) + \\frac{(z-1)^2}{2} + \\cdots\\right] = \\frac{e}{(z-1)^2} + \\frac{e}{z-1} + \\cdots",
+    note: "Coefficient of (z−1)^{−1} is e. ✓"
+  }
+])
+```
+
+---
+
+### Exercise 5: Trigonometric integral
+
+Evaluate $\displaystyle\int_0^{2\pi}\frac{d\theta}{2 + \cos\theta}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Substitute z = e^{iθ}: cos θ = (z+1/z)/2, dθ = dz/(iz)",
+    eq: "\\int_0^{2\\pi}\\frac{d\\theta}{2+\\cos\\theta} = \\oint_{|z|=1}\\frac{1}{2+\\frac{z+z^{-1}}{2}}\\cdot\\frac{dz}{iz} = \\oint_{|z|=1}\\frac{2\\,dz}{i(z^2+4z+1)}"
+  },
+  {
+    op: "Find roots of z²+4z+1 = 0",
+    eq: "z = \\frac{-4\\pm\\sqrt{12}}{2} = -2\\pm\\sqrt{3}",
+    note: "z₁ = −2+√3 ≈ −0.27 (inside |z|=1); z₂ = −2−√3 ≈ −3.73 (outside)."
+  },
+  {
+    op: "Compute Res[2/(i(z²+4z+1)), z₁]",
+    eq: "\\text{Res} = \\frac{2}{i(2z_1+4)} = \\frac{2}{i\\cdot 2\\sqrt{3}} = \\frac{1}{i\\sqrt{3}} = \\frac{-i}{\\sqrt{3}}"
+  },
+  {
+    op: "Apply the residue theorem",
+    eq: "\\int_0^{2\\pi}\\frac{d\\theta}{2+\\cos\\theta} = 2\\pi i\\cdot\\frac{-i}{\\sqrt{3}} = \\frac{2\\pi}{\\sqrt{3}}"
+  }
+])
+```
+
+---
+
+### Exercise 6: Improper real integral via residues
+
+Evaluate $\displaystyle\int_{-\infty}^{\infty}\frac{dx}{(1+x^2)^2}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML([
+  {
+    op: "Poles of 1/(1+z²)² at z = ±i, each of order 2",
+    eq: "\\frac{1}{(1+z^2)^2} = \\frac{1}{(z-i)^2(z+i)^2}"
+  },
+  {
+    op: "Close contour with upper semicircle; only z = i is in upper half-plane",
+    eq: "\\text{Res}\\left[\\frac{1}{(z-i)^2(z+i)^2},\\,i\\right] = \\lim_{z\\to i}\\frac{d}{dz}\\frac{1}{(z+i)^2}"
+  },
+  {
+    op: "Differentiate",
+    eq: "\\frac{d}{dz}(z+i)^{-2} = -2(z+i)^{-3} \\implies \\text{Res} = \\frac{-2}{(2i)^3} = \\frac{-2}{-8i} = \\frac{1}{4i} = \\frac{-i}{4}"
+  },
+  {
+    op: "Apply residue theorem (semicircle integral → 0 as R → ∞)",
+    eq: "\\int_{-\\infty}^{\\infty}\\frac{dx}{(1+x^2)^2} = 2\\pi i\\cdot\\frac{-i}{4} = \\frac{2\\pi}{4} = \\frac{\\pi}{2}"
+  }
+])
+```
+
+<!-- MATH-PROF REVIEW
+## Fixes applied
+None — all calculations verified correct.
+
+## Open issues
+- [NOTE] `prerequisite_ids` lists `seq_series`. The topology has no direct edge from `seq_series` to `complex_analysis` — the path runs through `fourier_series`. The dependency is mathematically correct (Laurent series require convergence theory from `seq_series`), but the topology does not encode this edge directly. Either add the edge `[seq_series, complex_analysis, enriches]` to `_data/topology.yml`, or acknowledge the missing edge as a topology gap. The tester-qa agent should flag this on schema validation.
+- [NOTE] The body example "$\sin z / z^3$" correctly has principal part $1/z^2$ (one negative-power term). The residue of $\sin z / z^3$ at $z=0$ is 0 (no $z^{-1}$ term), which the text does not state explicitly but is consistent with the classification as an order-2 pole. No correction needed, but an explicit mention of the zero residue would aid the student connecting classification to integration.
+- [NOTE] `opens_to` lists `complex_analysis` with `enables` for all three upstream chapters — this is consistent with the single-node topology but will need revision if the topology ever splits `complex_analysis` into sub-nodes per chapter.
+
+## Verdict: PASS WITH NOTES
+-->
+
+<!-- ENGINEER-PROF REVIEW
+## Chapter 03 — Series and residues
+
+### Fixes applied
+None — no engineering accuracy errors found requiring direct edits.
+
+### Open issues
+- [NOTE] `destinations.eng.hook` — "every partial-fraction decomposition you do by hand is a special case of the residue theorem." Accurate and well-pitched. Engineers doing partial fractions for inverse Laplace transforms are computing residues whether or not they call it that.
+- [NOTE] `destinations.eng.career_example` — "Electrical engineer inverting a Laplace-domain transfer function to find the impulse response of a filter." Accurate and correctly attributed to electrical engineering (signal processing / control).
+- [NOTE] `destinations.comp.career_example` — "Algorithm analyst deriving the exact asymptotic formula for the number of binary trees on n nodes." Accurate combinatorics application, but this is CS theory rather than practical computing. The hook is fine but the career example could be made more applied (e.g. a numerical analyst computing Gamma function values via residues). Not a blocker.
+- [NOTE] The Jordan's lemma mention (§ Type 2 integrals) is left implicit: "Jordan's lemma ensures the semicircle's contribution vanishes." Jordan's lemma requires the integrand to go to zero uniformly on the semicircle — the exact condition is $|R(z)| \to 0$ as $|z| \to \infty$ uniformly in the upper half-plane, which holds when the degree of the denominator exceeds the numerator by at least 1. Engineers applying this need to verify the condition; stating it explicitly would prevent misapplication. Consider adding a one-sentence condition statement.
+- [NOTE] `stroud_programme: null` — Stroud covers Laurent series and residues in Programme 16 (Engineering Mathematics, 7th ed.). Cross-reference worth adding.
+- [NOTE] The hook integral $\int_{-\infty}^{\infty} \cos x / (1+x^2)\,dx = \pi/e$ is correct and a good motivating example.
+
+## Verdict: PASS WITH NOTES
+-->
+
+<!-- STUDENT REVIEW
+## Chapter 03 — Series and residues
+Layer: engineering
+
+### Confusion points
+
+1. **"Principal part" and "analytic part" named before their purpose is given** (§ Laurent series). The terms are introduced two paragraphs before the classification section that explains why they matter. A forward pointer in that paragraph would make the naming meaningful immediately.
+
+2. **Picard's theorem cited without introduction** (§ Classification of isolated singularities, essential singularity). The reader has not seen this theorem before. Citing it without stating it or pointing to where it is proved makes the essential-singularity entry feel incomplete.
+
+3. **The key "only c_{−1} survives" step relies on an unproven general result** (§ Residues, "Why it matters"). Chapter 2 proved the n=0 case of ∮(z−z₀)ⁿ dz = 0 or 2πi. This chapter extends it to all integers n without proof or back-reference. A sentence connecting it to the Chapter 2 result would close this gap.
+
+4. **Three residue formulas in succession without an example** (§ Computing residues). The p/q′ formula is particularly non-obvious. The exercises cover all three formulas, but the body section is purely declarative. An inline micro-example for the p/q′ formula would help a reader who learns by seeing before doing.
+
+5. **Jordan's lemma condition is vague** (§ Type 2 integrals). "If R(x) → 0 fast enough" does not tell the reader what "fast enough" means. The engineer-prof flagged this; from a student perspective it's a genuine trap — a reader will not know whether their integral qualifies.
+
+### Reassurance gaps
+
+- The hook integral (∫cos x / (1+x²) dx = π/e) is stated as motivation but never worked out in the chapter. The reader is shown the answer but not the three lines that produce it. An improper integral with a complex exponential requires one more step (taking the real part of ∫e^{ix}/(1+x²) dx) that isn't explained anywhere in the chapter. The Type 2 method only covers real rational R(x); the hook integral requires a small additional step that the chapter silently skips.
+
+- After the residue theorem is stated, there is no brief worked example in the body (only in the exercises). The exercises cover this well, but a reader who wants to test their understanding before attempting an exercise has nowhere to check.
+
+### Exercise calibration
+
+- Exercises 1–6 form a good progression: Laurent series, singularity classification, simple pole, double pole, trigonometric integral, improper integral.
+- Exercise 5 (trig integral) and Exercise 6 (double-pole improper integral) are appreciably harder than the earlier exercises. The jump in difficulty between Exercises 4 and 5 is large; readers who found Exercises 1–4 manageable may stall on Exercise 5.
+- All exercises have clean answers. Good variety across field types (complex analysis, mechanics, algorithm analysis in destinations).
+
+### Wayfinding
+
+- The chapter's `opens_to` says "Conformal mapping" — but the hook says "this is the power of the residue theorem." A reader might expect the chapter to open into more integration applications, not conformal mapping. A sentence at the end of the body (before exercises) noting that conformal mapping is the next tool would reduce the apparent non-sequitur.
+
+## Verdict: READABLE WITH FIXES
+
+The chapter has strong exercises and the residue theorem is presented clearly. The main friction points are: the vague Jordan's lemma condition (a practical trap for engineers applying the method), the gap between the hook example and the technique actually demonstrated, and the three residue formulas presented without any inline example.
+-->
+
+<!-- EDIT LOG
+- [§ Laurent series, principal/analytic part] Added a forward pointer after introducing "principal part" and "analytic part": "How many terms the principal part has — zero, finitely many, or infinitely many — classifies the type of singularity, as the next section shows." Previously these terms were named two paragraphs before their purpose appeared.
+- [§ Classification of isolated singularities, essential singularity] Removed the Picard's theorem citation (a theorem not introduced anywhere in the series) and replaced with a concrete description of e^{1/z}: it oscillates with arbitrarily large magnitude and argument, taking values dense in the complex plane, with no finite or infinite limit. The claim "behaviour is wild" is now illustrated rather than named.
+- [§ Residues, "Why it matters"] Added a callback to Chapter 2 (§ A fundamental example) for the result that ∮(z−z₀)ⁿ dz = 0 for n ≠ −1, and = 2πi for n = −1. Previously this key fact was asserted without indicating whether the reader was expected to know it or take it on trust. Also displayed the term-by-term integration conclusion explicitly.
+- [§ Computing residues, p/q′ formula] Added an inline worked check immediately after the formula: Res[1/(z²−1), 1] = 1/(2·1) = 1/2. Also named the formula's origin (L'Hôpital applied to the simple-pole limit). Previously three formulas were listed without any example between them.
+- [§ Type 2 integrals, Jordan's lemma] Replaced "if R(x) → 0 fast enough" with the explicit condition: "provided the degree of the denominator of R exceeds the degree of the numerator by at least 1." This is the practical criterion engineers need to verify before applying the method.
+- [End of body, before exercises] Added a wayfinding sentence connecting the residue theorem to Chapter 4 (conformal mapping), so the chapter's opens_to relationship is not a surprise to the reader.
+-->

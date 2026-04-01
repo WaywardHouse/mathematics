@@ -1,6 +1,940 @@
 ---
 title: "Systems and phase plane"
-status: "seed"
+subtitle: "The geometry of dynamical systems"
+chapter: 3
+volume: 7
+layer: "engineering"
+status: review
+
+axiom: "A single second-order ODE describes one coordinate evolving in time. Many real systems involve multiple coupled quantities — position and velocity, predator and prey, charge and current."
+
+rewrite: "Writing the system as x' = Ax turns it into a linear algebra problem. The eigenvalues of A determine the geometry of the solution curves in the phase plane — whether trajectories spiral in, spiral out, or saddle past an equilibrium."
+
+prerequisite_ids:
+  - diff_calc
+  - int_calc
+  - lin_alg
+
+opens_to:
+  - id: laplace
+    label: "Laplace transforms"
+    volume: 7
+    relationship: enables
+
+destinations:
+  - field: eng
+    label: Engineering
+    hook: "Stability analysis — whether a feedback control loop returns to equilibrium or diverges — is a phase plane question answered by eigenvalues."
+    career_example: "Control systems engineer designing autopilot feedback loops"
+  - field: sci
+    label: Hard sciences
+    hook: "Predator-prey dynamics, epidemic models (SIR), and coupled chemical oscillators are all nonlinear systems analysed via linearisation around equilibria."
+    career_example: "Mathematical biologist modelling population cycles"
+  - field: comp
+    label: Computing and data
+    hook: "Recurrent neural networks and neural ODEs are dynamical systems; their training dynamics can be understood via phase plane analysis of gradient flow."
+    career_example: "ML researcher analysing optimiser convergence"
+  - field: geo
+    label: Geography and environment
+    hook: "Population dynamics, carbon cycle models, and climate feedback loops are systems of coupled ODEs where stability analysis predicts long-term behaviour."
+    career_example: "Climate scientist building coupled atmosphere-ocean models"
+
+notation_introduced:
+  - symbol: "\\mathbf{x}"
+    reads_as: "bold x"
+    meaning: "State vector $(x_1, x_2, \\ldots)^T$"
+    notation_weight: 3
+  - symbol: "A"
+    reads_as: "A"
+    meaning: "System matrix (coefficient matrix of the linear system)"
+    notation_weight: 2
+  - symbol: "\\lambda"
+    reads_as: "lambda"
+    meaning: "Eigenvalue of A — determines growth/decay/oscillation"
+    notation_weight: 3
+  - symbol: "J"
+    reads_as: "Jacobian"
+    meaning: "Matrix of partial derivatives of f — used for linearisation"
+    notation_weight: 3
+
+exercises:
+  type: puzzle
+  real_world_context: true
+
+hook: |
+  Track a population of rabbits and foxes: when rabbits are plentiful
+  foxes thrive, but more foxes drives rabbit numbers down, which then
+  starves the foxes — and the cycle repeats. Neither rate equation can
+  be written down independently; the two populations are a coupled system
+  that must be modelled together. The phase plane turns that coupling into
+  geometry: every possible state of the system is a point in the plane,
+  every solution is a curve through it, and the eigenvalues of one matrix
+  tell you whether those curves spiral in, fly out, or loop forever.
+
+kreyszig_chapter: "Ch 4"
+stroud_programme: null
+uofa_course: "MATH 201"
 ---
 
-*Seed — front matter to be completed before content is written.*
+In a wildlife reserve, park wardens track two populations: rabbits and foxes. Neither changes independently. When rabbits are plentiful, foxes thrive and multiply. More foxes means more predation, so rabbit numbers fall. With fewer rabbits, foxes starve and decline. With fewer foxes, rabbit numbers recover. The cycle repeats.
+
+Write down a rate equation for rabbits alone and you immediately run into trouble: the rate of change of the rabbit population depends on the fox population. You cannot separate them. The two populations are a single coupled system, and they need to be modelled together.
+
+This chapter develops the language and tools for that. The central object is the **phase plane** — a picture where every point represents a state of the system (both populations at once), and every solution traces a curve through that space. The geometry of those curves — do they spiral inward, fly outward, or loop forever? — is controlled by the eigenvalues of a matrix. That connection between linear algebra and the long-run behaviour of dynamical systems is one of the most useful in applied mathematics.
+
+---
+
+## Systems of first-order ODEs
+
+### From a single ODE to a system
+
+A second-order ODE contains a second derivative. It can always be written as two coupled first-order equations by introducing an auxiliary variable.
+
+Take the damped oscillator:
+
+$$y'' + py' + qy = 0$$
+
+Set $x_1 = y$ (the displacement) and $x_2 = y'$ (the velocity). Then:
+
+$$x_1' = y' = x_2$$
+$$x_2' = y'' = -qx_1 - px_2$$
+
+This is a **system of two first-order ODEs**. The original second-order equation is equivalent to it. Nothing has been lost or gained — this is just a change of representation, chosen because first-order systems are easier to analyse systematically.
+
+### Matrix form
+
+Collect the equations above:
+
+$$\begin{pmatrix} x_1' \\ x_2' \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ -q & -p \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \end{pmatrix}$$
+
+In compact notation, writing $\mathbf{x} = (x_1, x_2)^T$ for the **state vector**:
+
+$$\mathbf{x}' = A\mathbf{x}, \qquad A = \begin{pmatrix} 0 & 1 \\ -q & -p \end{pmatrix}$$
+
+The state vector $\mathbf{x}(t)$ records everything about the system at time $t$: both the displacement and the velocity. Knowing $\mathbf{x}(t_0)$ at any one time, together with the equation $\mathbf{x}' = A\mathbf{x}$, determines the entire future trajectory. This is the central payoff of the state-vector formulation: the full dynamics live in a single matrix equation.
+
+### More general systems
+
+Not every system comes from a single second-order ODE. A pair of coupled first-order equations can arise directly from modelling:
+
+$$\begin{aligned}
+x' &= f(x, y) \\
+y' &= g(x, y)
+\end{aligned}$$
+
+When $f$ and $g$ are linear functions of $x$ and $y$, this is a **linear system** $\mathbf{x}' = A\mathbf{x}$. When they are not linear, the analysis is more involved — but the linear case gives the essential tools, and nonlinear systems are treated by linearising around equilibria (Section 5).
+
+::: {.callout-note title="Why systems?"}
+Real engineering systems are rarely one-dimensional. A coupled spring has two masses, two positions, two velocities. An RLC circuit has both charge and current as state variables. A rotating shaft has angular displacement and angular momentum. The system $\mathbf{x}' = A\mathbf{x}$ handles all of these with the same method.
+:::
+
+---
+
+## The phase plane
+
+### Trajectories as curves
+
+Consider any two-dimensional system:
+
+$$x' = f(x, y), \qquad y' = g(x, y)$$
+
+A **solution** is a pair of functions $x(t)$, $y(t)$ satisfying both equations simultaneously. We can plot this solution as a parametric curve in the $(x, y)$-plane — called the **phase plane** — with $t$ as the parameter. As $t$ advances, the point $(x(t), y(t))$ moves through the plane, tracing a **trajectory** or **orbit**.
+
+The phase plane collapses time: instead of watching $x$ and $y$ vary separately against $t$, we watch them vary against each other. This makes the geometry visible. A spiral trajectory in the phase plane means oscillation with decay. A closed loop means sustained oscillation. A trajectory heading straight for the origin means exponential decay.
+
+### Direction fields
+
+At every point $(x, y)$, the system specifies a velocity vector:
+
+$$\mathbf{v} = \begin{pmatrix} f(x,y) \\ g(x,y) \end{pmatrix}$$
+
+Drawing a short arrow at each point — pointing in the direction $(f, g)$ — gives a **direction field** (or **vector field**) for the system. A trajectory is a curve that is everywhere tangent to these arrows.
+
+Before computing any solutions, the direction field reveals the topology of the phase plane: where trajectories converge, where they diverge, what the long-run behaviour looks like. For engineering applications, this geometric picture is often more informative than an explicit formula.
+
+### Equilibrium points
+
+An **equilibrium** (also called a **critical point** or **fixed point**) is a point $\mathbf{x}^*$ where $\mathbf{x}' = \mathbf{0}$, i.e., $f(x^*, y^*) = 0$ and $g(x^*, y^*) = 0$. At an equilibrium, the system is stationary — if you start there, you stay there.
+
+For a linear system $\mathbf{x}' = A\mathbf{x}$, the origin $\mathbf{x}^* = \mathbf{0}$ is always an equilibrium. If $A$ is invertible, it is the only one.
+
+The central question of phase plane analysis is: **what do trajectories do near an equilibrium?** Do they approach it, move away from it, or orbit around it? The answer comes from the eigenvalues of $A$.
+
+---
+
+## Linear systems and the eigenvalue method
+
+### The trial solution
+
+For the scalar equation $x' = ax$, the solution is $x(t) = Ce^{at}$. For the system $\mathbf{x}' = A\mathbf{x}$, try the analogous form:
+
+$$\mathbf{x}(t) = e^{\lambda t} \mathbf{v}$$
+
+where $\lambda$ is a scalar and $\mathbf{v}$ is a (constant) vector. Substituting into $\mathbf{x}' = A\mathbf{x}$:
+
+$$\lambda e^{\lambda t} \mathbf{v} = A e^{\lambda t} \mathbf{v}$$
+$$A\mathbf{v} = \lambda \mathbf{v}$$
+
+This is precisely the **eigenvalue equation**. The trial solution $\mathbf{x}(t) = e^{\lambda t}\mathbf{v}$ solves the system if and only if $\lambda$ is an eigenvalue of $A$ with eigenvector $\mathbf{v}$.
+
+### General solution
+
+A $2 \times 2$ matrix generically has two eigenvalues $\lambda_1, \lambda_2$ with eigenvectors $\mathbf{v}_1, \mathbf{v}_2$. By superposition (the equation is linear), the general solution is:
+
+$$\mathbf{x}(t) = c_1 e^{\lambda_1 t} \mathbf{v}_1 + c_2 e^{\lambda_2 t} \mathbf{v}_2$$
+
+The constants $c_1, c_2$ are fixed by initial conditions. Each term is a trajectory along the eigenvector direction, growing or decaying at its own rate.
+
+### Classification of equilibria
+
+The behaviour near the origin depends entirely on the eigenvalues. There are four principal cases.
+
+---
+
+**Case 1: Real eigenvalues, same sign — Node**
+
+**Example:** $A = \begin{pmatrix} -1 & 0 \\ 0 & -3 \end{pmatrix}$
+
+Eigenvalues: $\lambda_1 = -1$, $\lambda_2 = -3$ (both negative). Eigenvectors: $\mathbf{v}_1 = (1,0)^T$, $\mathbf{v}_2 = (0,1)^T$.
+
+General solution:
+
+$$\mathbf{x}(t) = c_1 e^{-t} \begin{pmatrix}1\\0\end{pmatrix} + c_2 e^{-3t} \begin{pmatrix}0\\1\end{pmatrix}$$
+
+Both terms decay to zero. Every trajectory approaches the origin as $t \to \infty$. This is a **stable node** (also called a **stable improper node**). Eigenvalues of the same sign but positive give an **unstable node** — trajectories fly away from the origin.
+
+The phase portrait: all trajectories converge to the origin, tangent to the slow eigendirection ($\lambda_1 = -1$) as $t \to \infty$.
+
+---
+
+**Case 2: Real eigenvalues, opposite signs — Saddle**
+
+**Example:** $A = \begin{pmatrix} 1 & 0 \\ 0 & -2 \end{pmatrix}$
+
+Eigenvalues: $\lambda_1 = 1$, $\lambda_2 = -2$. General solution:
+
+$$\mathbf{x}(t) = c_1 e^{t} \begin{pmatrix}1\\0\end{pmatrix} + c_2 e^{-2t} \begin{pmatrix}0\\1\end{pmatrix}$$
+
+The first term grows without bound; the second decays. Unless $c_1 = 0$ exactly, every trajectory eventually flies away from the origin along the unstable eigendirection. The origin is a **saddle point** — unstable.
+
+The **stable manifold** (the set of trajectories that do approach the origin) consists of the single line along $\mathbf{v}_2 = (0,1)^T$. The **unstable manifold** consists of the line along $\mathbf{v}_1 = (1,0)^T$. These two lines are the separatrices of the saddle.
+
+---
+
+**Case 3: Complex eigenvalues — Spiral or Centre**
+
+When $A$ has a pair of complex conjugate eigenvalues $\lambda = \alpha \pm i\beta$ (with $\beta \neq 0$), the solution involves $e^{\alpha t}(\cos\beta t, \sin\beta t)$ — oscillation modulated by $e^{\alpha t}$.
+
+- $\alpha < 0$: oscillations decay to zero. **Stable spiral** (also: stable focus).
+- $\alpha > 0$: oscillations grow. **Unstable spiral**.
+- $\alpha = 0$: pure oscillation, no growth or decay. **Centre**.
+
+**Extracting real solutions from a complex eigenvector.** When the eigenvalue is $\alpha + i\beta$ with eigenvector $\mathbf{v}$, the complex exponential $e^{(\alpha+i\beta)t}\mathbf{v}$ is a (complex-valued) solution. Take its real and imaginary parts to get two linearly independent real solutions. For example, with eigenvalue $-1+2i$ and eigenvector $\mathbf{v} = (1, i)^T$:
+
+$$e^{(-1+2i)t}\begin{pmatrix}1\\i\end{pmatrix} = e^{-t}\begin{pmatrix}\cos 2t + i\sin 2t\\ i\cos 2t - \sin 2t\end{pmatrix}$$
+
+Real part: $e^{-t}(\cos 2t,\; -\sin 2t)^T$. Imaginary part: $e^{-t}(\sin 2t,\; \cos 2t)^T$. These two real vectors are the two linearly independent solutions — the template used in Exercise 3 below.
+
+**Example (stable spiral):** $A = \begin{pmatrix} -1 & 2 \\ -2 & -1 \end{pmatrix}$
+
+Characteristic polynomial: $\det(A - \lambda I) = (\lambda+1)^2 + 4 = 0$, giving $\lambda = -1 \pm 2i$.
+
+Since $\alpha = -1 < 0$, all trajectories spiral inward toward the origin.
+
+**Example (centre):** $A = \begin{pmatrix} 0 & 1 \\ -4 & 0 \end{pmatrix}$
+
+Characteristic polynomial: $\lambda^2 + 4 = 0$, giving $\lambda = \pm 2i$. Pure imaginary eigenvalues. All trajectories are closed ellipses surrounding the origin — periodic orbits. This is a **centre**.
+
+::: {.callout-note title="Summary: eigenvalue classification"}
+| Eigenvalues | Equilibrium type | Stable? |
+|---|---|---|
+| Real, both negative | Stable node | Yes |
+| Real, both positive | Unstable node | No |
+| Real, opposite signs | Saddle | No |
+| Complex, $\alpha < 0$ | Stable spiral | Yes |
+| Complex, $\alpha > 0$ | Unstable spiral | No |
+| Purely imaginary | Centre | Neutral |
+
+The trace $\tau = \lambda_1 + \lambda_2 = \text{tr}(A)$ and determinant $\delta = \lambda_1\lambda_2 = \det(A)$ give a shortcut: if $\delta < 0$ it is a saddle; if $\delta > 0$ and $\tau < 0$ it is a stable node or stable spiral; if $\delta > 0$ and $\tau > 0$ it is unstable.
+:::
+
+```{ojs}
+//| echo: false
+viewof ppParams = Inputs.form({
+  ppA11: Inputs.range([-3, 3], {step: 0.1, value: -1, label: "a₁₁"}),
+  ppA12: Inputs.range([-3, 3], {step: 0.1, value: 1,  label: "a₁₂"}),
+  ppA21: Inputs.range([-3, 3], {step: 0.1, value: -2, label: "a₂₁"}),
+  ppA22: Inputs.range([-3, 3], {step: 0.1, value: -1, label: "a₂₂"})
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const a11 = ppParams.ppA11;
+  const a12 = ppParams.ppA12;
+  const a21 = ppParams.ppA21;
+  const a22 = ppParams.ppA22;
+
+  // Eigenvalue computation via quadratic formula
+  const tr  = a11 + a22;
+  const det = a11 * a22 - a12 * a21;
+  const disc = tr * tr - 4 * det;
+
+  let lam1, lam2, lamStr1, lamStr2, classification, stableColor;
+
+  if (disc >= 0) {
+    // Real eigenvalues
+    lam1 = (tr + Math.sqrt(disc)) / 2;
+    lam2 = (tr - Math.sqrt(disc)) / 2;
+    lamStr1 = lam1.toFixed(3);
+    lamStr2 = lam2.toFixed(3);
+    if (lam1 * lam2 < 0) {
+      classification = "Saddle (unstable)";
+      stableColor = "saddle";
+    } else if (lam1 < 0 && lam2 < 0) {
+      classification = "Stable node";
+      stableColor = "stable";
+    } else if (lam1 > 0 && lam2 > 0) {
+      classification = "Unstable node";
+      stableColor = "unstable";
+    } else {
+      // one or both zero
+      classification = "Non-isolated equilibrium";
+      stableColor = "neutral";
+    }
+  } else {
+    // Complex eigenvalues: α ± βi
+    const alpha = tr / 2;
+    const beta  = Math.sqrt(-disc) / 2;
+    lam1 = { re: alpha, im:  beta };
+    lam2 = { re: alpha, im: -beta };
+    const sign = beta >= 0 ? "+" : "-";
+    lamStr1 = `${alpha.toFixed(3)} + ${beta.toFixed(3)}i`;
+    lamStr2 = `${alpha.toFixed(3)} − ${beta.toFixed(3)}i`;
+    if (Math.abs(alpha) < 1e-9) {
+      classification = "Centre (neutrally stable)";
+      stableColor = "neutral";
+    } else if (alpha < 0) {
+      classification = "Stable spiral";
+      stableColor = "stable";
+    } else {
+      classification = "Unstable spiral";
+      stableColor = "unstable";
+    }
+  }
+
+  // SVG dimensions
+  const W = 560, H = 400;
+  const margin = { top: 30, right: 20, bottom: 40, left: 40 };
+  const iW = W - margin.left - margin.right;
+  const iH = H - margin.top  - margin.bottom;
+
+  const xDom = [-3, 3], yDom = [-3, 3];
+  const xSc = d3.scaleLinear().domain(xDom).range([0, iW]);
+  const ySc = d3.scaleLinear().domain(yDom).range([iH, 0]);
+
+  const svg = d3.create("svg")
+    .attr("width", W).attr("height", H)
+    .style("font-family", "sans-serif");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Background
+  g.append("rect")
+    .attr("width", iW).attr("height", iH)
+    .attr("fill", "#fafafa").attr("stroke", "#ccc");
+
+  // Axes
+  g.append("line")
+    .attr("x1", xSc(0)).attr("x2", xSc(0))
+    .attr("y1", 0).attr("y2", iH)
+    .attr("stroke", "#aaa").attr("stroke-width", 1);
+  g.append("line")
+    .attr("x1", 0).attr("x2", iW)
+    .attr("y1", ySc(0)).attr("y2", ySc(0))
+    .attr("stroke", "#aaa").attr("stroke-width", 1);
+
+  // Axis labels
+  g.append("text").attr("x", iW + 5).attr("y", ySc(0) + 4).text("x₁").attr("font-size", 11).attr("fill", "#555");
+  g.append("text").attr("x", xSc(0) + 4).attr("y", -8).text("x₂").attr("font-size", 11).attr("fill", "#555");
+
+  // Direction field: 15×15 grid
+  const gridN = 15;
+  const arrowLen = (iW / gridN) * 0.38;
+  for (let i = 0; i <= gridN; i++) {
+    for (let j = 0; j <= gridN; j++) {
+      const x = xDom[0] + (i / gridN) * (xDom[1] - xDom[0]);
+      const y = yDom[0] + (j / gridN) * (yDom[1] - yDom[0]);
+      const dx = a11 * x + a12 * y;
+      const dy = a21 * x + a22 * y;
+      const mag = Math.sqrt(dx * dx + dy * dy) || 1;
+      const nx = dx / mag, ny = dy / mag;
+      const cx = xSc(x), cy = ySc(y);
+      const ex = cx + nx * arrowLen;
+      const ey = cy - ny * arrowLen;
+      g.append("line")
+        .attr("x1", cx - nx * arrowLen * 0.5)
+        .attr("y1", cy + ny * arrowLen * 0.5)
+        .attr("x2", ex)
+        .attr("y2", ey)
+        .attr("stroke", "#bbb").attr("stroke-width", 0.8)
+        .attr("marker-end", "url(#arrowhead)");
+    }
+  }
+
+  // Arrowhead marker
+  svg.append("defs").append("marker")
+    .attr("id", "arrowhead")
+    .attr("viewBox", "0 -3 6 6")
+    .attr("refX", 5).attr("refY", 0)
+    .attr("markerWidth", 4).attr("markerHeight", 4)
+    .attr("orient", "auto")
+    .append("path").attr("d", "M0,-3L6,0L0,3").attr("fill", "#bbb");
+
+  // Trajectory colours
+  const trajColor = stableColor === "stable"   ? "#1e6fcc" :
+                    stableColor === "unstable"  ? "#cc3333" :
+                    stableColor === "saddle"    ? null       : "#888";
+
+  // 8 trajectories from radius 2, evenly spaced angles
+  const nTraj = 8;
+  const r0 = 2;
+  const dt = 0.02, nSteps = 300;
+
+  function eulerSteps(x0, y0, forward) {
+    const pts = [[x0, y0]];
+    let x = x0, y = y0;
+    const sign = forward ? 1 : -1;
+    for (let s = 0; s < nSteps; s++) {
+      const dx = a11 * x + a12 * y;
+      const dy = a21 * x + a22 * y;
+      x += sign * dt * dx;
+      y += sign * dt * dy;
+      if (Math.abs(x) > 6 || Math.abs(y) > 6) break;
+      pts.push([x, y]);
+    }
+    return pts;
+  }
+
+  const lineGen = d3.line()
+    .x(p => xSc(p[0]))
+    .y(p => ySc(p[1]))
+    .defined(p => Math.abs(p[0]) <= 3.2 && Math.abs(p[1]) <= 3.2);
+
+  for (let k = 0; k < nTraj; k++) {
+    const angle = (2 * Math.PI * k) / nTraj;
+    const x0 = r0 * Math.cos(angle);
+    const y0 = r0 * Math.sin(angle);
+
+    const fwd = eulerSteps(x0, y0, true);
+    const bwd = eulerSteps(x0, y0, false).slice(1).reverse();
+    const pts = [...bwd, ...fwd];
+
+    // Colour saddle trajectories by quadrant (proxy)
+    let color;
+    if (stableColor === "saddle") {
+      color = (k % 2 === 0) ? "#1e6fcc" : "#cc3333";
+    } else {
+      color = trajColor;
+    }
+
+    g.append("path")
+      .datum(pts)
+      .attr("d", lineGen)
+      .attr("fill", "none")
+      .attr("stroke", color)
+      .attr("stroke-width", 1.4)
+      .attr("opacity", 0.75);
+  }
+
+  // Equilibrium dot at origin
+  g.append("circle")
+    .attr("cx", xSc(0)).attr("cy", ySc(0))
+    .attr("r", 5)
+    .attr("fill", stableColor === "stable" ? "#1e6fcc" : stableColor === "unstable" ? "#cc3333" : "#888")
+    .attr("stroke", "#333").attr("stroke-width", 1.5);
+
+  // Classification label
+  const labelColor = stableColor === "stable" ? "#1e6fcc" : stableColor === "unstable" ? "#cc3333" : "#555";
+  g.append("text")
+    .attr("x", iW / 2).attr("y", iH + 30)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 13).attr("font-weight", "bold")
+    .attr("fill", labelColor)
+    .text(`${classification}  |  λ₁ = ${lamStr1},  λ₂ = ${lamStr2}`);
+
+  return svg.node();
+}
+```
+
+---
+
+## Stability
+
+### Lyapunov's definition
+
+An equilibrium $\mathbf{x}^*$ is **stable** (in the sense of Lyapunov) if trajectories that start close to $\mathbf{x}^*$ stay close — formally: for every $\varepsilon > 0$ there exists $\delta > 0$ such that $\|\mathbf{x}(0) - \mathbf{x}^*\| < \delta$ implies $\|\mathbf{x}(t) - \mathbf{x}^*\| < \varepsilon$ for all $t > 0$.
+
+An equilibrium is **asymptotically stable** if it is stable and, additionally, trajectories starting near it converge to it: $\mathbf{x}(t) \to \mathbf{x}^*$ as $t \to \infty$.
+
+An equilibrium is **unstable** if it fails the stability condition — there exist trajectories starting arbitrarily close that eventually leave a fixed neighbourhood.
+
+For linear systems, the connection to eigenvalues is exact:
+
+- All eigenvalues have negative real part $\Rightarrow$ asymptotically stable.
+- Any eigenvalue with positive real part $\Rightarrow$ unstable.
+- Purely imaginary eigenvalues $\Rightarrow$ stable (but not asymptotically stable) for the linear system; the nonlinear case requires more care.
+
+### Engineering implications
+
+The stability of an equilibrium is the primary question in control engineering. A feedback controller is designed to make the closed-loop eigenvalues lie in the left half of the complex plane ($\text{Re}(\lambda) < 0$). How far left they sit determines how quickly the system returns to equilibrium after a disturbance — the damping rate is $|\text{Re}(\lambda)|$, and the oscillation frequency is $|\text{Im}(\lambda)|$.
+
+A saddle equilibrium in a control loop is dangerous: the system will diverge for almost any initial condition, with only the stable manifold — a set of measure zero — as the exception.
+
+---
+
+## Nonlinear systems: linearisation
+
+### Why linearise?
+
+For a nonlinear system $\mathbf{x}' = \mathbf{f}(\mathbf{x})$, we generally cannot write down explicit solutions. But the behaviour near an equilibrium $\mathbf{x}^*$ can still be understood by approximating $\mathbf{f}$ with its best linear approximation there — a Taylor expansion.
+
+### The Jacobian
+
+Let $\mathbf{x}^*$ satisfy $\mathbf{f}(\mathbf{x}^*) = \mathbf{0}$. Write $\mathbf{x}(t) = \mathbf{x}^* + \mathbf{u}(t)$ where $\mathbf{u}$ is a small perturbation. Expanding $\mathbf{f}$ to first order:
+
+$$\mathbf{x}' = \mathbf{f}(\mathbf{x}^* + \mathbf{u}) \approx \mathbf{f}(\mathbf{x}^*) + J(\mathbf{x}^*)\,\mathbf{u} = J(\mathbf{x}^*)\,\mathbf{u}$$
+
+since $\mathbf{f}(\mathbf{x}^*) = \mathbf{0}$. The matrix $J$ is the **Jacobian** of $\mathbf{f}$:
+
+$$J = \begin{pmatrix} \partial f_1/\partial x_1 & \partial f_1/\partial x_2 \\ \partial f_2/\partial x_1 & \partial f_2/\partial x_2 \end{pmatrix}$$
+
+evaluated at $\mathbf{x}^*$. So the perturbation $\mathbf{u}$ satisfies the linear system $\mathbf{u}' = J\mathbf{u}$. The eigenvalues of $J$ classify the equilibrium, exactly as before.
+
+This works reliably when the eigenvalues of $J$ are not purely imaginary. If $J$ has purely imaginary eigenvalues, the linearisation is inconclusive about the nonlinear behaviour — the equilibrium could be a centre, a spiral, or even something more exotic.
+
+### The pendulum
+
+The undamped pendulum satisfies:
+
+$$\theta'' + \sin\theta = 0$$
+
+(with appropriate normalisation of length and gravity). Converting to a system: $x_1 = \theta$, $x_2 = \theta'$:
+
+$$x_1' = x_2, \qquad x_2' = -\sin x_1$$
+
+**Equilibria:** Set $x_2 = 0$ and $-\sin x_1 = 0$. Equilibria are at $(n\pi, 0)$ for integer $n$.
+
+- $(0, 0)$: the pendulum hanging straight down.
+- $(\pi, 0)$: the pendulum balanced straight up.
+
+**Jacobian:**
+
+$$J = \begin{pmatrix} 0 & 1 \\ -\cos x_1 & 0 \end{pmatrix}$$
+
+**At $(0,0)$:** $J = \begin{pmatrix}0&1\\-1&0\end{pmatrix}$. Eigenvalues: $\lambda = \pm i$. The linearisation gives a centre — consistent with the familiar small-angle oscillation. (The full nonlinear pendulum also has closed orbits near this point, which requires a more careful argument to confirm.)
+
+**At $(\pi,0)$:** $J = \begin{pmatrix}0&1\\1&0\end{pmatrix}$. Eigenvalues: $\lambda = \pm 1$. A saddle — the upright position is unstable, as expected. The tiniest perturbation sends the pendulum swinging away.
+
+The phase portrait of the pendulum has closed orbits (libration) near $(0,0)$ and open orbits (rotation) beyond a separatrix that passes through the saddle point $(\pm\pi, 0)$. The separatrix is the boundary between "swings back" and "goes over the top".
+
+---
+
+## Lotka-Volterra predator-prey
+
+### The equations
+
+The Lotka-Volterra model for a prey population $x$ (rabbits) and predator population $y$ (foxes) is:
+
+$$\begin{aligned}
+x' &= ax - bxy \\
+y' &= -dy + cxy
+\end{aligned}$$
+
+All parameters $a, b, c, d > 0$.
+
+- $ax$: prey grow exponentially in the absence of predators.
+- $-bxy$: prey are removed at a rate proportional to encounters with predators.
+- $-dy$: predators decline exponentially in the absence of prey.
+- $cxy$: predators grow from encounters with prey.
+
+### Equilibria
+
+Set $x' = 0$ and $y' = 0$:
+
+$$x(a - by) = 0 \quad \text{and} \quad y(-d + cx) = 0$$
+
+This gives two equilibria:
+
+1. $(0, 0)$: both populations extinct.
+2. $(d/c,\; a/b)$: coexistence equilibrium — both populations positive.
+
+### Classifying via the Jacobian
+
+$$\mathbf{f}(x,y) = \begin{pmatrix} ax - bxy \\ -dy + cxy \end{pmatrix}, \qquad J = \begin{pmatrix} a - by & -bx \\ cy & -d + cx \end{pmatrix}$$
+
+**At $(0,0)$:**
+
+$$J(0,0) = \begin{pmatrix} a & 0 \\ 0 & -d \end{pmatrix}$$
+
+Eigenvalues: $\lambda_1 = a > 0$, $\lambda_2 = -d < 0$. A saddle. The extinction equilibrium is unstable — any positive initial population will move away from it.
+
+**At $(d/c,\; a/b)$:**
+
+Substituting $x^* = d/c$, $y^* = a/b$:
+
+$$J(x^*, y^*) = \begin{pmatrix} 0 & -bd/c \\ ca/b & 0 \end{pmatrix}$$
+
+Characteristic polynomial: $\lambda^2 + ad = 0$, giving $\lambda = \pm i\sqrt{ad}$.
+
+Purely imaginary eigenvalues. The linearisation gives a centre. (For the full Lotka-Volterra system it can be shown, using a conserved quantity, that the nonlinear equilibrium is also a true centre — the populations cycle indefinitely around the coexistence point.)
+
+### Physical interpretation
+
+The coexistence equilibrium $(d/c, a/b)$ is a neutrally stable centre. The populations do not converge to these values; instead, they cycle around them. The amplitude of the cycle depends on the initial conditions. Start with many rabbits and few foxes: the fox population grows, rabbit numbers fall, fox numbers eventually fall too, then rabbits recover. The cycle is closed.
+
+This explains the wildlife warden's observation: the populations oscillate, neither dying out nor converging to a constant value, with the phase plane orbit a closed curve around the coexistence point.
+
+```{ojs}
+//| echo: false
+viewof lvParams = Inputs.form({
+  lvA:  Inputs.range([0.1, 2],    {step: 0.05, value: 0.8, label: "a (prey growth rate)"}),
+  lvB:  Inputs.range([0.01, 0.5], {step: 0.01, value: 0.1, label: "b (predation rate)"}),
+  lvC:  Inputs.range([0.01, 0.5], {step: 0.01, value: 0.1, label: "c (predator efficiency)"}),
+  lvD:  Inputs.range([0.1, 2],    {step: 0.05, value: 0.5, label: "d (predator death rate)"}),
+  lvX0: Inputs.range([1, 20],     {step: 0.5,  value: 8,   label: "x₀ (initial prey)"}),
+  lvY0: Inputs.range([1, 20],     {step: 0.5,  value: 4,   label: "y₀ (initial predators)"})
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const d3 = await require("d3@7");
+
+  const a  = lvParams.lvA;
+  const b  = lvParams.lvB;
+  const c  = lvParams.lvC;
+  const d  = lvParams.lvD;
+  const x0 = lvParams.lvX0;
+  const y0 = lvParams.lvY0;
+
+  // RK4 integration of Lotka-Volterra
+  const dt = 0.05, nSteps = 2000;
+  const tMax = 100;
+  const storeEvery = 1;  // store every step
+
+  const xs = [x0], ys = [y0], ts = [0];
+  let cx = x0, cy = y0, ct = 0;
+
+  for (let i = 0; i < nSteps; i++) {
+    // RK4
+    const k1x = a * cx       - b * cx * cy;
+    const k1y = c * cx * cy  - d * cy;
+
+    const mx2 = cx + 0.5 * dt * k1x;
+    const my2 = cy + 0.5 * dt * k1y;
+    const k2x = a * mx2      - b * mx2 * my2;
+    const k2y = c * mx2*my2  - d * my2;
+
+    const mx3 = cx + 0.5 * dt * k2x;
+    const my3 = cy + 0.5 * dt * k2y;
+    const k3x = a * mx3      - b * mx3 * my3;
+    const k3y = c * mx3*my3  - d * my3;
+
+    const mx4 = cx + dt * k3x;
+    const my4 = cy + dt * k3y;
+    const k4x = a * mx4      - b * mx4 * my4;
+    const k4y = c * mx4*my4  - d * my4;
+
+    cx = cx + (dt / 6) * (k1x + 2*k2x + 2*k3x + k4x);
+    cy = cy + (dt / 6) * (k1y + 2*k2y + 2*k3y + k4y);
+    ct += dt;
+
+    // clamp to avoid blow-up
+    if (cx < 0) cx = 0;
+    if (cy < 0) cy = 0;
+
+    xs.push(cx);
+    ys.push(cy);
+    ts.push(ct);
+
+    if (ct >= tMax) break;
+  }
+
+  // Equilibria
+  const eqX = d / c;
+  const eqY = a / b;
+
+  // Layout: two panels side by side, total 560px wide
+  const totalW = 560, panelW = 270, H = 300;
+  const margin = { top: 24, right: 18, bottom: 40, left: 44 };
+  const iW = panelW - margin.left - margin.right;
+  const iH = H      - margin.top  - margin.bottom;
+
+  const svg = d3.create("svg")
+    .attr("width", totalW).attr("height", H)
+    .style("font-family", "sans-serif");
+
+  // ── Left panel: Phase portrait ──────────────────────────────────────────
+  const gL = svg.append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+  const xMax = Math.max(...xs) * 1.15 || 20;
+  const yMax = Math.max(...ys) * 1.15 || 20;
+
+  const xSc = d3.scaleLinear().domain([0, xMax]).range([0, iW]);
+  const ySc = d3.scaleLinear().domain([0, yMax]).range([iH, 0]);
+
+  // Background
+  gL.append("rect").attr("width", iW).attr("height", iH)
+    .attr("fill", "#fafafa").attr("stroke", "#ccc");
+
+  // Trajectory
+  const phaseLine = d3.line()
+    .x((_, i) => xSc(xs[i]))
+    .y((_, i) => ySc(ys[i]));
+
+  gL.append("path")
+    .datum(xs)
+    .attr("d", phaseLine)
+    .attr("fill", "none")
+    .attr("stroke", "#5b8dd9")
+    .attr("stroke-width", 1.6)
+    .attr("opacity", 0.85);
+
+  // Equilibrium (0, 0) — open circle
+  gL.append("circle")
+    .attr("cx", xSc(0)).attr("cy", ySc(0))
+    .attr("r", 5).attr("fill", "white")
+    .attr("stroke", "#555").attr("stroke-width", 1.5);
+
+  // Equilibrium (d/c, a/b) — filled circle
+  if (eqX <= xMax && eqY <= yMax) {
+    gL.append("circle")
+      .attr("cx", xSc(eqX)).attr("cy", ySc(eqY))
+      .attr("r", 5).attr("fill", "#e07b2a")
+      .attr("stroke", "#333").attr("stroke-width", 1.5);
+  }
+
+  // Starting point
+  gL.append("circle")
+    .attr("cx", xSc(x0)).attr("cy", ySc(y0))
+    .attr("r", 4).attr("fill", "#333");
+
+  // Axes
+  const xAxisL = d3.axisBottom(xSc).ticks(5);
+  const yAxisL = d3.axisLeft(ySc).ticks(5);
+  gL.append("g").attr("transform", `translate(0,${iH})`).call(xAxisL);
+  gL.append("g").call(yAxisL);
+
+  // Axis labels
+  gL.append("text").attr("x", iW / 2).attr("y", iH + 32)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#444")
+    .text("x (prey)");
+  gL.append("text")
+    .attr("transform", `translate(-32,${iH/2}) rotate(-90)`)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#444")
+    .text("y (predators)");
+  gL.append("text").attr("x", iW / 2).attr("y", -8)
+    .attr("text-anchor", "middle").attr("font-size", 12).attr("font-weight", "bold").attr("fill", "#333")
+    .text("Phase portrait");
+
+  // ── Right panel: Time series ────────────────────────────────────────────
+  const gR = svg.append("g")
+    .attr("transform", `translate(${panelW + margin.left}, ${margin.top})`);
+
+  const tEnd = ts[ts.length - 1];
+  const popMax = Math.max(...xs, ...ys) * 1.15 || 20;
+
+  const tSc   = d3.scaleLinear().domain([0, tEnd]).range([0, iW]);
+  const popSc = d3.scaleLinear().domain([0, popMax]).range([iH, 0]);
+
+  gR.append("rect").attr("width", iW).attr("height", iH)
+    .attr("fill", "#fafafa").attr("stroke", "#ccc");
+
+  // Prey x(t) in green
+  const xLine = d3.line()
+    .x((_, i) => tSc(ts[i]))
+    .y((_, i) => popSc(xs[i]));
+
+  gR.append("path")
+    .datum(xs)
+    .attr("d", xLine)
+    .attr("fill", "none")
+    .attr("stroke", "#2e8b57")
+    .attr("stroke-width", 1.6);
+
+  // Predator y(t) in orange
+  const yLine = d3.line()
+    .x((_, i) => tSc(ts[i]))
+    .y((_, i) => popSc(ys[i]));
+
+  gR.append("path")
+    .datum(ys)
+    .attr("d", yLine)
+    .attr("fill", "none")
+    .attr("stroke", "#e07b2a")
+    .attr("stroke-width", 1.6);
+
+  // Axes
+  const xAxisR = d3.axisBottom(tSc).ticks(5);
+  const yAxisR = d3.axisLeft(popSc).ticks(5);
+  gR.append("g").attr("transform", `translate(0,${iH})`).call(xAxisR);
+  gR.append("g").call(yAxisR);
+
+  // Axis labels
+  gR.append("text").attr("x", iW / 2).attr("y", iH + 32)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#444")
+    .text("t");
+  gR.append("text")
+    .attr("transform", `translate(-32,${iH/2}) rotate(-90)`)
+    .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#444")
+    .text("population");
+  gR.append("text").attr("x", iW / 2).attr("y", -8)
+    .attr("text-anchor", "middle").attr("font-size", 12).attr("font-weight", "bold").attr("fill", "#333")
+    .text("Time series");
+
+  // Legend
+  const legX = iW - 100, legY = 8;
+  gR.append("line").attr("x1", legX).attr("x2", legX+18).attr("y1", legY).attr("y2", legY)
+    .attr("stroke", "#2e8b57").attr("stroke-width", 2);
+  gR.append("text").attr("x", legX+22).attr("y", legY+4)
+    .attr("font-size", 10).attr("fill", "#2e8b57").text("prey (x)");
+  gR.append("line").attr("x1", legX).attr("x2", legX+18).attr("y1", legY+16).attr("y2", legY+16)
+    .attr("stroke", "#e07b2a").attr("stroke-width", 2);
+  gR.append("text").attr("x", legX+22).attr("y", legY+20)
+    .attr("font-size", 10).attr("fill", "#e07b2a").text("predators (y)");
+
+  return svg.node();
+}
+```
+
+---
+
+## Application: Coupled spring system
+
+Two masses $m_1$ and $m_2$ are connected by three springs with constants $k_1$, $k$, $k_2$, attached to fixed walls at both ends. The middle spring couples the two masses. Let $x_1$ and $x_2$ be displacements from equilibrium.
+
+Newton's second law for each mass:
+
+$$m_1 x_1'' = -k_1 x_1 - k(x_1 - x_2) = -(k_1+k)x_1 + kx_2$$
+$$m_2 x_2'' = -k_2 x_2 + k(x_1 - x_2) = kx_1 - (k_2+k)x_2$$
+
+For equal masses $m_1 = m_2 = 1$ and equal springs $k_1 = k_2 = k = 1$:
+
+$$x_1'' = -2x_1 + x_2, \qquad x_2'' = x_1 - 2x_2$$
+
+Convert to a first-order system with state vector $(x_1, x_2, x_1', x_2')^T$:
+
+$$A = \begin{pmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ -2 & 1 & 0 & 0 \\ 1 & -2 & 0 & 0 \end{pmatrix}$$
+
+The eigenvalues of $A$ are $\pm i$ and $\pm i\sqrt{3}$ — two pairs of purely imaginary eigenvalues. The system oscillates at two **natural frequencies**: $\omega_1 = 1$ (the two masses moving together, in phase) and $\omega_2 = \sqrt{3}$ (the two masses moving in opposition, out of phase). These are the **normal modes** of the system.
+
+Every motion of the coupled system is a superposition of these two modes. If the initial conditions excite only one mode, that mode persists unchanged. If both are excited, the motion is a superposition — a beating pattern in which energy transfers back and forth between the two masses.
+
+---
+
+## Exercises
+
+**Exercise 1.** Convert $y'' + 3y' + 2y = 0$ to a first-order system; write in matrix form; find the eigenvalues.
+
+<!-- STEPPER -->
+Step 1 | Introduce state variables | Set $x_1 = y$, $x_2 = y'$. Then $x_1' = x_2$ and $x_2' = y'' = -2x_1 - 3x_2$.
+Step 2 | Write in matrix form | $\begin{pmatrix}x_1'\\x_2'\end{pmatrix} = \begin{pmatrix}0&1\\-2&-3\end{pmatrix}\begin{pmatrix}x_1\\x_2\end{pmatrix}$
+Step 3 | Find the characteristic polynomial | $\det(A - \lambda I) = \det\begin{pmatrix}-\lambda&1\\-2&-3-\lambda\end{pmatrix} = \lambda(\lambda+3) + 2 = \lambda^2 + 3\lambda + 2$
+Step 4 | Factor and solve | $(\lambda+1)(\lambda+2) = 0 \Rightarrow \lambda_1 = -1,\quad \lambda_2 = -2$
+Step 5 | Interpret | Both eigenvalues are real and negative: stable node. Solutions decay exponentially to zero — consistent with the damped oscillator $y'' + 3y' + 2y = 0$.
+<!-- END STEPPER -->
+
+---
+
+**Exercise 2.** Given $A = \begin{pmatrix}2&1\\0&-1\end{pmatrix}$, find the eigenvalues and classify the equilibrium at the origin.
+
+<!-- STEPPER -->
+Step 1 | Read off eigenvalues (triangular matrix) | Since $A$ is upper triangular, the eigenvalues are the diagonal entries: $\lambda_1 = 2$, $\lambda_2 = -1$.
+Step 2 | Check signs | $\lambda_1 = 2 > 0$ and $\lambda_2 = -1 < 0$: real eigenvalues of opposite sign.
+Step 3 | Classify | The origin is a **saddle point** — unstable.
+Step 4 | Find eigenvectors (optional, for sketch) | For $\lambda_1 = 2$: $(A - 2I)\mathbf{v} = 0$ gives $\begin{pmatrix}0&1\\0&-3\end{pmatrix}\mathbf{v}=0$, so $\mathbf{v}_1 = (1,0)^T$. For $\lambda_2 = -1$: $(A+I)\mathbf{v}=0$ gives $\begin{pmatrix}3&1\\0&0\end{pmatrix}\mathbf{v}=0$, so $\mathbf{v}_2 = (1,-3)^T$.
+Step 5 | Describe phase portrait | The unstable manifold runs along $(1,0)^T$; the stable manifold runs along $(1,-3)^T$. All other trajectories approach along the stable manifold and depart along the unstable manifold.
+<!-- END STEPPER -->
+
+---
+
+**Exercise 3.** Given $A = \begin{pmatrix}-1&2\\-2&-1\end{pmatrix}$, find the eigenvalues, classify the equilibrium, and write the general solution.
+
+<!-- STEPPER -->
+Step 1 | Compute the characteristic polynomial | $\det(A - \lambda I) = (-1-\lambda)^2 + 4 = \lambda^2 + 2\lambda + 5$
+Step 2 | Solve | $\lambda = \dfrac{-2 \pm \sqrt{4-20}}{2} = -1 \pm 2i$
+Step 3 | Classify | Complex eigenvalues with $\alpha = -1 < 0$: **stable spiral**. All trajectories spiral into the origin.
+Step 4 | Find a complex eigenvector | For $\lambda = -1+2i$: $(A - \lambda I)\mathbf{v} = 0$ gives $\begin{pmatrix}-2i&2\\-2&-2i\end{pmatrix}\mathbf{v}=0$, so $\mathbf{v} = \begin{pmatrix}1\\i\end{pmatrix}$.
+Step 5 | Write the real general solution | Separate real and imaginary parts of $e^{(-1+2i)t}\begin{pmatrix}1\\i\end{pmatrix}$: the two real solutions are $e^{-t}\begin{pmatrix}\cos 2t\\-\sin 2t\end{pmatrix}$ and $e^{-t}\begin{pmatrix}\sin 2t\\\cos 2t\end{pmatrix}$. General solution: $\mathbf{x}(t) = e^{-t}\left[c_1\begin{pmatrix}\cos 2t\\-\sin 2t\end{pmatrix} + c_2\begin{pmatrix}\sin 2t\\\cos 2t\end{pmatrix}\right]$
+<!-- END STEPPER -->
+
+---
+
+**Exercise 4.** Given $A = \begin{pmatrix}0&1\\-4&0\end{pmatrix}$, find the eigenvalues, classify as a centre, write the general solution, and describe the phase portrait.
+
+<!-- STEPPER -->
+Step 1 | Compute the characteristic polynomial | $\det(A - \lambda I) = -\lambda(-\lambda) + 4 = \lambda^2 + 4$
+Step 2 | Solve | $\lambda = \pm 2i$: purely imaginary eigenvalues.
+Step 3 | Classify | **Centre.** All trajectories are closed curves — periodic orbits.
+Step 4 | Find a complex eigenvector | For $\lambda = 2i$: $(A - 2iI)\mathbf{v} = 0$ gives $\begin{pmatrix}-2i&1\\-4&-2i\end{pmatrix}\mathbf{v}=0$, so $\mathbf{v} = \begin{pmatrix}1\\2i\end{pmatrix}$.
+Step 5 | Write the general solution | $e^{2it}\begin{pmatrix}1\\2i\end{pmatrix}$ has real part $\begin{pmatrix}\cos 2t\\-2\sin 2t\end{pmatrix}$ and imaginary part $\begin{pmatrix}\sin 2t\\2\cos 2t\end{pmatrix}$. General solution: $\mathbf{x}(t) = c_1\begin{pmatrix}\cos 2t\\-2\sin 2t\end{pmatrix} + c_2\begin{pmatrix}\sin 2t\\2\cos 2t\end{pmatrix}$
+Step 6 | Describe the phase portrait | Eliminating $t$: if $x = c_1\cos 2t + c_2\sin 2t$ and $y = -2c_1\sin 2t + 2c_2\cos 2t$, then $x^2 + (y/2)^2 = c_1^2 + c_2^2$. The trajectories are ellipses, with semi-axes in ratio $1:2$ (elongated vertically), traversed in the clockwise direction.
+<!-- END STEPPER -->
+
+---
+
+**Exercise 5.** Linearise $\{x' = x(1-y),\; y' = y(x-1)\}$ at the equilibrium $(1,1)$ and classify it.
+
+<!-- STEPPER -->
+Step 1 | Verify equilibrium | At $(1,1)$: $x' = 1\cdot(1-1) = 0$. $y' = 1\cdot(1-1) = 0$. Confirmed.
+Step 2 | Compute the Jacobian | $f(x,y) = x - xy$, $g(x,y) = xy - y$. $J = \begin{pmatrix}\partial f/\partial x & \partial f/\partial y \\ \partial g/\partial x & \partial g/\partial y\end{pmatrix} = \begin{pmatrix}1-y & -x \\ y & x-1\end{pmatrix}$
+Step 3 | Evaluate at $(1,1)$ | $J(1,1) = \begin{pmatrix}0 & -1 \\ 1 & 0\end{pmatrix}$
+Step 4 | Find eigenvalues | $\det(J - \lambda I) = \lambda^2 + 1 = 0 \Rightarrow \lambda = \pm i$
+Step 5 | Classify | Purely imaginary eigenvalues: the linearisation is a **centre**. The system is equivalent to Lotka-Volterra with $a = b = c = d = 1$; the true nonlinear equilibrium is also a centre (orbits are closed). The linearisation is inconclusive about the nonlinear stability — a Lyapunov function argument is needed to confirm the orbits are closed.
+<!-- END STEPPER -->
+
+---
+
+*Exercise 6 extends the methods to a system with a continuum of equilibria — one of which has a zero eigenvalue. The approach is the same: Jacobian, eigenvalues, interpret. The $R_0$ interpretation is the key result.*
+
+**Exercise 6.** An epidemic model: $S' = -0.002SI$, $I' = 0.002SI - 0.5I$ (SIR without recovery back to $S$). Find all equilibria. Classify the disease-free equilibrium $(S_0, 0)$. Interpret in terms of outbreak dynamics.
+
+<!-- STEPPER -->
+Step 1 | Find equilibria | Set $S' = 0$: $-0.002SI = 0 \Rightarrow S = 0$ or $I = 0$. Set $I' = 0$: $I(0.002S - 0.5) = 0 \Rightarrow I = 0$ or $S = 250$. Equilibria: $(S, 0)$ for any $S$ (disease-free line) and $(250, 0)$, which is on the disease-free line. There is no interior equilibrium with $I > 0$.
+Step 2 | Compute the Jacobian | $f = -0.002SI$, $g = 0.002SI - 0.5I$. $J = \begin{pmatrix}-0.002I & -0.002S \\ 0.002I & 0.002S - 0.5\end{pmatrix}$
+Step 3 | Evaluate at $(S_0, 0)$ | $J(S_0, 0) = \begin{pmatrix}0 & -0.002S_0 \\ 0 & 0.002S_0 - 0.5\end{pmatrix}$
+Step 4 | Read eigenvalues (triangular matrix) | $\lambda_1 = 0$, $\lambda_2 = 0.002S_0 - 0.5$
+Step 5 | Classify | If $S_0 < 250$: $\lambda_2 < 0$, the disease-free equilibrium is stable (no outbreak). If $S_0 > 250$: $\lambda_2 > 0$, the equilibrium is unstable (outbreak occurs). The threshold is $S_0 = 250 = 0.5/0.002$.
+Step 6 | Interpret | The ratio $R_0 = 0.002S_0 / 0.5 = S_0/250$ is the basic reproduction number. If $R_0 > 1$ (more than 250 susceptibles), an infection introduced into the population will spread. If $R_0 < 1$, any outbreak dies out. This is the fundamental threshold theorem of mathematical epidemiology, here derived as a stability condition on the disease-free equilibrium.
+<!-- END STEPPER -->
+
+---
+
+::: {.callout-tip title="Key results"}
+1. A second-order ODE $y'' + py' + qy = 0$ is equivalent to the linear system $\mathbf{x}' = A\mathbf{x}$ with $A = \begin{pmatrix}0&1\\-q&-p\end{pmatrix}$.
+
+2. The general solution is $\mathbf{x}(t) = c_1 e^{\lambda_1 t}\mathbf{v}_1 + c_2 e^{\lambda_2 t}\mathbf{v}_2$.
+
+3. Eigenvalue classification: real same-sign $\to$ node; real opposite-sign $\to$ saddle; complex $\to$ spiral; purely imaginary $\to$ centre.
+
+4. Stability: asymptotically stable if and only if all eigenvalues have negative real part.
+
+5. For nonlinear systems, linearise via the Jacobian $J$ at each equilibrium and classify from the eigenvalues of $J$.
+:::
+
+## Where this goes
+
+The eigenvalue geometry developed here connects directly to three next steps.
+
+**Laplace transforms** (Chapter 4 of this volume) re-express the same eigenvalue information as poles of a transfer function in the complex $s$-plane. A stable spiral in the phase plane corresponds to a pair of complex conjugate poles with negative real part — same mathematics, different language.
+
+**Linear algebra** (Vol 7 linear algebra section) develops the eigenvalue theory further: diagonalisation, the spectral theorem, and Jordan form handle cases where eigenvectors are not a full basis. The phase plane intuition built here makes those abstract results concrete.
+
+**Partial differential equations** (Vol 7 Fourier–PDEs section) extend the phase plane idea to spatial systems: the stability analysis of a PDE linearised around a steady state uses the same eigenvalue logic, now applied to differential operators rather than matrices.

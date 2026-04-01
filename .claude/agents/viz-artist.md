@@ -70,6 +70,128 @@ A set of data points on a line or dot plot. Show mean and median as movable mark
 **Function/curve**
 Plot the function with labelled axes matching the chapter's notation. Sliders for any parameters introduced in the chapter.
 
+## Exercise steppers
+
+Every `<!-- STEPPER -->` comment in a chapter must be replaced with a working OJS stepwise reveal. This is mandatory on every chapter — not optional.
+
+**What the stepper does:** Shows the exercise problem. The reader clicks "Next step →" to reveal one step at a time. Each revealed step shows the operation label, the current equation rendered in KaTeX, and an optional note. A "Reset" button returns to the start.
+
+**Canonical OJS stepper pattern:**
+
+The stepper requires three OJS cells. Name the KaTeX `require` and the stepper function once per chapter (at the top of the exercises section), not once per exercise.
+
+```ojs
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```ojs
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  // steps: array of {op, eq, note?}
+  let current = 0;
+  const totalSteps = steps.length;
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.5rem 1rem; align-items:baseline; padding:0.35rem 0; border-top: 1px solid #f3f4f6;";
+
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+
+      stepsDiv.appendChild(row);
+    }
+
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  nextBtn.onclick = () => {
+    if (current < totalSteps) { current++; renderSteps(); updateButtons(); }
+  };
+
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+Then for each exercise, one cell:
+
+```ojs
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write as an equation",         eq: "800 - 35t = 200 + 15t" },
+  { op: "Add 35t to both sides",         eq: "800 = 200 + 50t",       note: "Collects all t terms on the right." },
+  { op: "Subtract 200 from both sides",  eq: "600 = 50t" },
+  { op: "Divide both sides by 50",       eq: "t = 12" },
+  { op: "Check",                         eq: "800 - 35(12) = 380 = 200 + 15(12) \\checkmark" }
+])
+```
+
+**Placement:** Each stepper cell goes immediately after its exercise text, before the next exercise.
+
+**Parsing `<!-- STEPPER -->` comments:** Read the YAML inside the comment block, convert `op`/`eq`/`note` fields directly into the array literal above.
+
+**KaTeX notes:**
+- `eq` strings are plain LaTeX — backslashes need doubling in JS string literals (e.g., `\\frac{1}{2}`, `\\leq`, `\\checkmark`)
+- Use `displayMode: false` for inline rendering within the stepper
+- If an equation is long, break it across two steps rather than one wide line
+
 ## Code quality
 
 - OJS cells should be self-contained — define all variables used in a cell within that cell or in a clearly prior cell

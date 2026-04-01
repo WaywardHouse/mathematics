@@ -1,6 +1,1278 @@
 ---
-title: "Data analysis"
-status: "seed"
+title: "Data Analysis"
+subtitle: "Patterns in numbers, conclusions about the world"
+chapter: 4
+volume: 6
+layer: "pre-university"
+status: "review"
+
+hook: |
+  Spotify has about 100 million songs. When the next track auto-plays,
+  an algorithm chose it — by finding patterns in what you and similar
+  listeners have played, skipped, and saved. That is data analysis at
+  scale. This chapter is where the reasoning behind it starts: describe
+  the data, measure relationships between variables, and build the
+  simplest model that lets you predict one thing from another.
+
+axiom: |
+  You have a pile of numbers. Some of those numbers have patterns —
+  relationships between variables that are real, not coincidental.
+
+rewrite: |
+  Summarising a variable describes its centre and spread. Measuring
+  correlation captures direction and strength of a relationship. Fitting
+  a line turns that relationship into a tool for prediction.
+
+prerequisite_ids:
+  - stat_basic
+  - exp_log
+  - func
+
+opens_to:
+  - id: prob_stats
+    label: "Probability and mathematical statistics"
+    volume: 7
+    relationship: enables
+  - id: numerics
+    label: "Numerical methods"
+    volume: 7
+    relationship: enriches
+  - id: multivariable
+    label: "Multivariable calculus"
+    volume: 7
+    relationship: motivates
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+destinations:
+  - field: sci
+    label: Hard sciences
+    hook: "Experimental data analysis — fitting models, checking residuals, reporting R² — is core lab practice in every science."
+  - field: biz
+    label: Finance and quant
+    hook: "Regression forecasting, sales trend modelling, and risk factor analysis are business analytics fundamentals."
+  - field: comp
+    label: Computing and data
+    hook: "Linear regression is the simplest supervised learning model — understanding it deeply grounds everything in ML that follows."
+  - field: geo
+    label: Geography and environment
+    hook: "Trend analysis in climate data, spatial correlation, and environmental monitoring all use these methods."
+
+notation_introduced:
+  - symbol: "r"
+    read_as: "r"
+    meaning: "Pearson correlation coefficient, $-1 \\le r \\le 1$"
+  - symbol: "\\hat{y}"
+    read_as: "y-hat"
+    meaning: "Predicted value from the regression model"
+  - symbol: "b_0"
+    read_as: "b-zero"
+    meaning: "y-intercept of the least-squares line"
+  - symbol: "b_1"
+    read_as: "b-one"
+    meaning: "Slope of the least-squares line"
+  - symbol: "R^2"
+    read_as: "R-squared"
+    meaning: "Coefficient of determination — proportion of variance in y explained by x"
+  - symbol: "e_i"
+    read_as: "e-i"
+    meaning: "Residual: $e_i = y_i - \\hat{y}_i$"
+  - symbol: "IQR"
+    read_as: "interquartile range"
+    meaning: "$Q_3 - Q_1$; the middle 50% spread"
 ---
 
-*Seed — front matter to be completed before content is written.*
+Spotify has about 100 million songs. When you finish a track and it
+auto-plays the next one, you didn't choose that song — an algorithm did.
+The algorithm looked at what you've played, when you skipped, what
+similar listeners chose, and built a model of your taste from the
+pattern in those numbers.
+
+That is data analysis: you have a pile of numbers that records something
+about the world, and you want to find the pattern, measure it, and use
+it to predict something new.
+
+The methods in this chapter are the foundation of that entire enterprise.
+The streaming recommendation is built on techniques that grew from the
+same roots you're about to learn: summarising a distribution, measuring
+how two variables move together, fitting a line that lets you predict
+one thing from another. Every time a platform says *we think you'll like
+this*, the chain of reasoning traces back here.
+
+The chapter has four moves. First: organise and describe data on a single
+variable — centre, spread, shape. Second: describe the relationship
+between two variables visually, before any formula. Third: measure that
+relationship with a single number, the correlation coefficient $r$.
+Fourth: model it with a line — regression — so you can make predictions.
+At each step the goal is not just to produce a number, but to know what
+the number is actually saying.
+
+---
+
+## 1 · Types of data
+
+Before you summarise data, you need to know what kind of data you have.
+The choice of summary and visualisation depends on it.
+
+**Categorical data** names groups: favourite genre, country of birth,
+blood type, whether a patient recovered. The values are labels, not
+amounts — you cannot meaningfully average them.
+
+**Quantitative data** measures amounts: temperature, height, number of
+streams, exam score. These values are numbers where arithmetic makes
+sense.
+
+Within quantitative data there is a further distinction.
+
+*Discrete* data takes separate, countable values: number of goals scored,
+number of siblings, number of days absent. There is no meaningful value
+between 2 and 3.
+
+*Continuous* data can take any value in a range: height, weight, time,
+temperature. Between any two values there is always another one.
+
+Statisticians sometimes also describe four **levels of measurement**,
+which capture a slightly different property — how much structure the
+numbers carry.
+
+| Level | Example | What you can do |
+|-------|---------|-----------------|
+| Nominal | Blood type: A, B, AB, O | Count only; order is meaningless |
+| Ordinal | Survey: agree / neutral / disagree | Order is meaningful; gaps between values are not |
+| Interval | Temperature in °C | Differences are meaningful; zero is arbitrary (0°C is not "no temperature") |
+| Ratio | Distance, mass, income | Differences and ratios both meaningful; zero means none |
+
+This matters in practice. You can say that 40°C is 20° hotter than 20°C
+(interval: differences work). You cannot say it is twice as hot, because
+0°C is not "no heat" — it is just the freezing point of water. But you
+can say that 40km is twice as far as 20km (ratio: zero means nothing
+there).
+
+For this chapter the key split is **categorical vs. quantitative**,
+because it determines every choice that follows: which summary statistics
+to compute, which plots to draw, and whether correlation and regression
+make sense at all.
+
+---
+
+## 2 · Describing one variable
+
+### Centre
+
+Three measures compete for "the typical value" of a dataset:
+
+**Mean** — add all values, divide by how many.
+
+$$\bar{x} = \frac{\sum_{i=1}^{n} x_i}{n}$$
+
+**Median** — the middle value when the data is sorted. For an even
+number of values, average the two middle ones.
+
+**Mode** — the most frequently occurring value.
+
+Each one answers a slightly different question, and each has weaknesses.
+
+Consider seven students' weekly hours of paid work:
+
+$$4, \; 6, \; 6, \; 8, \; 9, \; 11, \; 42$$
+
+The mean is $(4 + 6 + 6 + 8 + 9 + 11 + 42) / 7 = 86/7 \approx 12.3$.
+The median is the fourth value when sorted: $8$. The mode is $6$.
+
+Which is "right"? That depends on your question. The 42 is clearly
+unusual — one student has a second job. The mean got pulled to 12.3
+by that one outlier, past six of the seven actual values. The median
+($8$) is not sensitive to the extreme value. The mode tells you the
+most common single value.
+
+::: {.callout-note appearance="simple"}
+**The outlier rule of thumb**
+
+When a distribution has outliers or is heavily skewed, report the
+**median** as the centre. The mean is a better summary when the data is
+roughly symmetric and free of extreme values. Both together tell you
+more than either alone.
+:::
+
+### Spread
+
+A measure of centre on its own is incomplete. Knowing the average
+temperature in a city tells you nothing about whether it's stable or
+wildly variable. You need a measure of spread.
+
+**Range** = maximum − minimum. Simple, but sensitive to extremes.
+In the work-hours example: $42 - 4 = 38$.
+
+**Interquartile range (IQR)** = $Q_3 - Q_1$. The middle 50% of the
+data, untouched by the extremes.
+
+To find $Q_1$ and $Q_3$: split the sorted data at the median, then
+find the median of each half.
+
+For our seven values $4, 6, 6, 8, 9, 11, 42$:
+
+- Median (Q2) = 8
+- Lower half: $4, 6, 6$ → $Q_1 = 6$
+- Upper half: $9, 11, 42$ → $Q_3 = 11$
+- $\text{IQR} = 11 - 6 = 5$
+
+The middle 50% of students work between 6 and 11 hours per week.
+The 42 did not affect this at all.
+
+**Standard deviation** measures the average distance from the mean.
+You will see this written as $s$ for a sample:
+
+$$s = \sqrt{\frac{\sum_{i=1}^{n}(x_i - \bar{x})^2}{n-1}}$$
+
+The formula squares the deviations (so positive and negative distances
+don't cancel), takes their average (roughly — the $n-1$ is a technical
+correction for samples), then takes the square root to get back to the
+original units.
+
+For the work-hours example, with mean $\approx 12.3$:
+
+| $x_i$ | $x_i - \bar{x}$ | $(x_i - \bar{x})^2$ |
+|-------|-----------------|----------------------|
+| 4 | −8.3 | 68.89 |
+| 6 | −6.3 | 39.69 |
+| 6 | −6.3 | 39.69 |
+| 8 | −4.3 | 18.49 |
+| 9 | −3.3 | 10.89 |
+| 11 | −1.3 | 1.69 |
+| 42 | +29.7 | 882.09 |
+
+Sum of squared deviations: $1061.43$. Divide by $n - 1 = 6$: $176.9$.
+Take the square root: $s \approx 13.3$ hours.
+
+That large standard deviation reflects the 42-hour outlier distorting
+the picture. Again: when a distribution has strong outliers, IQR is the
+more honest spread measure.
+
+### Shape: the five-number summary and box plot
+
+The **five-number summary** is min, $Q_1$, median, $Q_3$, max. It
+describes the distribution's shape without computing a mean at all:
+
+$$4, \quad 6, \quad 8, \quad 11, \quad 42$$
+
+A **box plot** draws this. The box spans from $Q_1$ to $Q_3$. A line
+inside the box marks the median. "Whiskers" extend to the minimum and
+maximum (or to the boundary of non-outlier data, with individual dots
+for outliers beyond $1.5 \times \text{IQR}$ from the box edges).
+
+Box plots are excellent for comparing distributions across groups — for
+example, work hours broken down by year of study — because they pack
+a lot of shape information into a small space.
+
+::: {.callout-note appearance="simple"}
+**Outlier detection rule**
+
+A common convention: flag a value as an outlier if it falls more than
+$1.5 \times \text{IQR}$ below $Q_1$ or above $Q_3$.
+
+Lower fence: $Q_1 - 1.5 \times \text{IQR} = 6 - 7.5 = -1.5$
+
+Upper fence: $Q_3 + 1.5 \times \text{IQR} = 11 + 7.5 = 18.5$
+
+The value 42 is above 18.5, so it is flagged as an outlier. The other
+values all fall within the fences.
+:::
+
+---
+
+## 3 · Describing relationships
+
+When you have **two quantitative variables** measured on the same
+subjects — hours studied and exam score, temperature and ice cream
+sales, daily steps and resting heart rate — the question changes from
+"what is the distribution of one variable?" to "how do these two
+variables move together?"
+
+The right starting point is always a **scatter plot**. Put one variable
+on the horizontal axis ($x$) and the other on the vertical axis ($y$).
+Each observation becomes a dot.
+
+Before reaching for any formula, look at the plot and describe what you
+see using three properties.
+
+**Direction.** As $x$ increases, does $y$ tend to increase (positive
+association) or decrease (negative association), or is there no
+consistent tendency?
+
+**Form.** Does the pattern look like a straight line (linear), a
+curve, or something else entirely?
+
+**Strength.** How tightly do the points cluster around the pattern?
+A tight cluster suggests a strong relationship. A diffuse cloud
+suggests a weak one.
+
+Only if the form is linear does it make sense to ask "how strong is
+this linear relationship?" — which is what the correlation coefficient
+measures. If the form is curved, the correlation coefficient can give
+a misleading answer (we will see this shortly).
+
+---
+
+## 4 · Pearson correlation
+
+The **Pearson correlation coefficient** $r$ measures the strength and
+direction of a *linear* relationship between two quantitative variables.
+It is always a number between $-1$ and $+1$.
+
+$$r = \frac{1}{n-1} \sum_{i=1}^{n} \left(\frac{x_i - \bar{x}}{s_x}\right)\left(\frac{y_i - \bar{y}}{s_y}\right)$$
+
+This is the average of the products of the standardised $x$ and $y$
+values. Standardising means subtracting the mean and dividing by the
+standard deviation, so each variable's scale disappears — $r$ is
+unit-free.
+
+**The intuition:** when a standardised $x$ is positive (above average)
+and the corresponding standardised $y$ is also positive, their product
+is positive. When both are below average, both are negative, and the
+product is still positive. When one is above and one is below, the
+product is negative. If there is a consistent positive trend, positive
+products dominate and $r$ is close to $+1$. If there is a consistent
+negative trend, negative products dominate and $r$ is close to $-1$.
+If there is no consistent linear pattern, positive and negative products
+cancel and $r$ is near $0$.
+
+**A worked example.** Five students, with hours of sleep the night
+before an exam ($x$) and exam score out of 40 ($y$):
+
+| Student | Sleep $x$ | Score $y$ |
+|---------|-----------|-----------|
+| A | 5 | 22 |
+| B | 6 | 25 |
+| C | 7 | 30 |
+| D | 8 | 33 |
+| E | 9 | 35 |
+
+$\bar{x} = 7$, $\bar{y} = 29$
+
+$s_x = \sqrt{\frac{(5-7)^2+(6-7)^2+(7-7)^2+(8-7)^2+(9-7)^2}{4}} = \sqrt{\frac{4+1+0+1+4}{4}} = \sqrt{2.5} \approx 1.581$
+
+$s_y = \sqrt{\frac{(22-29)^2+(25-29)^2+(30-29)^2+(33-29)^2+(35-29)^2}{4}} = \sqrt{\frac{49+16+1+16+36}{4}} = \sqrt{29.5} \approx 5.431$
+
+| Student | $\frac{x_i-\bar{x}}{s_x}$ | $\frac{y_i-\bar{y}}{s_y}$ | product |
+|---------|---------------------------|---------------------------|---------|
+| A | −1.265 | −1.288 | 1.629 |
+| B | −0.632 | −0.737 | 0.466 |
+| C | 0 | 0.184 | 0 |
+| D | 0.632 | 0.737 | 0.466 |
+| E | 1.265 | 1.104 | 1.397 |
+
+Sum of products: $3.958$. Divide by $n - 1 = 4$: $r \approx 0.99$.
+
+That is a very strong positive linear relationship. More sleep, higher
+score — and it is nearly perfectly linear across this small sample.
+
+**Interpreting $r$:** there is no single rule, but typical conventions are:
+
+| $|r|$ | Interpretation |
+|-------|----------------|
+| 0.9 – 1.0 | Very strong |
+| 0.7 – 0.9 | Strong |
+| 0.5 – 0.7 | Moderate |
+| 0.3 – 0.5 | Weak |
+| 0.0 – 0.3 | Very weak or none |
+
+::: {.callout-warning appearance="simple"}
+**$r$ measures only linear association**
+
+If the relationship is curved, $r$ can be close to zero even when there
+is a strong and obvious pattern. A dataset where $y = x^2$ centred at
+zero will give $r \approx 0$ even though $y$ is completely determined
+by $x$. This is why you always look at the scatter plot first.
+:::
+
+```{ojs}
+//| echo: false
+{
+  const W = 500, H = 340, PAD = 40;
+
+  // Controls
+  const rSlider = Inputs.range([-1, 1], {
+    label: "Correlation strength",
+    step: 0.1,
+    value: 0.5
+  });
+  const outliersToggle = Inputs.toggle({ label: "Add outliers", value: false });
+
+  const presetBar = document.createElement("div");
+  presetBar.style.cssText = "display:flex; gap:0.5rem; flex-wrap:wrap; margin:0.5rem 0 0.25rem;";
+  const presets = [
+    { label: "r = 0.9",  v: 0.9  },
+    { label: "r = 0.5",  v: 0.5  },
+    { label: "r = 0.1",  v: 0.1  },
+    { label: "r = −0.7", v: -0.7 }
+  ];
+  presets.forEach(p => {
+    const btn = document.createElement("button");
+    btn.textContent = p.label;
+    btn.style.cssText = "padding:0.25rem 0.7rem; border:1px solid #d1d5db; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.85em;";
+    btn.onclick = () => { rSlider.value = p.v; rSlider.dispatchEvent(new Event("input")); };
+    presetBar.appendChild(btn);
+  });
+
+  // Box-Muller bivariate normal with correlation rho
+  function bivariateNormal(n, rho, seed) {
+    // Simple LCG for reproducible-ish noise
+    let s = seed || 42;
+    function rand() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0x100000000; }
+    function stdNormal() {
+      const u1 = rand() || 1e-10, u2 = rand();
+      return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    }
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const z1 = stdNormal(), z2 = stdNormal();
+      pts.push({ x: z1, y: rho * z1 + Math.sqrt(1 - rho * rho) * z2 });
+    }
+    return pts;
+  }
+
+  function computeR(pts) {
+    const n = pts.length;
+    if (n < 2) return NaN;
+    const mx = pts.reduce((a, p) => a + p.x, 0) / n;
+    const my = pts.reduce((a, p) => a + p.y, 0) / n;
+    let num = 0, dx2 = 0, dy2 = 0;
+    pts.forEach(p => {
+      const dx = p.x - mx, dy = p.y - my;
+      num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
+    });
+    const denom = Math.sqrt(dx2 * dy2);
+    return denom < 1e-12 ? 0 : num / denom;
+  }
+
+  const svg = d3.create("svg").attr("width", W).attr("height", H)
+    .style("border", "1px solid #e5e7eb").style("border-radius", "6px").style("background", "#fafafa");
+
+  const xScale = d3.scaleLinear().domain([-3.5, 3.5]).range([PAD, W - PAD]);
+  const yScale = d3.scaleLinear().domain([-3.5, 3.5]).range([H - PAD, PAD]);
+
+  // Axes
+  svg.append("g").attr("transform", `translate(0,${yScale(0)})`).call(d3.axisBottom(xScale).ticks(6)).attr("color","#9ca3af");
+  svg.append("g").attr("transform", `translate(${xScale(0)},0)`).call(d3.axisLeft(yScale).ticks(6)).attr("color","#9ca3af");
+  svg.append("text").attr("x", W/2).attr("y", H - 4).attr("text-anchor","middle").attr("fill","#6b7280").attr("font-size","12px").text("x (standardised)");
+  svg.append("text").attr("transform","rotate(-90)").attr("x", -H/2).attr("y", 12).attr("text-anchor","middle").attr("fill","#6b7280").attr("font-size","12px").text("y (standardised)");
+
+  const dotsGroup = svg.append("g");
+
+  const rDisplay = document.createElement("div");
+  rDisplay.style.cssText = "text-align:center; margin:0.5rem 0; font-size:1.6rem; font-weight:700; color:#1e40af; letter-spacing:0.02em;";
+
+  const noteDisplay = document.createElement("div");
+  noteDisplay.style.cssText = "text-align:center; font-size:0.85em; color:#6b7280; margin-bottom:0.5rem;";
+
+  function update() {
+    const rho = +rSlider.value;
+    const addOut = outliersToggle.value;
+    let pts = bivariateNormal(60, rho, 42);
+    if (addOut) {
+      pts = pts.concat([
+        { x: 2.8,  y: -2.5 },
+        { x: -2.6, y:  2.7 },
+        { x:  3.0, y: -2.9 }
+      ]);
+    }
+    const r = computeR(pts);
+
+    dotsGroup.selectAll("circle").data(pts).join("circle")
+      .attr("cx", d => xScale(d.x))
+      .attr("cy", d => yScale(d.y))
+      .attr("r", 4)
+      .attr("fill", (d, i) => (addOut && i >= 60) ? "#dc2626" : "#3b82f6")
+      .attr("opacity", (d, i) => (addOut && i >= 60) ? 0.85 : 0.55);
+
+    rDisplay.textContent = `Computed r = ${r.toFixed(3)}`;
+    const diff = Math.abs(r - rho);
+    noteDisplay.textContent = addOut
+      ? `Target ρ = ${rho.toFixed(1)} · ${diff > 0.05 ? `Outliers shifted r by ${(r - rho).toFixed(3)}` : "Outliers had minimal effect here"}`
+      : `Target ρ = ${rho.toFixed(1)}`;
+  }
+
+  rSlider.addEventListener("input", update);
+  outliersToggle.addEventListener("input", update);
+  update();
+
+  const container = document.createElement("div");
+  container.style.cssText = "margin:1rem 0; font-family:inherit;";
+  const label = document.createElement("p");
+  label.style.cssText = "font-size:0.9em; color:#374151; margin-bottom:0.5rem;";
+  label.textContent = "Adjust the slider to set a target correlation, then explore how the cloud of points changes. Toggle outliers to see how a few extreme points can distort the computed r.";
+  container.append(label, rSlider, presetBar, outliersToggle, svg.node(), rDisplay, noteDisplay);
+  return container;
+}
+```
+
+---
+
+## 5 · Correlation does not imply causation
+
+This section deserves real time. It is not a disclaimer. It is one of
+the most practically important ideas in this entire volume.
+
+Finding that $r = 0.78$ between two variables does not tell you that one
+causes the other. It tells you they are associated — they tend to move
+together. Association and causation are different things, and confusing
+them is one of the most common errors in public reasoning about data.
+
+There are three mechanisms that produce correlation without causation.
+
+---
+
+**Mechanism 1: Common cause (confounding)**
+
+Ice cream sales and drowning deaths are positively correlated. In months
+when ice cream sales are high, drowning deaths are also high. Does eating
+ice cream cause drowning?
+
+No. Both are caused by a third variable: hot weather. When it is hot,
+more people buy ice cream *and* more people swim. The ice cream and the
+drownings are both responding to temperature. Temperature is the
+*confounding variable* — a common cause that creates an apparent
+relationship between two things that do not directly affect each other.
+
+This is extremely common in health and social science research. Two
+variables that seem related often share an underlying driver.
+
+---
+
+**Mechanism 2: Reverse causation**
+
+Suppose a survey finds that people who sleep fewer hours are more likely
+to be depressed. The tempting interpretation: poor sleep causes
+depression.
+
+But the causal arrow might point the other way. Depression is a common
+cause of disturbed sleep. The correlation is real; the causal direction
+is not established by the correlation alone.
+
+Or both things cause each other in a loop — poor sleep worsens mood,
+worsened mood disrupts sleep. Correlation cannot untangle this.
+
+---
+
+**Mechanism 3: Coincidence**
+
+Nicolas Cage releases more films in years when more people drown in
+swimming pools. The correlation over a twelve-year period was reported
+at $r \approx 0.67$.
+
+There is obviously no causal connection. With a sufficiently large
+collection of variables measured over time, some pairs will be
+correlated by chance. The internet is full of these "spurious
+correlations" — per capita cheese consumption and deaths by bedsheet
+tangling, US spending on science and suicides by hanging. These are
+real correlations in the data. They mean nothing.
+
+---
+
+**What does establish causation?**
+
+Observational data (just measuring things in the world) can suggest
+causal hypotheses. Establishing causation requires:
+
+- **Randomised controlled experiments** — randomly assign subjects to
+  conditions so confounders are distributed equally across groups.
+- **Strong temporal evidence** — the cause must precede the effect.
+- **Plausible mechanism** — a credible explanation of *how* one thing
+  could cause the other.
+- **Replication** — the relationship holds across different populations
+  and study designs.
+
+When you read a headline claiming "X causes Y," your first question
+should be: was this a randomised experiment, or an observational study?
+If the latter, the correct language is "X is associated with Y" — not
+"X causes Y."
+
+::: {.callout-note appearance="simple"}
+**The student's toolkit for evaluating causal claims**
+
+Ask three questions:
+
+1. Could a third variable (confounder) explain both X and Y?
+2. Could the direction be reversed — does Y cause X instead?
+3. Could this be coincidence in a large dataset?
+
+If any of these is plausible, the causal claim is not established.
+:::
+
+---
+
+## 6 · Linear regression
+
+Once you have established (from a scatter plot) that two variables have
+a linear form, you can model that relationship with a line. That line
+lets you do two things the correlation coefficient cannot: make
+predictions for new values, and quantify how much $y$ changes per unit
+of $x$.
+
+**The problem.** Suppose you have a scatter of points that approximately
+follow a line. Which line? You could draw many lines that pass "through"
+the cloud. The **least-squares line** is the one that minimises the sum
+of squared residuals — where a *residual* $e_i = y_i - \hat{y}_i$ is
+the vertical distance from each point to the line.
+
+Why squared? Squaring makes all residuals positive (so positive and
+negative errors don't cancel), and it penalises large errors more
+heavily than small ones. The least-squares line is the unique line that
+minimises the total squared error — it is "as close as possible" to all
+the points simultaneously.
+
+**The formulas.** For the least-squares line $\hat{y} = b_0 + b_1 x$:
+
+$$b_1 = r \cdot \frac{s_y}{s_x}$$
+
+$$b_0 = \bar{y} - b_1 \bar{x}$$
+
+where $r$ is the Pearson correlation, $s_x$ and $s_y$ are the standard
+deviations of $x$ and $y$, and $\bar{x}$, $\bar{y}$ are the means.
+
+**Interpretation.**
+
+$b_1$ (slope): for every one-unit increase in $x$, the predicted value
+of $y$ changes by $b_1$ units. Always interpret this in context — the
+units matter.
+
+$b_0$ (intercept): the predicted value of $y$ when $x = 0$. This is
+sometimes meaningful (it might represent a baseline), but often
+extrapolating to $x = 0$ is outside the range of the data and the
+intercept is just an algebraic anchor with no practical interpretation.
+
+**The regression line always passes through $(\bar{x}, \bar{y})$.** This
+is a useful sanity check.
+
+```{ojs}
+//| echo: false
+{
+  const W = 500, H = 340, PAD = 45;
+  const MAX_PTS = 20;
+
+  let points = [];
+  let showResiduals = false;
+
+  const svg = d3.create("svg")
+    .attr("width", W).attr("height", H)
+    .style("border", "1px solid #e5e7eb").style("border-radius", "6px")
+    .style("background", "#fafafa").style("cursor", "crosshair");
+
+  const xScale = d3.scaleLinear().domain([0, 10]).range([PAD, W - PAD]);
+  const yScale = d3.scaleLinear().domain([0, 10]).range([H - PAD, PAD]);
+
+  // Grid lines
+  const grid = svg.append("g").attr("opacity", 0.25);
+  xScale.ticks(5).forEach(t => grid.append("line").attr("x1", xScale(t)).attr("x2", xScale(t)).attr("y1", PAD).attr("y2", H - PAD).attr("stroke","#9ca3af").attr("stroke-dasharray","3,3"));
+  yScale.ticks(5).forEach(t => grid.append("line").attr("x1", PAD).attr("x2", W - PAD).attr("y1", yScale(t)).attr("y2", yScale(t)).attr("stroke","#9ca3af").attr("stroke-dasharray","3,3"));
+
+  svg.append("g").attr("transform", `translate(0,${H - PAD})`).call(d3.axisBottom(xScale).ticks(5)).attr("color","#9ca3af");
+  svg.append("g").attr("transform", `translate(${PAD},0)`).call(d3.axisLeft(yScale).ticks(5)).attr("color","#9ca3af");
+  svg.append("text").attr("x", W/2).attr("y", H - 5).attr("text-anchor","middle").attr("fill","#6b7280").attr("font-size","12px").text("x");
+  svg.append("text").attr("transform","rotate(-90)").attr("x", -H/2).attr("y", 14).attr("text-anchor","middle").attr("fill","#6b7280").attr("font-size","12px").text("y");
+
+  const hintText = svg.append("text").attr("x", W/2).attr("y", H/2)
+    .attr("text-anchor","middle").attr("fill","#9ca3af").attr("font-size","13px")
+    .text("Click anywhere to add a data point");
+
+  const residGroup = svg.append("g");
+  const lineGroup = svg.append("g");
+  const dotsGroup = svg.append("g");
+
+  function leastSquares(pts) {
+    const n = pts.length;
+    if (n < 2) return null;
+    const mx = pts.reduce((a, p) => a + p.x, 0) / n;
+    const my = pts.reduce((a, p) => a + p.y, 0) / n;
+    let num = 0, den = 0;
+    pts.forEach(p => { const dx = p.x - mx; num += dx * (p.y - my); den += dx * dx; });
+    if (Math.abs(den) < 1e-12) return null;
+    const b1 = num / den;
+    const b0 = my - b1 * mx;
+    const yhat = pts.map(p => b0 + b1 * p.x);
+    const ssTot = pts.reduce((a, p) => a + (p.y - my) ** 2, 0);
+    const ssRes = pts.reduce((a, p, i) => a + (p.y - yhat[i]) ** 2, 0);
+    const r2 = ssTot < 1e-12 ? 1 : 1 - ssRes / ssTot;
+    return { b0, b1, r2, yhat };
+  }
+
+  function render() {
+    hintText.style("display", points.length === 0 ? null : "none");
+
+    const fit = leastSquares(points);
+
+    // Residual lines
+    residGroup.selectAll("line").data(showResiduals && fit ? points : [])
+      .join("line")
+      .attr("x1", d => xScale(d.x)).attr("x2", d => xScale(d.x))
+      .attr("y1", d => yScale(d.y))
+      .attr("y2", (d, i) => yScale(fit.yhat[i]))
+      .attr("stroke", "#ef4444").attr("stroke-width", 1.5).attr("opacity", 0.7);
+
+    // Regression line
+    if (fit) {
+      const x0 = 0, x1 = 10;
+      lineGroup.selectAll("line").data([1]).join("line")
+        .attr("x1", xScale(x0)).attr("x2", xScale(x1))
+        .attr("y1", yScale(fit.b0 + fit.b1 * x0))
+        .attr("y2", yScale(fit.b0 + fit.b1 * x1))
+        .attr("stroke", "#1d4ed8").attr("stroke-width", 2).attr("opacity", 0.85);
+    } else {
+      lineGroup.selectAll("line").remove();
+    }
+
+    // Dots
+    dotsGroup.selectAll("circle").data(points).join("circle")
+      .attr("cx", d => xScale(d.x)).attr("cy", d => yScale(d.y))
+      .attr("r", 5).attr("fill", "#3b82f6").attr("stroke", "#1d4ed8").attr("stroke-width", 1).attr("opacity", 0.8);
+
+    // Stats display
+    if (fit) {
+      statsDiv.innerHTML = `
+        <span style="margin-right:1.5rem;"><em>b</em><sub>0</sub> = <strong>${fit.b0.toFixed(3)}</strong></span>
+        <span style="margin-right:1.5rem;"><em>b</em><sub>1</sub> = <strong>${fit.b1.toFixed(3)}</strong></span>
+        <span><em>R</em><sup>2</sup> = <strong>${fit.r2.toFixed(3)}</strong></span>
+        <span style="margin-left:1rem; color:#6b7280; font-size:0.85em;">(${points.length} point${points.length===1?"":"s"})</span>`;
+      statsDiv.style.color = "#1e3a8a";
+    } else {
+      statsDiv.textContent = points.length < 2 ? "Add at least 2 points to fit a line." : "";
+      statsDiv.style.color = "#6b7280";
+    }
+  }
+
+  svg.on("click", function(event) {
+    if (points.length >= MAX_PTS) return;
+    const [px, py] = d3.pointer(event);
+    const x = xScale.invert(px), y = yScale.invert(py);
+    if (x < 0 || x > 10 || y < 0 || y > 10) return;
+    points.push({ x, y });
+    render();
+  });
+
+  // Controls
+  const residBtn = document.createElement("button");
+  residBtn.textContent = "Show residuals";
+  residBtn.style.cssText = "padding:0.3rem 0.8rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.875em;";
+  residBtn.onclick = () => {
+    showResiduals = !showResiduals;
+    residBtn.textContent = showResiduals ? "Hide residuals" : "Show residuals";
+    residBtn.style.background = showResiduals ? "#fee2e2" : "#fff";
+    render();
+  };
+
+  const clearBtn = document.createElement("button");
+  clearBtn.textContent = "Clear";
+  clearBtn.style.cssText = "padding:0.3rem 0.8rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.875em; color:#6b7280;";
+  clearBtn.onclick = () => { points = []; showResiduals = false; residBtn.textContent = "Show residuals"; residBtn.style.background = "#fff"; render(); };
+
+  const statsDiv = document.createElement("div");
+  statsDiv.style.cssText = "min-height:1.6em; font-size:0.95em; text-align:center; margin-top:0.4rem; padding:0.4rem; background:#eff6ff; border-radius:4px;";
+
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex; gap:0.5rem; margin:0.5rem 0;";
+  ctrlRow.append(residBtn, clearBtn);
+
+  const hint = document.createElement("p");
+  hint.style.cssText = "font-size:0.85em; color:#374151; margin-bottom:0.4rem;";
+  hint.textContent = `Click on the plot to add points (up to ${MAX_PTS}). The least-squares line updates in real time.`;
+
+  render();
+
+  const container = document.createElement("div");
+  container.style.cssText = "margin:1rem 0; font-family:inherit;";
+  container.append(hint, svg.node(), ctrlRow, statsDiv);
+  return container;
+}
+```
+
+---
+
+## 7 · $R^2$ and residual plots
+
+### The coefficient of determination
+
+$R^2$ (R-squared) measures how well the regression line fits the data.
+For simple linear regression, $R^2 = r^2$ — the square of the Pearson
+correlation.
+
+$$R^2 = r^2$$
+
+$R^2$ is the **proportion of the variance in $y$ that is explained by
+the linear relationship with $x$**. It ranges from 0 to 1.
+
+$R^2 = 0.72$ means: 72% of the variation in $y$ is accounted for by
+the linear relationship with $x$. The remaining 28% is due to other
+factors not in the model, natural variability, or measurement error.
+
+$R^2 = 0.25$ means the line captures only 25% of the variation. A lot
+is left unexplained — you might be missing important variables, or the
+relationship might not be well-described by a line.
+
+$R^2 = 0.95$ means 95% of the variation is explained — a strong fit.
+
+::: {.callout-note appearance="simple"}
+**$R^2$ in plain language**
+
+Imagine the simplest possible model for $y$: just predict $\bar{y}$
+for everyone. That model ignores $x$ completely. The total spread around
+that flat prediction is the total variance in $y$.
+
+The regression line does better — it accounts for $x$. $R^2$ measures
+how much better: what fraction of the total variance did the line
+explain away?
+:::
+
+### Residual plots
+
+Fitting a line and computing $R^2$ is not the end of the analysis.
+You need to check whether the line is actually the right model.
+
+A **residual plot** shows the residuals $e_i = y_i - \hat{y}_i$ on
+the vertical axis against the fitted values $\hat{y}_i$ (or against
+$x$) on the horizontal axis. A good model produces a scatter with no
+pattern — residuals roughly centred at zero, with no curve, fan shape,
+or clustering.
+
+If the linear model is appropriate, the residuals should look like
+random scatter around zero — no pattern.
+
+**What patterns signal problems:**
+
+- A curved pattern (residuals positive at the extremes, negative in
+  the middle) means the true relationship is nonlinear. A line is the
+  wrong model.
+- A funnel shape (residuals spreading out as $x$ increases) means the
+  variability in $y$ changes with $x$. The model's uncertainty is
+  not constant — a standard regression assumption is violated.
+- A few extreme residuals are outliers in the regression sense.
+  They may be data errors or genuinely unusual cases.
+
+The residual plot is the diagnostic. A clean residual plot validates
+your model; a patterned one tells you to reconsider.
+
+---
+
+## 8 · End-to-end worked example
+
+A café tracks average daily temperature (°C) and the number of iced
+coffee drinks sold. Here are eight days of data:
+
+| Day | Temp $x$ | Drinks $y$ |
+|-----|----------|------------|
+| 1 | 18 | 34 |
+| 2 | 21 | 40 |
+| 3 | 24 | 48 |
+| 4 | 27 | 55 |
+| 5 | 29 | 61 |
+| 6 | 31 | 65 |
+| 7 | 33 | 72 |
+| 8 | 36 | 78 |
+
+**Step 1: Compute the summary statistics.**
+
+$n = 8$
+
+$\bar{x} = (18 + 21 + 24 + 27 + 29 + 31 + 33 + 36)/8 = 219/8 = 27.375$
+
+$\bar{y} = (34 + 40 + 48 + 55 + 61 + 65 + 72 + 78)/8 = 453/8 = 56.625$
+
+$s_x \approx 6.117$, $s_y \approx 15.35$
+
+(These are computed using the standard deviation formula from Section 2.)
+
+**Step 2: Compute the Pearson correlation.**
+
+Running through all 8 standardised products (same procedure as the 5-row table in Section 4) gives:
+
+$$r \approx 0.999$$
+
+A near-perfect positive linear relationship. This is not surprising —
+the scatter plot would show the points nearly on a straight line.
+
+**Step 3: Find the least-squares line.**
+
+$$b_1 = r \cdot \frac{s_y}{s_x} = 0.999 \times \frac{15.35}{6.117} \approx 0.999 \times 2.509 \approx 2.506$$
+
+$$b_0 = \bar{y} - b_1 \bar{x} = 56.625 - 2.506 \times 27.375 \approx 56.625 - 68.602 \approx -11.97$$
+
+The regression equation is:
+
+$$\hat{y} = -11.97 + 2.506x$$
+
+**Step 4: Interpret slope and intercept.**
+
+*Slope:* For every 1°C increase in temperature, the model predicts
+about 2.5 additional iced coffees sold. This makes intuitive sense.
+
+*Intercept:* The model predicts $-11.97$ drinks at 0°C. This is
+nonsensical — no café sells negative drinks — but we should not expect
+the intercept to be meaningful here. The data ranges from 18°C to 36°C.
+Extrapolating to 0°C is far outside that range.
+
+**Step 5: Predict a new value.**
+
+On a 30°C day, the model predicts:
+
+$$\hat{y} = -11.97 + 2.506 \times 30 = -11.97 + 75.18 = 63.21$$
+
+Approximately 63 iced coffees.
+
+**Step 6: Compute $R^2$.**
+
+$$R^2 = r^2 = (0.999)^2 \approx 0.998$$
+
+The linear model explains about 99.8% of the variation in drinks sold.
+Temperature is almost the entire story here (within this range and this
+simple model).
+
+**Step 7: Check a residual.**
+
+For Day 5, the actual value is $y_5 = 61$. The fitted value is:
+
+$$\hat{y}_5 = -11.97 + 2.506 \times 29 = -11.97 + 72.674 = 60.70$$
+
+Residual: $e_5 = 61 - 60.70 = 0.30$
+
+The model is off by less than one drink on this day. The residuals for
+all eight days would be small and show no obvious pattern — this is
+exactly what a well-fitting linear model looks like.
+
+---
+
+::: {.callout-tip appearance="simple"}
+**Computing form of the regression slope**
+
+An algebraically equivalent form useful for hand calculation:
+
+$$b_1 = \frac{\sum x_i y_i - n\bar{x}\bar{y}}{\sum x_i^2 - n\bar{x}^2}$$
+
+This is the same formula in computing form — useful when you have the raw sums but not the deviations. You will use this form in Exercise 4.
+:::
+
+## Exercises
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**Exercise 1.** The following dataset shows the number of hours seven
+people spent on social media last week:
+
+$$3, \; 7, \; 7, \; 9, \; 12, \; 14, \; 38$$
+
+Compute the mean, median, IQR, and identify any outliers using the
+$1.5 \times \text{IQR}$ rule.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Sort the data",
+    eq: "3,\\ 7,\\ 7,\\ 9,\\ 12,\\ 14,\\ 38",
+    note: "Already sorted. n = 7." },
+  { op: "Compute the mean",
+    eq: "\\bar{x} = \\frac{3+7+7+9+12+14+38}{7} = \\frac{90}{7} \\approx 12.9" },
+  { op: "Find the median",
+    eq: "\\text{median} = 9",
+    note: "The 4th value in 7 sorted values." },
+  { op: "Find Q₁",
+    eq: "Q_1 = 7",
+    note: "Median of the lower half: 3, 7, 7 → middle value is 7." },
+  { op: "Find Q₃",
+    eq: "Q_3 = 14",
+    note: "Median of the upper half: 12, 14, 38 → middle value is 14." },
+  { op: "Compute the IQR",
+    eq: "\\text{IQR} = Q_3 - Q_1 = 14 - 7 = 7" },
+  { op: "Find the fences",
+    eq: "\\text{Lower: } 7 - 1.5(7) = -3.5 \\qquad \\text{Upper: } 14 + 1.5(7) = 24.5" },
+  { op: "Identify outliers",
+    eq: "38 > 24.5 \\Rightarrow 38 \\text{ is an outlier}",
+    note: "No values fall below −3.5. The value 38 is flagged." },
+  { op: "Summary",
+    eq: "\\bar{x} \\approx 12.9,\\ \\text{median} = 9,\\ \\text{IQR} = 7,\\ \\text{outlier: } 38",
+    note: "The mean is pulled far above the median by the outlier. Report median as centre." }
+])
+```
+
+---
+
+**Exercise 2.** A scatter plot of students' hours of revision ($x$) and
+exam percentage ($y$) shows:
+
+- Points rise from bottom-left to top-right
+- The points cluster fairly tightly around an imaginary straight line
+- There are no pronounced curves or bends in the pattern
+
+Describe the direction, form, and strength of the association, and
+estimate whether $r$ is closer to 0.1, 0.7, or 0.95. Justify your estimate.
+
+<!-- STEPPER -->
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Direction",
+    eq: "\\text{Positive}",
+    note: "Points rise from bottom-left to top-right: as revision hours increase, exam score increases." },
+  { op: "Form",
+    eq: "\\text{Linear}",
+    note: "The pattern follows a straight line, not a curve." },
+  { op: "Strength",
+    eq: "\\text{Strong}",
+    note: "The points cluster tightly around the line — little scatter." },
+  { op: "Estimate r",
+    eq: "r \\approx 0.85\\text{–}0.95",
+    note: "Strong positive linear → r well above 0.7. 'Fairly tight' suggests not quite perfect. 0.1 is nearly no relationship; 0.7 is moderate. 0.95 fits best." }
+])
+```
+
+---
+
+**Exercise 3.** A study reports $r = 0.82$ between the number of books
+students own and their reading comprehension test scores. For each of the
+following three statements, say whether it is correct or incorrect and
+explain why.
+
+*(a)* "Students who own more books tend to score higher on reading tests."
+
+*(b)* "Owning more books causes higher reading comprehension."
+
+*(c)* "82% of students who own books score above average on reading tests."
+
+<!-- STEPPER -->
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Statement (a)",
+    eq: "\\text{Correct}",
+    note: "r = 0.82 is a strong positive association. As x (books) increases, y (score) tends to increase. This is exactly what positive correlation means." },
+  { op: "Statement (b)",
+    eq: "\\text{Incorrect — confounding likely}",
+    note: "This is a causal claim from observational data. A common cause (family income, reading culture at home, parental education) could explain both owning more books and higher scores. The correlation alone does not establish causation." },
+  { op: "Statement (c)",
+    eq: "\\text{Incorrect — misreads R}",
+    note: "r = 0.82 is not a percentage of people. It is a dimensionless measure of linear association strength. The statement confuses r with R², and R² with a frequency." }
+])
+```
+
+---
+
+**Exercise 4.** A dataset of $n = 6$ observations has the following
+summary totals:
+
+$$n = 6, \quad \sum x = 42, \quad \sum y = 78, \quad \sum x^2 = 322, \quad \sum xy = 591$$
+
+Use the computing formulas below to find $b_1$ and $b_0$, then write
+the regression equation.
+
+$$b_1 = \frac{\sum xy - \frac{(\sum x)(\sum y)}{n}}{\sum x^2 - \frac{(\sum x)^2}{n}} \qquad b_0 = \bar{y} - b_1 \bar{x}$$
+
+<!-- STEPPER -->
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Compute the means",
+    eq: "\\bar{x} = \\frac{42}{6} = 7 \\qquad \\bar{y} = \\frac{78}{6} = 13" },
+  { op: "Compute the numerator of b₁",
+    eq: "\\sum xy - \\frac{(\\sum x)(\\sum y)}{n} = 591 - \\frac{42 \\times 78}{6} = 591 - 546 = 45" },
+  { op: "Compute the denominator of b₁",
+    eq: "\\sum x^2 - \\frac{(\\sum x)^2}{n} = 322 - \\frac{42^2}{6} = 322 - \\frac{1764}{6} = 322 - 294 = 28" },
+  { op: "Compute b₁",
+    eq: "b_1 = \\frac{45}{28} \\approx 1.607" },
+  { op: "Compute b₀",
+    eq: "b_0 = \\bar{y} - b_1 \\bar{x} = 13 - 1.607 \\times 7 = 13 - 11.25 = 1.75" },
+  { op: "Write the regression equation",
+    eq: "\\hat{y} = 1.75 + 1.607x",
+    note: "Check: at x = x̄ = 7, ŷ = 1.75 + 1.607(7) = 1.75 + 11.25 = 13 = ȳ. ✓" }
+])
+```
+
+---
+
+**Exercise 5.** A researcher models the relationship between daily
+temperature ($x$, in °C) and the number of parkrun participants ($y$).
+The regression equation is:
+
+$$\hat{y} = 120 + 3.8x$$
+
+(a) Interpret the slope in context.
+
+(b) Interpret the intercept in context. Is it meaningful here?
+
+(c) Predict the number of participants on a 15°C day.
+
+(d) On one 15°C day, the actual count was 182. Compute the residual
+and interpret it.
+
+<!-- STEPPER -->
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "(a) Interpret the slope",
+    eq: "b_1 = 3.8",
+    note: "For each additional 1°C increase in temperature, the model predicts approximately 3.8 more parkrun participants." },
+  { op: "(b) Interpret the intercept",
+    eq: "b_0 = 120",
+    note: "The model predicts 120 participants at 0°C. This may not be meaningful — parkruns in freezing temperatures are unusual, and 0°C may be outside the range of the original data. Treat as an algebraic anchor, not a real prediction." },
+  { op: "(c) Predict at x = 15",
+    eq: "\\hat{y} = 120 + 3.8 \\times 15 = 120 + 57 = 177" },
+  { op: "(d) Compute the residual",
+    eq: "e = y - \\hat{y} = 182 - 177 = 5",
+    note: "The actual count was 5 higher than the model predicted. On this particular day, something (a local event? good weather beyond temperature alone?) drew extra participants not captured by temperature alone." }
+])
+```
+
+---
+
+**Exercise 6 — Critical thinking.** A newspaper runs the headline:
+
+> *Students who eat breakfast get better grades — schools should
+> mandate breakfast to raise academic performance.*
+
+The headline is based on a large survey showing a positive correlation
+between breakfast-eating habits and GPA. Using the concepts from this
+chapter, evaluate the causal claim. What questions would you ask before
+accepting the conclusion? What alternative explanations exist?
+
+<!-- STEPPER -->
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Identify the type of evidence",
+    eq: "\\text{Observational study (survey data)}",
+    note: "Students were not randomly assigned to eat or skip breakfast. The researcher observed existing habits." },
+  { op: "Ask: could a confounder explain both?",
+    eq: "\\text{Possible confounder: household stability / socioeconomic status}",
+    note: "Students from stable, higher-income households are more likely to eat breakfast regularly AND to have resources supporting academic success (tutoring, quiet study space, less stress). Both the breakfast habit and the grades could be caused by the same underlying conditions." },
+  { op: "Ask: could causation be reversed?",
+    eq: "\\text{Less likely here, but consider: motivated students may also structure mornings better}",
+    note: "Academically motivated students tend to have more structured routines. The structure (including breakfast) could be a symptom of motivation, not a cause of performance." },
+  { op: "Ask: what would establish causation?",
+    eq: "\\text{A randomised controlled trial}",
+    note: "Randomly assign students to a provided breakfast programme vs control. Measure grades. If the breakfast group improves more, that is causal evidence. The survey cannot do this." },
+  { op: "Evaluate the policy conclusion",
+    eq: "\\text{The jump from correlation to mandating breakfast is premature}",
+    note: "Even if breakfast does help (plausible mechanistically — blood glucose affects concentration), the survey alone does not establish this. The school intervention might not replicate the effect if the real driver is household stability. Policy decisions deserve stronger evidence." },
+  { op: "Summary verdict",
+    eq: "\\text{Association} \\neq \\text{causation}",
+    note: "The correlation is real. The causal claim and the policy conclusion are not supported by this evidence alone. The correct language: 'breakfast-eating is associated with higher GPA.' The recommended action: investigate with a controlled study before mandating a policy." }
+])
+```
+
+---
+
+## Where this chapter leaves you
+
+Volume 6 is complete.
+
+You can now describe a distribution in full — its centre, spread, and
+shape — and choose the right summary for the kind of data you have and
+the presence or absence of outliers. You can describe the relationship
+between two variables from a scatter plot before any formula touches the
+data. You can measure that relationship with $r$, interpret what the
+number actually means, and recognise the one thing it emphatically does
+not mean: causation. And you can build the simplest predictive model,
+the least-squares line, interpret its slope and intercept in context,
+assess its fit with $R^2$, and diagnose problems with a residual plot.
+
+That is a complete analytical toolkit for real data at this level.
+
+The road ahead is wide. Volume 7 opens with the natural extension of
+everything here: **multiple regression**, where more than one predictor
+variable ($x_1, x_2, \ldots$) is used to model $y$ simultaneously.
+The least-squares criterion is the same; the algebra requires linear
+algebra. Multiple regression is also the foundation of the simplest
+supervised machine learning model — gradient descent and neural networks
+are, at their roots, sophisticated generalisations of fitting a line to
+data. Everything you have learned in this chapter is load-bearing for
+what follows.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A climate scientist analysing temperature trends over decades is
+  fitting a regression line to time-series data and checking the
+  residuals.
+- A sports analyst building a player rating model is computing
+  correlations between performance metrics and outcomes, then
+  building a regression to predict results.
+- A public health researcher reporting that "smoking is associated
+  with lung cancer" is using the careful causal language earned by
+  decades of controlled studies — because correlation alone was not
+  enough to establish it.
+- A data scientist building a recommendation system starts with
+  correlation matrices. The step from there to collaborative filtering
+  and neural networks is real, but this is where the intuition lives.
+
+The ideas are simple. Their reach is extraordinary.
+:::
