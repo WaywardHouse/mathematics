@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Wayward House Mathematics",
+    "section": "",
+    "text": "0.1 What this is testing\nThis mock is meant to answer one question: what happens if we stop wrapping the book in the website chrome and instead style Quarto’s own book structure directly?",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Wayward Book Mock</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#what-this-is-testing",
+    "href": "index.html#what-this-is-testing",
+    "title": "Wayward House Mathematics",
+    "section": "",
+    "text": "the native Quarto sidebar as the real book navigation\nthe native margin TOC as the real chapter navigation\na Wayward visual system applied to those native components\na page footer that belongs to the book layout rather than being injected by JS",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Wayward Book Mock</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#what-this-intentionally-avoids",
+    "href": "index.html#what-this-intentionally-avoids",
+    "title": "Wayward House Mathematics",
+    "section": "0.2 What this intentionally avoids",
+    "text": "0.2 What this intentionally avoids\n\nmoving DOM nodes after render\nrewriting links in JavaScript\nlayering a second site shell on top of the book shell\nbook-specific CSS fighting site-wide header and footer overrides",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Wayward Book Mock</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#the-hypothesis",
+    "href": "index.html#the-hypothesis",
+    "title": "Wayward House Mathematics",
+    "section": "0.3 The hypothesis",
+    "text": "0.3 The hypothesis\nIf this feels structurally cleaner, the next step is not “more overrides.” It is migrating the maths book to a dedicated format extension and letting the extension own the book presentation from the start.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Wayward Book Mock</span>"
+    ]
+  },
+  {
+    "objectID": "chapter.html",
+    "href": "chapter.html",
+    "title": "2  Sample Chapter",
+    "section": "",
+    "text": "2.1 Why a bespoke format might be cleaner\nThe current maths book inherits the Quarto book shell, then replaces parts of it with Wayward website chrome, then patches the remaining seams with CSS and JavaScript. That makes every layout decision harder than it needs to be.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Sample Chapter</span>"
+    ]
+  },
+  {
+    "objectID": "chapter.html#why-a-bespoke-format-might-be-cleaner",
+    "href": "chapter.html#why-a-bespoke-format-might-be-cleaner",
+    "title": "2  Sample Chapter",
+    "section": "",
+    "text": "2.1.1 Where the collisions happen\n\nbook sidebar versus injected site header\nnative Quarto content grid versus custom full-width reading layouts\nnative repo tools versus rewritten links\npage footer expectations versus after-body injection\n\n\n\n2.1.2 What a dedicated format would own\n\nTypography and spacing\nSidebar look and collapse behavior\nTOC placement and width\nFooter content and presentation\nTheme tokens and book-only utilities\n\n\n\n\n\n\n\nNote\n\n\n\nThis page is deliberately plain in content so we can judge the shell rather than the prose.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Sample Chapter</span>"
+    ]
+  },
+  {
+    "objectID": "chapter.html#a-simple-section-for-testing",
+    "href": "chapter.html#a-simple-section-for-testing",
+    "title": "2  Sample Chapter",
+    "section": "2.2 A simple section for testing",
+    "text": "2.2 A simple section for testing\nThe native Quarto book structure is already doing most of the right things. The main question is whether we can make it feel like Wayward House without trying to turn it into the main site itself.\n\n2.2.1 Another section\nThis mock should give us a cleaner basis for deciding whether to build a full custom template, or whether a custom format plus native Quarto book components is already enough.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Sample Chapter</span>"
+    ]
+  }
+]

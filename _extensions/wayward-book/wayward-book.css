@@ -14,6 +14,10 @@
   --wh-gutter: clamp(1rem, 2vw, 2rem);
   --wh-sidebar: clamp(18rem, 21vw, 23rem);
   --wh-margin: clamp(15rem, 20vw, 19rem);
+<<<<<<< HEAD
+=======
+  --wh-nav-height: 64px;
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
 }
 
 html[data-theme="dark"] {
@@ -38,6 +42,96 @@ body {
   line-height: 1.65;
 }
 
+<<<<<<< HEAD
+=======
+body.wayward-book-shell {
+  min-height: 100vh;
+  padding-top: calc(var(--wh-nav-height) + 22px);
+}
+
+.wayward-book-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 9500;
+  background: var(--wh-black);
+  border-bottom: 3px solid var(--wh-accent);
+  box-shadow: 0 12px 24px -20px rgba(0, 0, 0, 0.9);
+}
+
+.wayward-book-header__inner {
+  width: calc(100vw - (2 * var(--wh-gutter)));
+  max-width: 1280px;
+  min-height: var(--wh-nav-height);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.wayward-book-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  text-decoration: none;
+  color: #fff;
+}
+
+.wayward-book-brand__mark {
+  font-family: var(--wh-font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.wayward-book-brand__dot {
+  color: var(--wh-accent);
+  font-family: var(--wh-font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.wayward-book-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-left: 0.75rem;
+}
+
+.wayward-book-nav a,
+.wayward-book-theme-toggle {
+  font-family: var(--wh-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.wayward-book-nav a {
+  color: color-mix(in srgb, #fff 48%, transparent);
+  text-decoration: none;
+}
+
+.wayward-book-nav a:hover,
+.wayward-book-nav a.is-active {
+  color: #fff;
+}
+
+.wayward-book-theme-toggle {
+  margin-left: auto;
+  border: 1px solid #2a2a28;
+  background: #151513;
+  color: color-mix(in srgb, #fff 72%, transparent);
+  border-radius: 999px;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+}
+
+.wayward-book-theme-toggle:hover {
+  color: #fff;
+  border-color: #444440;
+}
+
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
 .quarto-title-banner,
 .navbar,
 .quarto-secondary-nav {
@@ -240,6 +334,10 @@ body.nav-sidebar .page-columns {
   margin-top: 3rem;
 }
 
+<<<<<<< HEAD
+=======
+footer.footer,
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
 .page-footer {
   background: var(--wh-black);
   border-top: 3px solid var(--wh-accent);
@@ -247,6 +345,10 @@ body.nav-sidebar .page-columns {
   margin-top: 4rem;
 }
 
+<<<<<<< HEAD
+=======
+footer.footer .nav-footer,
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
 .page-footer .nav-footer {
   width: calc(100vw - (2 * var(--wh-gutter)));
   margin: 0 auto;
@@ -256,6 +358,13 @@ body.nav-sidebar .page-columns {
   gap: 2rem;
 }
 
+<<<<<<< HEAD
+=======
+footer.footer a,
+footer.footer .nav-footer-left,
+footer.footer .nav-footer-center,
+footer.footer .nav-footer-right,
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
 .page-footer a,
 .page-footer .nav-footer-left,
 .page-footer .nav-footer-center,
@@ -263,6 +372,11 @@ body.nav-sidebar .page-columns {
   color: color-mix(in srgb, #fff 76%, transparent) !important;
 }
 
+<<<<<<< HEAD
+=======
+footer.footer strong,
+footer.footer .menu-text,
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
 .page-footer strong,
 .page-footer .menu-text {
   color: var(--wh-accent);
@@ -279,6 +393,31 @@ body.nav-sidebar .page-columns {
 }
 
 @media (max-width: 900px) {
+<<<<<<< HEAD
+=======
+  .wayward-book-header__inner {
+    width: calc(100vw - 1rem);
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 0;
+  }
+
+  .wayward-book-nav {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    gap: 0.9rem;
+  }
+
+  .wayward-book-theme-toggle {
+    margin-left: auto;
+  }
+
+  body.wayward-book-shell {
+    padding-top: 112px;
+  }
+
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
   #quarto-content {
     width: calc(100vw - 1rem);
   }
@@ -295,6 +434,10 @@ body.nav-sidebar .page-columns {
     border-bottom: 1px solid var(--wh-rule);
   }
 
+<<<<<<< HEAD
+=======
+  footer.footer .nav-footer,
+>>>>>>> 9d3ad7c59a1f9f1d79534e57563f62ca2f95bf8b
   .page-footer .nav-footer {
     width: calc(100vw - 1rem);
     grid-template-columns: 1fr;
