@@ -8,7 +8,7 @@ project:
 book:
   title: "Wayward House Mathematics"
   subtitle: "A series for people who want to understand, not just pass"
-  author: "Paul Downey"
+  author: "Paul Hobson"
   date: last-modified
   search: true
   repo-url: https://github.com/wayward-house/mathematics
