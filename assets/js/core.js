@@ -236,8 +236,6 @@ function injectWaywardChrome() {
   const existingFooter = document.querySelector('.wayward-footer');
   const existingMain = document.querySelector('.wayward-main');
 
-  if (existingHeader && existingFooter && existingMain) return;
-
   body.classList.add('wayward-shell');
   if (isHomeLikePath(path)) body.classList.add('page-home');
   if (isReadingPage()) body.classList.add('page-reading');
@@ -265,6 +263,7 @@ function injectWaywardChrome() {
   }
 
   header.querySelectorAll('[data-nav]').forEach((link) => {
+    link.classList.remove('is-active');
     const target = link.getAttribute('data-nav');
     if (!target) return;
     if (path === target || path.startsWith(target)) {
@@ -277,13 +276,43 @@ function injectWaywardChrome() {
   if (span) {
     span.textContent = document.documentElement.dataset.theme === 'dark' ? 'Light' : 'Dark';
   }
-  toggle?.addEventListener('click', () => {
-    const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    updateThemeMeta(nextTheme);
-    const label = nextTheme === 'dark' ? 'Light' : 'Dark';
-    const toggleSpan = toggle.querySelector('span');
-    if (toggleSpan) toggleSpan.textContent = label;
-  });
+  if (toggle && !toggle.dataset.waywardBound) {
+    toggle.dataset.waywardBound = 'true';
+    toggle.addEventListener('click', () => {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      updateThemeMeta(nextTheme);
+      const label = nextTheme === 'dark' ? 'Light' : 'Dark';
+      const toggleSpan = toggle.querySelector('span');
+      if (toggleSpan) toggleSpan.textContent = label;
+    });
+  }
+
+  if (body.classList.contains('nav-sidebar') || document.getElementById('quarto-sidebar')) {
+    const quartoContent = document.getElementById('quarto-content');
+    const quartoDocument = document.getElementById('quarto-document-content');
+
+    if (existingHeader && quartoContent && existingHeader.closest('#quarto-document-content')) {
+      body.insertBefore(existingHeader, quartoContent);
+    }
+
+    if (existingFooter && quartoContent && existingFooter.closest('#quarto-document-content')) {
+      const firstScript = Array.from(body.children).find((node) => node.tagName === 'SCRIPT');
+      if (firstScript) {
+        body.insertBefore(existingFooter, firstScript);
+      } else {
+        body.appendChild(existingFooter);
+      }
+    }
+
+    if (quartoDocument) {
+      quartoDocument.querySelector('.wayward-header')?.remove();
+      quartoDocument.querySelector('.wayward-footer')?.remove();
+    }
+
+    return;
+  }
+
+  if (existingHeader && existingFooter && existingMain) return;
 
   const footer = existingFooter || document.createElement('footer');
   if (!existingFooter) {
