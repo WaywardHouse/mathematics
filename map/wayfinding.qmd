@@ -17,8 +17,15 @@ d3 = require("d3@7");
 
 ```{ojs}
 //| echo: false
-topo = fetch("/_data/topology.yml")
-  .then(r => r.text())
+topoDataUrl = new URL("../_data/topology.yml", document.baseURI);
+chapterHref = chapterRef =>
+  new URL(`../${chapterRef.replace(".qmd", ".html")}`, document.baseURI).href;
+
+topo = fetch(topoDataUrl)
+  .then(r => {
+    if (!r.ok) throw new Error(`Unable to load topology data (${r.status})`);
+    return r.text();
+  })
   .then(text => jsyaml.load(text))
   .catch(() => null);
 ```
@@ -89,6 +96,22 @@ bloom = {
     .map(([s, t, rel]) => ({ source: nodeById[s], target: nodeById[t], rel }))
     .filter(l => l.source && l.target);
 
+  const neighborsById = new Map(nodes.map(n => [n.id, []]));
+  for (const link of links) {
+    neighborsById.get(link.source.id)?.push({
+      id: link.target.id,
+      label: link.target.label,
+      rel: link.rel,
+      direction: "outgoing"
+    });
+    neighborsById.get(link.target.id)?.push({
+      id: link.source.id,
+      label: link.source.label,
+      rel: link.rel,
+      direction: "incoming"
+    });
+  }
+
   const svg = d3.create("svg")
     .attr("viewBox", `0 0 ${W} ${H}`)
     .attr("width", "100%")
@@ -96,8 +119,10 @@ bloom = {
     .style("display", "block")
     .style("margin", "0 auto");
 
+  const canvas = svg.append("g");
+
   // Guide rings
-  svg.append("g").selectAll("circle")
+  canvas.append("g").selectAll("circle")
     .data([1, 2, 3, 4, 5])
     .join("circle")
     .attr("cx", cx).attr("cy", cy)
@@ -108,7 +133,7 @@ bloom = {
     .attr("stroke-dasharray", "4 4");
 
   // Ring labels
-  svg.append("g").selectAll("text")
+  canvas.append("g").selectAll("text")
     .data([
       { layer: 1, label: "Pre-university" },
       { layer: 2, label: "Bridge" },
@@ -125,7 +150,7 @@ bloom = {
     .text(d => d.label);
 
   // Links
-  const linkSel = svg.append("g").selectAll("line")
+  const linkSel = canvas.append("g").selectAll("line")
     .data(links)
     .join("line")
     .attr("stroke", "#ccc")
@@ -134,40 +159,111 @@ bloom = {
     .attr("stroke-dasharray", d => d.rel === "motivates" ? "3 3" : null);
 
   // Node groups
-  const nodeSel = svg.append("g").selectAll("g")
+  const nodeSel = canvas.append("g").selectAll("g")
     .data(nodes)
     .join("g")
     .attr("cursor", "pointer")
     .on("click", (event, d) => {
       event.stopPropagation();
-      nodeSel.select("circle")
-        .attr("stroke", n => n === d ? "#222" : "#fff")
-        .attr("stroke-width", n => n === d ? 2.5 : 1.5);
-
-      const fields = (d.fields || []).map(fid => {
-        const fd = (topo.fields || []).find(x => x.id === fid);
-        return fd
-          ? `<span style="display:inline-block;margin:0 4px 4px 0;padding:2px 9px;
-              border-radius:99px;font-size:0.75rem;background:${fieldColors[fid]};color:#fff">${fd.label}</span>`
-          : "";
-      }).join("");
-
-      const link = d.chapter_ref
-        ? `<a href="/${d.chapter_ref.replace(".qmd", ".html")}" style="font-size:0.83rem">
-            → Go to chapter</a>`
-        : "";
-
-      selectedNode.innerHTML = `
-        <strong style="font-size:0.95rem">${d.label}</strong>
-        <div style="margin:4px 0 6px">${fields}</div>
-        <p style="margin:0 0 6px;font-size:0.83rem;line-height:1.55">${(d.hook || "").trim()}</p>
-        ${link}
-      `;
-      selectedNode.value = d;
-      selectedNode.dispatchEvent(new Event("input"));
+      focusNode(d);
     });
 
+  const fieldLabelById = new Map((topo.fields || []).map(f => [f.id, f.label]));
+
+  function neighborPill(neighbor) {
+    const relLabel = neighbor.direction === "outgoing"
+      ? `Leads to (${neighbor.rel})`
+      : `Needed by (${neighbor.rel})`;
+
+    return `
+      <button type="button" data-node-id="${neighbor.id}" style="
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        margin:0 6px 6px 0;
+        padding:6px 10px;
+        border-radius:999px;
+        border:1px solid #d6d6d6;
+        background:#fff;
+        color:#222;
+        font-size:0.76rem;
+        line-height:1.2;
+      ">
+        <span>${neighbor.label}</span>
+        <span style="color:#777">${relLabel}</span>
+      </button>
+    `;
+  }
+
+  function renderSelectedNode(d) {
+    const fields = (d.fields || []).map(fid => {
+      const label = fieldLabelById.get(fid);
+      return label
+        ? `<span style="display:inline-block;margin:0 4px 4px 0;padding:2px 9px;
+            border-radius:99px;font-size:0.75rem;background:${fieldColors[fid]};color:#fff">${label}</span>`
+        : "";
+    }).join("");
+
+    const chapterLink = d.chapter_ref
+      ? `<a href="${chapterHref(d.chapter_ref)}" style="font-size:0.83rem">Go to chapter</a>`
+      : `<span style="font-size:0.79rem;color:#888">Chapter draft not linked yet.</span>`;
+
+    const neighbors = (neighborsById.get(d.id) || [])
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    const related = neighbors.length
+      ? `
+        <div style="margin-top:10px">
+          <div style="margin-bottom:6px;font-size:0.74rem;letter-spacing:0.08em;text-transform:uppercase;color:#777">
+            Related topics
+          </div>
+          <div>${neighbors.map(neighborPill).join("")}</div>
+        </div>
+      `
+      : "";
+
+    selectedNode.innerHTML = `
+      <strong style="font-size:0.95rem">${d.label}</strong>
+      <div style="margin:4px 0 6px">${fields}</div>
+      <p style="margin:0 0 6px;font-size:0.83rem;line-height:1.55">${(d.hook || "").trim()}</p>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">${chapterLink}</div>
+      ${related}
+    `;
+
+    selectedNode.querySelectorAll("[data-node-id]").forEach(el => {
+      el.addEventListener("click", event => {
+        event.preventDefault();
+        const nextNode = nodeById[event.currentTarget.dataset.nodeId];
+        if (nextNode) focusNode(nextNode);
+      });
+    });
+
+    selectedNode.value = d;
+    selectedNode.dispatchEvent(new Event("input"));
+  }
+
+  function focusNode(d) {
+    nodeSel.select(".node-core")
+      .attr("stroke", n => n === d ? "#222" : "#fff")
+      .attr("stroke-width", n => n === d ? 2.5 : 1.5)
+      .attr("fill-opacity", n => {
+        if (n === d) return 1;
+        return (neighborsById.get(d.id) || []).some(neighbor => neighbor.id === n.id) ? 0.95 : 0.78;
+      });
+
+    linkSel
+      .attr("stroke", l => l.source.id === d.id || l.target.id === d.id ? "#8a8a8a" : "#ccc")
+      .attr("stroke-opacity", l => l.source.id === d.id || l.target.id === d.id ? 0.95 : (l.rel === "enables" ? 0.35 : 0.2));
+
+    renderSelectedNode(d);
+  }
+
   nodeSel.append("circle")
+    .attr("r", d => Math.max(d.nodeR + 10, 18))
+    .attr("fill", "transparent");
+
+  nodeSel.append("circle")
+    .attr("class", "node-core")
     .attr("r", d => d.nodeR)
     .attr("fill", d => d.color)
     .attr("fill-opacity", 0.88)
@@ -185,8 +281,33 @@ bloom = {
     .attr("fill", "#666")
     .text(d => d.label.length > 24 ? d.label.slice(0, 22) + "…" : d.label);
 
+  svg.on("click", () => {
+    nodeSel.select(".node-core")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1.5)
+      .attr("fill-opacity", 0.88);
+
+    linkSel
+      .attr("stroke", "#ccc")
+      .attr("stroke-opacity", d => d.rel === "enables" ? 0.7 : 0.4);
+
+    selectedNode.innerHTML = `
+      <em style="color:#999">Click a node to see details.</em>
+    `;
+    selectedNode.value = null;
+    selectedNode.dispatchEvent(new Event("input"));
+  });
+
+  svg.call(
+    d3.zoom()
+      .scaleExtent([0.7, 1.9])
+      .on("zoom", event => {
+        canvas.attr("transform", event.transform);
+      })
+  );
+
   // Force simulation
-  d3.forceSimulation(nodes)
+  const simulation = d3.forceSimulation(nodes)
     .force("link", d3.forceLink(links)
       .distance(d => Math.abs(d.target.layer - d.source.layer) === 0 ? 75 : 95)
       .strength(0.25))
@@ -199,6 +320,24 @@ bloom = {
         .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
       nodeSel.attr("transform", d => `translate(${d.x},${d.y})`);
     });
+
+  nodeSel.call(
+    d3.drag()
+      .on("start", (event, d) => {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on("drag", (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+      })
+      .on("end", (event, d) => {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      })
+  );
 
   return svg.node();
 }
