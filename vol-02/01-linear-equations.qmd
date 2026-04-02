@@ -64,11 +64,11 @@ hook: |
   You and three friends want to split a bill evenly, but one person
   already paid for something earlier. How much does each person owe now?
 
-  You earn £8.50 an hour at a weekend job. You need £120 for a gig ticket.
+  You earn $8.50 an hour at a weekend job. You need $120 for a gig ticket.
   How many shifts do you need?
 
   You're buying snacks for a group. Each bag costs the same. You spend
-  £14.40 in total. How much was each bag?
+  $14.40 in total. How much was each bag?
 
   These are all the same question underneath: you know the relationship,
   you're missing one of the values. A linear equation is just that
@@ -98,11 +98,11 @@ kreyszig_chapter: null
 You and three friends want to split a bill evenly, but one person
 already paid for something earlier. How much does each person owe now?
 
-You earn £8.50 an hour at a weekend job. You need £120 for a gig ticket.
+You earn $8.50 an hour at a weekend job. You need $120 for a gig ticket.
 How many shifts do you need?
 
 You're buying snacks for a group. Each bag costs the same. You spend
-£14.40 in total. How much was each bag?
+$14.40 in total. How much was each bag?
 
 These are all the same question underneath: you know the relationship,
 you're missing one of the values. A linear equation is just that
@@ -502,7 +502,7 @@ viewof solveC = Inputs.range([-50, 50], {
 ## Worked examples
 
 **Example 1.** You're saving up for a festival wristband. The wristband
-costs £85. You already have £20 saved and earn £13 per hour doing
+costs $85. You already have $20 saved and earn $13 per hour doing
 odd jobs. How many hours do you need to work?
 
 Let $h$ = hours worked.
@@ -521,8 +521,8 @@ Five hours. Check: $20 + 13 \times 5 = 20 + 65 = 85$. Yes.
 
 ---
 
-**Example 2.** Two streaming services. Service A costs £8 per month
-plus £2 per film you rent. Service B costs £18 per month with
+**Example 2.** Two streaming services. Service A costs $8 per month
+plus $2 per film you rent. Service B costs $18 per month with
 unlimited films. How many film rentals per month makes the two services
 equal in cost?
 
@@ -680,8 +680,8 @@ function makeStepperHTML(exerciseNum, steps) {
 }
 ```
 
-1. A bus pass costs £1.50 to buy, then £0.90 per journey. You spend
-   £9.60 in total. How many journeys did you take?
+1. A bus pass costs $1.50 to buy, then $0.90 per journey. You spend
+   $9.60 in total. How many journeys did you take?
 
 ```{ojs}
 //| echo: false
@@ -750,13 +750,13 @@ makeStepperHTML(4, [
 ```
 
 5. You and two friends are splitting the cost of a group gift. The
-   total cost is £96, but one friend already put in £18 as a deposit.
+   total cost is $96, but one friend already put in $18 as a deposit.
    How much does each of the three of you pay now?
 
 ```{ojs}
 //| echo: false
 makeStepperHTML(5, [
-  { op: "Write as an equation",           eq: "3p + 18 = 96", note: "Three people each pay p, plus the £18 already paid, equals £96." },
+  { op: "Write as an equation",           eq: "3p + 18 = 96", note: "Three people each pay p, plus the $18 already paid, equals $96." },
   { op: "Subtract 18 from both sides",    eq: "3p = 78" },
   { op: "Divide both sides by 3",         eq: "p = 26" },
   { op: "Check",                          eq: "3 \\times 26 + 18 = 78 + 18 = 96 \\checkmark" }

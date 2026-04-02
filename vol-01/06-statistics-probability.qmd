@@ -445,14 +445,14 @@ $$P(\text{not basketball}) = \frac{12 - 4}{12} = \frac{8}{12} = \frac{2}{3}$$
 ---
 
 **Example 4 — Expected score.** A game show gives two options:
-take £300 for certain, or spin a wheel that pays £800 with
-probability 0.5 and £0 with probability 0.5.
+take $300 for certain, or spin a wheel that pays $800 with
+probability 0.5 and $0 with probability 0.5.
 What is the expected value of spinning the wheel?
 
-$$E = (0.5 \times 800) + (0.5 \times 0) = 400 + 0 = £400$$
+$$E = (0.5 \times 800) + (0.5 \times 0) = 400 + 0 = $400$$
 
-The expected value of spinning is £400 — higher than the certain
-£300. But "expected value" means the average across many spins,
+The expected value of spinning is $400 — higher than the certain
+$300. But "expected value" means the average across many spins,
 not a guarantee for this one spin. You could walk away with nothing.
 
 ---
@@ -730,9 +730,9 @@ claims about the world.
    Out of the next 50 days, how many would you expect?
 
 6. A quiz game has three options:
-   - Option A: 80% chance of +£500, 20% chance of −£200
-   - Option B: 50% chance of +£900, 50% chance of −£100
-   - Option C: certain return of +£280
+   - Option A: 80% chance of +$500, 20% chance of −$200
+   - Option B: 50% chance of +$900, 50% chance of −$100
+   - Option C: certain return of +$280
 
    Compute the expected value of each option. Which is highest?
    Which would you choose, and why might expected value alone

@@ -55,9 +55,9 @@ destinations:
     career_example: "Software engineer analysing search algorithm performance"
 
 hook: |
-  You put £500 in a savings account. Each year it grows by 6%. After one
-  year you have £530. After two years, £561.80. After twenty years,
-  something like £1604. That's not 20 × £30 = £600 added — it's the
+  You put $500 in a savings account. Each year it grows by 6%. After one
+  year you have $530. After two years, $561.80. After twenty years,
+  something like $1604. That's not 20 × $30 = $600 added — it's the
   interest compounding on itself, quietly doubling your money while you
   sleep.
 
@@ -105,9 +105,9 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-You put £500 in a savings account. Each year it grows by 6%. After one
-year you have £530. After two years, £561.80. After twenty years,
-something like £1604. That's not 20 × £30 = £600 added — it's the
+You put $500 in a savings account. Each year it grows by 6%. After one
+year you have $530. After two years, $561.80. After twenty years,
+something like $1604. That's not 20 × $30 = $600 added — it's the
 interest compounding on itself, quietly doubling your money while you
 sleep.
 

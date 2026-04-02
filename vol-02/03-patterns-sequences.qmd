@@ -58,8 +58,8 @@ destinations:
     career_example: "Structural engineer analysing load measurements at regular intervals"
 
 hook: |
-  You decide to save £20 a week. After one week: £20. After two weeks:
-  £40. After ten weeks: £200. You didn't need a formula for that — you
+  You decide to save $20 a week. After one week: $20. After two weeks:
+  $40. After ten weeks: $200. You didn't need a formula for that — you
   just kept adding twenty.
 
   A chain message says: send this to three friends. Each of those three
@@ -105,8 +105,8 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-You decide to save £20 a week. After one week: £20. After two weeks:
-£40. After ten weeks: £200. You didn't need a formula for that — you
+You decide to save $20 a week. After one week: $20. After two weeks:
+$40. After ten weeks: $200. You didn't need a formula for that — you
 just kept adding twenty.
 
 A chain message says: send this to three friends. Each of those three

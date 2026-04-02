@@ -49,7 +49,7 @@ destinations:
     career_example: "Software developer writing range checks for user-entered data"
 
 hook: |
-  Your monthly budget for food is £120. There are dozens of ways to
+  Your monthly budget for food is $120. There are dozens of ways to
   spend it — some that work, many that don't. The question isn't
   "what exactly do I spend?" It's "what combinations are even possible?"
 
@@ -94,7 +94,7 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-Your monthly budget for food is £120. There are dozens of ways to
+Your monthly budget for food is $120. There are dozens of ways to
 spend it — some that work, many that don't. The question isn't
 "what exactly do I spend?" It's "what combinations are even possible?"
 
@@ -370,8 +370,8 @@ viewof nlSymbol = Inputs.select(["<", "≤", ">", "≥"], {
 
 ## Worked examples
 
-**Example 1 — Budgeting.** You have £120 to spend on food this month.
-You've already spent £47. You want to buy some items that cost £8 each.
+**Example 1 — Budgeting.** You have $120 to spend on food this month.
+You've already spent $47. You want to buy some items that cost $8 each.
 How many can you buy without going over budget?
 
 Let $n$ = number of items.
@@ -720,9 +720,9 @@ function makeStepperHTML(exerciseNum, steps) {
 }
 ```
 
-1. You can spend at most £50 per month on streaming services. You
-   already pay £14.97 for two services. How many additional services
-   at £9.99 per month can you add and still stay within your budget?
+1. You can spend at most $50 per month on streaming services. You
+   already pay $14.97 for two services. How many additional services
+   at $9.99 per month can you add and still stay within your budget?
 
 ```{ojs}
 //| echo: false
@@ -793,9 +793,9 @@ makeStepperHTML(5, [
 ])
 ```
 
-6. A phone plan charges £0.08 per minute after a 200-minute monthly
-   allowance. You want your total bill to be under £25. The base plan
-   costs £12. How many additional minutes can you use?
+6. A phone plan charges $0.08 per minute after a 200-minute monthly
+   allowance. You want your total bill to be under $25. The base plan
+   costs $12. How many additional minutes can you use?
 
 ```{ojs}
 //| echo: false

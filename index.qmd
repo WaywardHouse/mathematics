@@ -1,5 +1,5 @@
 ---
-title: "Wayward House Mathematics"
+title: "Mathematics"
 subtitle: "A series for people who want to understand, not just pass"
 body-classes: split-home page-home
 ---

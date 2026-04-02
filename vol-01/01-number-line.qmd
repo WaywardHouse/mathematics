@@ -63,7 +63,7 @@ destinations:
     career_example: "Surveyor recording elevation data"
 
 hook: |
-  A bank balance of −£40 is not the same as no money — it is a real
+  A bank balance of −$40 is not the same as no money — it is a real
   position, 40 units to the left of zero. An altitude of −85 metres
   is the Dead Sea shore. A temperature of −18°C is your freezer.
 
@@ -99,7 +99,7 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-A bank balance of −£40 is not the same as no money — it is a real
+A bank balance of −$40 is not the same as no money — it is a real
 position, 40 units to the left of zero. An altitude of −85 metres
 is the Dead Sea shore. A temperature of −18°C is your freezer.
 
@@ -397,15 +397,15 @@ Closest to zero: +1°C (absolute value 1).
 
 ---
 
-**Example 4 — Money.** Your weekly pocket money is £15. You owe a
-friend £8 from last week. You spend £4 on a snack. Express your
+**Example 4 — Money.** Your weekly pocket money is $15. You owe a
+friend $8 from last week. You spend $4 on a snack. Express your
 running total as signed numbers from the start of the week.
 
-Start: 0. Receive £15: position +15. Repay debt −8: position +7.
-Spend £4: position +3.
+Start: 0. Receive $15: position +15. Repay debt −8: position +7.
+Spend $4: position +3.
 
 Each transaction is a movement along the number line. You end up
-at +3, meaning £3 remaining.
+at +3, meaning $3 remaining.
 
 ---
 
@@ -675,7 +675,7 @@ which numbers go where before you compute.
    from zero? *(Use absolute values to compare.)*
 
 4. Five friends pool money for a trip. Their balances in the group
-   fund are: +£12, −£5, +£3, −£18, +£8. Order from least to most.
+   fund are: +$12, −$5, +$3, −$18, +$8. Order from least to most.
    Who owes the most?
 
 5. Place these numbers on a number line sketch and order them

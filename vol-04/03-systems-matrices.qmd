@@ -707,7 +707,7 @@ What is the adult ticket price? What is the child ticket price?
     { op: "Solve equation 2 for a", eq: "a = 24 - 4c", note: null },
     { op: "Substitute into equation 1", eq: "3(24 - 4c) + 2c = 32 \\implies 72 - 12c + 2c = 32 \\implies -10c = -40 \\implies c = 4", note: null },
     { op: "Back-substitute to find a", eq: "a = 24 - 4(4) = 24 - 16 = 8", note: null },
-    { op: "Check", eq: "3(8) + 2(4) = 24 + 8 = 32 \\checkmark \\quad 1(8) + 4(4) = 8 + 16 = 24 \\checkmark", note: "Child ticket = £4, adult ticket = £8." },
+    { op: "Check", eq: "3(8) + 2(4) = 24 + 8 = 32 \\checkmark \\quad 1(8) + 4(4) = 8 + 16 = 24 \\checkmark", note: "Child ticket = $4, adult ticket = $8." },
   ]);
   return el;
 }

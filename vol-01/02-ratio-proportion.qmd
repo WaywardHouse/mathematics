@@ -49,7 +49,7 @@ destinations:
     career_example: "Lab technician preparing solutions of known concentration"
   - field: "biz"
     label: "Finance and quant"
-    hook: "A price-to-earnings ratio of 15:1 means you are paying £15 for every £1 of annual earnings."
+    hook: "A price-to-earnings ratio of 15:1 means you are paying $15 for every $1 of annual earnings."
     career_example: "Equity analyst comparing companies across sectors"
   - field: "geo"
     label: "Geography and environment"
@@ -64,7 +64,7 @@ hook: |
   How long is it on the ground?
 
   You and two friends split a streaming subscription. The monthly
-  cost is £14.99 for three people. One friend joins. What does
+  cost is $14.99 for three people. One friend joins. What does
   each person pay now?
 
   These three questions share the same calculation underneath.
@@ -103,7 +103,7 @@ A map is drawn at 1:25,000. A road measures 8 cm on the map.
 How long is it on the ground?
 
 You and two friends split a streaming subscription. The monthly
-cost is £14.99 for three people. One friend joins. What does
+cost is $14.99 for three people. One friend joins. What does
 each person pay now?
 
 These three questions share the same calculation underneath.
@@ -477,29 +477,29 @@ $$\text{actual length} = 7.4 \text{ cm} \times 50,000 = 370,000 \text{ cm} = 3.7
 ---
 
 **Example 3 — Splitting costs.** Three friends split a monthly
-phone plan costing £36 in the ratio 2:3:1 (based on how much data
+phone plan costing $36 in the ratio 2:3:1 (based on how much data
 each uses). How much does each pay?
 
-Total parts: $2 + 3 + 1 = 6$. One part = $£36 \div 6 = £6$.
+Total parts: $2 + 3 + 1 = 6$. One part = $\$36 \div 6 = \$6$.
 
-Friend A (2 parts): $2 \times £6 = £12$
-Friend B (3 parts): $3 \times £6 = £18$
-Friend C (1 part): $1 \times £6 = £6$
+Friend A (2 parts): $2 \times \$6 = \$12$
+Friend B (3 parts): $3 \times \$6 = \$18$
+Friend C (1 part): $1 \times \$6 = \$6$
 
-Check: $£12 + £18 + £6 = £36$. Yes.
+Check: $\$12 + $\$18 + $\$6 = $\$36$. Yes.
 
 ---
 
 **Example 4 — Finance: dividing profit.** Two partners invest in a
-business in the ratio 3:5. The year's profit is £24,000. How much
+business in the ratio 3:5. The year's profit is $24,000. How much
 does each receive?
 
-Total parts: $3 + 5 = 8$. One part = $£24,000 \div 8 = £3,000$.
+Total parts: $3 + 5 = 8$. One part = $\$24,000 \div 8 = \$3,000$.
 
-Partner A (3 parts): $3 \times £3,000 = £9,000$
-Partner B (5 parts): $5 \times £3,000 = £15,000$
+Partner A (3 parts): $3 \times $\$3,000 = $\$9,000$
+Partner B (5 parts): $5 \times \$3,000 = \$15,000$
 
-Check: $£9,000 + £15,000 = £24,000$. Yes.
+Check: $\$9,000 + $\$15,000 = $\$24,000$. Yes.
 
 ## Where this goes
 
@@ -554,7 +554,7 @@ The arithmetic is identical in every case.
    can you make from one bottle?
 
 6. Three investors share profits in the ratio 2:3:7. Total
-   profit this year is £48,000. How much does each investor
+   profit this year is $48,000. How much does each investor
    receive?
 
 7. A gear system has a driver gear with 24 teeth and a driven

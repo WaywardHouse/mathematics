@@ -110,7 +110,7 @@ $$\text{amount} = Q \times \frac{p}{100}$$
 $$\text{percent change} = \frac{\text{new} - \text{original}}{\text{original}} \times 100$$
 
 **A rate** is a ratio with different units: speed is km/h, data use is
-MB/day, interest is £/year. The structure is the same as percent —
+MB/day, interest is $/year. The structure is the same as percent —
 one quantity compared to another.
 
 **Compound growth** applies a rate repeatedly. After $n$ periods at
@@ -297,7 +297,7 @@ viewof pctChange = Inputs.range(
 
 ## Worked examples
 
-**Example 1 — Savings: compound interest.** You put £2,000 into a
+**Example 1 — Savings: compound interest.** You put $2,000 into a
 savings account at 3.5% annual interest, compounded every year.
 What is the balance after 5 years?
 
@@ -308,23 +308,23 @@ $$Q_5 = 2000 \times (1.035)^5$$
 Work out $(1.035)^5$ — that is 1.035 multiplied by itself five times.
 Using a calculator: $(1.035)^5 = 1.1877$ (to 4 d.p.).
 
-$$Q_5 = 2000 \times 1.1877 = £2,375.40$$
+$$Q_5 = 2000 \times 1.1877 = $2,375.40$$
 
-Compare to simple interest: $5 \times 3.5\% \times 2000 = £350$,
-giving £2,350. The compounded version is £25.40 more — the gap
+Compare to simple interest: $5 \times 3.5\% \times 2000 = $350$,
+giving $2,350. The compounded version is $25.40 more — the gap
 grows larger the longer you leave it.
 
 ---
 
-**Example 2 — Phone plan.** A mobile plan costs £25 per month.
+**Example 2 — Phone plan.** A mobile plan costs $25 per month.
 The provider raises prices by 12%. What is the new monthly cost?
 How much extra do you pay over a year?
 
-New cost: $25 \times (1 + 0.12) = 25 \times 1.12 = £28$.
+New cost: $25 \times (1 + 0.12) = 25 \times 1.12 = $28$.
 
-Extra per month: $£28 - £25 = £3$.
+Extra per month: $$28 - $25 = $3$.
 
-Extra over a year: $£3 \times 12 = £36$.
+Extra over a year: $$3 \times 12 = $36$.
 
 ---
 
@@ -483,7 +483,7 @@ viewof numYears = Inputs.range(
 
   // Y axis
   g.append("g")
-    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => `£${d}`))
+    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => `$${d}`))
     .call(gg => gg.select(".domain").attr("stroke", "#9ca3af"))
     .call(gg => gg.selectAll("text").attr("font-size", "11px"));
 
@@ -495,7 +495,7 @@ viewof numYears = Inputs.range(
     .attr("fill", "#065f46")
     .attr("font-size", "11px")
     .attr("font-weight", "700")
-    .text(`£${finalCompound.toFixed(0)}`);
+    .text(`$${finalCompound.toFixed(0)}`);
 
   // Legend
   const legendY = -18;
@@ -526,7 +526,7 @@ viewof numYears = Inputs.range(
     .attr("fill", "#0d9488")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
-    .text(`Compounding adds £${extraStr} extra over ${N} year${N === 1 ? "" : "s"}`);
+    .text(`Compounding adds $${extraStr} extra over ${N} year${N === 1 ? "" : "s"}`);
 
   return svg.node();
 }
@@ -570,13 +570,13 @@ The arithmetic is identical. The stakes vary.
 
 ## Exercises
 
-1. A laptop costs £1,149. It is on sale at 15% off. What is the
+1. A laptop costs $1,149. It is on sale at 15% off. What is the
    sale price?
 
 2. A city had 320,000 residents in 2015 and 387,000 in 2025.
    What was the total percent change over that decade?
 
-3. An investment grows from £4,500 to £5,200 over 3 years.
+3. An investment grows from $4,500 to $5,200 over 3 years.
    What was the approximate annual growth rate?
    *(Estimate; you do not yet need logarithms — try 3–4 percent
    and refine.)*
@@ -590,9 +590,9 @@ The arithmetic is identical. The stakes vary.
    reaches the wheels? What percentage is lost?
 
 6. A country's annual inflation rate is 2.8%. A loaf of bread
-   costs £1.40 today. What will it cost in 8 years at this rate?
+   costs $1.40 today. What will it cost in 8 years at this rate?
 
 7. A business owner offers a 10% early-payment discount.
-   A customer receives an invoice for £3,400. They pay early.
+   A customer receives an invoice for $3,400. They pay early.
    How much do they pay? What percent of the original price
    was the discount in pounds?

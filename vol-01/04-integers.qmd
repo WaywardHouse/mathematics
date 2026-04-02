@@ -50,7 +50,7 @@ destinations:
     career_example: "Financial analyst building a cash flow model"
 
 hook: |
-  Your bank balance is £40 and you spend £60. You're now at −£20.
+  Your bank balance is $40 and you spend $60. You're now at −$20.
 
   It's −3°C at night. By morning it's dropped another 8 degrees.
   Where are you on the thermometer?
@@ -92,7 +92,7 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-Your bank balance is £40 and you spend £60. You're now at −£20.
+Your bank balance is $40 and you spend $60. You're now at −$20.
 
 It's −3°C at night. By morning it's dropped another 8 degrees.
 Where are you on the thermometer?
@@ -498,14 +498,14 @@ viewof selectedCell = {
 
 ## Worked examples
 
-**Example 1 — Bank balance.** You start the week with £50 in your
-account. You spend £30 on food, £25 on a game, and then get paid
-£60 from a part-time shift. What's your balance at the end of the week?
+**Example 1 — Bank balance.** You start the week with $50 in your
+account. You spend $30 on food, $25 on a game, and then get paid
+$60 from a part-time shift. What's your balance at the end of the week?
 
 Add up all the changes — spends are negative, income is positive:
 $$50 + (-30) + (-25) + 60 = 50 - 30 - 25 + 60 = 55$$
 
-End balance: £55.
+End balance: $55.
 
 ---
 
@@ -595,10 +595,10 @@ The rules are short. The mistakes, when you forget them, are expensive.
    (Snag, Yukon). The highest is +45°C (Lytton, BC). What is
    the range — the difference between highest and lowest?
 
-6. A student owes three friends £8 each. They earn £40 doing
+6. A student owes three friends $8 each. They earn $40 doing
    odd jobs. After paying back all three debts, how much
    money do they have?
 
-7. A share price opens at £14.50. Changes over five days:
-   −£0.80, +£1.20, −£2.40, +£0.35, −£0.90. What is the
+7. A share price opens at $14.50. Changes over five days:
+   −$0.80, +$1.20, −$2.40, +$0.35, −$0.90. What is the
    closing price on day 5?
