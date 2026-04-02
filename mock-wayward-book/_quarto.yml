@@ -1,0 +1,53 @@
+project:
+  type: book
+  output-dir: _site
+
+book:
+  title: "Wayward House Mathematics"
+  subtitle: "A series for people who want to understand, not just pass"
+  author: "Paul Hobson"
+  search: true
+  sidebar:
+    style: docked
+    search: true
+    collapse-level: 1
+    tools:
+      - icon: house
+        href: /
+        aria-label: Wayward House
+      - icon: grid
+        href: /learn/
+        aria-label: Learn
+      - icon: github
+        href: https://github.com/wayward-house/mathematics
+        aria-label: Repository
+  page-footer:
+    left: |
+      **WaywardHouse.**
+      Understanding how place, economy, and environment interact through analysis, modelling, and open tools.
+    center: |
+      **Reading**
+
+      [Articles](/articles/)
+
+      [Learn](/learn/)
+
+      [Archive](/archive.html)
+    right: |
+      **Resources**
+
+      [Start Here](/start-here.html)
+
+      [Privacy](/privacy.html)
+
+      [Terms](/terms.html)
+  chapters:
+    - index.qmd
+    - chapter.qmd
+
+format:
+  wayward-book-html: default
+
+execute:
+  echo: false
+  warning: false

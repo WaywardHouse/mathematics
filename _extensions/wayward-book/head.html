@@ -1,0 +1,149 @@
+<script>
+  (function () {
+    var s = localStorage.getItem('theme');
+    var dark = s !== null ? s === 'dark' : false;
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.dataset.brand = 'wayward-book';
+  })();
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var body = document.body;
+    var sidebar = document.getElementById('quarto-sidebar');
+    if (!sidebar) return;
+    body.classList.add('wayward-book-shell');
+
+    if (!document.querySelector('.wayward-book-header')) {
+      var header = document.createElement('header');
+      header.className = 'wayward-book-header';
+      header.innerHTML = [
+        '<div class="wayward-book-header__inner">',
+        '  <a class="wayward-book-brand" href="/" aria-label="Wayward House home">',
+        '    <span class="wayward-book-brand__mark">WaywardHouse</span>',
+        '    <span class="wayward-book-brand__dot" aria-hidden="true">.</span>',
+        '  </a>',
+        '  <nav class="wayward-book-nav" aria-label="Primary">',
+        '    <a href="/articles/" data-nav="/articles/">Articles</a>',
+        '    <a href="/learn/" data-nav="/learn/">Learn</a>',
+        '    <a href="/about.html" data-nav="/about/">About</a>',
+        '  </nav>',
+        '  <button class="wayward-book-theme-toggle" type="button" aria-label="Toggle theme">',
+        '    <span aria-hidden="true"></span>',
+        '  </button>',
+        '</div>'
+      ].join('');
+      body.prepend(header);
+    }
+
+    var pathname = window.location.pathname || '/';
+    if (pathname === '/' || pathname === '/learn/' || pathname.endsWith('/index.html')) {
+      body.classList.add('page-home');
+    }
+    if (pathname.indexOf('/learn/') === 0) {
+      body.classList.add('page-learn');
+    }
+
+    var storageKey = 'wayward-maths-sidebar';
+    var media = window.matchMedia('(min-width: 1200px)');
+    var glass = document.getElementById('quarto-sidebar-glass');
+    var toggles = Array.from(document.querySelectorAll('[data-bs-target=".quarto-sidebar-collapse-item"]'));
+
+    function setDesktopState(open) {
+      body.classList.toggle('book-sidebar-collapsed', !open);
+      body.classList.toggle('book-sidebar-open', open);
+      try {
+        localStorage.setItem(storageKey, open ? 'open' : 'collapsed');
+      } catch (err) {
+        void err;
+      }
+    }
+
+    function applyDesktopDefault() {
+      if (!media.matches) {
+        body.classList.remove('book-sidebar-collapsed', 'book-sidebar-open');
+        return;
+      }
+
+      var stored = null;
+      try {
+        stored = localStorage.getItem(storageKey);
+      } catch (err) {
+        void err;
+      }
+
+      setDesktopState(stored === 'collapsed' ? false : true);
+    }
+
+    toggles.forEach(function (toggle) {
+      toggle.addEventListener('click', function (event) {
+        if (!media.matches) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setDesktopState(body.classList.contains('book-sidebar-collapsed'));
+      });
+    });
+
+    if (glass) {
+      glass.addEventListener('click', function (event) {
+        if (!media.matches) return;
+        event.preventDefault();
+        setDesktopState(false);
+      });
+    }
+
+    if (media.addEventListener) {
+      media.addEventListener('change', applyDesktopDefault);
+    } else if (media.addListener) {
+      media.addListener(applyDesktopDefault);
+    }
+
+    applyDesktopDefault();
+
+    var siteHomeHref = '/';
+    var learnHref = '/learn/';
+    var titleLink = sidebar.querySelector('.sidebar-title a');
+    if (titleLink) titleLink.setAttribute('href', siteHomeHref);
+
+    var toolLinks = Array.from(sidebar.querySelectorAll('.quarto-navigation-tool'));
+    if (toolLinks[0]) toolLinks[0].setAttribute('href', siteHomeHref);
+    if (toolLinks[1]) toolLinks[1].setAttribute('href', learnHref);
+
+    var firstSidebarLink = sidebar.querySelector('.sidebar-item a.sidebar-link');
+    if (firstSidebarLink) firstSidebarLink.setAttribute('href', siteHomeHref);
+
+    var themeToggle = document.querySelector('.wayward-book-theme-toggle');
+    var themeSpan = themeToggle && themeToggle.querySelector('span');
+    if (themeSpan) {
+      themeSpan.textContent = document.documentElement.dataset.theme === 'dark' ? 'Light' : 'Dark';
+    }
+    if (themeToggle && !themeToggle.dataset.bound) {
+      themeToggle.dataset.bound = 'true';
+      themeToggle.addEventListener('click', function () {
+        var nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = nextTheme;
+        try {
+          localStorage.setItem('theme', nextTheme);
+        } catch (err) {
+          void err;
+        }
+        var nextLabel = nextTheme === 'dark' ? 'Light' : 'Dark';
+        var toggleSpan = themeToggle.querySelector('span');
+        if (toggleSpan) toggleSpan.textContent = nextLabel;
+      });
+    }
+
+    document.querySelectorAll('.wayward-book-nav a[data-nav]').forEach(function (link) {
+      var target = link.getAttribute('data-nav');
+      if (!target) return;
+      link.classList.remove('is-active');
+      if (pathname === target || pathname.indexOf(target) === 0) {
+        link.classList.add('is-active');
+      }
+    });
+  });
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,700;1,800&family=Barlow:wght@300;400;500;600&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,500;1,7..72,300;1,7..72,400&display=swap" rel="stylesheet">

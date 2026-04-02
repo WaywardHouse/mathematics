@@ -17,12 +17,12 @@ The series runs from the foundations of arithmetic through to
 upper-year engineering mathematics. You don't have to start at
 Volume 1. Start where you lost the thread.
 
-## The map
+## Start here
 
-Before you begin, it's worth seeing the whole territory. The
-[wayfinding map](map/wayfinding.qmd) shows how the topics connect,
-which fields they lead to, and how the mathematics opens up as you
-move through the series.
+If you want orientation before choosing a chapter, begin with
+[How to Use This Series](map/how-to-use.qmd). It explains where to
+start, how chapters are structured, what the notation is doing, and
+how the volumes connect to different fields.
 
 ## The volumes
 

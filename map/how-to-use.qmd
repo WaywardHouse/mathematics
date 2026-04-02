@@ -7,7 +7,7 @@ subtitle: "Where to start, how to navigate, what the notation means"
 
 You do not have to start at Volume 1.
 
-The series runs from arithmetic to engineering mathematics, but it is not a ladder — it is a map. Find the place where you lost the thread and start there. The wayfinding map shows you the prerequisites for any chapter so you can backfill exactly what you need.
+The series runs from arithmetic to engineering mathematics, but it is not a ladder. Find the place where you lost the thread and start there, then move outward from that point.
 
 If you are not sure where that is, a rough guide:
 
@@ -64,6 +64,6 @@ The tags are there to answer the question "why am I learning this". Each chapter
 
 ## The prerequisites
 
-Each chapter states what you need coming in. If a prerequisite chapter is incomplete in your knowledge, the wayfinding map will tell you which earlier chapter covers it.
+Each chapter states what you need coming in. If a prerequisite chapter is incomplete in your knowledge, step back to the most recent chapter that still feels unstable and rebuild from there.
 
 The prerequisites are genuine — not padding. If a chapter says it requires limits, it means you will need limits to follow the argument.
