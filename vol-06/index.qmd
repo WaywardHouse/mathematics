@@ -1,5 +1,6 @@
 ---
 title: "Volume 6 — Probability and data"
+body-classes: split-home page-home
 ---
 
 The central move of this volume is quantifying uncertainty.

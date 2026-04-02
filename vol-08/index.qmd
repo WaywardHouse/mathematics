@@ -1,6 +1,7 @@
 ---
 title: "Volume 8 — Upper-year engineering mathematics"
 status: "draft"
+body-classes: split-home page-home
 ---
 
 Volume 8 is where the mathematics stops appearing as a course title and

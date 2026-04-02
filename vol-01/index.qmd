@@ -1,6 +1,7 @@
 ---
 title: "Volume 1 — Numbers and operations"
 status: "draft"
+body-classes: split-home page-home
 ---
 
 The central move of this volume is placement.

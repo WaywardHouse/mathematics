@@ -1,5 +1,6 @@
 ---
 title: "Volume 5 — Analysis and proof"
+body-classes: split-home page-home
 ---
 
 The central move of this volume is taming the infinite.

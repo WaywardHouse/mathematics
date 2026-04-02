@@ -1,5 +1,6 @@
 ---
 title: "Volume 4 — Functions and change"
+body-classes: split-home page-home
 ---
 
 The central move of this volume is tracking scale and structure.

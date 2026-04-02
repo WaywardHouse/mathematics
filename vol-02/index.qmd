@@ -1,5 +1,6 @@
 ---
 title: "Volume 2 — Patterns and algebra"
+body-classes: split-home page-home
 ---
 
 The central move of this volume is naming the gap.

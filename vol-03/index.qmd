@@ -1,5 +1,6 @@
 ---
 title: "Volume 3 — Shape and measure"
+body-classes: split-home page-home
 ---
 
 The central move of this volume is giving coordinates to space.

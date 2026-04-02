@@ -1,6 +1,7 @@
 ---
 title: "Volume 7 — Engineering mathematics"
 status: "draft"
+body-classes: split-home page-home
 ---
 
 This volume is the core mathematics sequence that first- and second-year
