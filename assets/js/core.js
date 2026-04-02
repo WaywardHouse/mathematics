@@ -490,7 +490,7 @@ function initQuartoBookLayout() {
       // Ignore storage failures.
     }
 
-    setDesktopState(stored === 'open' ? true : false);
+    setDesktopState(stored === 'collapsed' ? false : true);
   }
 
   toggles.forEach((toggle) => {
