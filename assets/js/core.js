@@ -262,6 +262,20 @@ function injectWaywardChrome() {
     `;
   }
 
+  const headerBrand = header.querySelector('.wayward-brand');
+  if (headerBrand) headerBrand.setAttribute('href', '/');
+
+  const headerLinks = [
+    ['/articles/', '/articles/'],
+    ['/learn/', '/learn/'],
+    ['/pages/about.html', '/about.html'],
+  ];
+  header.querySelectorAll('.wayward-nav a').forEach((link, index) => {
+    const [href, nav] = headerLinks[index] || [];
+    if (href) link.setAttribute('href', href);
+    if (nav) link.setAttribute('data-nav', nav);
+  });
+
   header.querySelectorAll('[data-nav]').forEach((link) => {
     link.classList.remove('is-active');
     const target = link.getAttribute('data-nav');
@@ -338,6 +352,22 @@ function injectWaywardChrome() {
       </div>
     `;
   }
+
+  const footerLinkMap = new Map([
+    ['Articles', '/articles/'],
+    ['Learn', '/learn/'],
+    ['Archive', '/archive.html'],
+    ['Start Here', '/start-here.html'],
+    ['About', '/about.html'],
+    ['Contact', '/contact.html'],
+    ['All Topics', '/topics/'],
+    ['Privacy Policy', '/privacy.html'],
+    ['Terms of Use', '/terms.html'],
+  ]);
+  footer.querySelectorAll('.wayward-footer a').forEach((link) => {
+    const target = footerLinkMap.get((link.textContent || '').trim());
+    if (target) link.setAttribute('href', target);
+  });
 
   const contentNodes = Array.from(body.children).filter((node) => {
     if (node === header || node === footer) return false;
