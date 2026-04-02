@@ -713,13 +713,6 @@ makeStepperHTML([
 ])
 ```
 
-<!-- STEPPER -->
-Step 1 | Separate variables | $y\,dy = x\,dx$
-Step 2 | Integrate both sides | $\frac{y^2}{2} = \frac{x^2}{2} + C_1$
-Step 3 | Absorb constant | $y^2 = x^2 + C$ (general solution)
-Step 4 | Apply $y(0) = 2$ | $4 = 0 + C \Rightarrow C = 4$
-Step 5 | Particular solution | $y = \sqrt{x^2 + 4}$
-<!-- END STEPPER -->
 
 ---
 
@@ -752,13 +745,6 @@ makeStepperHTML([
 ])
 ```
 
-<!-- STEPPER -->
-Step 1 | Identify $k = -0.1$, $y_0 = 500$ | $y(t) = 500\,e^{-0.1t}$
-Step 2 | Set $y = 100$ | $500\,e^{-0.1t} = 100$
-Step 3 | Divide | $e^{-0.1t} = 0.2$
-Step 4 | Take $\ln$ | $-0.1t = \ln(0.2)$
-Step 5 | Solve | $t = 10\ln 5 \approx 16.09$
-<!-- END STEPPER -->
 
 ---
 
@@ -791,13 +777,6 @@ makeStepperHTML([
 ])
 ```
 
-<!-- STEPPER -->
-Step 1 | Newton's law, known result | $T(t) = 20 + 70\,e^{-0.05t}$
-Step 2 | Set $T = 60$ | $70\,e^{-0.05t} = 40$
-Step 3 | Divide | $e^{-0.05t} = 4/7$
-Step 4 | Take $\ln$ | $-0.05t = \ln(4/7)$
-Step 5 | Solve | $t = 20\ln(7/4) \approx 11.2$ min
-<!-- END STEPPER -->
 
 ---
 
@@ -838,15 +817,6 @@ makeStepperHTML([
 ])
 ```
 
-<!-- STEPPER -->
-Step 1 | Standard form confirmed | $P = 2$, $Q = 4$
-Step 2 | Integrating factor | $\mu = e^{2x}$
-Step 3 | Multiply; perfect derivative | $\frac{d}{dx}[e^{2x}y] = 4e^{2x}$
-Step 4 | Integrate | $e^{2x}y = 2e^{2x} + C$
-Step 5 | General solution | $y = 2 + Ce^{-2x}$
-Step 6 | Apply $y(0) = 1$ | $C = -1$
-Step 7 | Particular solution | $y = 2 - e^{-2x}$
-<!-- END STEPPER -->
 
 ---
 
@@ -887,15 +857,6 @@ makeStepperHTML([
 ])
 ```
 
-<!-- STEPPER -->
-Step 1 | Integrating factor | $\mu = e^t$
-Step 2 | Multiply; perfect derivative | $\frac{d}{dt}[e^t V] = 12e^t$
-Step 3 | Integrate | $e^t V = 12e^t + C$
-Step 4 | General solution | $V = 12 + Ce^{-t}$
-Step 5 | Apply $V(0) = 0$ | $C = -12$
-Step 6 | Particular solution | $V(t) = 12(1 - e^{-t})$
-Step 7 | Limiting behaviour | $V \to 12$ as $t \to \infty$: the transient $-12e^{-t}$ decays; the steady state $V = V_s = 12$ remains.
-<!-- END STEPPER -->
 
 ---
 
@@ -944,17 +905,6 @@ makeStepperHTML([
 ])
 ```
 
-<!-- STEPPER -->
-Step 1 | Rate in | $0.5 \times 2 = 1$ g/min
-Step 2 | Rate out | $\frac{S}{100} \times 2 = \frac{S}{50}$ g/min
-Step 3 | ODE | $\frac{dS}{dt} = 1 - \frac{S}{50}$
-Step 4 | Standard form | $\frac{dS}{dt} + \frac{1}{50}S = 1$
-Step 5 | Integrating factor | $\mu = e^{t/50}$
-Step 6 | Integrate | $e^{t/50}S = 50\,e^{t/50} + C$
-Step 7 | General solution | $S(t) = 50 + Ce^{-t/50}$
-Step 8 | Apply $S(0) = 10$ | $C = -40$
-Step 9 | Particular solution | $S(t) = 50 - 40\,e^{-t/50}$; long-run $S \to 50$ g
-<!-- END STEPPER -->
 
 ---
 

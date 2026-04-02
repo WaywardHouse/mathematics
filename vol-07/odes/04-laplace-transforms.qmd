@@ -914,12 +914,6 @@ function makeStepperHTML(exerciseNum, steps) {
 
 **1.** Compute $\mathcal{L}\{3e^{2t} - 4\sin(3t)\}$ using the table and linearity.
 
-<!-- STEPPER -->
-Step 1 | Apply linearity | $\mathcal{L}\{3e^{2t} - 4\sin(3t)\} = 3\mathcal{L}\{e^{2t}\} - 4\mathcal{L}\{\sin(3t)\}$
-Step 2 | Read $\mathcal{L}\{e^{2t}\}$ from table | $\mathcal{L}\{e^{2t}\} = \dfrac{1}{s-2}$
-Step 3 | Read $\mathcal{L}\{\sin(3t)\}$ from table | $\mathcal{L}\{\sin(3t)\} = \dfrac{3}{s^2+9}$
-Step 4 | Combine | $\dfrac{3}{s-2} - \dfrac{12}{s^2+9}$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -941,13 +935,6 @@ makeStepperHTML(1, [
 
 **2.** Solve $y' + 3y = 6$, $y(0) = 1$.
 
-<!-- STEPPER -->
-Step 1 | Transform both sides | $sY - 1 + 3Y = \dfrac{6}{s}$
-Step 2 | Collect $Y$ terms | $(s+3)Y = \dfrac{6}{s} + 1 = \dfrac{s+6}{s}$
-Step 3 | Solve for $Y(s)$ | $Y(s) = \dfrac{s+6}{s(s+3)}$
-Step 4 | Partial fractions | $Y(s) = \dfrac{2}{s} - \dfrac{1}{s+3}$
-Step 5 | Invert | $y(t) = 2 - e^{-3t}$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -971,13 +958,6 @@ makeStepperHTML(2, [
 
 **3.** Solve $y'' + 4y = \sin(2t)$, $y(0) = 0$, $y'(0) = 1$.
 
-<!-- STEPPER -->
-Step 1 | Transform | $s^2 Y - 1 + 4Y = \dfrac{2}{s^2+4}$
-Step 2 | Solve for $Y(s)$ | $Y(s) = \dfrac{1}{s^2+4} + \dfrac{2}{(s^2+4)^2}$
-Step 3 | Invert first term | $\mathcal{L}^{-1}\!\left\{\dfrac{1}{s^2+4}\right\} = \dfrac{1}{2}\sin(2t)$
-Step 4 | Invert second term (table or integration) | $\mathcal{L}^{-1}\!\left\{\dfrac{2}{(s^2+4)^2}\right\} = \dfrac{1}{8}(\sin 2t - 2t\cos 2t)$
-Step 5 | Combine | $y(t) = \dfrac{1}{2}\sin(2t) + \dfrac{1}{8}\sin(2t) - \dfrac{1}{4}t\cos(2t) = \dfrac{5}{8}\sin(2t) - \dfrac{1}{4}t\cos(2t)$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -1002,13 +982,6 @@ makeStepperHTML(3, [
 
 **4.** Write $f(t) = \begin{cases}0 & t<2\\t-2 & t\geq 2\end{cases}$ in terms of $u(t-2)$ and find $\mathcal{L}\{f(t)\}$.
 
-<!-- STEPPER -->
-Step 1 | Express using Heaviside | $f(t) = (t-2)\,u(t-2)$
-Step 2 | Identify the underlying function | $g(t) = t$, so $f(t) = g(t-2)\,u(t-2)$
-Step 3 | Apply second shifting theorem | $\mathcal{L}\{g(t-2)\,u(t-2)\} = e^{-2s}\mathcal{L}\{g(t)\} = e^{-2s}\mathcal{L}\{t\}$
-Step 4 | Read $\mathcal{L}\{t\}$ from table | $\mathcal{L}\{t\} = \dfrac{1}{s^2}$
-Step 5 | Final answer | $\mathcal{L}\{f(t)\} = \dfrac{e^{-2s}}{s^2}$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -1033,15 +1006,6 @@ makeStepperHTML(4, [
 **5.** Solve $y'' + y = u(t - \pi)$, $y(0) = 0$, $y'(0) = 0$.
 The system is at rest; a step input arrives at $t = \pi$.
 
-<!-- STEPPER -->
-Step 1 | Transform | $s^2 Y + Y = \dfrac{e^{-\pi s}}{s}$
-Step 2 | Solve for $Y(s)$ | $Y(s) = \dfrac{e^{-\pi s}}{s(s^2+1)}$
-Step 3 | Partial fractions on $G(s) = \dfrac{1}{s(s^2+1)}$ | $G(s) = \dfrac{1}{s} - \dfrac{s}{s^2+1}$
-Step 4 | Invert $G(s)$ | $g(t) = 1 - \cos t$
-Step 5 | Apply shifting theorem | $y(t) = [1 - \cos(t-\pi)]\,u(t-\pi)$
-Step 6 | Simplify using $\cos(t-\pi) = -\cos t$ | $y(t) = [1 + \cos t]\,u(t-\pi)$
-(using $\cos(t-\pi) = -\cos t$, from the cosine addition formula)
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -1070,13 +1034,6 @@ makeStepperHTML(5, [
 $\ddot{x} + 2\dot{x} + 5x = \delta(t-1)$, $x(0) = 0$, $\dot{x}(0) = 0$.
 Find $x(t)$ for $t > 1$.
 
-<!-- STEPPER -->
-Step 1 | Transform | $(s^2 + 2s + 5)X = e^{-s}$
-Step 2 | Solve for $X(s)$ | $X(s) = \dfrac{e^{-s}}{s^2+2s+5}$
-Step 3 | Complete the square in denominator | $s^2+2s+5 = (s+1)^2+4$
-Step 4 | Invert $G(s) = \dfrac{1}{(s+1)^2+4}$ | $g(t) = \dfrac{1}{2}e^{-t}\sin(2t)$
-Step 5 | Apply shifting theorem | $x(t) = \dfrac{1}{2}e^{-(t-1)}\sin(2(t-1))\,u(t-1)$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false

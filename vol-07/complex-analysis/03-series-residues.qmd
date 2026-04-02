@@ -300,6 +300,9 @@ $|f(z)| \to \infty$ as $z \to z_0$. A **simple pole** is a pole of order 1.
 
 **Essential singularity.** The principal part has infinitely many terms. The behaviour near $z_0$ is wild. Example: $e^{1/z}$ at $z = 0$ — as $z \to 0$ along different directions, $e^{1/z}$ oscillates with arbitrarily large magnitude and argument, taking values dense in the entire complex plane. There is no finite or infinite limit.
 
+<!-- VIZ: Singularity classification visualiser — domain colouring zoom. A function selector offers three functions, each with an isolated singularity at z = 0: "sin(z)/z (removable)", "1/z (simple pole)", "1/z² (order-2 pole)", "e^{1/z} (essential)". The main panel shows domain colouring (hue = arg f, brightness = log|f|) of the selected function over a square region. A zoom slider shrinks the viewport towards the origin: range 3 to 0.01 in log scale. A singularity-type label updates live. For the removable singularity, the domain colouring stays smooth and bounded as you zoom in — the function is extending continuously. For the pole, brightness intensifies (blossoms white) and the hue wheel winds once (simple) or twice (order 2) around the origin. For the essential singularity, zooming in reveals ever-finer multi-coloured oscillations with no limiting pattern — Picard's theorem made visible: every colour (every value) appears near the origin. An annotation panel below the plot states the singularity type and the number of hue-winding revolutions counted around a small circle. Series palette: consistent with Chapter 1 and 2 domain-colouring vocabulary. This is the most visually striking moment of the complex analysis section — essential singularities are genuinely extreme and should look it. -->
+
+
 <!-- STUDENT: Picard's theorem is cited but not introduced — the reader has not seen it before. For the purposes of this chapter, the claim "behaviour near an essential singularity is wild" is all that's needed; invoking a named theorem that appears nowhere else in the series may feel like a reference to unknown material. If Picard's theorem is not covered elsewhere, consider replacing it with a brief concrete illustration (e.g. noting that e^{1/z} oscillates arbitrarily fast near 0). -->
 
 ---
@@ -354,6 +357,8 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
 <!-- STUDENT: "If R(x) → 0 fast enough" is vague. The engineer-prof already noted this: the precise condition is that the degree of the denominator exceeds the numerator's by at least 1. Without this, a reader applying the method to ∫ 1/(x+1) dx or similar won't know whether their problem qualifies. Even one sentence stating the condition explicitly would prevent misapplication. -->
 
 **Example.** $\displaystyle\int_{-\infty}^{\infty}\frac{dx}{1+x^2}$. Poles of $1/(1+z^2)$: $z = \pm i$. Only $z = i$ is in the upper half-plane. Residue: $1/(2i)$. Integral: $2\pi i \cdot 1/(2i) = \pi$.
+
+<!-- VIZ: Residue theorem explorer — contour sweep. The complex plane shows domain colouring of a selectable rational function (default: 1/(1+z²), which has poles at ±i). Poles appear as white blooms in the colouring. A single slider controls the radius R of a circular contour centred at the origin (range 0.1 to 4.5). As R increases past each pole, that pole is highlighted in gold (#fbbf24) and the running residue sum updates in a panel below the plot. The panel shows: "Enclosed poles: [list]", "Sum of residues: [value]", "∮_C f dz = 2πi × ΣRes = [value]". For the 1/(1+z²) function, when R crosses |i| = 1, the integral jumps from 0 to π. The reader sees directly that each pole contributes exactly 2πi × (its residue). A second function option "1/((z²+1)(z²+4))" has four poles at ±i and ±2i; dragging R from 1 to 3 adds them one by one. Series thread: this is the culmination of the winding-number thread from Chapter 1 (winding number) and Chapter 2 (∮ dz/z = 2πi × n) — here the reader sees that residue = generalised winding contribution. -->
 
 <!-- VIZ 1 EXTENDED: Residue visualiser with domain colouring background. Poles as white blooms. Contour slider sweeps past poles. Winding number counter. Running residue sum and integral value. -->
 
@@ -616,6 +621,7 @@ function makeStepperHTML(steps) {
 
 Find the Laurent series of $f(z) = \dfrac{1}{z(z-1)}$ valid for $0 < |z| < 1$, and classify the singularity at $z = 0$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -644,6 +650,7 @@ makeStepperHTML([
 
 ### Exercise 2: Classifying $\sin z / z^2$ at $z = 0$
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -673,6 +680,7 @@ makeStepperHTML([
 
 Find $\text{Res}\!\left[\dfrac{z^2+1}{(z-2)(z+3)},\; z=2\right]$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -697,6 +705,7 @@ makeStepperHTML([
 
 Find $\text{Res}\!\left[\dfrac{e^z}{(z-1)^2},\; z=1\right]$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -722,6 +731,7 @@ makeStepperHTML([
 
 Evaluate $\displaystyle\int_0^{2\pi}\frac{d\theta}{2 + \cos\theta}$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -751,6 +761,7 @@ makeStepperHTML([
 
 Evaluate $\displaystyle\int_{-\infty}^{\infty}\frac{dx}{(1+x^2)^2}$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([

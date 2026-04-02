@@ -84,6 +84,8 @@ An analytic function $w = f(z)$ is **conformal at $z_0$** if $f'(z_0) \neq 0$. A
 
 <!-- STUDENT: The chain-rule argument is stated in one sentence but the key step — that multiplying the complex tangent vector by f′(z₀) rotates it by arg f′(z₀) — is compressed into the word "follows." A reader who is comfortable with complex multiplication will accept this; one who isn't will not see why multiplication by a complex number produces a pure rotation. One additional sentence making this explicit ("multiplying by f′(z₀) = |f′(z₀)|e^{iφ} scales by |f′(z₀)| and rotates by φ = arg f′(z₀)") would bridge the gap. -->
 
+<!-- VIZ: Conformality — angle preservation explorer. The left panel shows a small cross (two perpendicular red lines) centred on a draggable point z₀ in the z-plane. A function selector offers f(z) = z², f(z) = e^z, f(z) = sin z, f(z) = 1/z. The right panel shows the images of the two cross-arms under f. An angle indicator annotates the angle between the image arms in degrees. When f is analytic and f′(z₀) ≠ 0, the angle should read 90° (within floating-point tolerance), shown in green. When z₀ is dragged to a critical point (e.g. z₀ = 0 for f = z², where f′ = 0), the angle doubles to 180° and the indicator turns red with the annotation "critical point — angle doubled". The background of the right panel is a light domain colouring of f. Include a live readout: "|f′(z₀)| = [scale factor]" and "arg f′(z₀) = [rotation angle]°". This makes the three properties of conformal maps (angle preserved, scale = |f′|, rotation = arg f′) directly observable at each point. Series thread: this builds on the complex multiplication visualiser from Chapter 1, where |w| scaled and arg w rotated — here those same operations are applied pointwise to tangent vectors. -->
+
 At a **critical point** where $f'(z_0) = 0$, conformality fails: angles are multiplied by the order of the zero.
 
 **Example.** $w = z^2$ at $z = 0$: $f'(0) = 0$, so the map is not conformal at the origin. The angle between any two curves through 0 is doubled. Away from 0, $f'(z) = 2z \neq 0$ and the map is conformal.
@@ -139,6 +141,8 @@ More generally, the strip $\{a < \text{Im}(z) < b\}$ maps to the sector $\{a < \
 ### $w = \log z$
 
 The inverse of $w = e^z$. Maps the upper half-plane to the horizontal strip $\{0 < \text{Im}(w) < \pi\}$.
+
+<!-- VIZ: Standard conformal maps — dual-panel grid deformation. A dual-panel display (z-plane left, w-plane right). A function selector offers: "w = z²", "w = e^z", "w = log z", "w = (z−i)/(z+i) [half-plane to disk]", "w = (1+z)/(1−z) [disk to half-plane]". The left panel shows a rectangular grid with adjustable range sliders (Re range: −2 to 2; Im range: 0 to π for the strip maps). The right panel shows the image grid — horizontal lines map to curves, vertical lines to other curves. Each family of curves is coloured consistently: lines of constant Re(z) in blue (#3b82f6), lines of constant Im(z) in orange (#f97316). Boundary curves of special domains are thicker and labelled: e.g. the real axis (Im z = 0) maps to the positive real axis under w = e^z and is shown as a thick boundary. A toggle "Animate mapping" smoothly interpolates from the input grid to the output grid over 2 seconds, showing the fabric of space being bent. Series thread: the w = (z−i)/(z+i) map from half-plane to disk links directly to the Möbius transformations described in this chapter; the grid deformation visual vocabulary will appear again in numerical PDE chapters where domain transformations are used for mesh generation. -->
 
 ---
 
@@ -480,6 +484,7 @@ function makeStepperHTML(steps) {
 
 Find the image of the circle $|z| = 3$ under $w = z^2$. Then find the image of the half-circle $|z| = 3$, $\text{Im}(z) \geq 0$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -510,6 +515,7 @@ makeStepperHTML([
 
 Find the image of the horizontal strip $\{0 < \text{Im}(z) < \pi/2\}$ under $w = e^z$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -539,6 +545,7 @@ makeStepperHTML([
 
 Find the Möbius transformation mapping $z_1 = 0 \mapsto w_1 = i$, $z_2 = 1 \mapsto w_2 = 0$, $z_3 = -1 \mapsto w_3 = \infty$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -571,6 +578,7 @@ makeStepperHTML([
 
 Apply $w = z + 1/z$ to the circle $|z| = 2$. Find the semi-axes of the resulting ellipse.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -600,6 +608,7 @@ makeStepperHTML([
 
 The complex potential $F(w) = w$ represents uniform horizontal flow in the $w$-plane. Apply the conformal map $w = z^2$ to find the complex potential for flow in the first quadrant ($x > 0$, $y > 0$) of the $z$-plane.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([

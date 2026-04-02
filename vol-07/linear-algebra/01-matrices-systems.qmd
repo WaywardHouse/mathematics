@@ -142,6 +142,9 @@ $$\mathbf{A}\mathbf{B} = \begin{pmatrix} 4 & 9 \\ 6 & 3 \end{pmatrix}$$
 
 **What multiplication means geometrically.** Each column of $\mathbf{A}\mathbf{B}$ is a linear combination of the columns of $\mathbf{A}$, with coefficients from the corresponding column of $\mathbf{B}$. This column-space interpretation is the key to understanding why the structure of $\mathbf{A}$ determines the solvability of $\mathbf{A}\mathbf{x} = \mathbf{b}$.
 
+<!-- VIZ: Matrix transformation explorer. Display a 2×2 matrix A whose four entries are each controlled by a slider (range −3 to 3, step 0.1; initial values forming a horizontal stretch: top row [2, 0.5], bottom row [0.3, 1]). The left panel shows the standard unit square, four corner dots, and a handful of evenly spaced sample vectors radiating from the origin, all in the input xy-plane. The right panel shows their images under A in real time: the transformed unit square (parallelogram) and the transformed vectors. As the reader adjusts entries, both panels update simultaneously. Annotate the right panel live with: det(A) (coloured green when positive, red when negative or zero); the two column vectors of A drawn as orange (#f97316) and blue (#3b82f6) arrows from the origin (labelled "col 1" and "col 2") — these are where e₁ and e₂ land. When det ≈ 0, overlay the label "singular — all vectors collapse to a line" in red. Include a preset selector: "Identity", "Horizontal stretch", "Rotation 45°", "Shear", "Reflection y-axis", "Singular" — each sets the sliders to canonical values. Series note for the viz-artist: the column vectors drawn here are the visual vocabulary that reappears in the eigenvalue chapter; at that point invariant directions under A will be highlighted. Use the same orange/blue palette for column-vector arrows throughout the linear algebra section. -->
+
+
 ---
 
 ## Linear systems: Ax = b
@@ -374,6 +377,8 @@ Not every system $\mathbf{A}\mathbf{x} = \mathbf{b}$ has a unique solution. Thre
 
 **Case 3: infinitely many solutions (underdetermined).** After row reduction, at least one column has no pivot — the corresponding variable is **free**, meaning it can take any value. Each free variable introduces one dimension of solutions. Geometrically: the hyperplanes intersect along a line, a plane, or a higher-dimensional subspace.
 
+<!-- VIZ: Geometry of 2×2 linear systems — three cases visualiser. Two sliders control the slope m₂ (−1.5 to 0.5) and y-intercept b₂ (−1 to 5) of a second line. The first line (x + 2y = 4, slope −0.5, intercept 2) is fixed in blue. The controlled line is shown in amber. A live label at the bottom of the plot reports which case holds: "Unique solution — intersection at (x, y)" (blue label, with coordinates), "No solution — parallel lines" (red label), or "Infinitely many solutions — same line" (green label). When a unique solution exists, draw a filled dot at the intersection point. When lines coincide, overlay the controlled line as a thick dashed green stroke on top of the fixed line. Axes labelled x and y; grid lines at integer values; clip to the viewport. Series note: this 2D picture extends directly into the 3D hyperplane picture described in the prose — a future volume may show three planes intersecting. The three-case labelling vocabulary (unique / none / infinitely many) is reused verbatim in the rank section that follows. -->
+
 *Move the sliders to see how the geometry changes. Try slope −0.50 for the parallel and coincident cases.*
 
 ```{ojs}
@@ -536,6 +541,8 @@ The **nullity** is the number of free variables — the dimension of the **null 
 If you have a $3 \times 3$ system and you can see by inspection that one equation is a linear combination of the other two (for example, equation 3 = equation 1 + equation 2), then $\text{rank}(\mathbf{A}) \leq 2 < 3$ regardless of $\mathbf{b}$. The system is either inconsistent or underdetermined. Checking rank first can save significant computation.
 
 ---
+
+<!-- VIZ: LU factorisation decomposition animator. Show a 3×3 matrix A (pre-filled with the worked-example values from the chapter). A "Factorise" button triggers a step-by-step animation: at each step, the current state of the upper-triangular reduction is shown in an orange matrix U (entries being built), and the lower-triangular multipliers accumulate simultaneously in a blue matrix L. Each elimination step highlights in amber the pivot entry being used and the entry being zeroed. After all steps, display the final L and U side by side with a verification panel showing L·U recomputed numerically and diffed against A (all entries should match; show green ticks). A slider below lets the reader step forwards and backwards through the elimination manually. Label the multiplier m_ij as it is deposited into L. Briefly annotate: "m₂₁ = a₂₁/a₁₁ — the ratio that zeroes entry (2,1)". Series palette: pivot cell amber (#fef3c7 background, #92400e text); L matrix entries blue (#3b82f6); U matrix entries orange (#f97316). This visual makes explicit the connection between elimination and the LU split that the prose describes but does not show dynamically. -->
 
 ## LU factorisation
 
@@ -722,6 +729,7 @@ $$\mathbf{Y} = \begin{pmatrix} 5 & -2 & -1 \\ -2 & 6 & -3 \\ -1 & -3 & 4 \end{pm
 
 Compute the current injection vector $\mathbf{I} = \mathbf{Y}\mathbf{V}$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -761,6 +769,7 @@ $$\begin{aligned} 8I_1 - 2I_2 - 0I_3 &= 16 \\ -2I_1 + 7I_2 - 3I_3 &= 0 \\ 0I_1 -
 
 Find $I_1, I_2, I_3$ by Gaussian elimination.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -805,6 +814,7 @@ $$\begin{aligned} F_1 + 2F_2 - F_3 + F_4 &= 10 \\ 2F_1 + 4F_2 + F_3 - F_4 &= 8 \
 
 Row-reduce to RREF. Identify the free variable(s) and write the general solution.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -849,6 +859,7 @@ $$\mathbf{M} = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 4 & 6 \\ 1 & 0 & 2 \\ 3 & 2 & 7 
 
 Find $\text{rank}(\mathbf{M})$. What does this tell you about the sensor network?
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -891,6 +902,7 @@ Find the LU factorisation of $\mathbf{K}$, then use it to solve $\mathbf{K}\math
 
 $$\mathbf{q}_1 = \begin{pmatrix} 8 \\ 4 \\ 2 \end{pmatrix}, \qquad \mathbf{q}_2 = \begin{pmatrix} 0 \\ 6 \\ 4 \end{pmatrix}$$
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -945,6 +957,7 @@ A three-mesh circuit has the following KVL equations after applying Kirchhoff's 
 
 Write $\mathbf{A}\mathbf{x} = \mathbf{b}$ explicitly, then solve using Gaussian elimination.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([

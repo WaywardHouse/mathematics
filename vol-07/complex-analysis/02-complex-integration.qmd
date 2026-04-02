@@ -99,6 +99,8 @@ $$\int_C f\,dz = \int_C(u\,dx - v\,dy) + i\int_C(v\,dx + u\,dy)$$
 - Reversal: $\int_{-C}f\,dz = -\int_C f\,dz$ (reversing the direction negates the integral).
 - Additivity: if $C = C_1 + C_2$, then $\int_C = \int_{C_1} + \int_{C_2}$.
 
+<!-- VIZ: Contour path explorer — path-dependence vs path-independence. Two panels side by side. Left panel: the complex plane with a fixed start point A = 0 and end point B = 1+i, both shown as labelled dots. A dropdown selects the integrand: "f(z) = z (analytic)", "f(z) = z̄ (not analytic)", "f(z) = |z| (not analytic)". Three preset paths are shown simultaneously in different colours: a straight line (orange, #f97316), an arc via the real axis then up (blue, #3b82f6), and a semicircular arc (purple, #8b5cf6). The reader can toggle each path on/off. Right panel: a bar chart showing the computed value of ∫_C f dz for each path — each bar labelled with the path's colour and value (real and imaginary parts). For f(z) = z, all three bars are equal (path independence); for f(z) = z̄ they differ. A bold annotation reads "analytic integrand → same value on every path" or "non-analytic → value depends on path" depending on the function chosen. This directly illustrates Cauchy's theorem before it is stated, giving the reader a visceral sense of what the theorem claims. Series thread: the path-independence result connects to the harmonic potential from Chapter 1's VIZ (same concept, different representation). -->
+
 ### The ML inequality
 
 The most useful estimate for contour integrals:
@@ -131,6 +133,8 @@ $$\oint_C f(z)\,dz = 0$$
 **Consequence: path independence.** If $f$ is analytic in a simply connected domain and $C_1$, $C_2$ are two paths from $z_1$ to $z_2$ in that domain, then $\int_{C_1}f\,dz = \int_{C_2}f\,dz$. The integral depends only on the endpoints, not the path.
 
 **Deformation principle.** If $f$ is analytic everywhere between two contours $C_1$ and $C_2$ (with the same orientation), then $\int_{C_1}f\,dz = \int_{C_2}f\,dz$. Contours can be freely deformed through regions where $f$ is analytic, without changing the integral.
+
+<!-- VIZ: Contour deformation explorer. The complex plane shows the domain colouring of a fixed function (default: f(z) = 1/z, so the origin is a singularity shown as a white bloom). Two contours are drawn: a fixed outer circle C₁ (orange, #f97316) and an inner contour C₂ (blue, #3b82f6) that the reader can deform by dragging four control points. A running display shows the computed values ∮_C₁ f dz and ∮_C₂ f dz numerically. When C₂ is deformed to enclose the same singularity as C₁, both values equal 2πi — the reader sees the numbers agree regardless of shape. When C₂ is deformed to exclude the singularity entirely, its value drops to 0 while C₁ remains 2πi. A "singularity inside?" indicator (green/red) updates as the reader deforms the contour. Explicitly annotates: "C₂ encloses the same singularity as C₁ → same integral value." Series thread: continues the winding-number visual from Chapter 1 (same domain-colouring vocabulary, same origin singularity). -->
 
 ---
 
@@ -645,6 +649,7 @@ function makeStepperHTML(steps) {
 
 Compute $\displaystyle\int_C \bar{z}\,dz$ where $C$ is the straight line from $0$ to $1+i$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -674,6 +679,7 @@ makeStepperHTML([
 
 Show that $\displaystyle\oint_C \frac{e^z}{z^2+4}\,dz = 0$ where $C$ is the circle $|z| = 1$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -704,6 +710,7 @@ makeStepperHTML([
 
 Evaluate $\displaystyle\oint_C \frac{e^z}{z - 1}\,dz$ where $C$ is the circle $|z| = 2$ (counterclockwise).
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -725,6 +732,7 @@ makeStepperHTML([
 
 Evaluate $\displaystyle\oint_C \frac{\cos z}{(z - \pi)^2}\,dz$ where $C: |z| = 4$ (counterclockwise).
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -750,6 +758,7 @@ makeStepperHTML([
 
 Without evaluating it exactly, show that $\displaystyle\left|\oint_C \frac{dz}{z^3}\right| \leq \frac{\pi}{4}$, where $C$ is the upper semicircle $|z| = 2$ from $z = 2$ to $z = -2$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([

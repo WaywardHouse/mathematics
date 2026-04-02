@@ -129,7 +129,132 @@ get rotated and stretched into new directions. The eigenvectors are the
 they started (or exactly opposite). The eigenvalue tells you how much the
 transformation stretches along each fixed axis.
 
-<!-- VIZ: Eigenvector visualiser — 2×2 matrix with sliders for entries a, b, c, d, shows the unit circle mapped to an ellipse under the transformation, with eigenvectors drawn as arrows along the principal axes of the ellipse, labelled with their eigenvalues -->
+```{ojs}
+//| echo: false
+eigenVisualiser = {
+  const d3 = await require("d3@7");
+  const W = 560, H = 400;
+  const ML = 40, MR = 40, MT = 40, MB = 40;
+  const innerW = W - ML - MR;
+  const innerH = H - MT - MB;
+  
+  const container = d3.create("div").style("max-width", W+"px").style("font-family", "sans-serif").style("margin", "0 auto");
+  
+  const controls = container.append("div").style("display", "grid").style("grid-template-columns", "1fr 1fr").style("gap", "10px").style("margin-bottom", "15px").style("background", "#f8fafc").style("padding", "10px").style("border-radius", "8px").style("border", "1px solid #e2e8f0");
+  
+  function makeSlider(parent, label, initVal) {
+    const wrap = parent.append("label").style("display", "flex").style("align-items", "center").style("font-size", "0.9rem").style("font-family", "monospace");
+    wrap.append("span").style("width", "20px").text(label);
+    const inp = wrap.append("input").attr("type", "range").attr("min", -3).attr("max", 3).attr("step", 0.1).attr("value", initVal).style("flex", 1).style("margin", "0 10px");
+    const val = wrap.append("span").style("width", "35px").style("text-align", "right").text(initVal.toFixed(1));
+    return {inp, val};
+  }
+  
+  const sliderA = makeSlider(controls, "a", 2);
+  const sliderB = makeSlider(controls, "b", 1);
+  const sliderC = makeSlider(controls, "c", 1);
+  const sliderD = makeSlider(controls, "d", 2);
+  
+  const svg = container.append("svg").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const g = svg.append("g").attr("transform", `translate(${W/2},${H/2})`);
+  
+  const xScale = d3.scaleLinear([-6, 6], [-innerW/2, innerW/2]);
+  const yScale = d3.scaleLinear([-6, 6], [innerH/2, -innerH/2]);
+  
+  g.append("line").attr("x1", xScale(-6)).attr("y1", yScale(0)).attr("x2", xScale(6)).attr("y2", yScale(0)).attr("stroke", "#cbd5e1");
+  g.append("line").attr("x1", xScale(0)).attr("y1", yScale(-6)).attr("x2", xScale(0)).attr("y2", yScale(6)).attr("stroke", "#cbd5e1");
+  
+  const unitPts = d3.range(0, 2 * Math.PI + 0.1, 0.1).map(theta => [Math.cos(theta), Math.sin(theta)]);
+  const lineGen = d3.line().x(d => xScale(d[0])).y(d => yScale(d[1]));
+  
+  g.append("path").datum(unitPts).attr("d", lineGen).attr("fill", "none").attr("stroke", "#9ca3af").attr("stroke-dasharray", "4,4").attr("stroke-width", 1.5);
+  
+  const transformedPath = g.append("path").attr("fill", "rgba(59, 130, 246, 0.1)").attr("stroke", "#3b82f6").attr("stroke-width", 2);
+  
+  const vecGroup = g.append("g");
+  const e1Line = vecGroup.append("line").attr("stroke", "#f97316").attr("stroke-width", 2.5);
+  const e1Head = vecGroup.append("polygon").attr("fill", "#f97316");
+  const e1Label = vecGroup.append("text").attr("fill", "#c2410c").attr("font-size", "13px").attr("font-weight", "bold").style("text-shadow", "1px 1px 2px white");
+  
+  const e2Line = vecGroup.append("line").attr("stroke", "#10b981").attr("stroke-width", 2.5);
+  const e2Head = vecGroup.append("polygon").attr("fill", "#10b981");
+  const e2Label = vecGroup.append("text").attr("fill", "#047857").attr("font-size", "13px").attr("font-weight", "bold").style("text-shadow", "1px 1px 2px white");
+  
+  const statusText = container.append("div").style("text-align", "center").style("font-size", "0.95rem").style("font-weight", "bold").style("margin-top", "10px");
+  
+  function update() {
+    const a = +sliderA.inp.property("value");
+    const b = +sliderB.inp.property("value");
+    const c = +sliderC.inp.property("value");
+    const d = +sliderD.inp.property("value");
+    
+    sliderA.val.text(a.toFixed(1));
+    sliderB.val.text(b.toFixed(1));
+    sliderC.val.text(c.toFixed(1));
+    sliderD.val.text(d.toFixed(1));
+    
+    const transPts = unitPts.map(pt => [a*pt[0] + b*pt[1], c*pt[0] + d*pt[1]]);
+    transformedPath.datum(transPts).attr("d", lineGen);
+    
+    const tr = a + d;
+    const det = a*d - b*c;
+    const disc = tr*tr - 4*det;
+    
+    if (disc >= 0) {
+      const lam1 = (tr + Math.sqrt(disc)) / 2;
+      const lam2 = (tr - Math.sqrt(disc)) / 2;
+      
+      statusText.text(`Real Eigenvalues: \u03BB\u2081 = ${lam1.toFixed(2)}, \u03BB\u2082 = ${lam2.toFixed(2)}`).style("color", "#1e293b");
+      
+      function getEigVec(lam) {
+        if (Math.abs(b) > 1e-6) return [b, lam - a];
+        if (Math.abs(c) > 1e-6) return [lam - d, c];
+        return lam === a ? [1, 0] : [0, 1];
+      }
+      
+      function drawVec(v, lam, line, head, labelTxt, labelStr) {
+        const mag = Math.sqrt(v[0]*v[0] + v[1]*v[1]) || 1;
+        const norm = [v[0]/mag, v[1]/mag];
+        const endx = norm[0] * lam;
+        const endy = norm[1] * lam;
+        
+        const sx = xScale(endx);
+        const sy = yScale(endy);
+        const ox = xScale(0);
+        const oy = yScale(0);
+        
+        line.attr("x1", ox).attr("y1", oy).attr("x2", sx).attr("y2", sy).attr("visibility", "visible");
+        
+        if (Math.abs(lam) > 0.1) {
+          const angle = Math.atan2(sy - oy, sx - ox);
+          const r = 8;
+          head.attr("points", `${sx},${sy} ${sx - r*Math.cos(angle - 0.5)},${sy - r*Math.sin(angle - 0.5)} ${sx - r*Math.cos(angle + 0.5)},${sy - r*Math.sin(angle + 0.5)}`).attr("visibility", "visible");
+        } else {
+          head.attr("visibility", "hidden");
+        }
+        
+        labelTxt.attr("x", sx + 12*Math.sign(sx-ox)).attr("y", sy + 12*Math.sign(sy-oy)-5).text(labelStr).attr("visibility", "visible");
+      }
+      
+      drawVec(getEigVec(lam1), lam1, e1Line, e1Head, e1Label, `\u03BB\u2081=${lam1.toFixed(2)}`);
+      drawVec(getEigVec(lam2), lam2, e2Line, e2Head, e2Label, `\u03BB\u2082=${lam2.toFixed(2)}`);
+      
+    } else {
+      statusText.text("Complex Eigenvalues (pure rotation/scaling without invariant axes)").style("color", "#dc2626");
+      e1Line.attr("visibility", "hidden"); e1Head.attr("visibility", "hidden"); e1Label.attr("visibility", "hidden");
+      e2Line.attr("visibility", "hidden"); e2Head.attr("visibility", "hidden"); e2Label.attr("visibility", "hidden");
+    }
+  }
+  
+  update();
+  sliderA.inp.on("input", update);
+  sliderB.inp.on("input", update);
+  sliderC.inp.on("input", update);
+  sliderD.inp.on("input", update);
+  
+  return container.node();
+}
+```
 
 ::: {.callout-note appearance="simple"}
 **Why $\mathbf{x} \neq \mathbf{0}$ is required**
@@ -474,7 +599,158 @@ Under mild conditions, this converges to the dominant eigenvector. The convergen
 rate depends on the ratio $|\lambda_2/\lambda_1|$ — how much smaller the second
 eigenvalue is than the first.
 
-<!-- VIZ: Power iteration demo — animate the iteration Ax^(k)/||Ax^(k)|| converging to the dominant eigenvector for a 2×2 example with sliders for matrix entries; show the current iterate as an arrow on the unit circle, converging toward the dominant eigenvector direction -->
+```{ojs}
+//| echo: false
+powerIterationDemo = {
+  const d3 = await require("d3@7");
+  const W = 560, H = 400;
+  const ML = 40, MR = 40, MT = 40, MB = 40;
+  const innerW = W - ML - MR;
+  const innerH = H - MT - MB;
+  
+  const container = d3.create("div").style("max-width", W+"px").style("font-family", "sans-serif").style("margin", "0 auto");
+  
+  const controls = container.append("div").style("display", "flex").style("gap", "20px").style("margin-bottom", "10px").style("align-items", "center").style("background", "#f8fafc").style("padding", "10px").style("border-radius", "8px").style("border", "1px solid #e2e8f0");
+  
+  const matDiv = controls.append("div").style("display", "grid").style("grid-template-columns", "1fr 1fr").style("gap", "5px");
+  function makeInput(parent, initVal) {
+    return parent.append("input").attr("type", "number").attr("step", "0.1").attr("value", initVal).style("width", "50px").style("text-align", "center").style("font-family", "monospace");
+  }
+  const inpA = makeInput(matDiv, 2);
+  const inpB = makeInput(matDiv, 1);
+  const inpC = makeInput(matDiv, 1);
+  const inpD = makeInput(matDiv, 3);
+  
+  const btnDiv = controls.append("div").style("display", "flex").style("gap", "10px");
+  const stepBtn = btnDiv.append("button").text("Step").style("padding", "5px 12px").style("cursor", "pointer").style("background", "#3b82f6").style("color", "white").style("border", "none").style("border-radius", "4px").style("font-weight", "500");
+  const resetBtn = btnDiv.append("button").text("Reset").style("padding", "5px 12px").style("cursor", "pointer").style("background", "#e2e8f0").style("color", "#475569").style("border", "none").style("border-radius", "4px").style("font-weight", "500");
+  
+  const kText = controls.append("div").style("font-weight", "bold").style("font-size", "1.1rem").style("color", "#1e293b").style("margin-left", "auto").text("k = 0");
+  
+  const svg = container.append("svg").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const g = svg.append("g").attr("transform", `translate(${W/2},${H/2})`);
+  
+  const xScale = d3.scaleLinear([-1.5, 1.5], [-innerW/2, innerW/2]);
+  const yScale = d3.scaleLinear([-1.5, 1.5], [innerH/2, -innerH/2]);
+  
+  g.append("line").attr("x1", xScale(-1.5)).attr("y1", yScale(0)).attr("x2", xScale(1.5)).attr("y2", yScale(0)).attr("stroke", "#e5e7eb");
+  g.append("line").attr("x1", xScale(0)).attr("y1", yScale(-1.5)).attr("x2", xScale(0)).attr("y2", yScale(1.5)).attr("stroke", "#e5e7eb");
+  g.append("circle").attr("r", xScale(1) - xScale(0)).attr("fill", "none").attr("stroke", "#9ca3af");
+  
+  const tracePath = g.append("path").attr("fill", "none").attr("stroke", "#cbd5e1").attr("stroke-width", 2);
+  
+  const targetLine = g.append("line").attr("stroke", "#9ca3af").attr("stroke-width", 2).attr("stroke-dasharray", "5,5");
+  const targetHead = g.append("polygon").attr("fill", "#9ca3af");
+  const targetLabel = g.append("text").attr("fill", "#6b7280").attr("font-size", "12px").text(" Dominant Vector");
+  
+  const iterLine = g.append("line").attr("stroke", "#3b82f6").attr("stroke-width", 3);
+  const iterHead = g.append("polygon").attr("fill", "#3b82f6");
+  
+  let x_k = [1, 0];
+  let k = 0;
+  let trace = [[1,0]];
+  
+  function getDominantEigVec(a, b, c, d) {
+    const tr = a + d;
+    const det = a*d - b*c;
+    const disc = tr*tr - 4*det;
+    if (disc < 0) return null;
+    const lam1 = (tr + Math.sqrt(disc)) / 2;
+    const lam2 = (tr - Math.sqrt(disc)) / 2;
+    const dom = Math.abs(lam1) >= Math.abs(lam2) ? lam1 : lam2;
+    
+    let v;
+    if (Math.abs(b) > 1e-6) v = [b, dom - a];
+    else if (Math.abs(c) > 1e-6) v = [dom - d, c];
+    else v = dom === a ? [1, 0] : [0, 1];
+    
+    const mag = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
+    return [v[0]/mag, v[1]/mag];
+  }
+  
+  function drawVec(v, line, head, scale = 1) {
+    const sx = xScale(v[0]*scale);
+    const sy = yScale(v[1]*scale);
+    const ox = xScale(0);
+    const oy = yScale(0);
+    line.attr("x1", ox).attr("y1", oy).attr("x2", sx).attr("y2", sy);
+    const angle = Math.atan2(sy - oy, sx - ox);
+    const r = 10;
+    head.attr("points", `${sx},${sy} ${sx - r*Math.cos(angle - 0.5)},${sy - r*Math.sin(angle - 0.5)} ${sx - r*Math.cos(angle + 0.5)},${sy - r*Math.sin(angle + 0.5)}`);
+    return {sx, sy};
+  }
+  
+  function update() {
+    const a = +inpA.property("value");
+    const b = +inpB.property("value");
+    const c = +inpC.property("value");
+    const d = +inpD.property("value");
+    
+    const domV = getDominantEigVec(a, b, c, d);
+    
+    if (domV) {
+      targetLine.attr("visibility", "visible");
+      targetHead.attr("visibility", "visible");
+      targetLabel.attr("visibility", "visible");
+      
+      const {sx, sy} = drawVec(domV, targetLine, targetHead);
+      targetLabel.attr("x", sx + 12*Math.sign(domV[0])).attr("y", sy + 15*Math.sign(domV[1]) - 5);
+      
+      // Also potentially draw the negative dominant direction since power iteration can flip
+      if(domV[0]*x_k[0] + domV[1]*x_k[1] < 0) {
+          drawVec([-domV[0], -domV[1]], targetLine, targetHead);
+          targetLabel.attr("x", xScale(-domV[0]) + 12*Math.sign(-domV[0])).attr("y", yScale(-domV[1]) + 15*Math.sign(-domV[1]) - 5);
+      } else {
+          drawVec(domV, targetLine, targetHead);
+          targetLabel.attr("x", sx + 12*Math.sign(domV[0])).attr("y", sy + 15*Math.sign(domV[1]) - 5);
+      }
+    } else {
+      targetLine.attr("visibility", "hidden");
+      targetHead.attr("visibility", "hidden");
+      targetLabel.attr("visibility", "hidden");
+    }
+    
+    drawVec(x_k, iterLine, iterHead);
+    kText.text(`k = ${k}`);
+    
+    const lineGen = d3.line().x(d => xScale(d[0])).y(d => yScale(d[1]));
+    tracePath.datum(trace).attr("d", lineGen);
+  }
+  
+  stepBtn.on("click", () => {
+    const a = +inpA.property("value");
+    const b = +inpB.property("value");
+    const c = +inpC.property("value");
+    const d = +inpD.property("value");
+    
+    const newX = a*x_k[0] + b*x_k[1];
+    const newY = c*x_k[0] + d*x_k[1];
+    const mag = Math.sqrt(newX*newX + newY*newY);
+    if(mag > 0) {
+      x_k = [newX/mag, newY/mag];
+      trace.push([...x_k]);
+      k++;
+      update();
+    }
+  });
+  
+  resetBtn.on("click", () => {
+    x_k = [1, 0];
+    trace = [[1,0]];
+    k = 0;
+    update();
+  });
+  
+  inpA.on("change", () => resetBtn.node().click());
+  inpB.on("change", () => resetBtn.node().click());
+  inpC.on("change", () => resetBtn.node().click());
+  inpD.on("change", () => resetBtn.node().click());
+  
+  update();
+  
+  return container.node();
+}
+```
 
 ### Principal component analysis (PCA) — a preview
 

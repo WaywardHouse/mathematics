@@ -158,7 +158,164 @@ The field does $-\pi$ units of work on the particle — it opposes the motion.
 
 ---
 
-<!-- VIZ: Line integral visualisation — 2D vector field with a drawn curve C; slider moves a point along the curve; running total of the dot product F·dr is plotted below; toggle between different curves (straight line, semicircle, spiral) connecting the same endpoints to see how the integral changes when the field is not conservative -->
+```{ojs}
+//| echo: false
+lineIntegralDemo = {
+  const d3 = await require("d3@7");
+  const W = 560, H = 450;
+  const ML = 20, MR = 20, MT = 20, MB = 60;
+  const innerW = W - ML - MR;
+  const innerH = H - MT - MB;
+  
+  const container = d3.create("div").style("max-width", W+"px").style("font-family", "sans-serif").style("margin", "0 auto");
+  
+  const controls = container.append("div").style("margin-bottom", "15px").style("padding", "10px").style("background", "#f8fafc").style("border-radius", "8px").style("border", "1px solid #e2e8f0").style("display", "flex").style("flex-direction", "column").style("gap", "10px");
+  
+  const pathDiv = controls.append("div").style("display", "flex").style("gap", "15px").style("align-items", "center");
+  pathDiv.append("span").style("font-weight", "600").style("font-size", "0.9rem").text("Path C:");
+  const paths = [
+    {id: "line", label: "Straight Line", fn: t => [-2 + 4*t, 0], d: t => [4, 0]},
+    {id: "semi", label: "Semicircle", fn: t => [-2*Math.cos(Math.PI*t), 2*Math.sin(Math.PI*t)], d: t => [2*Math.PI*Math.sin(Math.PI*t), 2*Math.PI*Math.cos(Math.PI*t)]},
+    {id: "parabola", label: "Parabola", fn: t => [-2 + 4*t, 2 - 2*(2*t - 1)*(2*t - 1)], d: t => [4, -8*(2*t - 1)]}
+  ];
+  
+  paths.forEach((p, i) => {
+    const lbl = pathDiv.append("label").style("display", "flex").style("align-items", "center").style("gap", "4px").style("font-size", "0.9rem").style("cursor", "pointer");
+    const inp = lbl.append("input").attr("type", "radio").attr("name", "path_type").attr("value", p.id).style("margin", "0");
+    if(i===0) inp.property("checked", true);
+    lbl.append("span").text(p.label);
+    inp.on("change", () => { tSlider.property("value", 0); tValSpan.text("0.00"); update(); });
+  });
+  
+  const tDiv = controls.append("div").style("display", "flex").style("align-items", "center").style("gap", "10px").style("font-size", "0.9rem");
+  tDiv.append("span").text("t = ");
+  const tSlider = tDiv.append("input").attr("type", "range").attr("min", 0).attr("max", 1).attr("step", 0.01).attr("value", 0).style("flex", 1);
+  const tValSpan = tDiv.append("span").style("width", "35px").style("font-family", "monospace").text("0.00");
+  
+  const svg = container.append("svg").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const g = svg.append("g").attr("transform", `translate(${ML},${MT})`);
+  
+  const xyLim = 2.5;
+  const xScale = d3.scaleLinear([-xyLim, xyLim], [0, innerW]);
+  const yScale = d3.scaleLinear([-xyLim, xyLim], [innerH, 0]);
+  
+  g.append("line").attr("x1", xScale(-xyLim)).attr("y1", yScale(0)).attr("x2", xScale(xyLim)).attr("y2", yScale(0)).attr("stroke", "#cbd5e1");
+  g.append("line").attr("x1", xScale(0)).attr("y1", yScale(-xyLim)).attr("x2", xScale(0)).attr("y2", yScale(xyLim)).attr("stroke", "#cbd5e1");
+  
+  const F = (x, y) => [-y, x*x];
+  
+  const arrowGroup = g.append("g").attr("opacity", 0.3);
+  const arrowGridSize = 25;
+  for(let x=0; x<=innerW; x+=arrowGridSize) {
+    for(let y=0; y<=innerH; y+=arrowGridSize) {
+       const u = xScale.invert(x);
+       const v = yScale.invert(y);
+       const fv = F(u, v);
+       const speed = Math.sqrt(fv[0]*fv[0] + fv[1]*fv[1]);
+       if(speed > 0.1) {
+          const len = Math.min(speed*4, arrowGridSize*0.8);
+          const dx = (fv[0]/speed)*len;
+          const dy = -(fv[1]/speed)*len;
+          g.append("line").attr("x1", x).attr("y1", y).attr("x2", x+dx).attr("y2", y+dy).attr("stroke", "#334155").attr("stroke-width", 1);
+          g.append("circle").attr("cx", x).attr("cy", y).attr("r", 1.5).attr("fill", "#334155");
+       }
+    }
+  }
+  
+  const pathCurve = g.append("path").attr("fill", "none").attr("stroke", "#94a3b8").attr("stroke-width", 2.5).attr("stroke-dasharray", "4,4");
+  const traveledCurve = g.append("path").attr("fill", "none").attr("stroke", "#3b82f6").attr("stroke-width", 3);
+  
+  const fVec = g.append("g");
+  const fVecLine = fVec.append("line").attr("stroke", "#ef4444").attr("stroke-width", 2.5);
+  const fVecHead = fVec.append("polygon").attr("fill", "#ef4444");
+  
+  const drVec = g.append("g");
+  const drVecLine = drVec.append("line").attr("stroke", "#10b981").attr("stroke-width", 2.5);
+  const drVecHead = drVec.append("polygon").attr("fill", "#10b981");
+  
+  const particle = g.append("circle").attr("r", 6).attr("fill", "#3b82f6");
+  
+  const plotG = svg.append("g").attr("transform", `translate(${ML},${H - MB + 20})`);
+  const ptScale = d3.scaleLinear([0, 1], [0, innerW]);
+  const pyScale = d3.scaleLinear([-15, 15], [30, 0]);
+  
+  plotG.append("line").attr("x1", 0).attr("x2", innerW).attr("y1", pyScale(0)).attr("y2", pyScale(0)).attr("stroke", "#cbd5e1");
+  const intArea = plotG.append("path").attr("fill", "rgba(59, 130, 246, 0.2)");
+  const intLine = plotG.append("path").attr("fill", "none").attr("stroke", "#3b82f6").attr("stroke-width", 2);
+  const intDot = plotG.append("circle").attr("r", 4).attr("fill", "#2563eb");
+  
+  const totalLabel = svg.append("text").attr("x", W - MR).attr("y", H - 5).attr("text-anchor", "end").style("font-family", "monospace").style("font-size", "14px").style("font-weight", "bold");
+  
+  function drawVec(vG, x, y, dx, dy) {
+    vG.select("line").attr("x1", x).attr("y1", y).attr("x2", x+dx).attr("y2", y+dy);
+    const angle = Math.atan2(dy, dx);
+    const r = 6;
+    vG.select("polygon").attr("points", `${x+dx},${y+dy} ${x+dx - r*Math.cos(angle - 0.5)},${y+dy - r*Math.sin(angle - 0.5)} ${x+dx - r*Math.cos(angle + 0.5)},${y+dy - r*Math.sin(angle + 0.5)}`);
+  }
+  
+  function update() {
+    const selectedId = pathDiv.select('input[name="path_type"]:checked').property("value");
+    const pdef = paths.find(p => p.id === selectedId);
+    const t = +tSlider.property("value");
+    tValSpan.text(t.toFixed(2));
+    
+    const pts = d3.range(0, 1.01, 0.02).map(tt => pdef.fn(tt));
+    const lineGen = d3.line().x(d => xScale(d[0])).y(d => yScale(d[1]));
+    pathCurve.attr("d", lineGen(pts));
+    
+    const ptsTraveled = d3.range(0, t+0.001, 0.02).map(tt => pdef.fn(tt));
+    traveledCurve.attr("d", lineGen(ptsTraveled));
+    
+    const pt = pdef.fn(t);
+    const px = xScale(pt[0]);
+    const py = yScale(pt[1]);
+    particle.attr("cx", px).attr("cy", py);
+    
+    const fv = F(pt[0], pt[1]);
+    drawVec(fVec, px, py, fv[0]*15, -fv[1]*15);
+    
+    const dr = pdef.d(t);
+    drawVec(drVec, px, py, dr[0]*5, -dr[1]*5);
+    
+    const intData = d3.range(0, t+0.001, 0.02).map(tt => {
+       const cpt = pdef.fn(tt);
+       const cdr = pdef.d(tt);
+       const cf = F(cpt[0], cpt[1]);
+       const dot = cf[0]*cdr[0] + cf[1]*cdr[1];
+       return {t: tt, val: dot};
+    });
+    
+    const areaGen = d3.area().x(d => ptScale(d.t)).y0(pyScale(0)).y1(d => pyScale(d.val));
+    const lineGenPlot = d3.line().x(d => ptScale(d.t)).y(d => pyScale(d.val));
+    
+    intArea.attr("d", areaGen(intData));
+    intLine.attr("d", lineGenPlot(intData));
+    
+    if(intData.length > 0) {
+      const last = intData[intData.length-1];
+      intDot.attr("cx", ptScale(last.t)).attr("cy", pyScale(last.val)).attr("visibility", "visible");
+    } else {
+      intDot.attr("visibility", "hidden");
+    }
+    
+    let sum = 0;
+    const dt = 0.005;
+    for(let tt=0; tt<=t; tt+=dt) {
+      const cpt = pdef.fn(tt);
+      const cdr = pdef.d(tt);
+      const cf = F(cpt[0], cpt[1]);
+      sum += (cf[0]*cdr[0] + cf[1]*cdr[1]) * dt;
+    }
+    
+    totalLabel.text(`\u222B F \u00B7 dr \u2248 ${sum.toFixed(2)}`);
+  }
+  
+  tSlider.on("input", update);
+  update();
+  
+  return container.node();
+}
+```
 
 ---
 
@@ -267,7 +424,109 @@ integral on the right of Green's theorem.
 
 ---
 
-<!-- VIZ: Green's theorem interactive — 2D region with a closed boundary drawn in the plane; a slider labelled "decomposition level" subdivides the interior into finer grids; arrows show the line integral direction on each cell boundary; interior edges light up as "cancelling pairs" and fade out; the surviving outer boundary glows; a panel below shows the running sums: left-hand side line integral value and right-hand side double integral value converging to the same number -->
+```{ojs}
+//| echo: false
+greensTheoremDemo = {
+  const d3 = await require("d3@7");
+  const W = 560, H = 450;
+  const ML = 30, MR = 30, MT = 30, MB = 60;
+  const innerW = W - ML - MR;
+  const innerH = H - MT - MB;
+  
+  const container = d3.create("div").style("max-width", W+"px").style("font-family", "sans-serif").style("margin", "0 auto");
+  
+  const controls = container.append("div").style("margin-bottom", "15px").style("padding", "10px").style("background", "#f8fafc").style("border-radius", "8px").style("border", "1px solid #e2e8f0").style("display", "flex").style("align-items", "center").style("gap", "15px");
+  
+  controls.append("span").style("font-weight", "600").style("font-size", "0.9rem").text("Decomposition (NxN):");
+  
+  const slider = controls.append("input").attr("type", "range").attr("min", 0).attr("max", 3).attr("step", 1).attr("value", 0).style("width", "100px");
+  const valSpan = controls.append("span").style("font-family", "monospace").text("1x1").style("width", "35px");
+  
+  const animBtn = controls.append("button").text("Animate Cancellation").style("padding", "5px 12px").style("cursor", "pointer").style("background", "#10b981").style("color", "white").style("border", "none").style("border-radius", "4px").style("font-weight", "500").style("margin-left", "auto");
+  
+  const svg = container.append("svg").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const g = svg.append("g").attr("transform", `translate(${ML},${MT})`);
+  
+  const rectW = innerW * 0.8;
+  const rectH = innerH * 0.8;
+  const offsetX = (innerW - rectW)/2;
+  const offsetY = (innerH - rectH)/2;
+  
+  const cellsGroup = g.append("g");
+  
+  const readout = container.append("div").style("display", "flex").style("justify-content", "space-around").style("margin-top", "10px").style("font-family", "monospace").style("font-size", "0.95rem").style("font-weight", "bold").style("background", "#f1f5f9").style("padding", "10px").style("border-radius", "6px").style("color", "#1e293b");
+  const leftSide = readout.append("div").text("\u222E F \u00B7 dr = 12.00");
+  const rightSide = readout.append("div").text("\u222C (\u2207 \u00D7 F) dA = 12.00");
+  
+  let animationRef = null;
+  const totalCurl = 12.00; // Simulated exact answer
+  
+  function drawCells(N) {
+     cellsGroup.selectAll("*").remove();
+     
+     const cw = rectW / N;
+     const ch = rectH / N;
+     
+     leftSide.text(`\u222E C F \u00B7 dr \u2248 ${totalCurl.toFixed(2)}`);
+     rightSide.text(`\u222C \u2207 \u00D7 F dA \u2248 ${totalCurl.toFixed(2)}`);
+     
+     for(let i=0; i<N; i++) {
+        for(let j=0; j<N; j++) {
+           const x = offsetX + i*cw;
+           const y = offsetY + j*ch;
+           
+           const cellG = cellsGroup.append("g").attr("class", "cell");
+           cellG.append("rect").attr("x", x).attr("y", y).attr("width", cw).attr("height", ch).attr("fill", "rgba(59, 130, 246, 0.05)").attr("stroke", "#cbd5e1").attr("stroke-width", 1.5);
+           
+           const pad = Math.min(cw, ch) * 0.15;
+           const L = x + pad; const R = x + cw - pad;
+           const T = y + pad; const B = y + ch - pad;
+           
+           const lLen = 6;
+           const color = "#3b82f6";
+           
+           const addArrow = (x1,y1, x2,y2, isExternal) => {
+               const gA = cellG.append("g").attr("class", isExternal ? "ext-boundary" : "int-boundary").attr("opacity", 1);
+               gA.append("line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2).attr("stroke", color).attr("stroke-width", 2);
+               const mx = (x1+x2)/2; const my = (y1+y2)/2;
+               const angle = Math.atan2(y2-y1, x2-x1);
+               gA.append("polygon").attr("points", `${mx},${my} ${mx-lLen*Math.cos(angle-0.5)},${my-lLen*Math.sin(angle-0.5)} ${mx-lLen*Math.cos(angle+0.5)},${my-lLen*Math.sin(angle+0.5)}`).attr("fill", color);
+           };
+           
+           addArrow(L, T, R, T, j===0); // top
+           addArrow(R, T, R, B, i===N-1); // right
+           addArrow(R, B, L, B, j===N-1); // bottom
+           addArrow(L, B, L, T, i===0); // left
+        }
+     }
+  }
+  
+  function update() {
+     if(animationRef) clearTimeout(animationRef);
+     const val = Math.pow(2, +slider.property("value"));
+     valSpan.text(`${val}x${val}`);
+     drawCells(val);
+  }
+  
+  animBtn.on("click", () => {
+      cellsGroup.selectAll("rect").transition().duration(200).attr("fill", "transparent").attr("stroke", "transparent");
+      cellsGroup.selectAll(".int-boundary").transition().duration(200).attr("stroke", "#ef4444").attr("fill", "#ef4444").selectAll("polygon").attr("fill", "#ef4444");
+      
+      setTimeout(() => {
+          cellsGroup.selectAll(".int-boundary").transition().duration(1000).attr("opacity", 0);
+          cellsGroup.selectAll(".ext-boundary").transition().duration(500).attr("stroke", "#10b981").attr("stroke-width", 3).selectAll("polygon").attr("fill", "#10b981");
+      }, 500);
+      
+      // Auto-reset
+      animationRef = setTimeout(update, 3500);
+  });
+  
+  slider.on("input", update);
+  update();
+  
+  return container.node();
+}
+```
 
 ---
 
@@ -396,7 +655,113 @@ theorem.
 
 ---
 
-<!-- VIZ: Flux through a closed surface — interactive 3D box; sliders control the components of a uniform vector field F = (a, b, c); the six faces of the box are coloured by their individual flux contribution (positive = warm, negative = cool); a readout shows each face's flux, the total surface integral, and ∇·F × Volume; verify they always agree; a second tab shows a sphere with a point source at the centre, animating radial field lines and the flux through concentric spheres (constant by Gauss's law) -->
+```{ojs}
+//| echo: false
+fluxBoxDemo = {
+  const d3 = await require("d3@7");
+  const W = 560, H = 380;
+  
+  const container = d3.create("div").style("max-width", W+"px").style("font-family", "sans-serif").style("margin", "0 auto");
+  
+  const controls = container.append("div").style("margin-bottom", "15px").style("padding", "10px").style("background", "#f8fafc").style("border-radius", "8px").style("border", "1px solid #e2e8f0").style("display", "grid").style("grid-template-columns", "1fr 1fr 1fr").style("gap", "15px");
+  
+  function makeSlider(parent, label, initVal) {
+    const wrap = parent.append("label").style("display", "flex").style("flex-direction", "column").style("gap", "4px").style("font-size", "0.9rem").style("font-family", "monospace");
+    const top = wrap.append("div").style("display", "flex").style("justify-content", "space-between");
+    top.append("span").text(label);
+    const val = top.append("span").text(initVal.toFixed(1));
+    const inp = wrap.append("input").attr("type", "range").attr("min", -5).attr("max", 5).attr("step", 0.1).attr("value", initVal);
+    return {inp, val};
+  }
+  
+  const sFx = makeSlider(controls, "F\u2093", 2);
+  const sFy = makeSlider(controls, "F\u2098", -1);
+  const sFz = makeSlider(controls, "F\u2092", 3);
+  
+  const layout = container.append("div").style("display", "flex").style("gap", "20px").style("align-items", "center");
+  
+  const svg = layout.append("svg").attr("width", 320).attr("height", 320).attr("viewBox", `0 0 320 320`);
+  const g = svg.append("g").attr("transform", `translate(160, 160)`);
+  
+  const readout = layout.append("div").style("flex", 1).style("display", "flex").style("flex-direction", "column").style("gap", "6px").style("font-family", "monospace").style("font-size", "0.9rem");
+  
+  const colorScale = d3.scaleSequential(d3.interpolateRdBu).domain([20, -20]);
+  
+  const isoX = (x, y, z) => (y - x) * 0.866;
+  const isoY = (x, y, z) => (x + y) * 0.5 - z;
+  
+  const L = 80;
+  
+  const faces = [
+    {id: "Top", n: [0, 0, 1], pts: [[-L,-L,L], [L,-L,L], [L,L,L], [-L,L,L]]},
+    {id: "Front", n: [1, 0, 0], pts: [[L,-L,-L], [L,-L,L], [L,L,L], [L,L,-L]]},
+    {id: "Right", n: [0, 1, 0], pts: [[-L,L,-L], [L,L,-L], [L,L,L], [-L,L,L]]},
+    {id: "Bottom", n: [0, 0, -1], pts: [[-L,-L,-L], [L,-L,-L], [L,L,-L], [-L,L,-L]], hidden: true},
+    {id: "Back", n: [-1, 0, 0], pts: [[-L,-L,-L], [-L,-L,L], [-L,L,L], [-L,L,-L]], hidden: true},
+    {id: "Left", n: [0, -1, 0], pts: [[-L,-L,-L], [L,-L,-L], [L,-L,L], [-L,-L,L]], hidden: true}
+  ];
+  
+  const visibleFaces = faces.filter(f => !f.hidden);
+  
+  const facePaths = visibleFaces.map(f => {
+     const path = g.append("path").attr("stroke", "#334155").attr("stroke-width", 1.5).attr("stroke-linejoin", "round");
+     const cx = d3.mean(f.pts, p => isoX(...p));
+     const cy = d3.mean(f.pts, p => isoY(...p));
+     const txt = g.append("text").attr("x", cx).attr("y", cy).attr("text-anchor", "middle").attr("alignment-baseline", "middle").style("font-weight", "bold").style("fill", "#000").style("text-shadow", "0px 0px 3px white, 0px 0px 3px white");
+     return {path, txt, f};
+  });
+  
+  function update() {
+    const fx = +sFx.inp.property("value");
+    const fy = +sFy.inp.property("value");
+    const fz = +sFz.inp.property("value");
+    
+    sFx.val.text(fx.toFixed(1));
+    sFy.val.text(fy.toFixed(1));
+    sFz.val.text(fz.toFixed(1));
+    
+    readout.selectAll("*").remove();
+    readout.append("strong").text("Flux Contributions:").style("margin-bottom", "4px").style("font-family", "sans-serif");
+    
+    let totalFlux = 0;
+    const A = 4; // Area factor
+    
+    faces.forEach(f => {
+       const flux = (fx*f.n[0] + fy*f.n[1] + fz*f.n[2]) * A;
+       totalFlux += flux;
+       
+       const row = readout.append("div").style("display", "flex").style("justify-content", "space-between");
+       row.append("span").text(`${f.id}:`);
+       row.append("span").text(flux > 0 ? `+${flux.toFixed(1)}` : flux.toFixed(1)).style("color", flux > 0 ? "#b91c1c" : (flux < 0 ? "#1d4ed8" : "#475569"));
+    });
+    
+    readout.append("hr").style("width", "100%").style("border", "0.5px solid #cbd5e1").style("margin", "6px 0");
+    const totRow = readout.append("div").style("display", "flex").style("justify-content", "space-between").style("font-weight", "bold");
+    totRow.append("span").text(`\u222F F \u00B7 dA:`);
+    totRow.append("span").text(totalFlux.toFixed(1));
+    
+    const divRow = readout.append("div").style("display", "flex").style("justify-content", "space-between").style("font-weight", "bold");
+    divRow.append("span").text(`(\u2207 \u00B7 F) \u00D7 Vol:`);
+    divRow.append("span").text("0.0");
+    
+    const lineGen = d3.line().x(p => isoX(...p)).y(p => isoY(...p)).curve(d3.curveLinearClosed);
+    
+    facePaths.forEach(fp => {
+       const flux = (fx*fp.f.n[0] + fy*fp.f.n[1] + fz*fp.f.n[2]) * A;
+       fp.path.attr("d", lineGen(fp.f.pts)).attr("fill", colorScale(flux));
+       fp.txt.text(flux > 0 ? `+${flux.toFixed(1)}` : flux.toFixed(1));
+    });
+  }
+  
+  sFx.inp.on("input", update);
+  sFy.inp.on("input", update);
+  sFz.inp.on("input", update);
+  
+  update();
+  
+  return container.node();
+}
+```
 
 ---
 

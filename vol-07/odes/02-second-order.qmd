@@ -814,13 +814,6 @@ function makeStepperHTML(exerciseNum, steps) {
 
 **1.** Find the general solution of $y'' - 5y' + 6y = 0$.
 
-<!-- STEPPER -->
-Step 1 | Write the characteristic equation | $r^2 - 5r + 6 = 0$
-Step 2 | Factor | $(r - 2)(r - 3) = 0$
-Step 3 | Read off the roots | $r_1 = 2,\quad r_2 = 3$
-Step 4 | Discriminant check | $\Delta = 25 - 24 = 1 > 0$ — distinct real roots
-Step 5 | Write the general solution | $y = C_1 e^{2x} + C_2 e^{3x}$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -836,15 +829,6 @@ makeStepperHTML(1, [
 
 **2.** Solve $y'' + 4y' + 4y = 0$, $y(0) = 1$, $y'(0) = 0$.
 
-<!-- STEPPER -->
-Step 1 | Write the characteristic equation | $r^2 + 4r + 4 = 0$
-Step 2 | Factor as a perfect square | $(r + 2)^2 = 0$
-Step 3 | Identify the repeated root | $r = -2$
-Step 4 | General solution (repeated root form) | $y = (C_1 + C_2 x)e^{-2x}$
-Step 5 | Apply $y(0) = 1$ | $C_1 = 1$
-Step 6 | Differentiate: $y' = (C_2 - 2C_1 - 2C_2 x)e^{-2x}$; apply $y'(0) = 0$ | $C_2 - 2(1) = 0 \Rightarrow C_2 = 2$
-Step 7 | Final solution | $y = (1 + 2x)e^{-2x}$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -863,14 +847,6 @@ makeStepperHTML(2, [
 
 **3.** Solve $y'' + 9y = 0$, $y(0) = 0$, $y'(0) = 3$.
 
-<!-- STEPPER -->
-Step 1 | Characteristic equation | $r^2 + 9 = 0$
-Step 2 | Roots | $r = \pm 3i$ — pure imaginary; $\alpha = 0$, $\beta = 3$
-Step 3 | General solution | $y = C_1 \cos(3x) + C_2 \sin(3x)$
-Step 4 | Apply $y(0) = 0$ | $C_1 = 0$
-Step 5 | Differentiate: $y' = -3C_1\sin(3x) + 3C_2\cos(3x)$; apply $y'(0) = 3$ | $3C_2 = 3 \Rightarrow C_2 = 1$
-Step 6 | Final solution | $y = \sin(3x)$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -888,14 +864,6 @@ makeStepperHTML(3, [
 
 **4.** Find a particular solution of $y'' + 3y' + 2y = e^{-3x}$.
 
-<!-- STEPPER -->
-Step 1 | Characteristic equation for the homogeneous part | $r^2 + 3r + 2 = (r+1)(r+2) = 0$; roots $r = -1, -2$
-Step 2 | Check: does $e^{-3x}$ appear in $y_c$? | No — the exponent $-3$ does not match $-1$ or $-2$. No modification needed.
-Step 3 | Guess $y_p = Ae^{-3x}$; compute derivatives | $y_p' = -3Ae^{-3x}$, $y_p'' = 9Ae^{-3x}$
-Step 4 | Substitute into the ODE | $9Ae^{-3x} + 3(-3A)e^{-3x} + 2Ae^{-3x} = (9A - 9A + 2A)e^{-3x} = 2Ae^{-3x}$
-Step 5 | Match to $e^{-3x}$ | $2A = 1 \Rightarrow A = \tfrac{1}{2}$
-Step 6 | Particular solution | $y_p = \tfrac{1}{2}e^{-3x}$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -915,16 +883,6 @@ makeStepperHTML(4, [
 
 *Note: the driving frequency $\omega = 2$ equals $\omega_0 = \sqrt{4} = 2$ — this is resonance. The standard guess fails; the modification rule applies.*
 
-<!-- STEPPER -->
-Step 1 | Characteristic equation | $r^2 + 4 = 0 \Rightarrow r = \pm 2i$
-Step 2 | Homogeneous solution | $y_c = C_1\cos(2x) + C_2\sin(2x)$
-Step 3 | Standard guess $A\cos(2x) + B\sin(2x)$ is already in $y_c$ — apply modification rule | Guess $y_p = x(A\cos(2x) + B\sin(2x))$
-Step 4 | Compute $y_p''$ using product rule | $y_p'' = -4x(A\cos 2x + B\sin 2x) + 2(-2A\sin 2x + 2B\cos 2x)\cdot 2$... simplifies to $-4Ax\cos 2x - 4Bx\sin 2x - 4A\sin 2x + 4B\cos 2x$
-Step 5 | Substitute $y_p'' + 4y_p = \cos(2x)$ | The $x$-terms cancel. Remaining: $-4A\sin(2x) + 4B\cos(2x) = \cos(2x)$
-Step 6 | Match coefficients | $-4A = 0 \Rightarrow A = 0$; $4B = 1 \Rightarrow B = \tfrac{1}{4}$
-Step 7 | Particular solution | $y_p = \tfrac{1}{4}x\sin(2x)$
-Step 8 | General solution | $y = C_1\cos(2x) + C_2\sin(2x) + \tfrac{1}{4}x\sin(2x)$
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -944,17 +902,6 @@ makeStepperHTML(5, [
 
 **6.** An RLC circuit has $L = 1$ H, $R = 2$ Ω, $C = \tfrac{1}{3}$ F with no forcing voltage. The governing equation for charge $q(t)$ is $L\ddot{q} + R\dot{q} + q/C = 0$. Find $q(t)$ given $q(0) = 1$ C, $\dot{q}(0) = 0$. Classify the response.
 
-<!-- STEPPER -->
-Step 1 | Write the ODE with given values | $\ddot{q} + 2\dot{q} + 3q = 0$
-Step 2 | Characteristic equation | $r^2 + 2r + 3 = 0$
-Step 3 | Discriminant | $\Delta = 4 - 12 = -8 < 0$ — complex roots; underdamped
-Step 4 | Roots | $r = \dfrac{-2 \pm \sqrt{-8}}{2} = -1 \pm i\sqrt{2}$
-Step 5 | General solution | $q = e^{-t}(C_1\cos(\sqrt{2}\,t) + C_2\sin(\sqrt{2}\,t))$
-Step 6 | Apply $q(0) = 1$ | $C_1 = 1$
-Step 7 | Differentiate; apply $\dot{q}(0) = 0$ | $\dot{q}(0) = -C_1 + \sqrt{2}\,C_2 = 0 \Rightarrow C_2 = \tfrac{1}{\sqrt{2}}$
-Step 8 | Final solution | $q(t) = e^{-t}\!\left(\cos(\sqrt{2}\,t) + \dfrac{1}{\sqrt{2}}\sin(\sqrt{2}\,t)\right)$
-Step 9 | Physical interpretation | The charge oscillates at $\omega_d = \sqrt{2}$ rad/s with an exponentially decaying envelope $e^{-t}$. The resistor dissipates energy; the circuit is underdamped.
-<!-- END STEPPER -->
 
 ```{ojs}
 //| echo: false

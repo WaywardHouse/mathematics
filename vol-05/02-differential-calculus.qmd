@@ -821,7 +821,6 @@ function makeStepperHTML(exerciseNum, steps) {
 **Exercise 1.** Differentiate $f(x) = 4x^5 - 3x^3 + 7x - 2$ using the
 power rule.
 
-<!-- STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -843,7 +842,6 @@ power rule.
 **Exercise 2.** Differentiate $f(x) = x^3 \cos(x)$ using the product
 rule.
 
-<!-- STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -863,7 +861,6 @@ rule.
 
 **Exercise 3.** Differentiate $f(x) = (2x^3 + 1)^5$ using the chain rule.
 
-<!-- STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -885,7 +882,6 @@ rule.
 **Exercise 4.** Find all critical points of $f(x) = x^3 - 3x^2 - 9x + 2$
 and classify each as a local maximum, local minimum, or neither.
 
-<!-- STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -910,7 +906,6 @@ and classify each as a local maximum, local minimum, or neither.
 units per day is $C(q) = q^3 - 6q^2 + 15q + 50$. At what production
 level is the marginal cost minimised? (Marginal cost is $C'(q)$.)
 
-<!-- STEPPER -->
 
 ```{ojs}
 //| echo: false
@@ -934,7 +929,6 @@ level is the marginal cost minimised? (Marginal cost is $C'(q)$.)
 water at time $t$ seconds is $h(t) = 45 - 4.9t^2$ metres. At what
 speed (in m/s) is it falling at the instant it hits the water?
 
-<!-- STEPPER -->
 
 ```{ojs}
 //| echo: false

@@ -1077,7 +1077,6 @@ exam percentage ($y$) shows:
 Describe the direction, form, and strength of the association, and
 estimate whether $r$ is closer to 0.1, 0.7, or 0.95. Justify your estimate.
 
-<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML(2, [
@@ -1109,7 +1108,6 @@ explain why.
 
 *(c)* "82% of students who own books score above average on reading tests."
 
-<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML(3, [
@@ -1137,7 +1135,6 @@ the regression equation.
 
 $$b_1 = \frac{\sum xy - \frac{(\sum x)(\sum y)}{n}}{\sum x^2 - \frac{(\sum x)^2}{n}} \qquad b_0 = \bar{y} - b_1 \bar{x}$$
 
-<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML(4, [
@@ -1174,7 +1171,6 @@ $$\hat{y} = 120 + 3.8x$$
 (d) On one 15°C day, the actual count was 182. Compute the residual
 and interpret it.
 
-<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML(5, [
@@ -1204,7 +1200,6 @@ between breakfast-eating habits and GPA. Using the concepts from this
 chapter, evaluate the causal claim. What questions would you ask before
 accepting the conclusion? What alternative explanations exist?
 
-<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML(6, [

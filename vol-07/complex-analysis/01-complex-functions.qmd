@@ -319,6 +319,9 @@ $$\boxed{u_x = v_y \qquad u_y = -v_x}$$
 
 These are the **Cauchy-Riemann (C-R) equations**. They are necessary for complex differentiability. If the partial derivatives are continuous in a neighbourhood of $z_0$, they are also sufficient.
 
+<!-- VIZ: Cauchy-Riemann equation explorer — dual-panel partial derivative display. Left panel: the complex plane showing a draggable point z₀. The reader can select a function from a dropdown (f(z) = z², f(z) = e^z, f(z) = z̄, f(z) = |z|²). Right panel: a 2×2 table of partial derivatives uₓ, u_y, vₓ, v_y computed numerically at z₀ and updated live as z₀ is dragged. Below the table, display whether the C-R equations hold: "uₓ = v_y? [value] vs [value] — YES ✓" or "NO ✗" in green/red. A colour-coded background fills the complex plane to show regions where the C-R equations hold (green tint) vs fail (red tint): for f = z̄ the entire plane is red; for f = z² the entire plane is green; for f = |z|² only the origin is green. This gives the reader a spatial map of analyticity. The series palette applies: green (#059669) for C-R satisfied, red (#dc2626) for violated. Builds on the complex multiplication visualiser that precedes it in this chapter: z₀ is the same orange point. -->
+
+
 **Consequence.** For $f(z) = \bar{z}$: $u_x = 1$ but $v_y = -1$. The C-R equations fail everywhere, so $\bar{z}$ is nowhere differentiable — even though its real and imaginary parts are smooth real functions.
 
 When the C-R equations hold, the derivative can be written in any of the equivalent forms:
@@ -344,6 +347,8 @@ A function satisfying Laplace's equation is **harmonic**. So: the real and imagi
 Conversely, given a harmonic $u$ on a **simply connected domain** — one with no holes, so that any closed loop inside it can be continuously shrunk to a point — there exists a **harmonic conjugate** $v$ (unique up to a constant) such that $f = u + iv$ is analytic. Finding $v$ from $u$ via the C-R equations is a standard technique.
 
 <!-- STUDENT: "Simply connected domain" is used twice in this chapter without definition. Engineers at this layer likely know it intuitively (no holes) but the term deserves at least a parenthetical: "a domain with no holes, so any closed loop in it can be shrunk to a point." It also appears in Chapter 2 — one clear definition in Chapter 1 would carry forward. -->
+
+<!-- VIZ: Harmonic function landscape — 3D surface and contour view. Select an analytic function from a dropdown (f = z², f = e^z, f = sin z). Show two side-by-side canvas panels: left shows the real part u(x,y) as a heat-map / contour plot with equipotential lines labelled; right shows the imaginary part v(x,y) similarly. Overlay the gradient field ∇u as small arrows on the u-panel. A toggle "Show Laplacian check" computes ∇²u numerically at each pixel and colours the result: near-zero in neutral grey, departures in red — for any analytic function this should be uniformly grey, confirming u is harmonic. A second toggle "Show orthogonality" draws sample level curves of u and v simultaneously on a single panel; they should cross at right angles everywhere the function is analytic (non-critical). The reader drags a point to see the live value u + iv and the gradient direction. This interactive makes tangible the statement that "the real and imaginary parts of any analytic function are harmonic" and that their level curves are orthogonal. Series thread: this establishes the potential / stream-function visual vocabulary that Chapter 4 (conformal mapping) builds on directly. -->
 
 ---
 
@@ -912,6 +917,7 @@ function makeStepperHTML(steps) {
 
 Verify that $f(z) = z^2$ satisfies the Cauchy-Riemann equations everywhere and compute $f'(z)$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -941,6 +947,7 @@ makeStepperHTML([
 
 Show that $u = x^3 - 3xy^2$ is harmonic, find its harmonic conjugate $v$, and identify the analytic function $f = u + iv$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -970,6 +977,7 @@ makeStepperHTML([
 
 Verify the Cauchy-Riemann equations for $f(z) = e^z$ and confirm $\frac{d}{dz}e^z = e^z$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -997,6 +1005,7 @@ makeStepperHTML([
 
 ### Exercise 4: Where is $f(z) = |z|^2$ differentiable?
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
@@ -1026,6 +1035,7 @@ makeStepperHTML([
 
 Compute $(1+i)^8$ and find all fourth roots of $-16$.
 
+<!-- STEPPER -->
 ```{ojs}
 //| echo: false
 makeStepperHTML([
