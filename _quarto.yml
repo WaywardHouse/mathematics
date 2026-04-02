@@ -43,11 +43,11 @@ book:
     right: |
       **Resources**
 
-      [Start Here](/start-here.html)
+      [Choose Your Path](https://wayward.house/start-here.html)
 
-      [Privacy](/privacy.html)
+      [Privacy](https://wayward.house/privacy.html)
 
-      [Terms](/terms.html)
+      [Terms](https://wayward.house/terms.html)
 
   chapters:
     - index.qmd
