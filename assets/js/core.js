@@ -398,6 +398,61 @@ function initPostProgress() {
   update();
 }
 
+function initQuartoBookLayout() {
+  const sidebar = document.getElementById('quarto-sidebar');
+  if (!sidebar) return;
+
+  const body = document.body;
+  const storageKey = 'wayward-maths-sidebar';
+  const media = window.matchMedia('(min-width: 1200px)');
+  const glass = document.getElementById('quarto-sidebar-glass');
+  const toggles = Array.from(document.querySelectorAll('[data-bs-target=".quarto-sidebar-collapse-item"]'));
+
+  function setDesktopState(open) {
+    body.classList.toggle('book-sidebar-collapsed', !open);
+    body.classList.toggle('book-sidebar-open', open);
+    try {
+      localStorage.setItem(storageKey, open ? 'open' : 'collapsed');
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
+  function applyDesktopDefault() {
+    if (!media.matches) {
+      body.classList.remove('book-sidebar-collapsed', 'book-sidebar-open');
+      return;
+    }
+
+    let stored = null;
+    try {
+      stored = localStorage.getItem(storageKey);
+    } catch {
+      // Ignore storage failures.
+    }
+
+    setDesktopState(stored === 'open' ? true : false);
+  }
+
+  toggles.forEach((toggle) => {
+    toggle.addEventListener('click', (event) => {
+      if (!media.matches) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setDesktopState(body.classList.contains('book-sidebar-collapsed'));
+    });
+  });
+
+  glass?.addEventListener('click', (event) => {
+    if (!media.matches) return;
+    event.preventDefault();
+    setDesktopState(false);
+  });
+
+  media.addEventListener('change', applyDesktopDefault);
+  applyDesktopDefault();
+}
+
 // ── Copy buttons ──────────────────────────────────────────────────────────────
 // Adds a "Copy" button to every <pre><code> block in .gh-content.
 // essay/core.js does the same for #essay-content; this covers regular posts.
@@ -438,6 +493,7 @@ function addCopyButtons() {
 
 async function init() {
   injectWaywardChrome();
+  initQuartoBookLayout();
 
   // Pass the main content element to detect() so it can check text content
   // (used by math detection to find bare $ signs).
