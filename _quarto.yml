@@ -11,6 +11,7 @@ book:
   author: "Paul Hobson"
   date: last-modified
   search: true
+  page-navigation: false
   repo-url: https://github.com/wayward-house/mathematics
   repo-actions: [edit, issue]
   sharing: [twitter, linkedin]

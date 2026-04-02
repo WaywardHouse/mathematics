@@ -229,9 +229,7 @@ body.nav-sidebar .page-columns {
 }
 
 .page-navigation {
-  border-top: 1px solid var(--wh-rule);
-  padding-top: 1.5rem;
-  margin-top: 3rem;
+  display: none !important;
 }
 
 .page-footer {
