@@ -740,3 +740,61 @@ brief naming:
 6. one thing the estimate still cannot guarantee
 
 <!-- VIZ: Observation-versus-state explorer. Let the reader choose among three contexts (process monitoring, navigation, remote sensing) and show the same abstract pipeline: hidden state -> observation operator -> noisy measurement -> updated estimate. Keep the diagram identical in structure while only the labels and example signals change. -->
+
+```{ojs}
+//| echo: false
+{
+  const contexts = {
+    process: { label: "Process monitoring", state: "reactor temperature field", obs: "thermocouple map H", meas: "sensor temperatures", est: "updated thermal estimate" },
+    navigation: { label: "Navigation", state: "vehicle position + velocity", obs: "GPS/IMU observation H", meas: "sensor packet", est: "state estimate" },
+    remote: { label: "Remote sensing", state: "soil moisture profile", obs: "radiative transfer H", meas: "measured radiance", est: "retrieved moisture" }
+  };
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 740px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; align-items:end; margin-bottom:0.75rem;";
+  const wrap = document.createElement("label");
+  wrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  wrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Context" }));
+  const select = document.createElement("select");
+  select.style.cssText = "padding:0.35rem 0.55rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+  Object.entries(contexts).forEach(([k,v])=>{const o=document.createElement("option"); o.value=k; o.textContent=v.label; select.appendChild(o);});
+  wrap.appendChild(select); controls.appendChild(wrap);
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 680 220");
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function drawArrow(x1,y1,x2,y2,color="#374151"){const l=svgEl("line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",color); l.setAttribute("stroke-width","2"); svg.appendChild(l); const t1=svgEl("line"); t1.setAttribute("x1",x2); t1.setAttribute("y1",y2); t1.setAttribute("x2",x2-10); t1.setAttribute("y2",y2-5); t1.setAttribute("stroke",color); t1.setAttribute("stroke-width","2"); svg.appendChild(t1); const t2=svgEl("line"); t2.setAttribute("x1",x2); t2.setAttribute("y1",y2); t2.setAttribute("x2",x2-10); t2.setAttribute("y2",y2+5); t2.setAttribute("stroke",color); t2.setAttribute("stroke-width","2"); svg.appendChild(t2);}
+  function text(x,y,t,fill="#374151",size=12,anchor="middle",weight="400"){const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);}
+
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const c = contexts[select.value];
+    const boxes = [
+      { x: 30, y: 78, w: 130, h: 54, fill: "#eff6ff", stroke: "#2563eb", title: "hidden state", body: c.state },
+      { x: 215, y: 78, w: 130, h: 54, fill: "#f8fafc", stroke: "#9ca3af", title: "observation operator", body: c.obs },
+      { x: 400, y: 78, w: 110, h: 54, fill: "#fef3c7", stroke: "#f59e0b", title: "measurement", body: c.meas },
+      { x: 555, y: 78, w: 100, h: 54, fill: "#ecfdf5", stroke: "#059669", title: "updated estimate", body: c.est }
+    ];
+    boxes.forEach(b => { const r=svgEl("rect"); r.setAttribute("x",b.x); r.setAttribute("y",b.y); r.setAttribute("width",b.w); r.setAttribute("height",b.h); r.setAttribute("rx","10"); r.setAttribute("fill",b.fill); r.setAttribute("stroke",b.stroke); r.setAttribute("stroke-width","2"); svg.appendChild(r); text(b.x + b.w/2, b.y + 18, b.title, b.stroke, 12, "middle", "700"); text(b.x + b.w/2, b.y + 38, b.body, "#374151", 11); });
+    drawArrow(160,105,215,105);
+    drawArrow(345,105,400,105);
+    drawArrow(510,105,555,105);
+    drawArrow(605,132,605,182,"#7c3aed");
+    drawArrow(605,182,95,182,"#7c3aed");
+    drawArrow(95,182,95,132,"#7c3aed");
+    text(452,172,"predict-update loop","#7c3aed",12,"middle","700");
+    text(455,58,"same abstract pipeline in every field","#6b7280",12);
+    caption.textContent = "The box structure stays the same across process monitoring, navigation, and remote sensing. Only the labels change. That is the main estimation point: different applications reuse the same hidden-state-to-measurement pipeline.";
+  }
+
+  select.addEventListener("input", redraw);
+  container.append(controls, svg, caption);
+  redraw();
+  return container;
+}
+```

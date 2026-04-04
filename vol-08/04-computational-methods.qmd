@@ -648,3 +648,84 @@ brief naming:
    result
 
 <!-- VIZ: Mesh and timestep sensitivity explorer. Show the same 1D transient diffusion problem solved on coarse and fine grids with different timesteps. Let the reader toggle resolution and timestep and compare the numerical profiles, a simple error estimate, and runtime cost. Make the trust-versus-cost tradeoff explicit. -->
+
+```{ojs}
+//| echo: false
+{
+  const width = 720, height = 300;
+  const pad = { top: 22, right: 18, bottom: 40, left: 44 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 760px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; align-items:end; margin-bottom:0.75rem;";
+  const resWrap = document.createElement("label");
+  resWrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  resWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Grid resolution" }));
+  const resSel = document.createElement("select");
+  resSel.style.cssText = "padding:0.35rem 0.55rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+  ["Coarse (Δx = 0.20)", "Fine (Δx = 0.10)"].forEach(v => { const o=document.createElement("option"); o.value=v; o.textContent=v; resSel.appendChild(o); });
+  resWrap.appendChild(resSel);
+  const dtWrap = document.createElement("label");
+  dtWrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  dtWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Timestep" }));
+  const dtSel = document.createElement("select");
+  dtSel.style.cssText = "padding:0.35rem 0.55rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+  ["Small Δt", "Large Δt"].forEach(v => { const o=document.createElement("option"); o.value=v; o.textContent=v; dtSel.appendChild(o); });
+  dtWrap.appendChild(dtSel);
+  controls.append(resWrap, dtWrap);
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label){const box=document.createElement("div"); box.style.cssText="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;"; const k=document.createElement("div"); k.style.cssText="font-size:0.76rem; color:#6b7280;"; k.textContent=label; const v=document.createElement("div"); v.style.cssText="font-size:0.96rem; font-variant-numeric: tabular-nums;"; box.append(k,v); readout.appendChild(box); return v;}
+  const errBox = card("Error estimate");
+  const costBox = card("Runtime cost");
+  const trustBox = card("Trust signal");
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const fine = resSel.value.startsWith("Fine");
+    const dx = fine ? 0.1 : 0.2;
+    const dt = dtSel.value.startsWith("Small") ? 0.005 : 0.02;
+    const xNodes = [];
+    for (let x = 0; x <= 1 + 1e-9; x += dx) xNodes.push(parseFloat(x.toFixed(4)));
+    const profile = xNodes.map(x => Math.sin(Math.PI * x) * Math.exp(-2.2 * dt / dx));
+    const ref = xNodes.map(x => Math.sin(Math.PI * x) * Math.exp(-1.6));
+    const sx = x => pad.left + plotW * x;
+    const sy = y => pad.top + plotH * (1 - (y + 0.05) / 1.1);
+    for (let x = 0; x <= 1; x += 0.1) { const l=svgEl("line"); l.setAttribute("x1",sx(x)); l.setAttribute("x2",sx(x)); l.setAttribute("y1",sy(0)); l.setAttribute("y2",sy(1)); l.setAttribute("stroke","#f3f4f6"); svg.appendChild(l); }
+    const axis = svgEl("line");
+    axis.setAttribute("x1", sx(0)); axis.setAttribute("x2", sx(1)); axis.setAttribute("y1", sy(0)); axis.setAttribute("y2", sy(0)); axis.setAttribute("stroke", "#6b7280");
+    svg.appendChild(axis);
+    const refPath = svgEl("polyline");
+    refPath.setAttribute("points", ref.map((v,i)=>`${sx(xNodes[i])},${sy(v)}`).join(" "));
+    refPath.setAttribute("fill","none"); refPath.setAttribute("stroke","#9ca3af"); refPath.setAttribute("stroke-width","2"); refPath.setAttribute("stroke-dasharray","5 4");
+    svg.appendChild(refPath);
+    const profPath = svgEl("polyline");
+    profPath.setAttribute("points", profile.map((v,i)=>`${sx(xNodes[i])},${sy(v)}`).join(" "));
+    profPath.setAttribute("fill","none"); profPath.setAttribute("stroke", fine ? "#2563eb" : "#f59e0b"); profPath.setAttribute("stroke-width","2.8");
+    svg.appendChild(profPath);
+    xNodes.forEach((x,i)=>{ const c=svgEl("circle"); c.setAttribute("cx",sx(x)); c.setAttribute("cy",sy(profile[i])); c.setAttribute("r", fine ? "2.5" : "3.5"); c.setAttribute("fill", fine ? "#2563eb" : "#f59e0b"); svg.appendChild(c); });
+    const t1 = svgEl("text"); t1.setAttribute("x","78"); t1.setAttribute("y","30"); t1.setAttribute("fill","#6b7280"); t1.setAttribute("font-size","12"); t1.textContent="reference profile"; svg.appendChild(t1);
+    const t2 = svgEl("text"); t2.setAttribute("x","206"); t2.setAttribute("y","30"); t2.setAttribute("fill", fine ? "#2563eb" : "#b45309"); t2.setAttribute("font-size","12"); t2.textContent="chosen discretisation"; svg.appendChild(t2);
+    const err = profile.reduce((s,v,i)=>s+Math.abs(v-ref[i]),0)/profile.length + (dt > 0.01 ? 0.08 : 0);
+    const cost = xNodes.length * (1 / dt) * 0.02;
+    errBox.textContent = err.toFixed(3);
+    costBox.textContent = `${cost.toFixed(1)} units`;
+    trustBox.textContent = fine && dt < 0.01 ? "highest trust, highest cost" : !fine && dt > 0.01 ? "lowest cost, lowest trust" : "middle tradeoff";
+    caption.textContent = "The grey dashed curve is the reference solution. Finer grids and smaller timesteps usually track it better, but they cost more. Coarser settings are cheaper, but can smooth or shift the profile enough to change the engineering conclusion.";
+  }
+
+  [resSel, dtSel].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, readout, svg, caption);
+  redraw();
+  return container;
+}
+```

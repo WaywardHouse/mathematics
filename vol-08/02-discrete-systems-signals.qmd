@@ -744,3 +744,130 @@ Prepare a one-page systems sketch naming:
 6. one reason filtering can distort what you care about
 
 <!-- VIZ: Discrete-time filter sandbox. Let the reader switch between raw and filtered sequences for a synthetic noisy signal, choose a 3-point or 5-point moving average, and see three coordinated views: sample values as points, the filtered sequence, and a simple lag/error readout. Make the smoothing-versus-delay tradeoff visually unavoidable. -->
+
+Use the sandbox below to compare smoothing against delay directly.
+
+```{ojs}
+//| echo: false
+{
+  const N = 40;
+  const width = 700, height = 280;
+  const pad = { top: 22, right: 18, bottom: 40, left: 44 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 740px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; align-items:end; margin-bottom:0.75rem;";
+  const kindWrap = document.createElement("label");
+  kindWrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  kindWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Filter" }));
+  const kind = document.createElement("select");
+  kind.style.cssText = "padding:0.35rem 0.55rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+  ["3-point moving average", "5-point moving average"].forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = v;
+    kind.appendChild(opt);
+  });
+  kindWrap.appendChild(kind);
+  const noiseWrap = document.createElement("label");
+  noiseWrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  noiseWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Noise level" }));
+  const noise = document.createElement("input");
+  noise.type = "range"; noise.min = "0"; noise.max = "1.5"; noise.step = "0.05"; noise.value = "0.7";
+  const noiseVal = document.createElement("span");
+  noiseVal.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  noiseWrap.append(noise, noiseVal);
+  controls.append(kindWrap, noiseWrap);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label) {
+    const box = document.createElement("div");
+    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
+    k.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
+    box.append(k, v);
+    readout.appendChild(box);
+    return v;
+  }
+  const lagBox = card("Estimated lag");
+  const noiseBox = card("Residual roughness");
+  const gainBox = card("Main effect");
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw() {
+    noiseVal.textContent = parseFloat(noise.value).toFixed(2);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const raw = [];
+    const trueSignal = [];
+    for (let i = 0; i < N; i += 1) {
+      const base = 1.3 * Math.sin(0.28 * i) + 0.6 * Math.sin(0.9 + 0.08 * i);
+      const spike = i > 20 ? 0.9 : 0;
+      const trueVal = base + spike;
+      const noisy = trueVal + parseFloat(noise.value) * (Math.sin(1.97 * i + 0.4) + 0.5 * Math.cos(2.91 * i));
+      trueSignal.push(trueVal);
+      raw.push(noisy);
+    }
+    const window = kind.value.startsWith("3") ? 3 : 5;
+    const filtered = raw.map((_, i) => {
+      let s = 0, c = 0;
+      for (let j = Math.max(0, i - window + 1); j <= i; j += 1) { s += raw[j]; c += 1; }
+      return s / c;
+    });
+    const ymin = Math.min(...raw, ...filtered, ...trueSignal) - 0.4;
+    const ymax = Math.max(...raw, ...filtered, ...trueSignal) + 0.4;
+    const sx = i => pad.left + plotW * i / (N - 1);
+    const sy = y => pad.top + plotH * (1 - (y - ymin) / (ymax - ymin));
+    for (let i = 0; i < N; i += 5) {
+      const line = svgEl("line");
+      line.setAttribute("x1", sx(i)); line.setAttribute("x2", sx(i));
+      line.setAttribute("y1", sy(ymin)); line.setAttribute("y2", sy(ymax));
+      line.setAttribute("stroke", "#f3f4f6"); svg.appendChild(line);
+    }
+    const axisX = svgEl("line");
+    axisX.setAttribute("x1", sx(0)); axisX.setAttribute("x2", sx(N - 1)); axisX.setAttribute("y1", sy(ymin)); axisX.setAttribute("y2", sy(ymin));
+    axisX.setAttribute("stroke", "#6b7280"); svg.appendChild(axisX);
+    const truthPath = svgEl("polyline");
+    truthPath.setAttribute("points", trueSignal.map((v, i) => `${sx(i)},${sy(v)}`).join(" "));
+    truthPath.setAttribute("fill", "none"); truthPath.setAttribute("stroke", "#9ca3af"); truthPath.setAttribute("stroke-width", "1.5"); truthPath.setAttribute("stroke-dasharray", "5 4");
+    svg.appendChild(truthPath);
+    raw.forEach((v, i) => {
+      const dot = svgEl("circle");
+      dot.setAttribute("cx", sx(i)); dot.setAttribute("cy", sy(v)); dot.setAttribute("r", "2.7"); dot.setAttribute("fill", "#2563eb");
+      svg.appendChild(dot);
+    });
+    const filtPath = svgEl("polyline");
+    filtPath.setAttribute("points", filtered.map((v, i) => `${sx(i)},${sy(v)}`).join(" "));
+    filtPath.setAttribute("fill", "none"); filtPath.setAttribute("stroke", "#f59e0b"); filtPath.setAttribute("stroke-width", "2.8");
+    svg.appendChild(filtPath);
+    const label = (x, y, t, fill) => { const n = svgEl("text"); n.setAttribute("x", x); n.setAttribute("y", y); n.setAttribute("fill", fill); n.setAttribute("font-size", "12"); n.textContent = t; svg.appendChild(n); };
+    label(74, 28, "true signal", "#6b7280");
+    label(170, 28, "raw samples", "#2563eb");
+    label(285, 28, "filtered output", "#b45309");
+
+    const roughness = filtered.slice(1).reduce((s, v, i) => s + Math.abs(v - filtered[i]), 0) / (N - 1);
+    lagBox.textContent = `${((window - 1) / 2).toFixed(1)} samples`;
+    noiseBox.textContent = roughness.toFixed(2);
+    gainBox.textContent = window === 3 ? "less lag, less smoothing" : "more smoothing, more delay";
+    caption.textContent = "The raw points are noisy, the amber line is the moving average, and the grey dashed line is the underlying signal. A wider averaging window smooths more, but it also responds later.";
+  }
+
+  [kind, noise].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, readout, svg, caption);
+  redraw();
+  return container;
+}
+```

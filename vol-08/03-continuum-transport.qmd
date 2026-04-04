@@ -709,3 +709,72 @@ Prepare a one-page systems sketch naming:
 6. one reason the resulting equation will probably need numerical solution
 
 <!-- VIZ: Constitutive-law comparison board. Show three side-by-side panels for heat conduction, diffusion, and 1D elasticity. Each panel should display the field, gradient, flux or stress, and governing equation, with matching visual structure and labels so the reader can see the parallel mathematics rather than three separate subjects. -->
+
+```{ojs}
+//| echo: false
+{
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 900px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const board = document.createElement("div");
+  board.style.cssText = "display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.75rem;";
+  const models = [
+    { title: "Heat conduction", field: "temperature T", grad: "∇T", response: "q = -k∇T", eq: "∂T/∂t = αTxx", color: "#2563eb", left: "hot", right: "cold" },
+    { title: "Diffusion", field: "concentration c", grad: "∇c", response: "J = -D∇c", eq: "∂c/∂t = Dcxx", color: "#059669", left: "high c", right: "low c" },
+    { title: "Elasticity", field: "displacement u", grad: "ε = ux", response: "σ = Eε", eq: "σx + f = 0", color: "#f59e0b", left: "stretch", right: "relax" }
+  ];
+  models.forEach(model => {
+    const panel = document.createElement("div");
+    panel.style.cssText = "background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:0.7rem;";
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:0.9rem; font-weight:700; color:#111827; margin-bottom:0.35rem;";
+    h.textContent = model.title;
+    const svg = svgEl("svg");
+    svg.setAttribute("viewBox", "0 0 240 180");
+    svg.setAttribute("width", "100%");
+    svg.style.display = "block";
+    const rect = svgEl("rect");
+    rect.setAttribute("x", "28"); rect.setAttribute("y", "46"); rect.setAttribute("width", "160"); rect.setAttribute("height", "44");
+    rect.setAttribute("fill", "#f8fafc"); rect.setAttribute("stroke", "#cbd5e1");
+    svg.appendChild(rect);
+    const grad = svgEl("line");
+    grad.setAttribute("x1", "46"); grad.setAttribute("y1", "68"); grad.setAttribute("x2", "170"); grad.setAttribute("y2", "68");
+    grad.setAttribute("stroke", model.color); grad.setAttribute("stroke-width", "3");
+    svg.appendChild(grad);
+    const arrow = svgEl("line");
+    arrow.setAttribute("x1", "172"); arrow.setAttribute("y1", "68"); arrow.setAttribute("x2", "206"); arrow.setAttribute("y2", "68");
+    arrow.setAttribute("stroke", model.color); arrow.setAttribute("stroke-width", "3");
+    svg.appendChild(arrow);
+    const tip1 = svgEl("line");
+    tip1.setAttribute("x1", "206"); tip1.setAttribute("y1", "68"); tip1.setAttribute("x2", "196"); tip1.setAttribute("y2", "62");
+    tip1.setAttribute("stroke", model.color); tip1.setAttribute("stroke-width", "3");
+    svg.appendChild(tip1);
+    const tip2 = svgEl("line");
+    tip2.setAttribute("x1", "206"); tip2.setAttribute("y1", "68"); tip2.setAttribute("x2", "196"); tip2.setAttribute("y2", "74");
+    tip2.setAttribute("stroke", model.color); tip2.setAttribute("stroke-width", "3");
+    svg.appendChild(tip2);
+    [["42","40",model.left],["174","40",model.right],["108","118",model.field],["205","61",model.response]].forEach(([x,y,t], idx) => {
+      const text = svgEl("text");
+      text.setAttribute("x", x); text.setAttribute("y", y);
+      text.setAttribute("font-size", idx === 2 ? "12" : "11");
+      text.setAttribute("fill", idx === 3 ? model.color : "#374151");
+      text.setAttribute("text-anchor", idx === 2 ? "middle" : "start");
+      text.textContent = t;
+      svg.appendChild(text);
+    });
+    const eq = document.createElement("div");
+    eq.style.cssText = "font-size:0.96rem; color:#111827; margin-top:0.45rem; font-family:serif;";
+    eq.textContent = model.eq;
+    const note = document.createElement("div");
+    note.style.cssText = "font-size:0.85rem; color:#4b5563; margin-top:0.25rem;";
+    note.textContent = `${model.grad} creates the response term. The governing law keeps the same structure while only the field names change.`;
+    panel.append(h, svg, eq, note);
+    board.appendChild(panel);
+  });
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+  caption.textContent = "These are not three unrelated subjects. In each case, a field varies in space, a gradient is formed, and the material law converts that gradient into a flux or stress response.";
+  container.append(board, caption);
+  return container;
+}
+```
