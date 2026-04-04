@@ -1980,10 +1980,10 @@ function makeStepperHTML(steps) {
   controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
   const nextBtn = document.createElement("button");
   nextBtn.textContent = "Next step →";
-  nextBtn.style.cssText = "padding:0.35rem 0.85rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.9em;";
+  nextBtn.style.cssText = "padding:0.42rem 0.95rem; border:1px solid #2563eb; border-radius:5px; background:#2563eb; color:#ffffff; cursor:pointer; font-size:0.9em; font-weight:600; box-shadow:0 1px 2px rgba(37,99,235,0.18);";
   const resetBtn = document.createElement("button");
   resetBtn.textContent = "Reset";
-  resetBtn.style.cssText = "padding:0.35rem 0.75rem; border:1px solid #e5e7eb; border-radius:4px; background:#f9fafb; cursor:pointer; font-size:0.9em; color:#6b7280;";
+  resetBtn.style.cssText = "padding:0.42rem 0.8rem; border:1px solid #cbd5e1; border-radius:5px; background:#f8fafc; cursor:pointer; font-size:0.9em; color:#475569; font-weight:500;";
   const counter = document.createElement("span");
   counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
   function updateButtons() {
