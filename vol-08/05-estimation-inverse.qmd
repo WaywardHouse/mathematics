@@ -524,6 +524,63 @@ perfect.
 If the sensor were known to be extremely reliable, a larger $K$ would make
 sense. If the measurement were very noisy, a smaller $K$ would be more honest.
 
+```{ojs}
+//| echo: false
+{
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 720px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; align-items:end; margin-bottom:0.75rem;";
+  function sliderRow(labelText,min,max,step,value){const wrap=document.createElement("label"); wrap.style.cssText="display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;"; wrap.appendChild(Object.assign(document.createElement("span"),{textContent:labelText})); const input=document.createElement("input"); input.type="range"; input.min=String(min); input.max=String(max); input.step=String(step); input.value=String(value); const out=document.createElement("span"); out.style.cssText="font-variant-numeric: tabular-nums; color:#6b7280;"; wrap.append(input,out); controls.appendChild(wrap); return {input,out};}
+  const prior = sliderRow("Prior estimate x̂⁻", 0, 30, 0.5, 14);
+  const meas = sliderRow("Measurement y", 0, 30, 0.5, 20);
+  const gain = sliderRow("Update weight K", 0, 1, 0.05, 0.3);
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label){const box=document.createElement("div"); box.style.cssText="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;"; const k=document.createElement("div"); k.style.cssText="font-size:0.76rem; color:#6b7280;"; k.textContent=label; const v=document.createElement("div"); v.style.cssText="font-size:0.96rem; font-variant-numeric: tabular-nums;"; box.append(k,v); readout.appendChild(box); return v;}
+  const innovationBox = card("Innovation");
+  const updateBox = card("Updated estimate x̂⁺");
+  const trustBox = card("Interpretation");
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 680 160");
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const xminus = parseFloat(prior.input.value), y = parseFloat(meas.input.value), K = parseFloat(gain.input.value);
+    prior.out.textContent = xminus.toFixed(1); meas.out.textContent = y.toFixed(1); gain.out.textContent = K.toFixed(2);
+    const innovation = y - xminus;
+    const xplus = xminus + K * innovation;
+    const map = v => 70 + 540 * v / 30;
+    const line = (x1,y1,x2,y2,stroke,w=2,dash="")=>{const l=svgEl("line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",stroke); l.setAttribute("stroke-width",w); if(dash) l.setAttribute("stroke-dasharray",dash); svg.appendChild(l);};
+    const text=(x,y0,t,fill="#374151",size=12,anchor="middle",weight="400")=>{const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y0); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);};
+    line(map(0), 88, map(30), 88, "#6b7280", 1.8);
+    for(let t=0;t<=30;t+=5){ line(map(t),82,map(t),94,"#9ca3af",1.2); text(map(t),108,`${t}`,"#6b7280",10); }
+    const p = svgEl("circle"); p.setAttribute("cx",map(xminus)); p.setAttribute("cy","88"); p.setAttribute("r","5"); p.setAttribute("fill","#2563eb"); svg.appendChild(p);
+    const m = svgEl("circle"); m.setAttribute("cx",map(y)); m.setAttribute("cy","88"); m.setAttribute("r","5"); m.setAttribute("fill","#f59e0b"); svg.appendChild(m);
+    const u = svgEl("circle"); u.setAttribute("cx",map(xplus)); u.setAttribute("cy","88"); u.setAttribute("r","6"); u.setAttribute("fill","#059669"); svg.appendChild(u);
+    line(map(xminus), 60, map(y), 60, "#d1d5db", 4);
+    line(map(xminus), 60, map(xplus), 60, "#059669", 5);
+    text(map(xminus), 48, "prior x̂⁻", "#2563eb", 11);
+    text(map(y), 48, "measurement y", "#b45309", 11);
+    text(map(xplus), 132, "updated x̂⁺", "#059669", 11);
+    innovationBox.textContent = `${innovation >= 0 ? "+" : ""}${innovation.toFixed(1)}`;
+    updateBox.textContent = xplus.toFixed(2);
+    trustBox.textContent = K < 0.3 ? "stays near prior" : K > 0.7 ? "jumps toward measurement" : "balances both";
+    caption.textContent = "The update does not jump blindly to the measurement. It moves partway from the prior estimate toward the measurement, and the fraction moved is exactly K.";
+  }
+
+  [prior.input, meas.input, gain.input].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ## Worked example 2: linear least-squares parameter fit
 
 Suppose a calibration model predicts measurements by

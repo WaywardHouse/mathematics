@@ -380,6 +380,61 @@ This is why service reliability in computing and waiting-time models in
 operations research belong in the same chapter as bearing lifetime and defect
 rates. They are all stochastic consequences of uncertain events over time.
 
+```{ojs}
+//| echo: false
+{
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 720px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; align-items:end; margin-bottom:0.75rem;";
+  const wrap = document.createElement("label");
+  wrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  wrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Traffic intensity ρ" }));
+  const rho = document.createElement("input");
+  rho.type = "range"; rho.min = "0.1"; rho.max = "0.98"; rho.step = "0.01"; rho.value = "0.75";
+  const out = document.createElement("span");
+  out.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  wrap.append(rho, out);
+  controls.appendChild(wrap);
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label){const box=document.createElement("div"); box.style.cssText="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;"; const k=document.createElement("div"); k.style.cssText="font-size:0.76rem; color:#6b7280;"; k.textContent=label; const v=document.createElement("div"); v.style.cssText="font-size:0.96rem; font-variant-numeric: tabular-nums;"; box.append(k,v); readout.appendChild(box); return v;}
+  const lqBox = card("Expected queue Lq");
+  const regimeBox = card("Regime");
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 680 240");
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const r = parseFloat(rho.value);
+    out.textContent = r.toFixed(2);
+    const lq = (r*r)/(1-r);
+    const sx = x => 60 + 540 * (x - 0.1) / 0.88;
+    const sy = y => 210 - 170 * y / 20;
+    const line=(x1,y1,x2,y2,stroke,w=1.5,dash="")=>{const l=svgEl("line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",stroke); l.setAttribute("stroke-width",w); if(dash) l.setAttribute("stroke-dasharray",dash); svg.appendChild(l);};
+    const text=(x,y,t,fill="#374151",size=12,anchor="middle",weight="400")=>{const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);};
+    line(sx(0.1),sy(0),sx(0.98),sy(0),"#6b7280"); line(sx(0.1),sy(0),sx(0.1),sy(20),"#6b7280");
+    const pts=[]; for(let x=0.1;x<=0.98;x+=0.01){ pts.push(`${sx(x)},${sy(Math.min(20,(x*x)/(1-x)))}`); }
+    const path=svgEl("polyline"); path.setAttribute("points",pts.join(" ")); path.setAttribute("fill","none"); path.setAttribute("stroke","#2563eb"); path.setAttribute("stroke-width","2.5"); svg.appendChild(path);
+    line(sx(0.9), sy(0), sx(0.9), sy(20), "#ef4444", 1.5, "5 4");
+    const dot=svgEl("circle"); dot.setAttribute("cx",sx(r)); dot.setAttribute("cy",sy(Math.min(20,lq))); dot.setAttribute("r","5"); dot.setAttribute("fill",r<0.9?"#059669":"#ef4444"); svg.appendChild(dot);
+    text(sx(0.9), 30, "near-saturation zone", "#b91c1c", 11);
+    lqBox.textContent = lq.toFixed(2);
+    regimeBox.textContent = r < 0.7 ? "comfortable" : r < 0.9 ? "sensitive" : "queue blows up fast";
+    regimeBox.style.color = r < 0.7 ? "#166534" : r < 0.9 ? "#b45309" : "#b91c1c";
+    caption.textContent = "As traffic intensity approaches 1, expected queue length rises sharply. The danger is not just crossing 1 exactly: the queue becomes fragile well before that boundary.";
+  }
+  rho.addEventListener("input", redraw);
+  container.append(controls, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ## Quality as probability of staying in tolerance
 
 A quality problem can often be phrased as:
@@ -412,6 +467,61 @@ in a production environment.
 
 This is not only a manufacturing question. The same logic appears in service
 level agreements, anomaly thresholds, and risk tolerances in data systems.
+
+```{ojs}
+//| echo: false
+{
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 720px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; align-items:end; margin-bottom:0.75rem;";
+  function sliderRow(labelText,min,max,step,value){const wrap=document.createElement("label"); wrap.style.cssText="display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;"; wrap.appendChild(Object.assign(document.createElement("span"),{textContent:labelText})); const input=document.createElement("input"); input.type="range"; input.min=String(min); input.max=String(max); input.step=String(step); input.value=String(value); const out=document.createElement("span"); out.style.cssText="font-variant-numeric: tabular-nums; color:#6b7280;"; wrap.append(input,out); controls.appendChild(wrap); return {input,out};}
+  const mu = sliderRow("Process mean μ", 8.5, 11.5, 0.1, 10.0);
+  const sigma = sliderRow("Spread σ", 0.2, 1.2, 0.05, 0.5);
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label){const box=document.createElement("div"); box.style.cssText="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;"; const k=document.createElement("div"); k.style.cssText="font-size:0.76rem; color:#6b7280;"; k.textContent=label; const v=document.createElement("div"); v.style.cssText="font-size:0.96rem; font-variant-numeric: tabular-nums;"; box.append(k,v); readout.appendChild(box); return v;}
+  const cpBox = card("Cp");
+  const cpkBox = card("Cpk");
+  const statusBox = card("Interpretation");
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 680 240");
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+  const normal = z => Math.exp(-0.5*z*z)/Math.sqrt(2*Math.PI);
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const m = parseFloat(mu.input.value), s = parseFloat(sigma.input.value);
+    mu.out.textContent = m.toFixed(1); sigma.out.textContent = s.toFixed(2);
+    const USL = 11, LSL = 9;
+    const mapX = x => 60 + 540 * (x - 7) / 6;
+    const mapY = y => 200 - 140 * y / 0.9;
+    const line=(x1,y1,x2,y2,stroke,w=1.5,dash="")=>{const l=svgEl("line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",stroke); l.setAttribute("stroke-width",w); if(dash) l.setAttribute("stroke-dasharray",dash); svg.appendChild(l);};
+    const text=(x,y,t,fill="#374151",size=12,anchor="middle",weight="400")=>{const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);};
+    line(mapX(7), mapY(0), mapX(13), mapY(0), "#6b7280");
+    const pts=[]; for(let x=7;x<=13;x+=0.03){ pts.push(`${mapX(x)},${mapY(normal((x-m)/s)/s)}`); }
+    const curve=svgEl("polyline"); curve.setAttribute("points",pts.join(" ")); curve.setAttribute("fill","none"); curve.setAttribute("stroke","#2563eb"); curve.setAttribute("stroke-width","2.5"); svg.appendChild(curve);
+    line(mapX(LSL), mapY(0), mapX(LSL), mapY(0.85), "#ef4444", 2, "5 4");
+    line(mapX(USL), mapY(0), mapX(USL), mapY(0.85), "#ef4444", 2, "5 4");
+    text(mapX(LSL), 44, "LSL", "#b91c1c", 11);
+    text(mapX(USL), 44, "USL", "#b91c1c", 11);
+    text(mapX(m), 58, "μ", "#059669", 12, "middle", "700");
+    const cp = (USL-LSL)/(6*s);
+    const cpk = Math.min((USL-m)/(3*s),(m-LSL)/(3*s));
+    cpBox.textContent = cp.toFixed(2);
+    cpkBox.textContent = cpk.toFixed(2);
+    statusBox.textContent = cpk >= 1.33 ? "spread and centring both look acceptable" : cp >= 1.33 ? "spread is fine, centring is not" : "spread too wide for the spec band";
+    caption.textContent = "Cp measures whether the process spread fits inside the tolerance window. Cpk also asks whether the process is centred. A process can have a good spread and still miss the target if the mean drifts.";
+  }
+  [mu.input, sigma.input].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
 
 ::: {.callout-note appearance="simple"}
 ## Why this structure works
@@ -638,3 +748,37 @@ brief naming:
 5. one action you would change if the risk turned out to be higher than expected
 
 <!-- VIZ: Reliability/queue/quality comparison board. Show three aligned panels: a survival curve, a queue-length trace, and a process distribution with specification limits. Let the reader adjust a single "variability" control and watch all three panels change, making the shared idea of operational consequence under uncertainty visible across domains. -->
+
+```{ojs}
+//| echo: false
+{
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 920px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; align-items:end; margin-bottom:0.75rem;";
+  const wrap = document.createElement("label");
+  wrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  wrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Variability" }));
+  const slider = document.createElement("input");
+  slider.type = "range"; slider.min = "0.2"; slider.max = "1.4"; slider.step = "0.05"; slider.value = "0.6";
+  const out = document.createElement("span");
+  out.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  wrap.append(slider, out); controls.appendChild(wrap);
+  const board = document.createElement("div");
+  board.style.cssText = "display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.75rem;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+  function panel(title, build){const p=document.createElement("div"); p.style.cssText="background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:0.65rem;"; const h=document.createElement("div"); h.style.cssText="font-size:0.82rem; color:#6b7280; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.4rem;"; h.textContent=title; const svg=svgEl("svg"); svg.setAttribute("viewBox","0 0 240 180"); svg.setAttribute("width","100%"); svg.style.display="block"; p.append(h,svg); board.appendChild(p); return {svg,build};}
+  const panels = [
+    panel("Reliability", (svg,v)=>{ while(svg.firstChild) svg.removeChild(svg.firstChild); const pts=[]; for(let t=0;t<=100;t+=2){ const y=Math.exp(-Math.pow(t/70,0.8+v)); pts.push(`${20+2*t},${150-110*y}`);} const poly=svgEl("polyline"); poly.setAttribute("points",pts.join(" ")); poly.setAttribute("fill","none"); poly.setAttribute("stroke","#2563eb"); poly.setAttribute("stroke-width","2.5"); svg.appendChild(poly); }),
+    panel("Queueing", (svg,v)=>{ while(svg.firstChild) svg.removeChild(svg.firstChild); const rho=Math.min(0.97,0.55+0.25*v); const bars=[1,2,3,4,6,8,10].map((b,i)=>rho*b); bars.forEach((h,i)=>{const r=svgEl("rect"); r.setAttribute("x",30+i*24); r.setAttribute("y",150-10*h); r.setAttribute("width","16"); r.setAttribute("height",10*h); r.setAttribute("fill","#f59e0b"); svg.appendChild(r);}); }),
+    panel("Quality", (svg,v)=>{ while(svg.firstChild) svg.removeChild(svg.firstChild); const normal=z=>Math.exp(-0.5*z*z)/Math.sqrt(2*Math.PI); const pts=[]; for(let x=7;x<=13;x+=0.04){ const y=normal((x-10)/(0.35+0.35*v))/(0.35+0.35*v); pts.push(`${20+33*(x-7)},${150-22*y}`);} const poly=svgEl("polyline"); poly.setAttribute("points",pts.join(" ")); poly.setAttribute("fill","none"); poly.setAttribute("stroke","#059669"); poly.setAttribute("stroke-width","2.5"); svg.appendChild(poly); [9,11].forEach(s=>{const l=svgEl("line"); l.setAttribute("x1",20+33*(s-7)); l.setAttribute("x2",20+33*(s-7)); l.setAttribute("y1","30"); l.setAttribute("y2","155"); l.setAttribute("stroke","#ef4444"); l.setAttribute("stroke-dasharray","5 4"); svg.appendChild(l);}); })
+  ];
+  function redraw(){const v=parseFloat(slider.value); out.textContent=v.toFixed(2); panels.forEach(p=>p.build(p.svg,v)); caption.textContent="A single increase in variability shows up as faster reliability loss, longer queue buildup, and more probability mass pushing against specification limits. The contexts differ, but the operational consequence is the same: higher uncertainty makes threshold crossing more likely."; }
+  slider.addEventListener("input", redraw);
+  container.append(controls, board, caption);
+  redraw();
+  return container;
+}
+```
