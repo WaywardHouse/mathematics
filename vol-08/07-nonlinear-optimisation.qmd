@@ -173,6 +173,229 @@ iterate, and check for convergence.
 
 <!-- VIZ: Nonlinear tradeoff surface explorer. Show a 2D contour map of a nonlinear objective with a feasible region overlay. Let the reader move a point, display the gradient vector, and step along a simple descent rule. Include a toggle for constrained versus unconstrained motion so the geometry of "best feasible direction" becomes visible. -->
 
+Use the point controls and the descent button to compare a free downhill move
+with a move that has to stay inside the feasible set.
+
+```{ojs}
+//| echo: false
+{
+  const W = 720, H = 430;
+  const xMin = -3, xMax = 3, yMin = -3, yMax = 3;
+  const alpha = 0.18;
+  let x = 1.9, y = 1.6;
+  let constrained = true;
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  function f(x, y) {
+    return 0.55 * (x - 1.4) ** 2 + 1.2 * (y + 0.7) ** 2 + 0.45 * x * y + 0.08 * x ** 4;
+  }
+
+  function grad(x, y) {
+    return {
+      gx: 1.1 * (x - 1.4) + 0.45 * y + 0.32 * x ** 3,
+      gy: 2.4 * (y + 0.7) + 0.45 * x
+    };
+  }
+
+  function feasible(x, y) {
+    return x * x + (y - 0.2) * (y - 0.2) <= 5.4 && y >= -1.8;
+  }
+
+  function projectToFeasible(px, py) {
+    let yProj = Math.max(py, -1.8);
+    const dx = px;
+    const dy = yProj - 0.2;
+    const r = Math.sqrt(dx * dx + dy * dy);
+    if (r > Math.sqrt(5.4)) {
+      const scale = Math.sqrt(5.4) / r;
+      return { x: dx * scale, y: 0.2 + dy * scale };
+    }
+    return { x: px, y: yProj };
+  }
+
+  function sx(v) { return 50 + (v - xMin) / (xMax - xMin) * 620; }
+  function sy(v) { return 370 - (v - yMin) / (yMax - yMin) * 320; }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+
+  function sliderRow(labelText, min, max, value, step) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = String(step);
+    input.value = String(value);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric:tabular-nums; min-width:4rem;";
+    controls.append(label, input, out);
+    return { input, out };
+  }
+
+  const xRow = sliderRow("Point x", -2.5, 2.5, x, 0.05);
+  const yRow = sliderRow("Point y", -2.2, 2.5, y, 0.05);
+  const modeWrap = document.createElement("label");
+  modeWrap.style.cssText = "display:flex; gap:0.5rem; align-items:center; margin-top:0.25rem;";
+  const modeBox = document.createElement("input");
+  modeBox.type = "checkbox";
+  modeBox.checked = constrained;
+  const modeText = document.createElement("span");
+  modeText.textContent = "Constrained step";
+  modeWrap.append(modeBox, modeText);
+  controls.append(modeWrap);
+
+  const actions = document.createElement("div");
+  actions.style.cssText = "display:flex; gap:0.6rem; margin:0.35rem 0 0.8rem 0;";
+  const stepBtn = document.createElement("button");
+  stepBtn.textContent = "Take descent step";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset point";
+  actions.append(stepBtn, resetBtn);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155; font-size:0.95rem;";
+  const pointBox = document.createElement("span");
+  const fBox = document.createElement("span");
+  const gradBox = document.createElement("span");
+  const feasBox = document.createElement("span");
+  readout.append(pointBox, fBox, gradBox, feasBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Nonlinear optimisation contour map with feasible region and gradient direction");
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  container.append(controls, actions, readout, svg, caption);
+
+  function redraw() {
+    x = Number(xRow.input.value);
+    y = Number(yRow.input.value);
+    constrained = modeBox.checked;
+    xRow.out.textContent = x.toFixed(2);
+    yRow.out.textContent = y.toFixed(2);
+    svg.replaceChildren();
+
+    for (let i = 0; i < 40; i++) {
+      for (let j = 0; j < 32; j++) {
+        const gx = xMin + (i + 0.5) / 40 * (xMax - xMin);
+        const gy = yMin + (j + 0.5) / 32 * (yMax - yMin);
+        const val = f(gx, gy);
+        const t = Math.max(0, Math.min(1, (val - 0.2) / 8));
+        const rect = svgEl("rect");
+        rect.setAttribute("x", String(50 + i * (620 / 40)));
+        rect.setAttribute("y", String(50 + (31 - j) * (320 / 32)));
+        rect.setAttribute("width", String(620 / 40 + 0.6));
+        rect.setAttribute("height", String(320 / 32 + 0.6));
+        const light = 94 - 22 * t;
+        rect.setAttribute("fill", `hsl(205 70% ${light}%)`);
+        svg.appendChild(rect);
+      }
+    }
+
+    const axes = svgEl("g");
+    [["x", 350, 390, 670, 390], ["y", 50, 210, 50, 50]].forEach(([label, x1, y1, x2, y2]) => {
+      const line = svgEl("line");
+      line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+      line.setAttribute("stroke", "#64748b");
+      line.setAttribute("stroke-width", "1.2");
+      axes.appendChild(line);
+      const text = svgEl("text");
+      text.setAttribute("x", x2);
+      text.setAttribute("y", y2 === 390 ? 408 : 42);
+      text.setAttribute("fill", "#475569");
+      text.setAttribute("font-size", "12");
+      text.textContent = label;
+      axes.appendChild(text);
+    });
+    svg.appendChild(axes);
+
+    const feasiblePath = [];
+    for (let k = 0; k <= 120; k++) {
+      const th = Math.PI * (1 - k / 120);
+      feasiblePath.push(`${k === 0 ? "M" : "L"} ${sx(Math.sqrt(5.4) * Math.cos(th))} ${sy(0.2 + Math.sqrt(5.4) * Math.sin(th))}`);
+    }
+    feasiblePath.push(`L ${sx(-Math.sqrt(5.4))} ${sy(-1.8)}`);
+    feasiblePath.push(`L ${sx(Math.sqrt(5.4))} ${sy(-1.8)} Z`);
+    const patch = svgEl("path");
+    patch.setAttribute("d", feasiblePath.join(" "));
+    patch.setAttribute("fill", "rgba(16,185,129,0.16)");
+    patch.setAttribute("stroke", "#059669");
+    patch.setAttribute("stroke-width", "2");
+    svg.appendChild(patch);
+
+    const g = grad(x, y);
+    const gLen = Math.hypot(g.gx, g.gy) || 1;
+    const scale = 0.55 / gLen;
+    const x2 = x + g.gx * scale;
+    const y2 = y + g.gy * scale;
+    const arrow = svgEl("line");
+    arrow.setAttribute("x1", String(sx(x)));
+    arrow.setAttribute("y1", String(sy(y)));
+    arrow.setAttribute("x2", String(sx(x2)));
+    arrow.setAttribute("y2", String(sy(y2)));
+    arrow.setAttribute("stroke", "#dc2626");
+    arrow.setAttribute("stroke-width", "3");
+    svg.appendChild(arrow);
+
+    const head = svgEl("circle");
+    head.setAttribute("cx", String(sx(x2)));
+    head.setAttribute("cy", String(sy(y2)));
+    head.setAttribute("r", "4");
+    head.setAttribute("fill", "#dc2626");
+    svg.appendChild(head);
+
+    const pt = svgEl("circle");
+    pt.setAttribute("cx", String(sx(x)));
+    pt.setAttribute("cy", String(sy(y)));
+    pt.setAttribute("r", "6");
+    pt.setAttribute("fill", feasible(x, y) ? "#1d4ed8" : "#b91c1c");
+    svg.appendChild(pt);
+
+    pointBox.textContent = `point = (${x.toFixed(2)}, ${y.toFixed(2)})`;
+    fBox.textContent = `f(x,y) = ${f(x, y).toFixed(3)}`;
+    gradBox.textContent = `|∇f| = ${gLen.toFixed(3)}`;
+    feasBox.textContent = feasible(x, y) ? "feasible" : "outside feasible set";
+    caption.textContent = constrained
+      ? "The green region is feasible. In constrained mode, a descent step is clipped back to that region, so improvement must respect the geometry of the constraint."
+      : "In unconstrained mode, the step follows the negative gradient directly, even if that would leave the feasible region.";
+  }
+
+  [xRow.input, yRow.input, modeBox].forEach(el => el.addEventListener("input", redraw));
+  stepBtn.addEventListener("click", () => {
+    const g = grad(x, y);
+    let next = { x: x - alpha * g.gx, y: y - alpha * g.gy };
+    if (modeBox.checked) next = projectToFeasible(next.x, next.y);
+    xRow.input.value = String(next.x);
+    yRow.input.value = String(next.y);
+    redraw();
+  });
+  resetBtn.addEventListener("click", () => {
+    xRow.input.value = "1.9";
+    yRow.input.value = "1.6";
+    modeBox.checked = true;
+    redraw();
+  });
+
+  redraw();
+  return container;
+}
+```
+
 ## Constrained optimisation and the Lagrangian idea
 
 Suppose you want to minimise $f(\mathbf{x})$ subject to an equality constraint
@@ -462,3 +685,163 @@ design brief naming:
 6. one reason a computed optimum might still be a bad decision
 
 <!-- VIZ: Feasible-region and tradeoff explorer. Show a nonlinear objective with one or two curved constraints. Let the reader drag weights in a two-term objective and watch the optimum move along the feasible set. Include labels for objective value, active constraints, and local gradient direction. -->
+
+Use the weight slider to change what the objective values most, then watch the
+best feasible design move along the curved constraints.
+
+```{ojs}
+//| echo: false
+{
+  const W = 720, H = 420;
+  const xMin = -3, xMax = 3, yMin = -2.5, yMax = 3;
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  function feasible(x, y) {
+    const g1 = 0.35 * (x - 0.4) ** 2 - 1.2;
+    const g2 = x * x + (y - 0.1) ** 2 - 5.4;
+    return y >= g1 && g2 <= 0;
+  }
+
+  function objective(x, y, w) {
+    const f1 = (x - 1.7) ** 2 + 0.4 * y ** 2;
+    const f2 = 0.6 * (x + 0.9) ** 2 + (y - 1.5) ** 2;
+    return w * f1 + (1 - w) * f2;
+  }
+
+  function grad(x, y, w) {
+    return {
+      gx: 2 * w * (x - 1.7) + 1.2 * (1 - w) * (x + 0.9),
+      gy: 0.8 * w * y + 2 * (1 - w) * (y - 1.5)
+    };
+  }
+
+  function sx(v) { return 55 + (v - xMin) / (xMax - xMin) * 610; }
+  function sy(v) { return 365 - (v - yMin) / (yMax - yMin) * 300; }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.7rem;";
+
+  const label = document.createElement("label");
+  label.textContent = "Weight on target-matching term";
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = "0";
+  slider.max = "1";
+  slider.step = "0.01";
+  slider.value = "0.55";
+  const out = document.createElement("span");
+  out.style.cssText = "font-variant-numeric:tabular-nums; min-width:4rem;";
+  controls.append(label, slider, out);
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155; font-size:0.95rem;";
+  const optBox = document.createElement("span");
+  const objBox = document.createElement("span");
+  const activeBox = document.createElement("span");
+  const gradBox = document.createElement("span");
+  summary.append(optBox, objBox, activeBox, gradBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  container.append(controls, summary, svg, caption);
+
+  function redraw() {
+    const w = Number(slider.value);
+    out.textContent = w.toFixed(2);
+    svg.replaceChildren();
+
+    let best = null;
+    for (let i = 0; i <= 140; i++) {
+      for (let j = 0; j <= 120; j++) {
+        const x = xMin + i / 140 * (xMax - xMin);
+        const y = yMin + j / 120 * (yMax - yMin);
+        const rect = svgEl("rect");
+        rect.setAttribute("x", String(55 + i * (610 / 140)));
+        rect.setAttribute("y", String(65 + (119 - j) * (300 / 120)));
+        rect.setAttribute("width", String(610 / 140 + 0.5));
+        rect.setAttribute("height", String(300 / 120 + 0.5));
+        if (feasible(x, y)) {
+          const val = objective(x, y, w);
+          const t = Math.max(0, Math.min(1, val / 9));
+          rect.setAttribute("fill", `hsl(32 90% ${94 - 22 * t}%)`);
+          if (!best || val < best.val) best = { x, y, val };
+        } else {
+          rect.setAttribute("fill", "#f8fafc");
+        }
+        svg.appendChild(rect);
+      }
+    }
+
+    const circle = svgEl("ellipse");
+    circle.setAttribute("cx", String(sx(0)));
+    circle.setAttribute("cy", String(sy(0.1)));
+    circle.setAttribute("rx", String(Math.abs(sx(Math.sqrt(5.4)) - sx(0))));
+    circle.setAttribute("ry", String(Math.abs(sy(0.1 + Math.sqrt(5.4)) - sy(0.1))));
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "#475569");
+    circle.setAttribute("stroke-width", "2");
+    svg.appendChild(circle);
+
+    const parabolaPts = [];
+    for (let i = 0; i <= 140; i++) {
+      const x = xMin + i / 140 * (xMax - xMin);
+      const y = 0.35 * (x - 0.4) ** 2 - 1.2;
+      parabolaPts.push(`${i === 0 ? "M" : "L"} ${sx(x)} ${sy(y)}`);
+    }
+    const parabola = svgEl("path");
+    parabola.setAttribute("d", parabolaPts.join(" "));
+    parabola.setAttribute("fill", "none");
+    parabola.setAttribute("stroke", "#7c3aed");
+    parabola.setAttribute("stroke-width", "2.5");
+    svg.appendChild(parabola);
+
+    const point = svgEl("circle");
+    point.setAttribute("cx", String(sx(best.x)));
+    point.setAttribute("cy", String(sy(best.y)));
+    point.setAttribute("r", "6");
+    point.setAttribute("fill", "#dc2626");
+    svg.appendChild(point);
+
+    const g = grad(best.x, best.y, w);
+    const gLen = Math.hypot(g.gx, g.gy) || 1;
+    const arrow = svgEl("line");
+    arrow.setAttribute("x1", String(sx(best.x)));
+    arrow.setAttribute("y1", String(sy(best.y)));
+    arrow.setAttribute("x2", String(sx(best.x + 0.55 * g.gx / gLen)));
+    arrow.setAttribute("y2", String(sy(best.y + 0.55 * g.gy / gLen)));
+    arrow.setAttribute("stroke", "#1d4ed8");
+    arrow.setAttribute("stroke-width", "3");
+    svg.appendChild(arrow);
+
+    const g1Val = best.y - (0.35 * (best.x - 0.4) ** 2 - 1.2);
+    const g2Val = 5.4 - (best.x * best.x + (best.y - 0.1) ** 2);
+    const active = [];
+    if (g1Val < 0.12) active.push("parabolic floor");
+    if (g2Val < 0.12) active.push("elliptic boundary");
+    if (!active.length) active.push("none");
+
+    optBox.textContent = `best feasible point = (${best.x.toFixed(2)}, ${best.y.toFixed(2)})`;
+    objBox.textContent = `objective = ${best.val.toFixed(3)}`;
+    activeBox.textContent = `active constraints = ${active.join(", ")}`;
+    gradBox.textContent = `|∇f| = ${gLen.toFixed(3)}`;
+    caption.textContent = "As the weight shifts, the red optimum slides to the part of the feasible set that best balances the two competing goals. The blue arrow shows the local objective gradient at that chosen design.";
+  }
+
+  slider.addEventListener("input", redraw);
+  redraw();
+  return container;
+}
+```

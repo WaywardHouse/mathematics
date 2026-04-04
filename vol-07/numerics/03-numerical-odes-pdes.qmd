@@ -155,6 +155,105 @@ The error at $x = 0.4$ is about $0.089$, or roughly 20%. Three steps with $h = 0
 
 <!-- VIZ: ODE stepper comparison — user selects h (step size), plots Euler and RK4 solutions against exact for dy/dx = y, y(0)=1 on [0,2], shows accumulated error at x=2 -->
 
+Use the step-size slider to compare how Euler and RK4 accumulate error on the
+same simple growth problem.
+
+```{ojs}
+//| echo: false
+{
+  const exact = x => Math.exp(x);
+  const f = (x, y) => y;
+
+  function solve(h) {
+    const xs = [0], euler = [1], rk4 = [1];
+    const n = Math.round(2 / h);
+    for (let i = 0; i < n; i++) {
+      const x = xs[i], yE = euler[i], yR = rk4[i];
+      xs.push(x + h);
+      euler.push(yE + h * f(x, yE));
+      const k1 = f(x, yR);
+      const k2 = f(x + h / 2, yR + h * k1 / 2);
+      const k3 = f(x + h / 2, yR + h * k2 / 2);
+      const k4 = f(x + h, yR + h * k3);
+      rk4.push(yR + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6);
+    }
+    return { xs, euler, rk4 };
+  }
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+  const label = document.createElement("label"); label.textContent = "Step size h";
+  const slider = document.createElement("input");
+  slider.type = "range"; slider.min = "0.1"; slider.max = "1"; slider.step = "0.1"; slider.value = "0.5";
+  const out = document.createElement("span");
+  out.style.cssText = "font-variant-numeric:tabular-nums; min-width:3rem;";
+  controls.append(label, slider, out);
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const eBox = document.createElement("span");
+  const rBox = document.createElement("span");
+  const nBox = document.createElement("span");
+  summary.append(eBox, rBox, nBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 720 380");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  function redraw() {
+    const h = Number(slider.value);
+    out.textContent = h.toFixed(1);
+    const { xs, euler, rk4 } = solve(h);
+    svg.replaceChildren();
+    const xMin = 0, xMax = 2, yMin = 0.8, yMax = 8;
+    const sx = x => 55 + (x - xMin) / (xMax - xMin) * 620;
+    const sy = y => 325 - (y - yMin) / (yMax - yMin) * 255;
+
+    const axisX = svgEl("line");
+    axisX.setAttribute("x1", "55"); axisX.setAttribute("y1", "325");
+    axisX.setAttribute("x2", "675"); axisX.setAttribute("y2", "325");
+    axisX.setAttribute("stroke", "#64748b"); axisX.setAttribute("stroke-width", "1.2");
+    const axisY = svgEl("line");
+    axisY.setAttribute("x1", "55"); axisY.setAttribute("y1", "325");
+    axisY.setAttribute("x2", "55"); axisY.setAttribute("y2", "45");
+    axisY.setAttribute("stroke", "#64748b"); axisY.setAttribute("stroke-width", "1.2");
+    svg.append(axisX, axisY);
+
+    const exactPath = [];
+    for (let i = 0; i < 220; i++) {
+      const x = xMin + i / 219 * (xMax - xMin);
+      exactPath.push(`${i === 0 ? "M" : "L"} ${sx(x)} ${sy(exact(x))}`);
+    }
+    [["#0f172a", exactPath.join(" "), 3], ["#dc2626", xs.map((x, i) => `${i === 0 ? "M" : "L"} ${sx(x)} ${sy(euler[i])}`).join(" "), 2.5], ["#16a34a", xs.map((x, i) => `${i === 0 ? "M" : "L"} ${sx(x)} ${sy(rk4[i])}`).join(" "), 2.5]].forEach(([color, d, w]) => {
+      const p = svgEl("path");
+      p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", color); p.setAttribute("stroke-width", String(w));
+      svg.appendChild(p);
+    });
+
+    const eErr = Math.abs(euler.at(-1) - exact(2));
+    const rErr = Math.abs(rk4.at(-1) - exact(2));
+    eBox.textContent = `Euler error at x = 2: ${eErr.toFixed(4)}`;
+    rBox.textContent = `RK4 error at x = 2: ${rErr.toFixed(4)}`;
+    nBox.textContent = `steps: ${xs.length - 1}`;
+    caption.textContent = "Black is the exact solution e^x. With the same step size, Euler drifts visibly away while RK4 stays much closer.";
+  }
+
+  slider.addEventListener("input", redraw);
+  container.append(controls, summary, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ---
 
 ## Runge-Kutta methods
@@ -326,6 +425,114 @@ This is explicit: each new value depends only on known values at the previous ti
 **Stability condition.** Look at the FTCS update coefficients: $r$, $(1-2r)$, $r$. When $r \leq 1/2$, the coefficient $(1-2r)$ is non-negative, so the new value at each interior node is a weighted average of the neighbouring values — physically reasonable, bounded, and stable. When $r > 1/2$, the coefficient $(1-2r)$ turns negative. The centre node's own value now enters with a negative weight: the update is no longer an average. A small perturbation at one node gets amplified rather than smoothed; each time step multiplies the perturbation, and the solution oscillates with growing amplitude until it overflows. The physical heat equation diffuses and decays; the numerical scheme with an oversized time step does the opposite — it invents energy out of rounding errors. Von Neumann stability analysis makes this precise: $r \le \tfrac{1}{2}$ is the condition. In practice, for $\alpha = 1$, $\Delta x = 0.1$: the maximum stable $\Delta t$ is $\tfrac{1}{2} (0.1)^2 = 0.005$.
 
 <!-- VIZ: heat equation FD — sliders for Δt and Δx, animates temperature profile u(x,t) evolving from a spike IC, red warning overlay when stability condition violated -->
+
+Use the controls to see the FTCS heat solver behave like a smoother when the
+stability condition holds, and like a source of fake oscillations when it does
+not.
+
+```{ojs}
+//| echo: false
+{
+  const alpha = 1;
+  function stepHeat(dx, dt, steps) {
+    const n = Math.round(1 / dx);
+    let u = Array.from({ length: n + 1 }, (_, j) => Math.exp(-((j * dx - 0.5) / 0.08) ** 2));
+    u[0] = 0; u[n] = 0;
+    const r = alpha * dt / (dx * dx);
+    for (let s = 0; s < steps; s++) {
+      const next = u.slice();
+      for (let j = 1; j < n; j++) next[j] = r * u[j - 1] + (1 - 2 * r) * u[j] + r * u[j + 1];
+      next[0] = 0; next[n] = 0;
+      u = next;
+    }
+    return { u, r, n };
+  }
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+  function addSlider(labelText, min, max, step, value) {
+    const label = document.createElement("label"); label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range"; input.min = String(min); input.max = String(max); input.step = String(step); input.value = String(value);
+    const out = document.createElement("span"); out.style.cssText = "font-variant-numeric:tabular-nums; min-width:4rem;";
+    controls.append(label, input, out);
+    return { input, out };
+  }
+  const dxRow = addSlider("Δx", 0.05, 0.2, 0.01, 0.10);
+  const dtRow = addSlider("Δt", 0.001, 0.02, 0.001, 0.005);
+  const tRow = addSlider("Time steps", 1, 40, 1, 12);
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const rBox = document.createElement("span");
+  const stateBox = document.createElement("span");
+  summary.append(rBox, stateBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 720 360");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  function redraw() {
+    const dx = Number(dxRow.input.value), dt = Number(dtRow.input.value), steps = Number(tRow.input.value);
+    dxRow.out.textContent = dx.toFixed(2);
+    dtRow.out.textContent = dt.toFixed(3);
+    tRow.out.textContent = String(steps);
+    const { u, r, n } = stepHeat(dx, dt, steps);
+    svg.replaceChildren();
+    const sx = x => 55 + x * 620;
+    const sy = y => 300 - y * 220;
+
+    const axisX = svgEl("line");
+    axisX.setAttribute("x1", "55"); axisX.setAttribute("y1", "300");
+    axisX.setAttribute("x2", "675"); axisX.setAttribute("y2", "300");
+    axisX.setAttribute("stroke", "#64748b"); axisX.setAttribute("stroke-width", "1.2");
+    svg.appendChild(axisX);
+
+    const path = u.map((val, j) => `${j === 0 ? "M" : "L"} ${sx(j / n)} ${sy(val)}`).join(" ");
+    const curve = svgEl("path");
+    curve.setAttribute("d", path);
+    curve.setAttribute("fill", "none");
+    curve.setAttribute("stroke", r <= 0.5 ? "#2563eb" : "#dc2626");
+    curve.setAttribute("stroke-width", "3");
+    svg.appendChild(curve);
+
+    if (r > 0.5) {
+      const warn = svgEl("rect");
+      warn.setAttribute("x", "110"); warn.setAttribute("y", "55");
+      warn.setAttribute("width", "510"); warn.setAttribute("height", "42");
+      warn.setAttribute("rx", "8");
+      warn.setAttribute("fill", "rgba(220,38,38,0.14)");
+      svg.appendChild(warn);
+      const t = svgEl("text");
+      t.setAttribute("x", "365"); t.setAttribute("y", "81");
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("font-size", "15");
+      t.setAttribute("font-weight", "700");
+      t.setAttribute("fill", "#b91c1c");
+      t.textContent = "r > 1/2: unstable update, oscillations can grow";
+      svg.appendChild(t);
+    }
+
+    rBox.textContent = `r = αΔt/Δx² = ${r.toFixed(3)}`;
+    stateBox.textContent = r <= 0.5 ? "stable weighted-average regime" : "unstable regime";
+    caption.textContent = "For r ≤ 1/2 the scheme behaves like diffusion and smooths the spike. Once r exceeds 1/2, the update is no longer a proper average and the profile can blow up.";
+  }
+
+  [dxRow.input, dtRow.input, tRow.input].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, summary, svg, caption);
+  redraw();
+  return container;
+}
+```
 
 ### Crank-Nicolson: unconditional stability
 
@@ -798,5 +1005,4 @@ EDIT LOG (editor agent)
   down to exploit the tridiagonal sparsity pattern, solving in O(N) rather than O(N³)
   operations") is brief and self-contained.
 -->
-
 

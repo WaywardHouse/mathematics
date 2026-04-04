@@ -199,6 +199,123 @@ a growing tree of already-certified shortest paths.
 
 <!-- VIZ: Dijkstra step-through — fixed 6-node weighted graph using the A–F example above, "Next step" button highlights the current shortest-path tree, shows distance labels updating at each finalisation step, colours finalised vertices differently from tentative ones -->
 
+Use the stepper to watch the shortest-path tree grow one certified vertex at a
+time.
+
+```{ojs}
+//| echo: false
+{
+  const pos = {
+    A:[90,170], B:[220,80], C:[220,250],
+    D:[380,85], E:[380,250], F:[560,170]
+  };
+  const edges = [
+    ["A","B",4],["A","C",2],["B","C",1],["B","D",5],
+    ["C","D",8],["C","E",3],["D","E",2],["D","F",11],["E","F",7]
+  ];
+  const steps = [
+    { current:"A", finalised:["A"], dist:{A:0,B:4,C:2,D:"∞",E:"∞",F:"∞"}, tree:[] },
+    { current:"C", finalised:["A","C"], dist:{A:0,B:3,C:2,D:10,E:5,F:"∞"}, tree:[["A","C"]] },
+    { current:"B", finalised:["A","C","B"], dist:{A:0,B:3,C:2,D:8,E:5,F:"∞"}, tree:[["A","C"],["C","B"]] },
+    { current:"E", finalised:["A","C","B","E"], dist:{A:0,B:3,C:2,D:8,E:5,F:12}, tree:[["A","C"],["C","B"],["C","E"]] },
+    { current:"D", finalised:["A","C","B","E","D"], dist:{A:0,B:3,C:2,D:8,E:5,F:12}, tree:[["A","C"],["C","B"],["C","E"],["B","D"]] },
+    { current:"F", finalised:["A","C","B","E","D","F"], dist:{A:0,B:3,C:2,D:8,E:5,F:12}, tree:[["A","C"],["C","B"],["C","E"],["B","D"],["E","F"]] }
+  ];
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const actions = document.createElement("div");
+  actions.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.7rem;";
+  const prevBtn = document.createElement("button"); prevBtn.textContent = "Previous";
+  const nextBtn = document.createElement("button"); nextBtn.textContent = "Next step";
+  const stage = document.createElement("strong");
+  actions.append(prevBtn, nextBtn, stage);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const currentBox = document.createElement("span");
+  const pathBox = document.createElement("span");
+  readout.append(currentBox, pathBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 640 340");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  let idx = 0;
+  function redraw() {
+    const step = steps[idx];
+    stage.textContent = `Step ${idx + 1} of ${steps.length}`;
+    currentBox.textContent = `newly finalised vertex: ${step.current}`;
+    pathBox.textContent = `current shortest path to F: ${idx < 3 ? "not yet certified" : "A → C → E → F (12)"}`;
+    svg.replaceChildren();
+
+    edges.forEach(([u,v,w]) => {
+      const [x1,y1] = pos[u], [x2,y2] = pos[v];
+      const inTree = step.tree.some(([a,b]) => (a === u && b === v) || (a === v && b === u));
+      const line = svgEl("line");
+      line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+      line.setAttribute("stroke", inTree ? "#2563eb" : "#94a3b8");
+      line.setAttribute("stroke-width", inTree ? "5" : "2");
+      svg.appendChild(line);
+      const label = svgEl("text");
+      label.setAttribute("x", (x1 + x2) / 2);
+      label.setAttribute("y", (y1 + y2) / 2 - 6);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("font-size", "12");
+      label.setAttribute("fill", "#334155");
+      label.textContent = String(w);
+      svg.appendChild(label);
+    });
+
+    Object.entries(pos).forEach(([node,[x,y]]) => {
+      const finalised = step.finalised.includes(node);
+      const current = step.current === node;
+      const c = svgEl("circle");
+      c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 22);
+      c.setAttribute("fill", current ? "#f59e0b" : finalised ? "#1d4ed8" : "#e2e8f0");
+      c.setAttribute("stroke", "#0f172a");
+      c.setAttribute("stroke-width", "1.2");
+      svg.appendChild(c);
+      const t = svgEl("text");
+      t.setAttribute("x", x); t.setAttribute("y", y + 4);
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("font-size", "14");
+      t.setAttribute("font-weight", "700");
+      t.setAttribute("fill", finalised || current ? "#fff" : "#0f172a");
+      t.textContent = node;
+      svg.appendChild(t);
+      const d = svgEl("text");
+      d.setAttribute("x", x); d.setAttribute("y", y + 38);
+      d.setAttribute("text-anchor", "middle");
+      d.setAttribute("font-size", "12");
+      d.setAttribute("fill", "#334155");
+      d.textContent = `dist ${step.dist[node]}`;
+      svg.appendChild(d);
+    });
+
+    caption.textContent = idx < steps.length - 1
+      ? "Blue edges are already certified as part of the shortest-path tree. The amber vertex is the next one whose current distance is now known to be final."
+      : "By the end, every vertex is finalised and the blue edges form the shortest-path tree rooted at A.";
+  }
+
+  prevBtn.addEventListener("click", () => { idx = Math.max(0, idx - 1); redraw(); });
+  nextBtn.addEventListener("click", () => { idx = Math.min(steps.length - 1, idx + 1); redraw(); });
+
+  container.append(actions, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ### Correctness sketch
 
 <!-- STUDENT: The proof introduces a new variable $y$ that requires careful reading: $y$ is defined as "the first vertex on the shorter path not yet in $S$." This is clear but dense. A reader who has never seen a proof by contradiction in a graph-theory context may lose the thread at "extending the path beyond $y$ can only increase its length." It would help to add: "any further edges on the path from $y$ to $u$ add non-negative weight, so the total cannot be shorter than dist[y] alone." -->
@@ -404,6 +521,173 @@ The minimum cut $\{$B→T, C→T$\}$ identifies the bottleneck: these are
 the edges whose capacity limits the total throughput of the network.
 
 <!-- VIZ: network flow explorer — 5-node directed graph (S, A, B, C, T) with edge capacities from the worked example, capacity sliders on each edge, live display of current flow (updated by running Ford-Fulkerson) and the residual graph, highlights the min-cut edges when flow is maximal -->
+
+Use the capacity sliders to see how the bottleneck edges control the maximum
+throughput of the whole network.
+
+```{ojs}
+//| echo: false
+{
+  const pos = { S:[90,170], A:[240,90], B:[240,250], C:[400,170], T:[560,170] };
+  const base = { SA:10, SB:8, AC:5, AB:3, BC:4, AT:4, BT:10, CT:7 };
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+
+  function maxFlow(c) {
+    const nodes = ["S","A","B","C","T"];
+    const cap = {};
+    const add = (u,v,w) => {
+      cap[u] ||= {}; cap[v] ||= {};
+      cap[u][v] = w;
+      cap[v][u] ||= 0;
+    };
+    add("S","A",c.SA); add("S","B",c.SB); add("A","C",c.AC); add("A","B",c.AB);
+    add("B","C",c.BC); add("A","T",c.AT); add("B","T",c.BT); add("C","T",c.CT);
+    const resid = JSON.parse(JSON.stringify(cap));
+    const flow = {};
+    let total = 0;
+    while (true) {
+      const parent = { S:null };
+      const queue = ["S"];
+      while (queue.length && !("T" in parent)) {
+        const u = queue.shift();
+        for (const v of nodes) {
+          if (!(v in parent) && resid[u]?.[v] > 1e-9) {
+            parent[v] = u;
+            queue.push(v);
+          }
+        }
+      }
+      if (!("T" in parent)) break;
+      let aug = Infinity, v = "T";
+      while (parent[v] !== null) {
+        const u = parent[v];
+        aug = Math.min(aug, resid[u][v]);
+        v = u;
+      }
+      v = "T";
+      while (parent[v] !== null) {
+        const u = parent[v];
+        resid[u][v] -= aug;
+        resid[v][u] = (resid[v][u] || 0) + aug;
+        flow[u] ||= {};
+        flow[u][v] = (flow[u][v] || 0) + aug;
+        v = u;
+      }
+      total += aug;
+    }
+    const reachable = new Set(["S"]);
+    const queue = ["S"];
+    while (queue.length) {
+      const u = queue.shift();
+      for (const v of nodes) {
+        if (!reachable.has(v) && resid[u]?.[v] > 1e-9) {
+          reachable.add(v);
+          queue.push(v);
+        }
+      }
+    }
+    return { total, flow, resid, reachable };
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:780px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.45rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+
+  const rows = {};
+  Object.entries(base).forEach(([key,val]) => {
+    const label = document.createElement("label");
+    label.textContent = `${key[0]} → ${key[1]} capacity`;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = "0";
+    input.max = "14";
+    input.step = "1";
+    input.value = String(val);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric:tabular-nums; min-width:2rem;";
+    controls.append(label, input, out);
+    rows[key] = { input, out };
+  });
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const flowBox = document.createElement("span");
+  const cutBox = document.createElement("span");
+  summary.append(flowBox, cutBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 650 340");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  const edgeMap = [["S","A","SA"],["S","B","SB"],["A","C","AC"],["A","B","AB"],["B","C","BC"],["A","T","AT"],["B","T","BT"],["C","T","CT"]];
+
+  function redraw() {
+    const caps = {};
+    Object.entries(rows).forEach(([k, row]) => {
+      caps[k] = Number(row.input.value);
+      row.out.textContent = row.input.value;
+    });
+    const { total, flow, reachable } = maxFlow(caps);
+    svg.replaceChildren();
+    const cutEdges = [];
+
+    edgeMap.forEach(([u,v,key]) => {
+      const [x1,y1] = pos[u], [x2,y2] = pos[v];
+      const isCut = reachable.has(u) && !reachable.has(v);
+      if (isCut) cutEdges.push(`${u}→${v}`);
+      const line = svgEl("line");
+      line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+      line.setAttribute("stroke", isCut ? "#dc2626" : "#94a3b8");
+      line.setAttribute("stroke-width", isCut ? "5" : "3");
+      svg.appendChild(line);
+
+      const label = svgEl("text");
+      label.setAttribute("x", (x1 + x2) / 2);
+      label.setAttribute("y", (y1 + y2) / 2 - 8);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("font-size", "12");
+      label.setAttribute("fill", "#0f172a");
+      label.textContent = `${flow[u]?.[v] || 0}/${caps[key]}`;
+      svg.appendChild(label);
+    });
+
+    Object.entries(pos).forEach(([node,[x,y]]) => {
+      const c = svgEl("circle");
+      c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 22);
+      c.setAttribute("fill", reachable.has(node) ? "#1d4ed8" : "#e2e8f0");
+      c.setAttribute("stroke", "#0f172a");
+      c.setAttribute("stroke-width", "1.2");
+      svg.appendChild(c);
+      const t = svgEl("text");
+      t.setAttribute("x", x); t.setAttribute("y", y + 4);
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("font-size", "14");
+      t.setAttribute("font-weight", "700");
+      t.setAttribute("fill", reachable.has(node) ? "#fff" : "#0f172a");
+      t.textContent = node;
+      svg.appendChild(t);
+    });
+
+    flowBox.textContent = `maximum flow = ${total}`;
+    cutBox.textContent = `highlighted min-cut edges = ${cutEdges.join(", ") || "none"}`;
+    caption.textContent = "Edge labels show flow/capacity. Red edges are the current minimum cut: increasing those capacities is what changes the network-wide maximum flow most directly.";
+  }
+
+  Object.values(rows).forEach(({input}) => input.addEventListener("input", redraw));
+  container.append(controls, summary, svg, caption);
+  redraw();
+  return container;
+}
+```
 
 ::: {.callout-note appearance="simple"}
 **Why Ford-Fulkerson terminates**
@@ -897,4 +1181,3 @@ EDIT LOG (editor agent)
   first (reverse edges let the algorithm undo earlier routing decisions), then the
   formal definition with each term labelled.
 -->
-

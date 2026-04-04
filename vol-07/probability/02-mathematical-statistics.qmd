@@ -683,6 +683,170 @@ falling close to the diagonal line support the assumption.
 
 <!-- VIZ: regression explorer — scatter plot of ~20 points, sliders for β₀ and β̂₁, live SSR display, "Fit OLS" button snaps to optimal line, shows R² -->
 
+Use the sliders to test lines against the data, then snap to the least-squares
+fit and compare the change in SSR and $R^2$.
+
+```{ojs}
+//| echo: false
+{
+  const pts = [
+    [0.5,1.3],[0.9,1.8],[1.4,2.5],[1.7,2.4],[2.1,3.1],
+    [2.5,3.6],[2.9,3.4],[3.2,4.2],[3.6,4.5],[4.0,4.8],
+    [4.3,5.3],[4.8,5.5],[5.1,5.8],[5.5,6.3],[5.9,6.1],
+    [6.2,6.8],[6.7,7.0],[7.1,7.6],[7.5,7.7],[7.9,8.2]
+  ];
+  const n = pts.length;
+  const meanX = pts.reduce((s, [x]) => s + x, 0) / n;
+  const meanY = pts.reduce((s, [, y]) => s + y, 0) / n;
+  const sxx = pts.reduce((s, [x]) => s + (x - meanX) ** 2, 0);
+  const sxy = pts.reduce((s, [x, y]) => s + (x - meanX) * (y - meanY), 0);
+  const beta1Hat = sxy / sxx;
+  const beta0Hat = meanY - beta1Hat * meanX;
+  const sst = pts.reduce((s, [, y]) => s + (y - meanY) ** 2, 0);
+  const W = 720, H = 420, xMin = 0, xMax = 8.5, yMin = 0.5, yMax = 9;
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+  function sx(v) { return 55 + (v - xMin) / (xMax - xMin) * 620; }
+  function sy(v) { return 360 - (v - yMin) / (yMax - yMin) * 290; }
+  function metrics(b0, b1) {
+    const ssr = pts.reduce((s, [x, y]) => s + (y - (b0 + b1 * x)) ** 2, 0);
+    return { ssr, r2: 1 - ssr / sst };
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+
+  function sliderRow(labelText, min, max, value, step) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = String(step);
+    input.value = String(value);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric:tabular-nums; min-width:4rem;";
+    controls.append(label, input, out);
+    return { input, out };
+  }
+
+  const b0Row = sliderRow("Intercept β0", 0.5, 4, 1.2, 0.05);
+  const b1Row = sliderRow("Slope β1", 0.3, 1.3, 0.75, 0.01);
+
+  const actions = document.createElement("div");
+  actions.style.cssText = "display:flex; gap:0.6rem; margin:0.1rem 0 0.75rem 0;";
+  const fitBtn = document.createElement("button");
+  fitBtn.textContent = "Fit OLS";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset guess";
+  actions.append(fitBtn, resetBtn);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const eqBox = document.createElement("span");
+  const ssrBox = document.createElement("span");
+  const r2Box = document.createElement("span");
+  readout.append(eqBox, ssrBox, r2Box);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  container.append(controls, actions, readout, svg, caption);
+
+  function redraw() {
+    const b0 = Number(b0Row.input.value);
+    const b1 = Number(b1Row.input.value);
+    b0Row.out.textContent = b0.toFixed(2);
+    b1Row.out.textContent = b1.toFixed(2);
+    const { ssr, r2 } = metrics(b0, b1);
+
+    svg.replaceChildren();
+    const axisX = svgEl("line");
+    axisX.setAttribute("x1", "55"); axisX.setAttribute("y1", "360");
+    axisX.setAttribute("x2", "675"); axisX.setAttribute("y2", "360");
+    axisX.setAttribute("stroke", "#64748b");
+    axisX.setAttribute("stroke-width", "1.2");
+    const axisY = svgEl("line");
+    axisY.setAttribute("x1", "55"); axisY.setAttribute("y1", "360");
+    axisY.setAttribute("x2", "55"); axisY.setAttribute("y2", "50");
+    axisY.setAttribute("stroke", "#64748b");
+    axisY.setAttribute("stroke-width", "1.2");
+    svg.append(axisX, axisY);
+
+    for (let x = 1; x <= 8; x++) {
+      const t = svgEl("text");
+      t.setAttribute("x", String(sx(x)));
+      t.setAttribute("y", "378");
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("font-size", "12");
+      t.setAttribute("fill", "#64748b");
+      t.textContent = String(x);
+      svg.appendChild(t);
+    }
+
+    pts.forEach(([x, y]) => {
+      const resid = y - (b0 + b1 * x);
+      const c = svgEl("line");
+      c.setAttribute("x1", String(sx(x)));
+      c.setAttribute("y1", String(sy(y)));
+      c.setAttribute("x2", String(sx(x)));
+      c.setAttribute("y2", String(sy(b0 + b1 * x)));
+      c.setAttribute("stroke", resid >= 0 ? "#93c5fd" : "#fca5a5");
+      c.setAttribute("stroke-width", "2");
+      svg.appendChild(c);
+
+      const p = svgEl("circle");
+      p.setAttribute("cx", String(sx(x)));
+      p.setAttribute("cy", String(sy(y)));
+      p.setAttribute("r", "4.5");
+      p.setAttribute("fill", "#0f172a");
+      svg.appendChild(p);
+    });
+
+    const line = svgEl("line");
+    line.setAttribute("x1", String(sx(xMin)));
+    line.setAttribute("y1", String(sy(b0 + b1 * xMin)));
+    line.setAttribute("x2", String(sx(xMax)));
+    line.setAttribute("y2", String(sy(b0 + b1 * xMax)));
+    line.setAttribute("stroke", "#ea580c");
+    line.setAttribute("stroke-width", "3");
+    svg.appendChild(line);
+
+    eqBox.textContent = `ŷ = ${b0.toFixed(2)} + ${b1.toFixed(2)}x`;
+    ssrBox.textContent = `SSR = ${ssr.toFixed(3)}`;
+    r2Box.textContent = `R² = ${r2.toFixed(3)}`;
+    caption.textContent = "Vertical segments are residuals. Least squares chooses the line that makes the sum of their squared lengths as small as possible.";
+  }
+
+  [b0Row.input, b1Row.input].forEach(el => el.addEventListener("input", redraw));
+  fitBtn.addEventListener("click", () => {
+    b0Row.input.value = String(beta0Hat);
+    b1Row.input.value = String(beta1Hat);
+    redraw();
+  });
+  resetBtn.addEventListener("click", () => {
+    b0Row.input.value = "1.2";
+    b1Row.input.value = "0.75";
+    redraw();
+  });
+
+  redraw();
+  return container;
+}
+```
+
 ## One-way ANOVA
 
 When you want to compare means across three or more groups, running

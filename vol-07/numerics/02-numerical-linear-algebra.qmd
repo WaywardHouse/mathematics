@@ -240,6 +240,115 @@ Row 3: $2(4) + 1(4/3) + 2(4/3) = 8 + 4/3 + 8/3 = 8 + 4 = 12$ ✓
 
 <!-- VIZ: 3×3 augmented matrix animation — step through partial pivoting GE, amber highlight on pivot row after swap, red highlight on the entry that would have been a problematic small pivot if left in place, blue for multipliers, "Next step" button advances one elimination step at a time, final state shows upper-triangular result -->
 
+Use the stepper to see the row swap, the pivot choice, and the elimination
+multipliers that create the upper-triangular system.
+
+```{ojs}
+//| echo: false
+{
+  const steps = [
+    {
+      title: "Initial augmented matrix",
+      pivot: [0,0],
+      swap: "swap R1 and R2 for a stronger pivot",
+      rows: [
+        ["1","2","1","8"],
+        ["3","2","4","20"],
+        ["2","1","2","12"]
+      ]
+    },
+    {
+      title: "After partial pivoting",
+      pivot: [0,0],
+      swap: "R2 moved to the top",
+      rows: [
+        ["3","2","4","20"],
+        ["1","2","1","8"],
+        ["2","1","2","12"]
+      ]
+    },
+    {
+      title: "Eliminate below pivot 1",
+      pivot: [1,1],
+      swap: "multipliers m21 = 1/3, m31 = 2/3",
+      rows: [
+        ["3","2","4","20"],
+        ["0","4/3","-1/3","4/3"],
+        ["0","-1/3","-2/3","-4/3"]
+      ]
+    },
+    {
+      title: "Pivot 2 and finish",
+      pivot: [1,1],
+      swap: "multiplier m32 = -1/4",
+      rows: [
+        ["3","2","4","20"],
+        ["0","4/3","-1/3","4/3"],
+        ["0","0","-3/4","-1"]
+      ]
+    }
+  ];
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:700px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const actions = document.createElement("div");
+  actions.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.75rem;";
+  const prevBtn = document.createElement("button"); prevBtn.textContent = "Previous";
+  const nextBtn = document.createElement("button"); nextBtn.textContent = "Next step";
+  const stage = document.createElement("strong");
+  actions.append(prevBtn, nextBtn, stage);
+
+  const note = document.createElement("div");
+  note.style.cssText = "margin-bottom:0.6rem; color:#334155;";
+
+  const table = document.createElement("table");
+  table.style.cssText = "border-collapse:collapse; width:100%; max-width:640px; font-size:0.95rem;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  let idx = 0;
+  function redraw() {
+    const step = steps[idx];
+    stage.textContent = step.title;
+    note.textContent = step.swap;
+    table.replaceChildren();
+    const head = document.createElement("tr");
+    ["x1","x2","x3","rhs"].forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      th.style.cssText = "border:1px solid #cbd5e1; padding:0.45rem 0.6rem; text-align:center;";
+      head.appendChild(th);
+    });
+    table.appendChild(head);
+    step.rows.forEach((row, i) => {
+      const tr = document.createElement("tr");
+      row.forEach((val, j) => {
+        const td = document.createElement("td");
+        td.textContent = val;
+        td.style.cssText = "border:1px solid #cbd5e1; padding:0.45rem 0.6rem; text-align:center;";
+        if (i === step.pivot[0] && j === step.pivot[1]) td.style.background = "#fde68a";
+        if (idx === 0 && i === 0 && j === 0) td.style.background = "#fecaca";
+        if (idx >= 2 && i > 0 && j === 0) td.style.color = "#2563eb";
+        tr.appendChild(td);
+      });
+      table.appendChild(tr);
+    });
+    caption.textContent = idx === 0
+      ? "The red entry would be a weak pivot. Partial pivoting swaps in the largest available entry from the column before elimination begins."
+      : idx < steps.length - 1
+      ? "Amber marks the current pivot. Blue text highlights entries being eliminated below the pivot."
+      : "At the end, the matrix is upper triangular and ready for back substitution.";
+  }
+
+  prevBtn.addEventListener("click", () => { idx = Math.max(0, idx - 1); redraw(); });
+  nextBtn.addEventListener("click", () => { idx = Math.min(steps.length - 1, idx + 1); redraw(); });
+
+  container.append(actions, note, table, caption);
+  redraw();
+  return container;
+}
+```
+
 ## LU decomposition
 
 Gaussian elimination — without pivoting, for clarity — can be read as
@@ -1086,4 +1195,3 @@ EDIT LOG (editor agent)
   who want it. The term was appearing without a definition and there is no prior
   eigenvalue context in this chapter.
 -->
-

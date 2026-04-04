@@ -161,6 +161,139 @@ The exact root is $x^* \approx 1.5214$.
 
 <!-- VIZ: animated bisection — slider for iteration count, shows interval halving on a user-selectable function (e.g. x³-x-2), bracket endpoints updating each step -->
 
+Use the controls to watch the bracket halve and the guaranteed uncertainty
+shrink step by step.
+
+```{ojs}
+//| echo: false
+{
+  const funcs = {
+    cubic: { label:"x^3 - x - 2", f:x => x**3 - x - 2, a:1, b:2 },
+    cosx: { label:"cos(x) - x", f:x => Math.cos(x) - x, a:0, b:1 }
+  };
+  const W = 720, H = 360;
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  function runBisection(name, n) {
+    const { f, a: a0, b: b0 } = funcs[name];
+    let a = a0, b = b0;
+    const states = [{ a, b, m:(a+b)/2, fm:f((a+b)/2) }];
+    for (let k = 0; k < n; k++) {
+      const m = (a + b) / 2;
+      const fm = f(m);
+      if (f(a) * fm <= 0) b = m; else a = m;
+      states.push({ a, b, m:(a+b)/2, fm:f((a+b)/2) });
+    }
+    return states.at(-1);
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+  const selLabel = document.createElement("label"); selLabel.textContent = "Function";
+  const select = document.createElement("select");
+  Object.entries(funcs).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v.label;
+    select.appendChild(opt);
+  });
+  const selOut = document.createElement("span"); selOut.textContent = "";
+  controls.append(selLabel, select, selOut);
+  const stepLabel = document.createElement("label"); stepLabel.textContent = "Iteration";
+  const step = document.createElement("input");
+  step.type = "range"; step.min = "0"; step.max = "8"; step.step = "1"; step.value = "3";
+  const stepOut = document.createElement("span");
+  stepOut.style.cssText = "font-variant-numeric:tabular-nums; min-width:3rem;";
+  controls.append(stepLabel, step, stepOut);
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const bracketBox = document.createElement("span");
+  const midBox = document.createElement("span");
+  const widthBox = document.createElement("span");
+  summary.append(bracketBox, midBox, widthBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  function redraw() {
+    const name = select.value;
+    const info = funcs[name];
+    const state = runBisection(name, Number(step.value));
+    selOut.textContent = info.label;
+    stepOut.textContent = step.value;
+    svg.replaceChildren();
+
+    const xMin = info.a - 0.2, xMax = info.b + 0.2;
+    const yVals = Array.from({ length: 200 }, (_, i) => info.f(xMin + i / 199 * (xMax - xMin)));
+    const yMin = Math.min(...yVals, -0.5), yMax = Math.max(...yVals, 0.5);
+    const sx = x => 55 + (x - xMin) / (xMax - xMin) * 620;
+    const sy = y => 290 - (y - yMin) / (yMax - yMin) * 210;
+
+    const axis = svgEl("line");
+    axis.setAttribute("x1", "55"); axis.setAttribute("y1", String(sy(0)));
+    axis.setAttribute("x2", "675"); axis.setAttribute("y2", String(sy(0)));
+    axis.setAttribute("stroke", "#64748b");
+    axis.setAttribute("stroke-width", "1.2");
+    svg.appendChild(axis);
+
+    const path = [];
+    for (let i = 0; i < 200; i++) {
+      const x = xMin + i / 199 * (xMax - xMin);
+      path.push(`${i === 0 ? "M" : "L"} ${sx(x)} ${sy(info.f(x))}`);
+    }
+    const curve = svgEl("path");
+    curve.setAttribute("d", path.join(" "));
+    curve.setAttribute("fill", "none");
+    curve.setAttribute("stroke", "#2563eb");
+    curve.setAttribute("stroke-width", "3");
+    svg.appendChild(curve);
+
+    const band = svgEl("rect");
+    band.setAttribute("x", String(sx(state.a)));
+    band.setAttribute("y", "40");
+    band.setAttribute("width", String(sx(state.b) - sx(state.a)));
+    band.setAttribute("height", "250");
+    band.setAttribute("fill", "rgba(245,158,11,0.18)");
+    svg.appendChild(band);
+
+    [["a", state.a, "#dc2626"], ["m", state.m, "#0f172a"], ["b", state.b, "#16a34a"]].forEach(([label, x, color]) => {
+      const line = svgEl("line");
+      line.setAttribute("x1", String(sx(x))); line.setAttribute("y1", "40");
+      line.setAttribute("x2", String(sx(x))); line.setAttribute("y2", "290");
+      line.setAttribute("stroke", color);
+      line.setAttribute("stroke-width", "2.5");
+      svg.appendChild(line);
+      const t = svgEl("text");
+      t.setAttribute("x", String(sx(x))); t.setAttribute("y", "32");
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("font-size", "12");
+      t.setAttribute("fill", color);
+      t.textContent = `${label} = ${Number(x).toFixed(4)}`;
+      svg.appendChild(t);
+    });
+
+    bracketBox.textContent = `current bracket = [${state.a.toFixed(4)}, ${state.b.toFixed(4)}]`;
+    midBox.textContent = `midpoint = ${state.m.toFixed(4)}`;
+    widthBox.textContent = `width = ${(state.b - state.a).toFixed(4)}`;
+    caption.textContent = "Bisection never loses the root: it simply keeps the half-interval where the sign change still occurs.";
+  }
+
+  [select, step].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, summary, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ### Newton-Raphson method
 
 Bisection is robust but slow. If $f$ is differentiable, you can do much
@@ -217,6 +350,138 @@ Starting from $x_0 = 1$:
 Three steps to six-digit accuracy. Quadratic convergence in action.
 
 <!-- VIZ: Newton-Raphson convergence — shows tangent line to curve at current iterate, click "Next iteration" to step, displays |f(xₙ)| error log -->
+
+Use the stepper to see each tangent line generate the next iterate.
+
+```{ojs}
+//| echo: false
+{
+  const f = x => x * x - 2;
+  const fp = x => 2 * x;
+  const xs = [1.0];
+  for (let i = 0; i < 4; i++) {
+    const x = xs.at(-1);
+    xs.push(x - f(x) / fp(x));
+  }
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const actions = document.createElement("div");
+  actions.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.75rem;";
+  const prevBtn = document.createElement("button"); prevBtn.textContent = "Previous";
+  const nextBtn = document.createElement("button"); nextBtn.textContent = "Next iteration";
+  const stage = document.createElement("strong");
+  actions.append(prevBtn, nextBtn, stage);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const xBox = document.createElement("span");
+  const fBox = document.createElement("span");
+  const errBox = document.createElement("span");
+  readout.append(xBox, fBox, errBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 720 360");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const log = document.createElement("table");
+  log.style.cssText = "border-collapse:collapse; width:100%; max-width:420px; margin-top:0.75rem; font-size:0.92rem;";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  let idx = 0;
+  function redraw() {
+    const x = xs[idx];
+    const xNext = xs[Math.min(idx + 1, xs.length - 1)];
+    stage.textContent = `iteration n = ${idx}`;
+    xBox.textContent = `x_n = ${x.toFixed(6)}`;
+    fBox.textContent = `f(x_n) = ${f(x).toFixed(6)}`;
+    errBox.textContent = `|f(x_n)| = ${Math.abs(f(x)).toExponential(3)}`;
+
+    svg.replaceChildren();
+    const xMin = 0.7, xMax = 1.7, yMin = -1.2, yMax = 1.2;
+    const sx = x => 55 + (x - xMin) / (xMax - xMin) * 620;
+    const sy = y => 280 - (y - yMin) / (yMax - yMin) * 220;
+
+    const axis = svgEl("line");
+    axis.setAttribute("x1", "55"); axis.setAttribute("y1", String(sy(0)));
+    axis.setAttribute("x2", "675"); axis.setAttribute("y2", String(sy(0)));
+    axis.setAttribute("stroke", "#64748b"); axis.setAttribute("stroke-width", "1.2");
+    svg.appendChild(axis);
+
+    const path = [];
+    for (let i = 0; i < 240; i++) {
+      const xv = xMin + i / 239 * (xMax - xMin);
+      path.push(`${i === 0 ? "M" : "L"} ${sx(xv)} ${sy(f(xv))}`);
+    }
+    const curve = svgEl("path");
+    curve.setAttribute("d", path.join(" "));
+    curve.setAttribute("fill", "none");
+    curve.setAttribute("stroke", "#2563eb");
+    curve.setAttribute("stroke-width", "3");
+    svg.appendChild(curve);
+
+    const m = fp(x), b = f(x) - m * x;
+    const t1 = xMin, t2 = xMax;
+    const tangent = svgEl("line");
+    tangent.setAttribute("x1", String(sx(t1)));
+    tangent.setAttribute("y1", String(sy(m * t1 + b)));
+    tangent.setAttribute("x2", String(sx(t2)));
+    tangent.setAttribute("y2", String(sy(m * t2 + b)));
+    tangent.setAttribute("stroke", "#f59e0b");
+    tangent.setAttribute("stroke-width", "2.5");
+    svg.appendChild(tangent);
+
+    const p = svgEl("circle");
+    p.setAttribute("cx", String(sx(x)));
+    p.setAttribute("cy", String(sy(f(x))));
+    p.setAttribute("r", "5.5");
+    p.setAttribute("fill", "#0f172a");
+    svg.appendChild(p);
+
+    const drop = svgEl("line");
+    drop.setAttribute("x1", String(sx(xNext))); drop.setAttribute("y1", String(sy(0)));
+    drop.setAttribute("x2", String(sx(xNext))); drop.setAttribute("y2", "305");
+    drop.setAttribute("stroke", "#dc2626");
+    drop.setAttribute("stroke-width", "2");
+    svg.appendChild(drop);
+
+    log.replaceChildren();
+    const head = document.createElement("tr");
+    ["n","x_n","|f(x_n)|"].forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      th.style.cssText = "border:1px solid #cbd5e1; padding:0.35rem 0.5rem; text-align:center;";
+      head.appendChild(th);
+    });
+    log.appendChild(head);
+    xs.slice(0, idx + 2).forEach((val, n) => {
+      const tr = document.createElement("tr");
+      [String(n), val.toFixed(6), Math.abs(f(val)).toExponential(3)].forEach(text => {
+        const td = document.createElement("td");
+        td.textContent = text;
+        td.style.cssText = "border:1px solid #cbd5e1; padding:0.35rem 0.5rem; text-align:center;";
+        tr.appendChild(td);
+      });
+      log.appendChild(tr);
+    });
+
+    caption.textContent = "The orange tangent uses the local linear approximation at x_n. Its x-intercept becomes x_(n+1), which quickly homes in on √2.";
+  }
+
+  prevBtn.addEventListener("click", () => { idx = Math.max(0, idx - 1); redraw(); });
+  nextBtn.addEventListener("click", () => { idx = Math.min(xs.length - 2, idx + 1); redraw(); });
+
+  container.append(actions, readout, svg, log, caption);
+  redraw();
+  return container;
+}
+```
 
 ### Secant method
 
@@ -418,6 +683,103 @@ Error is also $O(h^4)$. The 1/3 rule is more commonly used; the 3/8 rule
 appears when $n$ is odd so the standard Simpson pairing fails.
 
 <!-- VIZ: quadrature comparison — slider for n panels, overlays trapezoid vs Simpson approximation on a fixed curve, shows error vs exact -->
+
+Use the panel slider to compare how trapezoid and Simpson approximations improve
+as the partition is refined.
+
+```{ojs}
+//| echo: false
+{
+  const f = x => Math.sin(Math.PI * x) + 0.4 * x * x;
+  const exact = 2 / Math.PI + 0.4 / 3;
+  function trap(n) {
+    const h = 1 / n;
+    let s = 0.5 * (f(0) + f(1));
+    for (let i = 1; i < n; i++) s += f(i * h);
+    return h * s;
+  }
+  function simpson(n) {
+    if (n % 2 === 1) n += 1;
+    const h = 1 / n;
+    let s = f(0) + f(1);
+    for (let i = 1; i < n; i++) s += (i % 2 === 0 ? 2 : 4) * f(i * h);
+    return h * s / 3;
+  }
+
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+  const label = document.createElement("label"); label.textContent = "Panels n";
+  const slider = document.createElement("input");
+  slider.type = "range"; slider.min = "2"; slider.max = "16"; slider.step = "2"; slider.value = "4";
+  const out = document.createElement("span"); out.style.cssText = "font-variant-numeric:tabular-nums; min-width:3rem;";
+  controls.append(label, slider, out);
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155;";
+  const trapBox = document.createElement("span");
+  const simpBox = document.createElement("span");
+  const exactBox = document.createElement("span");
+  summary.append(trapBox, simpBox, exactBox);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 720 360");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+
+  function redraw() {
+    const n = Number(slider.value);
+    out.textContent = String(n);
+    const tVal = trap(n);
+    const sVal = simpson(n);
+    svg.replaceChildren();
+    const sx = x => 55 + x * 620;
+    const sy = y => 300 - y / 1.45 * 220;
+
+    const axisX = svgEl("line");
+    axisX.setAttribute("x1", "55"); axisX.setAttribute("y1", "300");
+    axisX.setAttribute("x2", "675"); axisX.setAttribute("y2", "300");
+    axisX.setAttribute("stroke", "#64748b"); axisX.setAttribute("stroke-width", "1.2");
+    svg.appendChild(axisX);
+
+    for (let i = 0; i < n; i++) {
+      const x0 = i / n, x1 = (i + 1) / n;
+      const poly = svgEl("polygon");
+      poly.setAttribute("points", `${sx(x0)},300 ${sx(x0)},${sy(f(x0))} ${sx(x1)},${sy(f(x1))} ${sx(x1)},300`);
+      poly.setAttribute("fill", "rgba(59,130,246,0.12)");
+      poly.setAttribute("stroke", "#93c5fd");
+      svg.appendChild(poly);
+    }
+
+    const curve = svgEl("path");
+    curve.setAttribute("d", Array.from({ length: 220 }, (_, i) => {
+      const x = i / 219;
+      return `${i === 0 ? "M" : "L"} ${sx(x)} ${sy(f(x))}`;
+    }).join(" "));
+    curve.setAttribute("fill", "none");
+    curve.setAttribute("stroke", "#0f172a");
+    curve.setAttribute("stroke-width", "3");
+    svg.appendChild(curve);
+
+    trapBox.textContent = `trapezoid = ${tVal.toFixed(5)} (error ${Math.abs(tVal - exact).toFixed(5)})`;
+    simpBox.textContent = `Simpson = ${sVal.toFixed(5)} (error ${Math.abs(sVal - exact).toFixed(5)})`;
+    exactBox.textContent = `exact = ${exact.toFixed(5)}`;
+    caption.textContent = "The blue panels show the trapezoid construction. Simpson's rule uses the same partition but fits local parabolas, so its error usually falls much faster.";
+  }
+
+  slider.addEventListener("input", redraw);
+  container.append(controls, summary, svg, caption);
+  redraw();
+  return container;
+}
+```
 
 ### Gaussian quadrature
 
@@ -902,4 +1264,3 @@ EDIT LOG (editor agent)
   tabulated, never derived by hand). The term was appearing without context for any
   reader who hasn't studied special functions.
 -->
-
