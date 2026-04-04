@@ -188,6 +188,9 @@ controls stability. For the 1D explicit diffusion scheme the stability bound is
 
 $$r = \frac{D\Delta t}{(\Delta x)^2} \leq \frac{1}{2}$$
 
+This means mesh spacing and timestep cannot be chosen independently. Refining
+space without tightening time can destroy stability.
+
 If $r$ exceeds $\frac{1}{2}$, the numerical solution can oscillate or blow up
 even when the physical problem is perfectly well behaved. This bound means
 halving the grid spacing forces the time step to shrink by a factor of four —

@@ -132,6 +132,8 @@ Start with what you already know: $2^3$ means $2 \times 2 \times 2 = 8$.
 The $3$ is the **exponent** — it counts how many copies of 2 you multiply.
 The $2$ is the **base**.
 
+This means exponent notation is a compact way to describe repeated multiplication.
+
 The notation $a^x$ — read "a to the power x" — means the base $a$
 multiplied by itself $x$ times. When you multiply two of these together
 with the same base, the exponents add:
@@ -157,6 +159,9 @@ A fractional exponent means a root — $8^{1/3} = \sqrt[3]{8} = 2$.
 These look odd until you see that they follow directly from the first law above:
 $a^3 \times a^{-3} = a^0 = 1$, so $a^{-3}$ must equal $\frac{1}{a^3}$.
 
+This means the exponent laws extend the same pattern instead of inventing
+separate rules.
+
 ### The exponential function
 
 When the exponent is a variable, you have a function:
@@ -169,10 +174,14 @@ Read it as: "the output is the base $a$ raised to the power $x$."
 - If $0 < a < 1$: the function decays — same shape but reflected.
 - The y-intercept is always 1: $f(0) = a^0 = 1$ for any base.
 
+This means the base controls whether the function grows or decays.
+
 The battery example: $f(t) = (0.5)^t$ gives the fraction of charge
 remaining after $t$ hours. The savings example: $f(t) = 1.06^t$ gives
 the growth factor after $t$ years (multiply by the initial amount to
 get the actual balance).
+
+This means exponentials model change by repeated scaling, not repeated addition.
 
 ### The natural base $e$
 
@@ -194,6 +203,9 @@ reach differential calculus (Volume 5), you'll see that $e^x$ is the
 only function that is its own derivative — the only curve whose slope
 at every point equals its own height. That property is what makes it
 turn up everywhere in science and engineering.
+
+This means the special role of $e$ comes from how naturally it matches
+continuous change.
 
 ```{ojs}
 //| echo: false
@@ -312,10 +324,15 @@ Top: $x^5 \cdot x^{-2} = x^{5 + (-2)} = x^3$.
 
 Then: $x^3 \div x^3 = x^{3-3} = x^0 = 1$.
 
+This means long-looking exponent expressions often collapse quickly once
+the base is the same.
+
 **Simplify $(2a^3)^4$.**
 
 The power applies to everything inside the bracket:
 $(2)^4 \cdot (a^3)^4 = 16 \cdot a^{12} = 16a^{12}$.
+
+This means brackets matter: the outside power affects every factor inside.
 
 ### Part 2: Solving exponential equations by inspection
 
@@ -336,6 +353,8 @@ So $(3^2)^x = 3^3$, giving $3^{2x} = 3^3$, so $2x = 3$, and $x = \frac{3}{2}$.
 
 This only works when you can express both sides with the same base.
 For $2^x = 10$, you can't. That's where logarithms come in.
+
+This means logarithms appear when exponentials cannot be solved by inspection.
 
 ### Part 3: Logarithms
 
@@ -359,6 +378,9 @@ Two special bases appear so often they have short names:
 
 - $\log_{10}(x)$ is often written $\log(x)$ — the **common logarithm**
 - $\log_e(x)$ is written $\ln(x)$ — the **natural logarithm**, read "ell-en of x"
+
+This means a logarithm always converts an output back into the power
+that produced it.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -492,6 +514,8 @@ $$x = \frac{1}{\log(2)} = \frac{1}{0.3010\ldots} \approx 3.32$$
 
 Check: $2^{3.32} \approx 9.97 \approx 10$. Yes.
 
+This means logarithms let us solve for the exponent itself.
+
 **Solving $\log_3(x) + \log_3(x - 2) = 1$.**
 
 Use the product law to combine the left side:
@@ -510,6 +534,8 @@ So $x = 3$ or $x = -1$. But $\log_3(-1)$ is not defined — you can't
 take the log of a negative number. Discard $x = -1$.
 
 Answer: $x = 3$. Check: $\log_3(3) + \log_3(1) = 1 + 0 = 1$. Yes.
+
+This means every logarithmic solution must also pass the domain check.
 
 ## Worked examples
 
@@ -542,6 +568,9 @@ $$\ln(0.10) = \frac{t}{5730} \cdot \ln(0.5)$$
 
 $$t = 5730 \times \frac{\ln(0.10)}{\ln(0.5)} = 5730 \times \frac{-2.3026}{-0.6931} \approx 5730 \times 3.322 \approx 19\,030 \text{ years}$$
 
+This means exponential decay questions often become logarithm questions
+when time is the unknown.
+
 ---
 
 **Example 2 — Finance: compound interest doubling time.**
@@ -563,6 +592,9 @@ $$t = \frac{\ln(2)}{\ln(1.07)} = \frac{0.6931}{0.06766} \approx 10.2 \text{ year
 
 The Rule of 72 is a quick mental estimate: divide 72 by the interest
 rate. $72 / 7 \approx 10.3$ — very close. That rule is a log approximation.
+
+This means doubling time depends on the growth rate through a logarithm,
+not a simple proportion.
 
 ---
 
@@ -588,6 +620,9 @@ The difference is 10 dB, which corresponds to a factor of $10^{10/10} = 10^1 = 1
 A 70 dB sound is 10 times as intense as a 60 dB sound. The logarithm
 compresses very large ratios into small, manageable numbers.
 
+This means logarithmic scales are useful when raw ratios grow too quickly
+to handle comfortably.
+
 ---
 
 **Example 4 — Computing: binary search step count.**
@@ -604,7 +639,13 @@ For one million items: $k = \log_2(1{,}000{,}000) \approx 19.93$, so at
 most 20 steps. That's why $O(\log n)$ algorithms are fast — doubling the
 input adds only one more step.
 
+This means logarithms measure how many repeated halvings or repeated
+multiplications are needed.
+
 ## Where this goes
+
+This chapter connects repeated multiplication, growth, decay, and the
+inverse question "what power was used?"
 
 The derivative of $e^x$ is $e^x$ — the only function that is its own
 slope. That property, which you can only properly state and prove in

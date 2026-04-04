@@ -169,6 +169,8 @@ outcomes are possible, and one of them is 6. So $P(\text{roll 6} \mid B)
 
 Those five symbols are the entire vocabulary you need. Everything else in
 this chapter is built from combinations of them.
+This means probability notation is not a collection of separate tricks. It is
+a small language for describing how events relate to each other.
 
 ## The rules
 
@@ -182,6 +184,8 @@ probability that it does.
 This is simple, but it earns its place in every calculation where it's
 easier to ask "what are the chances this doesn't happen?" than "what are
 the chances it does?" — which turns out to be surprisingly often.
+This means complements are often the quickest route when the event you want is
+hard to count directly.
 
 *Example:* What's the probability of rolling at least one six when you roll
 a die four times? Computing directly means listing every combination that
@@ -202,6 +206,8 @@ Why subtract the intersection? Because if you add $P(A)$ and $P(B)$
 separately, any outcome that falls in both $A$ and $B$ gets counted twice
 — once for $A$ and once for $B$. Subtracting $P(A \cap B)$ corrects that
 double-count.
+This means the addition rule is really an accounting rule: include both
+events, then remove the overlap once.
 
 *Example:* Back to the die. $P(\text{even}) = \frac{3}{6}$,
 $P(\text{greater than 4}) = \frac{2}{6}$,
@@ -229,6 +235,8 @@ The intuition: when you learn that $B$ happened, you've narrowed down the
 sample space. You're no longer considering all of $\Omega$ — only the part
 of $\Omega$ where $B$ is true. Within that restricted space, how often
 does $A$ also happen? That fraction is $P(A \mid B)$.
+This means conditional probability is the same probability idea applied
+inside a smaller universe.
 
 A concrete picture makes this clearer than any formula. Imagine a group of
 1000 people:
@@ -353,6 +361,7 @@ This is just the conditional probability definition rearranged. Solve for
 $P(A \cap B)$ and you get: to find the probability that both $A$ and $B$
 happen, multiply the probability that $B$ happens by the probability that
 $A$ happens given $B$ already happened.
+This means the multiplication rule builds a joint event step by step.
 
 *Example:* A bag has 5 red and 3 blue marbles. You draw one without looking,
 then draw a second without replacing the first. What's the probability both
@@ -381,6 +390,8 @@ intuition, but a precise property you can check. Two coin tosses are
 independent. Drawing a card from a shuffled deck and then rolling a die are
 independent. Drawing two cards without replacement are not — what you get
 first changes what's available for the second.
+This means independence is a strong claim: learning one event gives you no
+information at all about the other.
 
 The gambler's fallacy is exactly the mistake of believing that independent
 events are somehow dependent — that after five heads, the coin "owes" you
@@ -533,6 +544,8 @@ This is **Bayes' theorem**. Read each part:
 
 The theorem tells you how to update a belief in the light of new evidence.
 That is, precisely, what reasoning under uncertainty requires.
+This means Bayes' theorem converts "how likely is the evidence if the cause is
+true?" into "how likely is the cause after seeing the evidence?"
 
 Now the medical test problem from the opening has a clean solution.
 
@@ -580,6 +593,8 @@ A positive result is not a diagnosis. It's information that should prompt
 further testing. This is why medical screening programmes track
 *positive predictive value* — the probability a positive test reflects
 a true positive — and not just test accuracy.
+This means the base rate can dominate the interpretation of a test result,
+even when the test itself is very accurate.
 
 ---
 
@@ -607,6 +622,8 @@ This distinction between sampling with and without replacement appears
 constantly in actuarial and financial modelling, where the question is
 whether one event (e.g. one bond defaulting) affects the probability of
 another.
+This means dependence appears whenever the first outcome changes the pool from
+which the second outcome is drawn.
 
 ---
 
@@ -645,6 +662,8 @@ multiplying the contributions of each word (under an independence assumption
 that is not strictly true but works well in practice). That extension is
 called a Naive Bayes classifier — and it was one of the most effective spam
 filters ever built.
+This means one feature can shift a probability sharply, but the real power
+comes from updating on many pieces of evidence at once.
 
 ---
 
@@ -680,8 +699,13 @@ Environmental scientists and meteorologists work with probability statements
 like this constantly — flood return periods, drought likelihoods, and
 extreme precipitation events are all expressed as conditional probabilities,
 updated as new observations come in.
+This means evidence rarely gives certainty; it changes the odds.
 
 ## Where this goes
+
+This chapter built probability as a system of relationships between events.
+The next chapter keeps that logic but spreads it across random variables that
+can take many possible values.
 
 ### Probability distributions
 

@@ -144,6 +144,10 @@ Let $X_i \sim \text{Bernoulli}(p)$: each observation is 1 (success) or
 0 (failure), with unknown success probability $p$. Then
 $f(x; p) = p^x (1-p)^{1-x}$, so:
 
+For $x=1$, this gives $f(1;p)=p$. For $x=0$, it gives
+$f(0;p)=1-p$. So this compact formula is just the Bernoulli mass function
+written in one line.
+
 <!-- STUDENT: The Bernoulli mass function f(x;p) = p^x (1−p)^(1−x) is presented without explanation. A reader who saw the Bernoulli defined in Ch 1 as P(X=1)=p, P(X=0)=1−p may not immediately see that this formula is the same thing written compactly. Plugging in x=0 and x=1 to verify would take one line and would make the derivation that follows self-contained. -->
 
 $$\ell(p) = \sum_{i=1}^n \left[ x_i \log p + (1-x_i)\log(1-p) \right]
@@ -161,6 +165,9 @@ $$S(1-p) - (n-S)p = 0 \implies S - Sp - np + Sp = 0 \implies S = np$$
 $$\boxed{\hat{p} = \frac{S}{n} = \bar{X}}$$
 
 The MLE is the sample proportion. This confirms the intuition.
+This means maximum likelihood recovers the estimate you would probably guess
+from common sense: the best estimate of a success probability is the observed
+fraction of successes.
 
 ### MLE for the Exponential distribution
 
@@ -228,6 +235,9 @@ $$T = \frac{\bar{X} - \mu}{s/\sqrt{n}}$$
 
 follows a $t$-distribution with $\nu = n-1$ degrees of freedom.
 
+The name "Student" comes from a pseudonym used by William Gosset, a statistician
+working for Guinness who published under that pen name.
+
 <!-- STUDENT: The name "Student's t-distribution" will prompt most readers to wonder who "Student" is — the name is peculiar enough to be distracting. Even a single parenthetical noting it is a pseudonym (William Gosset, Guinness brewery, early 1900s) would satisfy the curiosity and let the reader move on. Also, the notation ν = n−1 for degrees of freedom is introduced here but ν does not appear in notation_introduced. --> Read
 "$s/\sqrt{n}$" as the **standard error of the mean** — the typical spread
 of sample means around the true mean. The $t$-distribution looks like the
@@ -258,6 +268,8 @@ Written compactly:
 $$\bar{X} \pm t_{\alpha/2,\,n-1} \cdot \frac{s}{\sqrt{n}}$$
 
 This is the 95% confidence interval for $\mu$.
+This means a confidence interval is always doing the same structural job:
+estimate at the centre, uncertainty as the margin.
 
 **Worked example.** A materials lab measures Young's modulus for 10
 specimens of a polymer. The sample mean is $\bar{x} = 3.42$ GPa and the
@@ -355,7 +367,9 @@ Under $H_0: \mu_1 = \mu_2$, this follows $t_{n_1+n_2-2}$. Reject when
 $|t| > t_{\alpha/2,\,n_1+n_2-2}$.
 
 Welch's $t$-test removes the equal-variance assumption by adjusting the
-degrees of freedom; it's the default in most software.
+degrees of freedom; it's the default in most software. The pooled test is a
+little more powerful when equal variances really are plausible, while Welch is
+safer when they may not be.
 
 <!-- STUDENT: Welch's test is mentioned as the default in software and then dropped. A reader who uses R, Python, or MATLAB will immediately want to know: if Welch is the default, why was the pooled version just taught? A single sentence explaining the tradeoff — pooled is more powerful when the equal-variance assumption holds; Welch is safer when it might not — would give the reader a decision rule. -->
 
@@ -401,7 +415,8 @@ distance squared between the data points and the fitted line.
 
 Differentiate $\text{SS}_{res}$ with respect to $\hat{\beta}_0$ and $\hat{\beta}_1$
 and set both partial derivatives to zero. This gives the **normal
-equations**:
+equations**. Here "normal" means perpendicular or orthogonal, not "normal
+distribution":
 
 <!-- STUDENT: The term "normal equations" is introduced here without explanation of why they are called that. The name has nothing to do with the normal distribution; it comes from the geometric concept of orthogonal projection. Engineering students who just spent a chapter on the normal distribution will be confused by the coincidence of terminology. Even a brief note — "the word 'normal' here means perpendicular, not Gaussian" — would prevent a false connection. -->
 
@@ -427,6 +442,9 @@ $$\boxed{\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}}$$
 
 where $S_{xy} = \sum(x_i - \bar{x})(y_i - \bar{y})$ and
 $S_{xx} = \sum(x_i - \bar{x})^2$.
+This means the fitted line is pinned to the centre of the data cloud at
+$(\bar{x},\bar{y})$ and tilts according to how strongly $x$ and $y$ move
+together.
 
 ### $R^2$ — coefficient of determination
 
@@ -439,7 +457,8 @@ $$R^2 = 1 - \frac{\text{SS}_{res}}{\text{SS}_{tot}}$$
 $R^2 = 1$ means the line passes through every data point. $R^2 = 0$
 means the line explains none of the variation — it is no better than
 simply predicting $\bar{y}$ for every observation. In simple linear
-regression, $R^2 = r^2$ where $r$ is the Pearson correlation coefficient.
+regression, $R^2 = r^2$ where $r$ is the Pearson correlation coefficient, the
+sample analogue of the population correlation $\rho$ from the previous chapter.
 
 <!-- STUDENT: The Pearson correlation coefficient r is introduced here for the first time in this chapter without a formula. In Ch 1, the population correlation was denoted ρ. A reader who noticed that will wonder whether r and ρ are the same concept, and if so, why the symbol changed. A brief note — "r is the sample version of the population correlation ρ from Ch 1" — would close this gap. -->
 

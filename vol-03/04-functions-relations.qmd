@@ -122,6 +122,9 @@ about what that means precisely — and why the restriction matters.
 
 ## What the notation is saying
 
+Start with the machine idea from the opening. A function takes an input,
+applies a rule, and returns one output.
+
 Here is a function:
 
 $$f(x) = 2x + 3$$
@@ -135,6 +138,8 @@ The notation $f(x)$ does not mean $f$ multiplied by $x$. It means "the
 output of $f$ when the input is $x$." That's an easy thing to misread the
 first time you see it. Say it in words every time until it's automatic.
 
+This means function notation is about evaluation, not multiplication.
+
 You may also see function notation written as $f: A \to B$, which says
 "$f$ maps from set $A$ to set $B$" — every element of $A$ gets sent to
 exactly one element of $B$. For example, the temperature converter maps
@@ -147,6 +152,8 @@ not a function. The vending machine analogy holds: if pressing B4 sometimes
 gave you a cola and sometimes gave you nothing, or randomly gave you two
 things, you wouldn't call it a reliable machine. A function is a reliable
 machine.
+
+This means the key restriction is consistency: one input, one output.
 
 ```{ojs}
 //| echo: false
@@ -286,6 +293,8 @@ $$f(-4) = 2(-4) + 3 = -8 + 3 = -5$$
 The parentheses around $-4$ are there to keep the sign attached to the
 number. Leave them out and $2-4+3$ is ambiguous. Keep them in and it's clear.
 
+This means evaluating a function is careful substitution followed by simplification.
+
 ### Part 2: Domain and range
 
 The **domain** of a function is the set of all valid inputs — the values
@@ -293,6 +302,8 @@ of $x$ you're allowed to use.
 
 The **range** is the set of all possible outputs — every value $f(x)$ can
 produce when you run through the domain.
+
+This means domain asks "what may go in?" and range asks "what can come out?"
 
 For $f(x) = 2x + 3$, any real number is a valid input and any real number
 is a possible output. The domain and range are both all real numbers,
@@ -324,6 +335,8 @@ something you can only sell in whole numbers, or a physical measurement
 that can't be negative. That kind of restriction comes from the situation,
 not the algebra.
 
+This means a complete answer often needs both algebraic rules and real-world sense.
+
 ### Part 3: Composition
 
 You can chain functions together. If $g$ converts one thing and $f$ converts
@@ -333,6 +346,8 @@ $f$.
 The notation for this is $f(g(x))$, read as "f of g of x." You may also
 see it written $f \circ g$, read as "f composed with g." Both mean the same
 thing: apply $g$ first, then apply $f$ to the result.
+
+This means composition reads from the inside out.
 
 If $g(x) = x + 3$ and $f(x) = 2x + 1$:
 
@@ -344,6 +359,8 @@ $g(f(x)) = g(2x + 1) = (2x + 1) + 3 = 2x + 4$
 
 That is a different function. Get the order right by reading from the
 inside out: in $f(g(x))$, $g$ acts first.
+
+This means composition is not usually reversible by simply swapping the order.
 
 ```{ojs}
 //| echo: false
@@ -460,6 +477,8 @@ thing that looks like it should mean one thing but means another. The
 superscript $-1$ on a function name means "the inverse function," not
 "one over."
 
+This means inverse notation is about undoing a function, not taking a reciprocal.
+
 Not every function has an inverse. For an inverse to exist, each output
 must have come from exactly one input — otherwise, when you try to go
 backwards, you don't know which input to return to. A function with this
@@ -483,6 +502,8 @@ $$y = \frac{x - 3}{2}$$
 So $f^{-1}(x) = \dfrac{x - 3}{2}$.
 
 Check: $f(5) = 13$, and $f^{-1}(13) = \dfrac{13 - 3}{2} = \dfrac{10}{2} = 5$. Yes.
+
+This means the inverse reverses the original input-output pairing.
 
 ::: {.callout-note appearance="simple"}
 **Why this works: the vertical line test**
@@ -530,6 +551,8 @@ So $F^{-1}(T) = \dfrac{5}{9}(T - 32)$, where $T$ is a temperature in °F.
 
 Verify: $F^{-1}(212) = \dfrac{5}{9}(212 - 32) = \dfrac{5}{9}(180) = 100$. Back to 100°C. Correct.
 
+This means inverse functions are especially useful for unit conversions.
+
 ---
 
 **Example 2 (Computing) — Songs downloaded and storage used.**
@@ -554,6 +577,8 @@ $$S(100) = 4.5(100) + 20 = 450 + 20 = 470 \text{ MB}$$
 The domain has a physical restriction: $n \geq 0$ and $n$ must be a
 whole number. The maximum $n$ depends on the device's storage limit —
 the model stops being useful beyond that point.
+
+This means real functions often live on smaller domains than the algebra alone suggests.
 
 ---
 
@@ -586,6 +611,8 @@ $$h(1.2) = 45(1.2) + 14 = 54 + 14 = 68 \text{°F}$$
 
 Both paths give the same answer. The composed function works.
 
+This means composition can compress a multi-step process into one rule.
+
 ---
 
 **Example 4 (Business) — Revenue function with restricted domain.**
@@ -612,7 +639,12 @@ revenue target of \$180, that's the inverse:
 
 $$R^{-1}(180) = \frac{180}{12} = 15 \text{ notebooks}$$
 
+This means a discrete domain creates a discrete set of outputs as well.
+
 ## Where this goes
+
+This chapter names the general structure behind many earlier formulas:
+input, rule, output.
 
 Exponents and logarithms (Volume 4, Chapter 1) are specific function
 families with their own shapes and properties. Once you know what a function

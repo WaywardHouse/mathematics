@@ -125,6 +125,8 @@ The $i$ below the sigma is the **index** — it's a counter that starts
 at 1 and steps up by 1 until it reaches $n$. At each step, you
 substitute that value of $i$ into the expression $a_i$ and add the
 result to your running total.
+This means sigma notation is not a new kind of arithmetic. It is a compact way
+to describe repeated addition.
 
 A concrete example before using sigma in formulas. Write the sum
 $1 + 4 + 9 + 16 + 25$ — the first five perfect squares — using sigma:
@@ -133,6 +135,8 @@ $$\sum_{i=1}^{5} i^2 = 1^2 + 2^2 + 3^2 + 4^2 + 5^2 = 55$$
 
 The expression after $\Sigma$ is the rule. The limits below and above
 tell you where to start and stop. That is the whole notation.
+This means every sigma expression can be unpacked term by term if you want to
+check what it is doing.
 
 ```{ojs}
 //| echo: false
@@ -263,6 +267,8 @@ there are $n$ such pairs:
 $$2S_n = n(a_1 + a_n)$$
 
 $$\boxed{S_n = \frac{n}{2}(a_1 + a_n)}$$
+This means an arithmetic series can be found from "number of pairs" times
+"value of each pair," then divided by 2 because we counted the sum twice.
 
 Since $a_n = a_1 + (n-1)d$, you can write this entirely in terms of
 the first term and the common difference:
@@ -271,6 +277,8 @@ $$S_n = \frac{n}{2}\bigl(2a_1 + (n-1)d\bigr)$$
 
 Use whichever form is more convenient. If you know the first and last
 term, use the first. If you only know $a_1$ and $d$, use the second.
+This means the formula is flexible: the same sum can be described from
+different pieces of information.
 
 ::: {.callout-note appearance="simple"}
 **The Gauss pairing trick**
@@ -304,6 +312,8 @@ $$S_n = a_1 + a_1 r + a_1 r^2 + \cdots + a_1 r^{n-1}$$
 If you multiply the sum by $r$, each term shifts up by one power —
 almost matching the original sum. Subtracting cancels all but the
 first and last terms.
+This means the geometric-series formula works because multiplication lines the
+terms up so cancellation becomes possible.
 
 The trick here is to multiply both sides by $r$:
 
@@ -323,6 +333,8 @@ when $|r| < 1$.
 
 When $r = 1$ all terms are equal to $a_1$, so $S_n = n \cdot a_1$.
 That case doesn't need the formula.
+This means geometric growth can still produce a neat closed formula, even
+though each term is being multiplied rather than increased by a fixed amount.
 
 ### Infinite geometric series
 
@@ -354,6 +366,8 @@ Read $S_\infty$ as *the sum of infinitely many terms*.
 For the series above: $a_1 = 1$, $r = \frac{1}{2}$. So
 $S_\infty = \frac{1}{1 - \frac{1}{2}} = \frac{1}{\frac{1}{2}} = 2$.
 Exactly 2.
+This means an infinite series can have a finite sum when each new term becomes
+small quickly enough.
 
 **What if $|r| \geq 1$?** Then $r^n$ does not approach 0 — it either
 stays at 1 (when $r = 1$) or grows without bound (when $|r| > 1$) or
@@ -361,6 +375,8 @@ oscillates growing (when $r \leq -1$). The terms never shrink to
 nothing, so the sum never settles. It **diverges** — it has no finite
 value. You can add as many terms as you like and the sum will keep
 growing (or oscillating further and further from zero).
+This means convergence depends on the behaviour of the terms, not on the fact
+that there are infinitely many of them.
 
 This is worth sitting with for a moment. It's genuinely strange that
 you can add infinitely many things and get a finite answer. The reason
@@ -497,6 +513,8 @@ $$= 2 + 5 + 8 + 11 = 26$$
 You can check this with the arithmetic series formula: $a_1 = 2$,
 $d = 3$, $n = 4$.
 $S_4 = \frac{4}{2}(2 + 11) = 2 \times 13 = 26$. Same answer.
+This means sigma notation and series formulas are two views of the same sum:
+one expanded, one compressed.
 
 **Changing the index.** The index variable is a dummy — it doesn't
 matter what letter you use. $\displaystyle\sum_{i=1}^{n} a_i$ and
@@ -509,6 +527,9 @@ $$\sum_{i=1}^{n}(a_i + b_i) = \sum_{i=1}^{n} a_i + \sum_{i=1}^{n} b_i$$
 And pull a constant out:
 
 $$\sum_{i=1}^{n} c \cdot a_i = c \sum_{i=1}^{n} a_i$$
+
+This means sums follow familiar algebra rules, which is why they are so useful
+later in calculus and physics.
 
 ## Worked examples
 
@@ -528,6 +549,8 @@ Now ask: what is the total interest paid? That is $A - 12000 = \$1\,526.40$.
 The balance itself is a geometric sequence with first term $12000$
 and ratio $1.005$. The total interest is what the geometric growth
 added over 24 steps.
+This means compound interest is just repeated multiplication written in a
+financial context.
 
 ---
 
@@ -545,6 +568,8 @@ $$T = n \cdot \log_2 n$$
 This is the source of the famous $O(n \log n)$ complexity of merge sort.
 Each level of the recursion tree contributes $n$ operations; summing
 $\log_2 n$ such levels gives the total.
+This means series are not only about money or motion; they also describe the
+cost of algorithms.
 
 ---
 
@@ -564,6 +589,8 @@ The infinite sum of all the halfway-steps is exactly 8 metres — the
 distance to the wall. The paradox dissolves: infinitely many steps
 do not require infinite time or distance. They require exactly the
 right amount of both.
+This means the series gives a precise mathematical answer to a question that
+looks impossible at first.
 
 ---
 
@@ -590,8 +617,14 @@ does diverge on its own (like the harmonic series). But in the Fourier
 series each coefficient multiplies an oscillating sine function. Those
 sines partially cancel each other out, which is what allows the series
 to converge. The full explanation requires calculus.
+This means convergence can depend on the whole structure of the terms, not
+just on the size of the coefficients by themselves.
 
 ## Where this goes
+
+This chapter moved from finite patterns you can list by hand to infinite
+processes that still have exact answers. The next volume makes that idea
+formal with limits and then uses it to build calculus.
 
 The phrase "approaches a finite value as $n \to \infty$" was used
 informally here. **Limits and continuity** (Vol 5, Ch 1) makes that

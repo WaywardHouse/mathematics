@@ -110,17 +110,25 @@ relationship written down, with a placeholder for the missing part.
 
 ## What the notation is saying
 
+Start with a sentence instead of symbols: "three bags and 7 dollars
+cost 22 dollars." An equation is that sentence written in a compact
+way.
+
 $$3x + 7 = 22$$
 
 Read it as: three of something, plus seven, gives twenty-two. The $x$ is
 the placeholder — a name for the gap in your knowledge. The equals sign
 means both sides describe the same amount.
 
+This means an equation is a balance between two expressions.
+
 Peel away what's around the unknown until it stands alone. Three of
 something plus seven is twenty-two, so three of something is fifteen,
 so the something is five. Check: $3 \times 5 + 7 = 22$. Yes.
 
 That move — isolating the unknown — is what this chapter is about.
+
+This means solving is the process of getting the unknown by itself.
 
 The concept stays this simple. What gets harder is the notation
 accumulating, and equations appearing inside larger problems where it
@@ -321,6 +329,9 @@ other. The equation is a balance. You can add weight to both sides,
 remove weight from both sides, or multiply both sides by the same
 amount — as long as you do the same thing to both, the balance holds.
 
+This means we are not guessing the answer. We are changing the equation
+without breaking it.
+
 $$3x + 7 = 22$$
 
 Subtract 7 from both sides — this removes the 7 from the left, leaving
@@ -334,6 +345,9 @@ alone:
 $$x = 5$$
 
 That's it. Two operations, one unknown, done.
+
+Here, 3 is the coefficient of $x$. This means it is the number
+multiplying the unknown.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -519,6 +533,9 @@ $$h = 5$$
 
 Five hours. Check: $20 + 13 \times 5 = 20 + 65 = 85$. Yes.
 
+This means the fixed amount you already have becomes the constant term,
+and the hourly pay becomes the coefficient of the unknown.
+
 ---
 
 **Example 2.** Two streaming services. Service A costs $8 per month
@@ -542,6 +559,8 @@ $$f = 5$$
 
 At 5 films per month they cost the same. Above 5 films, Service B
 is cheaper.
+
+This means the solution tells us the break-even point.
 
 ---
 
@@ -574,16 +593,16 @@ $$w = 2$$
 
 Add 2 litres of water.
 
+This means the amount of juice does not change, only the total volume does.
+
 ## Where this goes
 
-This chapter covered one unknown on one side. The next two chapters in this
-volume — inequalities and graphing — extend the same idea in different
-directions: inequalities ask which values *satisfy* a relationship rather
-than pinning down one exact answer, and graphing shows what happens when
-you let the unknown vary continuously. The further horizon worth knowing
-about is **systems of equations** (Volume 4): two unknowns, two equations,
-solved together. The method is the same balancing act you've already learned,
-applied twice at once.
+This chapter turns a verbal relationship into algebra and solves for the
+missing value. The next chapters keep the same idea but widen it.
+
+Inequalities ask which values *satisfy* a relationship rather than
+pinning down one exact answer, and graphing shows what happens when
+you let the unknown vary continuously.
 
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**

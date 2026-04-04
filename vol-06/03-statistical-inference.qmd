@@ -397,6 +397,8 @@ $$\bar{x} \sim N\!\left(\mu,\, \frac{\sigma^2}{n}\right)$$
 The mean of the sampling distribution equals $\mu$.
 The standard deviation of the sampling distribution is $\dfrac{\sigma}{\sqrt{n}}$.
 :::
+This means repeated samples do not bounce around arbitrarily: their means form
+a predictable distribution centred on the true population mean.
 
 The standard deviation of the sampling distribution has its own name:
 the **standard error** (SE).
@@ -406,6 +408,8 @@ $$SE = \frac{\sigma}{\sqrt{n}}$$
 The standard error is not the spread of individual measurements — it
 is the spread of *sample means*. It tells you how much $\bar{x}$
 typically varies from one sample to the next.
+This means the standard error measures uncertainty in the estimate, not
+variability in the raw data themselves.
 
 ### Why this is surprising
 
@@ -423,6 +427,8 @@ averages of some kind.
 As a rough guide, $n \geq 30$ is often enough for the CLT to give a
 good approximation. For symmetric populations, even smaller samples
 work well. For heavily skewed populations, larger $n$ may be needed.
+This means the CLT is a practical approximation theorem, not a claim that
+every sample mean is exactly normal for every sample size.
 
 ### Working with the standard error — a numerical example
 
@@ -449,6 +455,8 @@ With $n = 25$, a sample mean of 173 cm is not very surprising — it is
 less than 2 standard errors out. With $n = 100$, the same 173 cm is
 very surprising — nearly 4 standard errors out. Larger samples give
 you more information, so unusual results become more informative.
+This means the same numerical difference can be ordinary in a small sample and
+highly persuasive in a large one.
 
 This is the key insight: **more data makes your estimate more precise**,
 and the improvement scales as $1/\sqrt{n}$, not $1/n$. To halve the
@@ -491,6 +499,8 @@ $$\boxed{\bar{x} \pm 1.96 \cdot \frac{\sigma}{\sqrt{n}}}$$
 
 The value 1.96 is called the **critical value** for 95% confidence.
 For other confidence levels, the critical value changes:
+This means a confidence interval is built from an estimate at the centre and a
+margin showing how far sampling error might reasonably move it.
 
 | Confidence level | Critical value $z^*$ |
 |---|---|
@@ -525,6 +535,8 @@ $$\text{CI: } (2{,}332.4 \text{ mg},\ 2{,}567.6 \text{ mg})$$
 
 > We are 95% confident that the true mean daily sodium intake in this
 > region is between 2,332 mg and 2,568 mg.
+This means the interval reports both the best estimate and the uncertainty
+around it in one statement.
 
 ### What "95% confident" actually means
 
@@ -550,6 +562,8 @@ In practice, you have one interval from one sample, and you cannot
 know whether yours is one of the 95% that work or one of the 5% that
 don't. The confidence level tells you the method is reliable, not that
 any particular result is guaranteed.
+This means confidence belongs to the long-run procedure, not to the unknown
+parameter itself.
 
 ::: {.callout-tip}
 **A useful sentence template for interpreting confidence intervals**
@@ -580,6 +594,8 @@ until the evidence makes guilt sufficiently clear. In statistics:
 What counts as "very unlikely" is a threshold you set in advance,
 called the **significance level** $\alpha$. The most common choice is
 $\alpha = 0.05$.
+This means hypothesis testing asks whether the data would be too surprising to
+explain as ordinary sampling variation under the null model.
 
 ### Setting up the hypotheses
 
@@ -620,6 +636,8 @@ This $z$ value measures how many standard errors your observed sample
 mean is from the null hypothesis value. If $|z|$ is small, your data
 is consistent with $H_0$. If $|z|$ is large, your data is unusual
 under $H_0$.
+This means the test statistic converts the raw difference into a standardised
+measure of surprise.
 
 ### The p-value
 
@@ -632,6 +650,8 @@ least as extreme as the one you computed, *if $H_0$ is true*.
 
 A small p-value means your observed data would be rare under $H_0$ —
 the data is hard to explain by chance alone.
+This means the p-value is about the compatibility of the data with the null
+hypothesis, not the probability that the null hypothesis is true.
 
 ### The decision rule
 
@@ -645,6 +665,8 @@ Compare the p-value to the significance level $\alpha$:
 
 Note the careful language: you *fail to reject*, not *accept* $H_0$.
 Absence of evidence is not evidence of absence.
+This means a non-significant result can reflect either "no effect" or "not
+enough information to detect one."
 
 ```{ojs}
 //| echo: false
@@ -928,6 +950,8 @@ evidence is strong enough to act on the suspicion that something is
 off. The strength of that conclusion depends on the assumptions: random
 sampling, known $\sigma$, and that the significance level was chosen
 before looking at the data.
+This means the test supports a directional claim about the mean, not a claim
+that the sample mean itself is the exact truth.
 
 ## Type I and Type II errors
 
@@ -949,6 +973,8 @@ A **Type II error** is failing to reject $H_0$ when it is false —
 missing a real effect. Its probability is denoted $\beta$. The
 **power** of a test is $1 - \beta$: the probability of correctly
 detecting a true effect.
+This means hypothesis testing is an error-management system: you choose how
+willing you are to risk different kinds of mistake.
 
 ### Why this tradeoff matters
 
@@ -964,6 +990,8 @@ character. Before running a study, statisticians specify both $\alpha$
 and the desired power, then calculate the sample size $n$ required to
 achieve both. Larger samples reduce both types of error simultaneously,
 which is why clinical trials are expensive.
+This means more data improves inference mainly by shrinking the standard error
+and making real effects easier to distinguish from noise.
 
 ::: {.callout-tip}
 **A concrete framing**
@@ -1004,6 +1032,10 @@ language of $H_0$, test statistics, and p-values is identical.
 The machinery in this chapter is the foundation for all of it.
 
 ## Where this goes
+
+This chapter turned sampling variability into a formal basis for estimation and
+decision-making. The next steps in statistics keep the same logic but apply it
+to richer models and more complicated data structures.
 
 ::: {.callout-note appearance="simple"}
 **What this chapter enables**

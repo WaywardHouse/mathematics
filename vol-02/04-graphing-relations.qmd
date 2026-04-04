@@ -101,6 +101,9 @@ algebra. It shows you the whole relationship in one picture.
 
 ### The coordinate plane
 
+Start with a map idea. A graph gives each point an address, so we can
+locate it exactly.
+
 Draw two number lines crossing at right angles. The horizontal one
 is the **x-axis**. The vertical one is the **y-axis**. The point
 where they cross is the **origin** — the zero of both axes.
@@ -113,6 +116,9 @@ So $(3, 2)$ means: go 3 to the right, then 2 up.
 And $(-1, 4)$ means: go 1 to the left, then 4 up.
 And $(0, -3)$ means: stay on the vertical axis, go 3 down.
 
+This means the first number always controls the horizontal move, and
+the second controls the vertical move.
+
 The two axes divide the plane into four regions, called **quadrants**.
 Top-right is Quadrant I (both $x$ and $y$ positive). Top-left is
 Quadrant II ($x$ negative, $y$ positive). Bottom-left is Quadrant III
@@ -120,6 +126,9 @@ Quadrant II ($x$ negative, $y$ positive). Bottom-left is Quadrant III
 negative). Most of the graphs in this chapter live in Quadrant I,
 where both values are positive — because most real-world quantities
 like cost, distance, and time don't go negative.
+
+This means the full coordinate plane is general, even when a problem
+uses only part of it.
 
 **Interactive: Coordinate plane explorer.** Click anywhere on the grid to place a point. Watch the $(x, y)$ coordinates update and animated arrows trace the "go right, then up" path from the origin.
 
@@ -273,6 +282,8 @@ like cost, distance, and time don't go negative.
 A **relation** is any set of input-output pairs. You give it an
 input value, it gives back an output value.
 
+This means a relation connects one quantity to another.
+
 The phone plan from the opening is a relation. Call the number
 of extra GB the input $x$, and the monthly cost in pounds the
 output $y$. The rule is:
@@ -282,6 +293,9 @@ $$y = 2x + 10$$
 Read it as: "y equals 2 times x, plus 10." Plug in $x = 0$: you
 get $y = 10$. Plug in $x = 3$: you get $y = 16$. That pair of
 values is the point $(3, 16)$.
+
+Here, $x$ is the input and $y$ is the output. This means every input
+produces a point on the graph.
 
 Here's the table for a few values:
 
@@ -300,6 +314,8 @@ Every point off it doesn't.
 That's the key idea: the graph and the equation are the same
 relationship in two different languages.
 
+This means the graph should agree with the algebra at every point.
+
 ## The method
 
 ### Reading slope: rise over run
@@ -310,6 +326,8 @@ The letter $m$ is the **slope** — how steeply the line rises or
 falls. Read it as: for every 1 step to the right, the line goes
 $m$ steps up (or down, if $m$ is negative).
 
+This means slope is a rate of change.
+
 To measure slope from any two points on the line, count:
 
 $$m = \frac{\text{rise}}{\text{run}} = \frac{\text{change in } y}{\text{change in } x}$$
@@ -317,6 +335,8 @@ $$m = \frac{\text{rise}}{\text{run}} = \frac{\text{change in } y}{\text{change i
 For the phone plan: pick $(1, 12)$ and $(3, 16)$.
 Rise = $16 - 12 = 4$. Run = $3 - 1 = 2$.
 Slope = $4 \div 2 = 2$. That matches the $2$ in front of $x$.
+
+This means the coefficient of $x$ tells us how quickly the output changes.
 
 **Positive slope** means the line goes up left-to-right — the
 quantity grows as $x$ increases.
@@ -335,6 +355,8 @@ y-axis. Substitute $x = 0$ into any linear equation and you get
 $y = b$. For the phone plan, $b = 10$: the line crosses the y-axis
 at $(0, 10)$, meaning you pay $10 even with zero extra data. That's
 the standing charge.
+
+This means the y-intercept is the starting value.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -358,6 +380,8 @@ you how to find the next one.
 Use at least three points. If the third one doesn't fall on the
 line through the first two, you've made an arithmetic error somewhere.
 
+This means a table is often the safest way to start.
+
 ### Method 2: Graphing from slope-intercept form
 
 When the equation is written as $y = mx + b$, you can graph it
@@ -371,6 +395,8 @@ without a table:
 5. Extend the line in both directions.
 
 This is faster than a table once you're comfortable with it.
+
+This means slope-intercept form shows two key features of the line at once.
 
 ### Method 3: Finding the equation from a point and a slope
 
@@ -387,6 +413,8 @@ $$b = 5$$
 
 So the equation is $y = 2x + 5$. Check: does $(3, 11)$ satisfy it?
 $2(3) + 5 = 11$. Yes.
+
+This means a known point can help us work backward to the missing intercept.
 
 The same method works when you're given two points instead of a
 point and a slope — first calculate the slope from the two points
@@ -589,6 +617,8 @@ hours (15 minutes) you're 3 km along.
 You arrive at school when $y = 6$. Solve: $12x = 6$, so $x = 0.5$
 hours. That's 30 minutes. Confirmed by the table.
 
+This means a graph can answer many questions once the relationship is drawn.
+
 **Slope = speed** in a distance-time graph. This is not a
 coincidence — it's exactly what slope means physically.
 
@@ -618,6 +648,8 @@ Reading from the graph: 3 extra GB costs $17. When does the bill
 hit $26? Set $y = 26$: $3x + 8 = 26$, so $3x = 18$, $x = 6$ GB.
 The algebra and the graph tell the same story.
 
+This means the graph shows the whole pricing pattern, not just one case.
+
 ---
 
 **Example 3 — Points scored (Sport).**
@@ -637,6 +669,8 @@ already. Each game adds 18. From the graph, you can see she hits
 144 points after 4 more games.
 
 Check: $18x + 72 = 144$, so $18x = 72$, $x = 4$. Yes.
+
+This means slope can describe a running total changing over time.
 
 **Slope = rate** — in any graph where the y-axis tracks a total
 and the x-axis tracks time or count, slope is the rate of change.
@@ -665,6 +699,9 @@ These are two separate linear equations, one for each axis. After
 $y = 140$. The path is a straight line, and its slope (in these
 coordinates) is $\frac{3}{5}$ — 3 units down for every 5 across.
 
+This means motion in two directions can be described by two linked
+linear rules.
+
 ## A note on curves
 
 All the examples above produce straight lines. But not all
@@ -685,6 +722,10 @@ functions in Volume 3. For now, notice the difference: a straight
 line means a constant rate. A curve means the rate is changing.
 
 ## Where this goes
+
+This chapter takes equations from earlier chapters and makes them
+visible. Instead of solving for one value, we can now see the whole
+relationship at once.
 
 The slope of a line is a constant — pick any two points and you
 get the same number. In Volume 3, **Functions and relations**

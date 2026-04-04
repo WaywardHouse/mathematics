@@ -164,6 +164,8 @@ $$x_1, x_2 \geq 0$$
 For $\geq$ constraints, introduce **surplus variables** $s_i \geq 0$:
 $15x_1 + 10x_2 - s_1 = 60$. The minus sign makes $s_i$ the excess above the
 minimum.
+This means a surplus variable records how far you are above a required minimum,
+rather than how much unused capacity remains below a maximum.
 
 <!-- STUDENT: Surplus variables (minus sign) are introduced only in the diet problem and never used in the simplex worked example that follows, which uses only slack variables (plus sign). A student who has to handle a ≥ constraint in the simplex method will not know what to do with the surplus variable in the tableau. A brief note — "with surplus variables the initial BFS may not be obvious; artificial variables are needed, covered in more advanced treatments" — would prevent false confidence that the diet problem's standard form is ready to hand to simplex. -->
 
@@ -332,6 +334,8 @@ z   & 0 & 0 &  8   & 14   & 190
 
 All objective-row coefficients are non-negative. **Termination condition met.**
 Optimal solution: $x_1 = 3$, $x_2 = 2$, $z = 190$.
+This means there is no adjacent basic feasible solution that can improve the
+objective any further, so the current vertex is optimal.
 
 This matches the graphical answer exactly.
 
@@ -400,6 +404,8 @@ unit of that resource. At optimality, $y_1 = 8$ and $y_2 = 14$ — each
 additional cutting hour is worth $8, each additional finishing hour is worth
 $14. You can verify: $8y_1 + 9y_2 = 8 \times 8 + 9 \times 14 = 64 + 126 = 190$.
 Dual optimal matches primal optimal — strong duality holds.
+This means the dual variables are not abstract extras: they price the scarce
+resources in exactly the units of the original objective.
 
 **Complementary slackness.** At optimality, either a primal constraint is tight
 (active, $A_i \mathbf{x} = b_i$) or the corresponding dual variable is zero
@@ -650,8 +656,8 @@ steps:
 -->
 
 <!-- STUDENT: Exercise 6 states "the optimal basis has x₁ basic (value 4)" but Exercise 4's simplex solution gives x₁ = 3 at the optimum. The engineer-prof flag is correct — the exercise premise contradicts the solved answer. A student who trusts the exercise wording will apply sensitivity analysis to the wrong basis. This must be corrected before students encounter it. -->
-**Exercise 6.** In Exercise 4, the optimal basis has $x_1$ basic (value 4)
-and $s_2$ basic (value 2). By how much can the objective coefficient of $x_1$
+**Exercise 6.** In Exercise 4, the optimal basis has $x_1$ basic (value 3)
+and $x_2$ basic (value $3/2$). By how much can the objective coefficient of $x_1$
 (currently 5) change before the current basis is no longer optimal? Give the
 range.
 
@@ -872,5 +878,4 @@ EDIT LOG (editor agent)
   gives c^Tx ≤ (A^Ty)^Tx." The chain was valid but the first step was opaque for a
   reader not accustomed to manipulating component-wise matrix inequalities.
 -->
-
 

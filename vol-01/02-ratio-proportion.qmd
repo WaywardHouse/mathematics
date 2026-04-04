@@ -110,27 +110,42 @@ These three questions share the same calculation underneath.
 
 ## What the notation is saying
 
-The ratio $a:b$ means "for every $a$ of the first thing, there are
-$b$ of the second." It is a comparison by division. Writing $a:b$
-is the same as writing the fraction $\frac{a}{b}$.
+Start with a simple picture. If a drink is mixed in the ratio 2:3,
+that means 2 equal parts of one ingredient for every 3 equal parts
+of the other. Ratio compares quantities by how many equal parts they
+have.
 
-Two quantities $y$ and $x$ are **proportional** when:
+The ratio $a:b$ means "for every $a$ of the first thing, there are
+$b$ of the second." It is a comparison by division. We can also write
+that comparison as the fraction $\frac{a}{b}$.
+
+This means a ratio tells us how one quantity matches another, not just
+their total.
+
+Now think about scaling. If 4 people need 300 g of flour, then 8 people
+need twice as much. If 2 people need 300 mL of paint, then 6 people need
+three times as much. In both cases, the quantities change together.
+
+When two quantities always change by the same scale factor, they are
+called **proportional**.
 
 $$y = kx$$
 
-where $k$ is a constant. Double $x$, you double $y$. Halve $x$,
-you halve $y$. The ratio $\frac{y}{x} = k$ stays fixed.
+Here, $x$ and $y$ are the two quantities, and $k$ is a fixed number.
+That fixed number tells us how much of $y$ goes with 1 unit of $x$.
 
-Write this as $y \propto x$ (read: "$y$ is proportional to $x$").
-The constant $k$ is called the **constant of proportionality** — it
-is the fixed multiplier that links the two quantities.
+This means $k$ is the constant multiplier linking the two quantities.
+
+We also write this as $y \propto x$, read as "$y$ is proportional to $x$."
 
 A proportion equation sets two ratios equal:
 
 $$\frac{a}{b} = \frac{c}{d}$$
 
 Read: "$a$ is to $b$ as $c$ is to $d$." If you know three of the four
-values, you can find the fourth. The next section shows how.
+values, you can find the fourth.
+
+This means two comparisons are describing the same relationship.
 
 ---
 
@@ -299,30 +314,48 @@ ratioVis = {
 
 **Finding a missing value in a proportion**
 
-Given $\frac{a}{b} = \frac{c}{d}$, find $d$.
+Suppose you know
 
-Multiply both sides by $bd$ — this clears both denominators at once,
-leaving $ad = bc$. Rearranging for $d$:
+$$\frac{a}{b} = \frac{c}{d}$$
+
+and you want to find $d$.
+
+Multiply both sides by $bd$. This clears the denominators and gives
+
+$$ad = bc$$
+
+Now divide by $a$:
 
 $$d = \frac{bc}{a}$$
+
+Here, $a$, $b$, and $c$ are known values, and $d$ is the missing one.
+This means the missing value is chosen so the two ratios stay equal.
 
 **Dividing a quantity in a given ratio**
 
 To divide total $T$ in the ratio $a:b$:
 
-1. Count the total number of parts: $a + b$ — this tells you how many equal slices the whole is cut into.
-2. Value of one part: $T \div (a + b)$ — the size of each slice.
-3. First share: $a \times$ (one part); second share: $b \times$ (one part) — multiply each person's slices by the slice size.
+1. Count the total number of parts: $a + b$.
+2. Find one part: $T \div (a + b)$.
+3. Multiply by each share: first amount $= a \times$ one part, second amount $= b \times$ one part.
+
+Here, $T$ is the total being shared. This means we first split the whole
+into equal pieces, then count how many pieces each side gets.
 
 **Cascaded ratios**
 
 Two ratios applied in series multiply. A 3:1 ratio followed by a
 4:1 ratio gives a combined ratio of $3 \times 4 = 12:1$.
 
+This means one scale change happens after another.
+
 **Gear ratio from tooth counts**
 
 For meshing gears, the ratio equals the number of teeth on the
 driven gear divided by the teeth on the driving gear.
+
+This means a larger driven gear turns more slowly, because each turn
+of the small gear moves only part of the larger one.
 
 **Finding a constant of proportionality**
 
@@ -331,6 +364,9 @@ Given one known pair $(x_0, y_0)$ where $y \propto x$:
 $$k = \frac{y_0}{x_0}$$
 
 Then for any other $x$: $y = kx$.
+
+Here, $(x_0, y_0)$ is one matching pair of values. This means once you
+know one pair, you can build the whole proportional relationship.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -455,14 +491,18 @@ proportionSolver = {
 flour, 150 g butter, and 80 g sugar. How much of each do you need
 for 10 people?
 
-The quantities scale in proportion with the number of people. Find
-the ratio of new to old: $\frac{10}{4} = 2.5$.
+The number of people changes from 4 to 10, so we find the scale factor:
 
-Multiply each ingredient by 2.5 — this keeps everything in the same ratio:
+$$\frac{10}{4} = 2.5$$
+
+Now multiply each ingredient by 2.5:
 
 $$\text{flour: } 300 \times 2.5 = 750 \text{ g}$$
 $$\text{butter: } 150 \times 2.5 = 375 \text{ g}$$
 $$\text{sugar: } 80 \times 2.5 = 200 \text{ g}$$
+
+This means every ingredient grows by the same factor, so the recipe
+keeps the same taste.
 
 ---
 
@@ -470,9 +510,13 @@ $$\text{sugar: } 80 \times 2.5 = 200 \text{ g}$$
 a 1:50,000 map. What is the actual length of the road?
 
 Map scale $1:50,000$ means 1 unit on the map = 50,000 units on
-the ground. Multiply to convert:
+the ground.
+
+So 7.4 cm on the map means:
 
 $$\text{actual length} = 7.4 \text{ cm} \times 50,000 = 370,000 \text{ cm} = 3.7 \text{ km}$$
+
+This means every map centimetre stands for a much larger real distance.
 
 ---
 
@@ -480,7 +524,13 @@ $$\text{actual length} = 7.4 \text{ cm} \times 50,000 = 370,000 \text{ cm} = 3.7
 phone plan costing $36 in the ratio 2:3:1 (based on how much data
 each uses). How much does each pay?
 
-Total parts: $2 + 3 + 1 = 6$. One part = $\$36 \div 6 = \$6$.
+First count the total parts:
+
+$$2 + 3 + 1 = 6$$
+
+Now find one part:
+
+$$\$36 \div 6 = \$6$$
 
 Friend A (2 parts): $2 \times \$6 = \$12$
 Friend B (3 parts): $3 \times \$6 = \$18$
@@ -488,24 +538,36 @@ Friend C (1 part): $1 \times \$6 = \$6$
 
 Check: $\$12 + $\$18 + $\$6 = $\$36$. Yes.
 
+This means the cost is shared by use, not equally.
+
 ---
 
 **Example 4 — Finance: dividing profit.** Two partners invest in a
 business in the ratio 3:5. The year's profit is $24,000. How much
 does each receive?
 
-Total parts: $3 + 5 = 8$. One part = $\$24,000 \div 8 = \$3,000$.
+First count the total parts:
+
+$$3 + 5 = 8$$
+
+Then find one part:
+
+$$\$24,000 \div 8 = \$3,000$$
 
 Partner A (3 parts): $3 \times $\$3,000 = $\$9,000$
 Partner B (5 parts): $5 \times \$3,000 = \$15,000$
 
 Check: $\$9,000 + $\$15,000 = $\$24,000$. Yes.
 
+This means the profit is divided in the same ratio as the investment.
+
 ## Where this goes
 
-Proportion is the first multiplicative relationship you encounter.
-**Percent and rates** (Chapter 3) is proportion restricted to a
-denominator of 100 — a special case of this chapter.
+This chapter gives us a way to compare quantities by scale instead of
+by difference. That idea comes back immediately in the next chapter.
+
+**Percent and rates** (Chapter 3) is a special case of proportion,
+where the comparison is made out of 100.
 
 Later, proportion reappears inside trigonometry (the sine ratio
 is a ratio of lengths) and in logarithms (where proportional

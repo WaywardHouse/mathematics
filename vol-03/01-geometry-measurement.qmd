@@ -134,6 +134,9 @@ you need from the ones you have.
 Every formula in this chapter is shorthand for a relationship between
 measurements. Before using any of them, here is what each symbol means.
 
+This means the symbols are not new ideas by themselves. They are short
+labels for measurements you already understand.
+
 **$A$** — area. The amount of flat space a shape covers. Measured in
 square units: square centimetres (cm²), square metres (m²), square
 kilometres (km²). If a length is in centimetres, the area will be in
@@ -168,6 +171,8 @@ $c$ is the longest side — the one opposite the right angle, called
 the **hypotenuse**. This only works for right triangles. The right
 angle is marked with a small square in diagrams.
 
+This means every formula depends on naming the measurements correctly first.
+
 ## The method
 
 ### Rectangles
@@ -182,12 +187,17 @@ $$A = l \times w$$
 A bedroom that is 4 metres long and 3 metres wide has area
 $4 \times 3 = 12$ m².
 
+Here, $l$ is length and $w$ is width. This means area measures how much
+flat surface the shape covers.
+
 **Perimeter** — add up all four sides. Since opposite sides are
 equal, that's two lengths plus two widths:
 
 $$P = 2l + 2w$$
 
 The same bedroom has perimeter $2(4) + 2(3) = 8 + 6 = 14$ m.
+
+This means perimeter is a boundary length, not a surface amount.
 
 ### Triangles
 
@@ -207,6 +217,9 @@ together, they make a parallelogram with the same base and height.
 A triangle with base 6 cm and height 4 cm has area
 $\frac{1}{2} \times 6 \times 4 = 12$ cm².
 
+Here, $b$ is the base and $h$ is the perpendicular height. This means
+sloping side lengths do not replace the height in the area formula.
+
 **Perimeter** — just add all three sides. There's no shortcut unless
 the triangle has special properties.
 
@@ -221,6 +234,8 @@ same as $\pi d$ — pi times diameter. That's actually where $\pi$
 comes from: the ratio of any circle's circumference to its diameter.
 Every circle, everywhere, has $C = \pi d$.
 
+This means circumference is a length, so its units stay unsquared.
+
 **Area** — the amount of flat space a circle covers:
 
 $$A = \pi r^2$$
@@ -230,6 +245,9 @@ area $\pi \times 5^2 = 25\pi \approx 78.5$ cm².
 
 Note: leave the answer as $25\pi$ when exact form is needed. Use the
 decimal approximation when you need a number to compare or measure with.
+
+This means the exact form and the decimal form describe the same area;
+they are just useful in different situations.
 
 ```{ojs}
 //| echo: false
@@ -339,6 +357,9 @@ $$a = \sqrt{13^2 - 5^2} = \sqrt{169 - 25} = \sqrt{144} = 12 \text{ cm}$$
 
 The next step looks slightly mechanical. Square both known values,
 add (or subtract), then take the square root. In that order, every time.
+
+This means the theorem lets us convert two known side lengths into the
+missing one, but only in a right triangle.
 
 ```{ojs}
 //| echo: false
@@ -477,6 +498,8 @@ A useful way to think about it: the base area is $l \times w$, and
 you're stacking that base up through height $h$. Volume is always
 base area times height for any prism.
 
+This means volume is built from area extended through a third dimension.
+
 ### Volume of a cylinder
 
 A cylinder is a circle stacked up through a height. The base is a
@@ -494,6 +517,8 @@ $$V = \pi \times 3.3^2 \times 9.6 = \pi \times 10.89 \times 9.6 \approx 328 \tex
 
 Close to 330 ml (330 cm³). The small difference is rounding on the
 actual dimensions.
+
+This means a cylinder is just a circular base repeated through a height.
 
 ### Units and unit conversion
 
@@ -533,6 +558,9 @@ square metre is not a hundred square centimetres — it's ten thousand.
 The number gets big fast because you're covering a two-dimensional
 (or three-dimensional) space.
 
+This means unit conversions must match the dimension of the quantity:
+length, area, or volume.
+
 ## Worked examples
 
 **Example 1 (sci) — Area of a circular clock face.**
@@ -547,6 +575,8 @@ $$A = \pi r^2 = \pi \times 10^2 = 100\pi \approx 314 \text{ cm}^2$$
 The clock face covers approximately 314 cm² — about the same as a
 standard sheet of A4 paper turned on its side. Doubling the diameter
 would quadruple the area, because radius is squared in the formula.
+
+This means circle area changes quickly when the radius changes.
 
 ---
 
@@ -563,6 +593,8 @@ The ramp surface is exactly 2 m long.
 *Note: 1.2, 1.6, 2.0 is a scaled version of the 3-4-5 right triangle
 (multiply each by 0.4). When you see a clean answer, check whether
 it's a Pythagorean triple.*
+
+This means familiar right-triangle patterns can help you check the arithmetic.
 
 ---
 
@@ -594,6 +626,8 @@ Area $= 5.32 \times 2.99 \approx 15.9$ square inches.
 The 6.1-inch measurement is the diagonal — the actual viewing area is
 about 15.9 square inches, which is roughly the size of a playing card.
 
+This means a diagonal measurement alone does not tell you the usable area.
+
 ---
 
 **Example 4 (geo) — Comparing two screen sizes.**
@@ -618,7 +652,13 @@ $288 \div 72 = 4$ — the tablet poster area is four times the phone
 poster area, even though only the scale doubled. That's because area
 scales as the square of the linear scale: $2^2 = 4$.
 
+This means changing length scale changes area more dramatically than it
+first appears.
+
 ## Where this goes
+
+This chapter gives us formulas for size and shape when the key
+measurements are lengths, radii, heights, and right angles.
 
 The next chapter in this volume is **trigonometry** (Vol 3, Ch 2).
 Trigonometry extends the geometry here by handling triangles where

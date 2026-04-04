@@ -194,6 +194,8 @@ Update neighbours: $F$: $9+11=20 > 12$, no change.
 Final shortest distances from $A$: $B=4$, $C=2$, $D=9$, $E=5$, $F=12$.
 
 The shortest path to $F$ is $A \to C \to E \to F$ with total weight $2+3+7=12$.
+This means Dijkstra is not merely producing distances one by one. It is building
+a growing tree of already-certified shortest paths.
 
 <!-- VIZ: Dijkstra step-through — fixed 6-node weighted graph using the A–F example above, "Next step" button highlights the current shortest-path tree, shows distance labels updating at each finalisation step, colours finalised vertices differently from tentative ones -->
 
@@ -243,6 +245,8 @@ This is the single fact both Kruskal and Prim exploit.
 <!-- STUDENT: The cut property is stated carefully (corrected by math-prof) but it is not immediately obvious how Kruskal uses it. A one-sentence bridge would help: "In Kruskal, each time we consider an edge, we can define a cut that separates its two endpoints' current components; the edge is minimum-weight crossing that cut, so the cut property says it is safe to add." Without this, the cut property reads as abstract machinery that never visibly connects to the steps of the algorithm. -->
 
 Here is how this applies: in Kruskal's algorithm, every time we consider an edge $e = \{u,v\}$, the two components containing $u$ and $v$ define a cut. The edge $e$ is the cheapest edge crossing that cut (because we process edges in weight order and skip any that close a cycle). The cut property says it is safe to include $e$ in the MST. Every addition Kruskal makes is justified by exactly this argument.
+This means the cut property is the reason the greedy step is safe, not just a
+fact that happens to be true in the background.
 
 ### Kruskal's algorithm
 
@@ -327,6 +331,8 @@ The key idea behind Ford-Fulkerson is that earlier routing decisions can be wron
    capacity $c(u,v) - f(u,v)$ (how much more we can send forward) and
    the reverse edge $(v,u)$ has residual capacity $f(u,v)$ (how much
    previously routed flow we can cancel).
+   This means the residual graph records both remaining room and the option to
+   revise earlier routing choices.
 3. Send as much flow along the augmenting path as the bottleneck edge
    allows.
 4. Repeat until no augmenting path exists.
@@ -891,5 +897,4 @@ EDIT LOG (editor agent)
   first (reverse edges let the algorithm undo earlier routing decisions), then the
   formal definition with each term labelled.
 -->
-
 

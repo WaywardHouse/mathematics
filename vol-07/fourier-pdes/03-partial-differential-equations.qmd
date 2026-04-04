@@ -368,6 +368,8 @@ Assume $u(x,t) = X(x)T(t)$. Substituting into $u_t = \alpha^2 u_{xx}$:
 $$X\,T' = \alpha^2\,X''\,T \implies \frac{T'}{\alpha^2 T} = \frac{X''}{X} = -\lambda$$
 
 The separation constant is written as $-\lambda$ (the negative sign is chosen so that $\lambda > 0$ gives physically decaying solutions).
+This means the sign choice is bookkeeping, not new physics: choosing $+\lambda$
+would force the useful solutions to have $\lambda < 0$ instead.
 
 <!-- STUDENT: The sign convention for $\lambda$ — writing $-\lambda$ rather than $\lambda$ — is a choice that makes the resulting ODE come out as $X'' + \lambda X = 0$ with positive $\lambda$. This is standard but a student will wonder: what goes wrong if I call the constant $\lambda$ without the negative sign? A one-sentence note ("if we called it $+\lambda$, we would need $\lambda < 0$ for decaying solutions — the same physics, just a notational choice") would prevent the reader from feeling this is arbitrary or that they have to memorise a sign. -->
 
@@ -387,6 +389,9 @@ $$T_n' = -\alpha^2\lambda_n\,T_n \implies T_n(t) = e^{-\alpha^2 n^2\pi^2 t/L^2}$
 **General solution:**
 
 $$u(x,t) = \sum_{n=1}^{\infty} B_n\,\sin\!\left(\frac{n\pi x}{L}\right)\,e^{-\alpha^2 n^2\pi^2 t/L^2}$$
+
+This means each Fourier mode evolves independently, and the higher-frequency
+modes decay faster because their exponential factors contain $n^2$.
 
 **Applying the initial condition** $u(x,0) = f(x)$:
 
@@ -487,6 +492,10 @@ The $Y$ equation becomes $Y'' - \lambda_n Y = 0$ with $Y(b) = 0$. Solutions:
 $$Y_n(y) = \sinh\!\left(\frac{n\pi(b-y)}{a}\right)$$
 
 (sinh chosen to satisfy $Y_n(b) = 0$; $Y_n(0) = \sinh(n\pi b/a) \neq 0$).
+
+This means the sign in the ODE decides the family of functions you get:
+$Y''+\lambda Y=0$ produces oscillatory sine and cosine terms, while
+$Y''-\lambda Y=0$ produces exponential or hyperbolic behaviour.
 
 <!-- STUDENT: The switch to hyperbolic sinh here — as opposed to the sine and cosine of the heat and wave equations — happens without explanation. An engineering student new to PDEs will wonder: why does the Laplace equation produce sinh where the other equations produced sin? A one-sentence explanation of why the $Y$ equation has the opposite sign ($Y'' - \lambda_n Y = 0$ rather than $Y'' + \lambda_n Y = 0$) and therefore produces real exponential/hyperbolic solutions rather than oscillatory ones would make this feel like insight rather than a surprising formula to memorise. -->
 

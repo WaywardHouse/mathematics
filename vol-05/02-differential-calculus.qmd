@@ -107,6 +107,8 @@ The numerator $f(x+h) - f(x)$ is the change in output. The denominator
 $h$ is the change in input. Their ratio is the slope of the **secant
 line** connecting the two points $(x,\, f(x))$ and $(x+h,\, f(x+h))$ on
 the graph.
+This means the derivative starts with an ordinary average rate of change over
+an interval you can still see and measure.
 
 Now let $h \to 0$. The second point slides toward the first. The secant
 line tilts and, in the limit, becomes the **tangent line** at $x$. The
@@ -117,6 +119,8 @@ $$\boxed{f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}}$$
 This is the formal definition. Every differentiation rule derived later
 is a consequence of it. The definition itself is the limit you saw in
 chapter 1, applied to a specific quotient.
+This means the derivative is not separate from limits. It is the limit of
+average change as the interval collapses to a point.
 
 ## What the notation is saying
 
@@ -139,6 +143,8 @@ $$f'(x) = \frac{dy}{dx} = \frac{d}{dx}\bigl[f(x)\bigr]$$
 The expression $\dfrac{d}{dx}[\,\cdot\,]$ is an **operator** — it takes
 a function as input and produces its derivative as output. Think of $d/dx$
 as an instruction: *differentiate with respect to $x$*.
+This means all three notations describe the same rate-of-change object, but
+each notation highlights a different aspect of it.
 
 ```{ojs}
 //| echo: false
@@ -324,6 +330,8 @@ $$\frac{d}{dx}\bigl[x^n\bigr] = n x^{n-1}$$
 
 This is the most-used rule in calculus. It applies to positive integers,
 negative integers, fractions — any real exponent.
+This means the power rule is the default tool for algebraic functions because
+it turns a hard limit into a quick pattern.
 
 **Derivation for positive integer $n$.** Start from the limit definition:
 
@@ -348,6 +356,8 @@ $$f'(x) = \lim_{h \to 0} \left( n x^{n-1} + \text{terms with } h \right) = n x^{
 
 The rule is proved. Notice what happened: the limit killed every term
 except the leading one. This is why the power rule is so clean.
+This means the derivative keeps the first-order change and discards the
+higher-order terms that become negligible as $h$ shrinks.
 
 **Examples:**
 
@@ -377,6 +387,8 @@ Together these mean you can differentiate a polynomial term by term.
 For $p(x) = 3x^4 - 2x^2 + 5x - 1$:
 
 $$p'(x) = 3 \cdot 4x^3 - 2 \cdot 2x + 5 \cdot 1 - 0 = 12x^3 - 4x + 5$$
+This means linearity lets you break a large derivative into smaller pieces and
+differentiate each piece separately.
 
 ### Product rule
 
@@ -391,6 +403,8 @@ $$\frac{d}{dx}\bigl[f(x)\cdot g(x)\bigr] = f'(x)\cdot g(x) + f(x)\cdot g'(x)$$
 A useful mnemonic: *derivative of first times second, plus first times
 derivative of second.* The rule accounts for how both factors are
 changing simultaneously.
+This means a product changes for two reasons at once: the first factor changes
+and the second factor changes.
 
 **Check:** $\tfrac{d}{dx}[x \cdot x] = 1 \cdot x + x \cdot 1 = 2x$. Correct.
 
@@ -406,6 +420,8 @@ In prime notation: $\bigl(f \circ g\bigr)'(x) = f'\bigl(g(x)\bigr) \cdot g'(x)$.
 This is the most important and most commonly misapplied rule in calculus.
 The key skill is **identifying the outer and inner functions** before
 differentiating.
+This means the chain rule measures how a change in $x$ affects the inner
+function, then how that inner change affects the outer one.
 
 **Example.** Differentiate $y = \sin(x^2)$.
 
@@ -418,6 +434,7 @@ like the $du$'s cancel — and you can use it as if they do. The reason it
 works is multiplicative structure in the limit, not literal fraction
 cancellation, but the practical result is the same: set up the product
 and compute.
+This means composite functions must be differentiated layer by layer.
 
 ```{ojs}
 //| echo: false
@@ -544,12 +561,16 @@ is why $e$ appears everywhere in physics and engineering. Any system
 whose rate of change is proportional to its current value is governed
 by an exponential, and the differential equation describing it is
 $\dfrac{dy}{dx} = y$.
+This means the table of key derivatives is really a table of standard change
+behaviours that recur in many different contexts.
 
 ## Higher derivatives
 
 The derivative of $f$ is itself a function. You can differentiate it
 again. The **second derivative** $f''(x)$ (or $\dfrac{d^2y}{dx^2}$) is
 the rate of change of the rate of change.
+This means the first derivative tells you how steep the graph is, and the
+second derivative tells you how that steepness is itself changing.
 
 The clearest physical example: if $s(t)$ is position at time $t$, then
 $s'(t)$ is velocity and $s''(t)$ is acceleration. Acceleration is how
@@ -581,6 +602,7 @@ Not every critical point is a maximum or minimum — it could be a
 is neither increasing nor decreasing at that instant but continues in
 the same direction on both sides). The second derivative distinguishes
 the cases.
+This means critical points are candidates for extrema, not guarantees.
 
 **Second derivative test.** If $f'(c) = 0$:
 
@@ -593,6 +615,8 @@ the cases.
   richer there. In single-variable calculus, if the second derivative
   test is inconclusive, you check the sign of $f'$ on either side of
   $c$ directly.
+This means the second derivative test reads the local shape of the graph to
+classify what the first derivative found.
 
 **Worked procedure.** Find the local extrema of $f(x) = x^3 - 6x^2 + 9x + 1$.
 
@@ -630,6 +654,8 @@ $$f'(x) = 12x^3 - 4x + 5$$
 This is a polynomial — differentiating a polynomial always produces a
 polynomial of degree one lower. The constant term $-1$ vanishes: a
 constant has zero slope everywhere.
+This means polynomial derivatives keep the same algebraic structure but become
+one degree less steep.
 
 ---
 
@@ -645,6 +671,8 @@ $$= 2x\sin x + x^2 \cos x$$
 This kind of function appears in wave mechanics: $x^2 \sin x$ models
 an oscillation whose amplitude grows quadratically with distance from
 the source.
+This means the product rule keeps track of both the oscillation and the
+changing amplitude.
 
 ---
 
@@ -662,6 +690,8 @@ $$\frac{d}{dx}\bigl[e^{3x^2}\bigr] = e^{3x^2} \cdot 6x = 6x\,e^{3x^2}$$
 Functions of this form appear in Gaussian distributions, heat diffusion
 kernels, and signal-processing windows. The chain rule is the only way
 to differentiate them correctly.
+This means the outer exponential survives, while the inner function
+contributes an extra scaling factor.
 
 ---
 
@@ -695,8 +725,14 @@ Setting $A'(x) = 0$: $80 - 4x = 0 \implies x = 20$.
 The shape that maximises the area is twice as wide as it is deep — a
 result that appears in architectural and agricultural optimisation
 problems wherever one boundary is free.
+This means optimisation turns a practical design question into a derivative
+question about where increase changes to decrease.
 
 ## Where this goes
+
+This chapter moved from limits to a full toolkit for describing change. The
+next chapter asks the inverse question: once a rate is known, how do we recover
+the total change it produces?
 
 **Integral calculus (ch03):** Integration inverts differentiation. Where
 this chapter asked "given a function, find its rate of change," the next

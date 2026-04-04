@@ -149,7 +149,8 @@ From them you can show:
 - If $A \subset B$ then $P(A) \leq P(B)$
 - The inclusion-exclusion rule: $P(A \cup B) = P(A) + P(B) - P(A \cap B)$
 
-The third axiom extends to any countable collection of mutually exclusive events:
+The third axiom extends to any countable collection of mutually exclusive events
+(finitely many, or an infinite but listable sequence):
 $P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots$
 
 <!-- STUDENT: The word "countable" is introduced here without explanation. At the engineering layer a reader knows finite sets, but "countably infinite" versus "uncountably infinite" is likely new. A single parenthetical — "(finitely many or an infinite but listable sequence)" — would remove the confusion without adding bulk. -->
@@ -164,6 +165,8 @@ $$P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad P(B) > 0$$
 This is the fraction of $B$'s probability that overlaps with $A$. If you know $B$
 has occurred, you're restricting attention to the outcomes in $B$ and asking
 what fraction of those are also in $A$.
+This means conditioning changes the universe you are measuring inside: once $B$
+is known to have happened, all probabilities are rescaled relative to $B$.
 
 <!-- VIZ: Conditional probability — area model
 Unit square representing Ω. Two draggable oval regions A and B. Conditioning on B means zooming in to B.
@@ -374,6 +377,14 @@ nothing about $A$:
 
 $$P(A \mid B) = P(A) \iff P(A \cap B) = P(A) \cdot P(B)$$
 
+The equivalence is just one substitution. Starting from
+$P(A \mid B) = P(A)$ and using the definition of conditional probability:
+
+$$\frac{P(A \cap B)}{P(B)} = P(A) \;\Longrightarrow\; P(A \cap B) = P(A)\,P(B)$$
+
+Conversely, dividing $P(A \cap B) = P(A)\,P(B)$ by $P(B)$ (when $P(B) > 0$)
+returns $P(A \mid B) = P(A)$.
+
 <!-- STUDENT: The biconditional "⟺" is presented without proof. A reader new to formal probability will accept it but won't see why the two forms are equivalent. The left-to-right direction is a one-line substitution from the definition of conditional probability directly above; spelling it out briefly would close this gap. -->
 
 ### Bayes' theorem
@@ -467,6 +478,8 @@ approximately $f(x)\, dx$.
 
 A concrete example: if $X \sim \text{Uniform}(0,\, 0.5)$, then $f(x) = 2$
 everywhere on $[0, 0.5]$. The density is 2, yet $P(0 \leq X \leq 0.5) = \int_0^{0.5} 2\, dx = 1$. The density can exceed 1; the integral over any interval is still between 0 and 1.
+This means the density is a probability-per-unit-length, not a probability by
+itself. Probabilities come from area under the curve, not from the height alone.
 
 <!-- STUDENT: This is one of the genuinely confusing conceptual barriers for new learners. The explanation that "f(x) can exceed 1" will stop many readers cold — they just learned that probabilities are between 0 and 1. A concrete example would help, e.g. "Uniform(0, 0.5) has f(x) = 2 everywhere on [0, 0.5]." The prose explanation using dx is correct but relies on infinitesimal reasoning that may not be second nature. -->
 
@@ -508,6 +521,10 @@ $$E\!\left[(X - \mu)^2\right] = E[X^2 - 2\mu X + \mu^2]
 Since $E[X] = \mu$, the last two terms combine: $-2\mu \cdot \mu + \mu^2 = -2\mu^2 + \mu^2 = -\mu^2$. So:
 
 $$= E[X^2] - \mu^2$$
+
+This means variance is the average squared distance from the mean. The
+alternative formula $E[X^2] - \mu^2$ is usually easier to compute, but it is
+measuring the same spread.
 
 <!-- STUDENT: The last equality collapses E[X²] − 2μ·E[X] + μ² to E[X²] − μ² without stating that E[X] = μ makes −2μ·μ + μ² = −μ². This is only one line of algebra, but the step is invisible. A reader who doesn't see it will not know whether they missed something. -->
 
@@ -551,7 +568,8 @@ $$E[X] = np, \quad \text{Var}(X) = np(1-p)$$
 
 **Normal approximation.** When $np \geq 5$ and $n(1-p) \geq 5$, the
 binomial is well approximated by a normal distribution with the same
-mean and variance. This is one preview of the CLT.
+mean and variance. This is one preview of the CLT, which appears later in this
+chapter and explains why sums and averages often become approximately normal.
 
 <!-- STUDENT: "This is one preview of the CLT" is a wayfinding hint, but the reader doesn't yet know what the CLT is. The phrase will be understood in retrospect (after reading the CLT section), but on first encounter it reads as a forward reference that explains nothing. A brief pointer — "see the CLT section later in this chapter" — would let the reader know to come back to this, rather than wondering what they missed. -->
 
@@ -973,7 +991,13 @@ $$E[X] = \left[-x e^{-\lambda x}\right]_0^{\infty} + \int_0^{\infty} e^{-\lambda
 
 $$E[X^2] = \int_0^{\infty} x^2 \cdot \lambda e^{-\lambda x}\, dx = \frac{2}{\lambda^2}$$
 
-The integration follows the same pattern as the derivation of $E[X]$ above — integration by parts applied twice, or equivalently by recognising the integral as a gamma function. Either route gives $2/\lambda^2$.
+One quick route is integration by parts twice. Let $u=x^2$ and
+$dv=\lambda e^{-\lambda x}\,dx$, so $du=2x\,dx$ and $v=-e^{-\lambda x}$:
+
+$$E[X^2] = \left[-x^2 e^{-\lambda x}\right]_0^\infty + 2\int_0^\infty x e^{-\lambda x}\,dx$$
+
+The boundary term is 0, and the remaining integral is the same type used in
+the mean calculation. Evaluating it gives $2/\lambda^2$.
 
 <!-- STUDENT: The result E[X²] = 2/λ² is stated without showing the integration, with only a parenthetical hint. An engineering reader comfortable with calculus can verify this, but the asymmetry is noticeable: E[X] just had a fully worked integration by parts, while E[X²] gets a one-line assertion. This will leave some readers uncertain whether the pattern is routine or whether they are expected to trust without verifying. -->
 

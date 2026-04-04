@@ -111,9 +111,15 @@ that separates "works" from "doesn't work."
 
 ## What the notation is saying
 
+Start with an everyday rule: "your spending must stay below $120."
+That rule does not ask for one exact value. It allows many values and
+blocks others.
+
 An equation uses $=$ to say two things are exactly equal. An inequality
 uses a different symbol to say one thing is *bigger* or *smaller* than
 another.
+
+This means an inequality describes a limit or range.
 
 The four symbols:
 
@@ -134,16 +140,22 @@ The difference between $<$ and $\leq$ matters. If a shelf holds
 If something must be *strictly less than* 50, exactly 50 is not fine —
 so you'd write $w < 50$.
 
+This means the boundary may or may not be included.
+
 A **compound inequality** combines two inequalities into one statement.
 $8 \leq n \leq 20$ reads "n is at least 8 and at most 20" — both
 conditions must hold at once. This is the password length rule:
 any whole number from 8 to 20 satisfies it.
+
+This means one value must satisfy both sides at the same time.
 
 ## The method
 
 Solving an inequality is almost identical to solving an equation.
 You do the same things: add, subtract, multiply, divide — keeping
 both sides balanced until the unknown is isolated.
+
+This means most of the method is familiar from the last chapter.
 
 **There is one exception. It's the only genuinely surprising thing
 in this chapter. It deserves its own section.**
@@ -200,6 +212,9 @@ $$x < 5$$
 
 The solution is every number less than 5. Not just one number: all of them.
 
+This means the answer to an inequality is usually a set of numbers,
+not one number.
+
 Now compare with one that triggers the flip:
 
 $$-3x + 1 \geq 10$$
@@ -216,6 +231,9 @@ The solution is every number less than or equal to $-3$. Check:
 try $x = -4$. Then $-3(-4) + 1 = 12 + 1 = 13$, and $13 \geq 10$. Yes.
 Try $x = 0$. Then $-3(0) + 1 = 1$, and $1 \geq 10$. No — and
 $x = 0$ is not in our solution set, so that's correct.
+
+This means checking a value inside and outside the solution helps you
+see whether the answer makes sense.
 
 ::: {.callout-note appearance="simple"}
 **Why solving inequalities works**
@@ -392,6 +410,9 @@ buy at most 9 items.
 Check: $47 + 8 \times 9 = 47 + 72 = 119$. Within budget. And
 $47 + 8 \times 10 = 127$. Over. Correct.
 
+This means real-world inequalities often need one more step: interpreting
+the algebra in whole numbers.
+
 ---
 
 **Example 2 — Shelf load.** A wall-mounted shelf is rated to hold
@@ -414,6 +435,8 @@ Since $b$ must be a whole number: at most 6 boxes.
 
 Check: $8 \times 6 = 48 \leq 50$. ✓ Seven boxes: $8 \times 7 = 56 > 50$. ✗
 
+This means safety limits are naturally written as inequalities.
+
 ---
 
 **Example 3 — Password validation.** A website requires passwords to
@@ -432,6 +455,8 @@ $n = 20$? Fine. $n = 21$? Too long.
 This is a compound inequality. In code, you'd check both conditions
 at once: `8 <= n && n <= 20` (or the equivalent in whatever language
 you're using). The mathematics and the code are the same structure.
+
+This means inequalities are a direct way to describe allowed ranges.
 
 ---
 
@@ -452,6 +477,9 @@ $$t < 5$$
 The thermostat must be set below 5°C. The sign flip was necessary here:
 if you forgot it and wrote $t > 5$, you'd be saying temperatures *above*
 5°C are acceptable, which is exactly wrong.
+
+This means the sign-flip rule is not a small detail. It changes the
+meaning of the answer completely.
 
 **Interactive: Inequality explorer.** Set the coefficients $a$ and $b$, choose the constant $c$ and the inequality direction. The solution is shown algebraically and on a number line. The sign-flip warning lights up when $a$ is negative.
 
@@ -605,7 +633,9 @@ viewof ieSym = Inputs.select(["<", "≤", ">", "≥"], { label: "Inequality symb
 
 ## Where this goes
 
-Inequalities are where the idea of a *constraint* enters mathematics.
+This chapter takes the solving method from equations and turns it into
+a method for handling limits and allowed ranges.
+
 An equation pins down one value. An inequality describes a boundary —
 everything on one side is feasible, everything on the other isn't.
 

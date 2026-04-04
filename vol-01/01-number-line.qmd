@@ -99,34 +99,59 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-A bank balance of −$40 is not the same as no money — it is a real
-position, 40 units to the left of zero. An altitude of −85 metres
-is the Dead Sea shore. A temperature of −18°C is your freezer.
+A bank balance of −$40 is not the same as having no money. It tells
+you that you are 40 dollars below zero. An altitude of −85 metres
+means 85 metres below sea level. A temperature of −18°C means
+18 degrees below zero.
 
-Numbers below zero are not a trick. They are the language of anything
-that can be in deficit, in debt, below a reference point. The number
-line is the map that shows where every number lives — and why the
-rules of arithmetic have the shape they do.
+In each case, the number does two jobs at once. It tells you which
+side of zero you are on, and it tells you how far from zero you are.
+The number line gives us a clear picture of both ideas. In this
+chapter, we use that picture to place numbers, compare them, and
+understand what their symbols mean.
 
 ## What the notation is saying
 
-Draw a horizontal line. Mark a point in the middle and call it **0**.
-Every positive number lives to the right; every negative number lives
-to the left. The further from zero, the larger the absolute value.
+Start with something simple. Imagine a straight road with a marker at
+the centre. Label that marker **0**. Now think of every number as a
+place on that road.
+
+Numbers greater than zero go to the right. Numbers less than zero go
+to the left. A number's position tells you its value.
 
 $$\cdots \quad -4 \quad -3 \quad -2 \quad -1 \quad 0 \quad 1 \quad 2 \quad 3 \quad 4 \quad \cdots$$
 
-**Absolute value** $|x|$ strips the direction: $|{-3}| = 3$ and $|3| = 3$.
-It answers "how far from zero?" — not "which side?"
+This picture is called the **number line**. It helps us compare numbers
+by location. A number further left is smaller. A number further right
+is larger.
 
-The inequality symbols $<$ and $>$ describe position on the line:
-$-5 < -1$ because $-5$ sits further left. This trips people up —
-$-5$ feels "bigger" in magnitude, but it is smaller as a number.
+For example, $-5 < -1$ because $-5$ is further left on the line.
+This means that even though 5 is a greater distance from zero than 1,
+$-5$ is still the smaller number.
 
-Fractions and decimals also live on this line. $\frac{1}{2}$ sits
-halfway between 0 and 1. $-0.7$ sits between $-1$ and $0$. The
-line is continuous: there is a location for every number, however
-precise.
+Fractions and decimals belong on the same line. For example,
+$\frac{1}{2}$ sits halfway between 0 and 1, and $-0.7$ sits between
+$-1$ and 0. This means the number line is not just for whole numbers.
+It has a place for every number we will use.
+
+Now we can introduce one more idea: distance from zero. Sometimes we
+care about where a number is. Sometimes we care only about how far it
+is from zero.
+
+The symbol $|x|$ means the **absolute value** of $x$. It tells us the
+distance from zero and ignores direction.
+
+For example, $|{-3}| = 3$ and $|3| = 3$.
+
+This means that both $-3$ and 3 are the same distance from zero, even
+though they are on opposite sides.
+
+The symbols $<$ and $>$ are called **inequality symbols**. They compare
+positions on the line. The symbol $<$ means "is less than," and the
+symbol $>$ means "is greater than."
+
+So when we write $-5 < -1$, we are saying that $-5$ is to the left of
+$-1$. This means $-5$ is the smaller number.
 
 ---
 
@@ -323,25 +348,46 @@ nlExplorer = {
 
 **Placing a number on the line**
 
-1. Determine the sign: positive (right of zero) or negative (left) — this tells you which direction to go.
-2. Determine the magnitude: how far from zero — this tells you how far to go.
-3. Locate it. Every number has exactly one position.
+Suppose you want to place a number exactly. There is a simple method.
+
+1. Determine the sign. If the number is positive, move right from zero. If the number is negative, move left from zero.
+2. Determine the magnitude. The magnitude is the size of the number without its direction, so it tells you how far to move.
+3. Mark the position. Each number has one exact place on the line.
+
+This means that sign gives direction, and magnitude gives distance.
 
 **Ordering numbers**
 
-To order a list of numbers, locate each one on the line. Left is
-smaller, right is larger. For negative numbers: $-10 < -2 < 0 < 3 < 7$.
+To order numbers, place them on the line and read from left to right.
+Left means smaller. Right means larger.
+
+For example:
+
+$$-10 < -2 < 0 < 3 < 7$$
+
+This means $-10$ is the smallest number in the list, and 7 is the
+largest.
 
 **Absolute value**
 
-The formula below looks slightly odd. Here is what it is doing: if $x$ is
-already positive, its distance from zero is just $x$. If $x$ is negative,
-its distance from zero is the positive version of it — which is $-x$.
-Negating a negative gives a positive.
+We have already described absolute value as distance from zero. The
+formula below says the same thing in a precise way.
 
 $|x| = x$ if $x \geq 0$; $|x| = -x$ if $x < 0$.
 
-So $|{-7}| = -(-7) = 7$. We will prove in Chapter 4 why $-(-7) = 7$.
+Here, $x$ means any number. The symbol $\geq 0$ means "greater than or
+equal to zero." So if $x$ is already zero or positive, its absolute
+value is just $x$. If $x$ is negative, we use $-x$ to turn it into the
+matching positive distance.
+
+For example,
+
+$$|{-7}| = -(-7) = 7$$
+
+This means that the number $-7$ is 7 units from zero.
+
+We will justify ideas like $-(-7) = 7$ more fully in Chapter 4, when
+we study signed arithmetic in detail.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -359,13 +405,20 @@ direction twice returns you to where you started.
 matches: won by 3, lost by 2, won by 1, lost by 4. Express these as
 signed numbers and order them from worst to best.
 
-As signed numbers: +3, −2, +1, −4.
+First translate the results into signed numbers:
+
++3, −2, +1, −4
 
 Place each on the number line and read left to right:
 
 $$-4 < -2 < 1 < 3$$
 
-Worst to best: lost by 4, lost by 2, won by 1, won by 3.
+So the order from worst to best is:
+
+lost by 4, lost by 2, won by 1, won by 3.
+
+This means more negative results are worse, and more positive results
+are better.
 
 ---
 
@@ -374,15 +427,22 @@ relative to sea level: mountain peak +2,450 m; valley floor −60 m;
 coastal town +8 m; lake bed −340 m. What is the vertical distance
 from the lake bed to the peak?
 
-Vertical distance = $|2450 - (-340)|$.
+We want the distance between two positions on the number line:
+2450 and −340.
 
-That subtraction involves two negatives, so pause: subtracting a
-negative is the same as adding.
+Set up the calculation:
 
-$|2450 - (-340)| = |2450 + 340| = 2790$ m.
+$$|2450 - (-340)|$$
 
-The absolute value ensures we get a distance (positive), not a
-directed displacement.
+Now simplify step by step. Subtracting a negative is the same as
+adding the matching positive:
+
+$$|2450 - (-340)| = |2450 + 340| = 2790$$
+
+So the vertical distance is 2790 m.
+
+The absolute value bars show that we want a distance, which must be
+positive.
 
 ---
 
@@ -390,10 +450,15 @@ directed displacement.
 −12°C, +3°C, −7°C, −19°C, +1°C. Which temperature is furthest
 from zero? Which is closest?
 
-Find the absolute value of each: 12, 3, 7, 19, 1.
+Find the absolute value of each temperature:
+
+$$|{-12}| = 12,\quad |3| = 3,\quad |{-7}| = 7,\quad |{-19}| = 19,\quad |1| = 1$$
 
 Furthest from zero: −19°C (absolute value 19).
 Closest to zero: +1°C (absolute value 1).
+
+This means absolute value helps us compare size without worrying about
+direction.
 
 ---
 
@@ -401,11 +466,18 @@ Closest to zero: +1°C (absolute value 1).
 friend $8 from last week. You spend $4 on a snack. Express your
 running total as signed numbers from the start of the week.
 
-Start: 0. Receive $15: position +15. Repay debt −8: position +7.
-Spend $4: position +3.
+Start at 0.
+
+Receive $15: move to +15.
+
+Repay the $8 debt: move 8 units left to +7.
+
+Spend $4: move 4 more units left to +3.
 
 Each transaction is a movement along the number line. You end up
 at +3, meaning $3 remaining.
+
+This means gains move you right and costs move you left.
 
 ---
 
@@ -632,17 +704,18 @@ nlArithmetic = {
 
 ## Where this goes
 
-The number line is the foundation every later chapter assumes.
-**Integers and signed arithmetic** (Chapter 4) takes addition,
-subtraction, multiplication, and division into negative territory
-— all of which are just movements along this line. **Fractions and
-decimals** (Chapter 5) fill in the gaps between the integers.
+This chapter gives us the picture that the rest of the volume uses.
+We began by placing numbers relative to zero. Next, we will use the
+same idea in more situations.
 
-Further on, the line becomes an axis. In Volume 2, the horizontal
-axis of a graph is the number line, and a linear equation traces a
-path along it. In Volume 5, limits are defined precisely as behaviour
-near a point on the line. The model you are building here does not
-change — it accumulates meaning.
+In **Integers and signed arithmetic** (Chapter 4), addition and
+subtraction become movements left and right on this line. In
+**Fractions and decimals** (Chapter 5), we fill in the spaces between
+whole numbers more carefully.
+
+Later in the series, the number line becomes an axis in a graph. So
+this is not a one-time picture. It is a model we will keep using and
+extending.
 
 ::: {.callout-tip appearance="simple"}
 **Where this shows up**
@@ -659,7 +732,8 @@ Same structure. Different labels.
 ## Exercises
 
 Each problem has a clean answer. The interesting part is setting up
-which numbers go where before you compute.
+which numbers go where before you compute. Sketching a quick number
+line will help.
 
 1. A diver descends from the surface to −28 m, then swims to a
    coral shelf at −15 m, then ascends to −5 m before surfacing.

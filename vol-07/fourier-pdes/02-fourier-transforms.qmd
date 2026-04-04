@@ -84,6 +84,10 @@ The transition from series to transform is not just a mathematical technicality.
 <!-- STUDENT: The derivation jumps immediately to the complex exponential form of the Fourier series ($c_n$, $e^{in\pi x/L}$) without referencing the previous chapter's notation ($a_n$, $b_n$). A student who just worked through chapter 1 in real form will need to hold both notations in mind simultaneously. A single sentence pointing back — "Using the complex Fourier series from the previous chapter" — or an explicit cross-reference would help orient. -->
 Consider a function $f$ of period $2L$ with Fourier series:
 
+This starts from the complex Fourier-series form introduced at the end of the
+previous chapter, where the real coefficients $a_n$ and $b_n$ were bundled
+into the single sequence $c_n$.
+
 $$f(x) = \sum_{n=-\infty}^{\infty} c_n\,e^{in\pi x/L}, \qquad c_n = \frac{1}{2L}\int_{-L}^{L} f(x)\,e^{-in\pi x/L}\,dx$$
 
 Define $\omega_n = n\pi/L$ and $\Delta\omega = \pi/L$ (the spacing between successive frequencies). Then:
@@ -493,6 +497,8 @@ $$\mathcal{F}\{\delta(t)\} = \int_{-\infty}^{\infty}\delta(t)\,e^{-i\omega t}\,d
 The delta function has a flat (white) spectrum — it contains all frequencies equally. This is why a sharp impulse (the tap of a hammer on a structure) excites all resonant frequencies simultaneously.
 
 The inverse: $\mathcal{F}\{1\} = 2\pi\delta(\omega)$ — a constant signal contains only zero frequency.
+This means the delta is best understood as an idealised sampling object inside
+integrals, not as an ordinary spike-shaped function.
 
 ---
 
@@ -517,6 +523,10 @@ $$\mathcal{F}\{f * g\}(\omega) = F(\omega)\cdot G(\omega)$$
 where $(f*g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t-\tau)\,d\tau$ is the **convolution** of $f$ and $g$. Equivalently, $\mathcal{F}\{fg\} = \frac{1}{2\pi}F * G$.
 
 **Parseval's theorem.** $\int_{-\infty}^{\infty}|f(t)|^2\,dt = \frac{1}{2\pi}\int_{-\infty}^{\infty}|F(\omega)|^2\,d\omega$.
+
+This means total signal energy can be computed either in time or in frequency.
+In practice, Parseval lets you answer energy questions after transforming to
+the domain where the calculation is easier.
 
 <!-- STUDENT: Parseval's theorem is listed as a property alongside linearity and shifting, but it is qualitatively different — it is a global energy identity, not an operation rule. It is used in Exercise 5 to compute energy from the frequency domain, but the motivation ("why would you compute energy this way?") is absent from the properties list. A one-sentence note connecting it to energy before Exercise 5 uses it would help the reader understand why it's worth knowing, not just that it's true. -->
 

@@ -99,24 +99,43 @@ is, and whether the percent is applied once or repeatedly.
 
 ## What the notation is saying
 
+Start with a familiar example. If 25 students out of 100 passed a test,
+we say 25%. That means 25 out of every 100.
+
 **Percent** means per hundred. $p\%$ is the same as $\frac{p}{100}$.
+
+This means percent is just a special kind of fraction.
 
 To find $p\%$ of a quantity $Q$: multiply $Q$ by $\frac{p}{100}$.
 
 $$\text{amount} = Q \times \frac{p}{100}$$
 
+Here, $Q$ is the starting quantity and $p$ is the percent.
+This means the formula finds the part of the whole named by the percent.
+
 **Percent change** compares a change to the original:
 
 $$\text{percent change} = \frac{\text{new} - \text{original}}{\text{original}} \times 100$$
+
+This means we compare the change to where we started, not just the size
+of the change by itself.
 
 **A rate** is a ratio with different units: speed is km/h, data use is
 MB/day, interest is $/year. The structure is the same as percent —
 one quantity compared to another.
 
+This means a rate tells us "how much for each unit of time, distance,
+mass, or something else."
+
 **Compound growth** applies a rate repeatedly. After $n$ periods at
 rate $r$ (expressed as a decimal), a quantity $Q_0$ becomes:
 
 $$Q_n = Q_0 \times (1 + r)^n$$
+
+Here, $Q_0$ is the starting amount, $r$ is the rate written as a decimal,
+and $n$ is the number of periods.
+
+This means we multiply by the same growth factor again and again.
 
 **Compound decay** uses $1 - r$ instead:
 
@@ -124,6 +143,9 @@ $$Q_n = Q_0 \times (1 - r)^n$$
 
 The exponent $n$ is why compound growth and decay are not linear —
 they accelerate in a way that simple percent change does not.
+
+This means the amount changes on top of the new amount each time,
+not just the original amount.
 
 ## The method
 
@@ -133,12 +155,18 @@ $p\%$ of $Q$ = $Q \times \frac{p}{100}$
 
 Convert percent to decimal first: $7\% = 0.07$; $120\% = 1.20$.
 
+This means "of" in percent problems usually tells you to multiply.
+
 **Percent increase / decrease**
 
 To increase $Q$ by $p\%$: multiply by $(1 + \frac{p}{100})$ — one
 step does the same job as finding the percent and then adding it.
 
 To decrease $Q$ by $p\%$: multiply by $(1 - \frac{p}{100})$.
+
+Here, $(1 + \frac{p}{100})$ and $(1 - \frac{p}{100})$ are called
+multipliers. This means one multiplier can do the whole change in
+a single step.
 
 **Finding the original after a percent change**
 
@@ -147,9 +175,13 @@ dividing by the multiplier rather than multiplying:
 
 $$Q_0 = \frac{V}{1 + \frac{p}{100}}$$
 
+This means reversing a percent increase uses division, not subtraction.
+
 **Compound growth**
 
 $Q_n = Q_0 \times (1 + r)^n$ where $r = \frac{p}{100}$.
+
+This means we are applying the same percent again and again over time.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -314,17 +346,27 @@ Compare to simple interest: $5 \times 3.5\% \times 2000 = $350$,
 giving $2,350. The compounded version is $25.40 more — the gap
 grows larger the longer you leave it.
 
+This means compound interest pays interest on earlier interest as well.
+
 ---
 
 **Example 2 — Phone plan.** A mobile plan costs $25 per month.
 The provider raises prices by 12%. What is the new monthly cost?
 How much extra do you pay over a year?
 
-New cost: $25 \times (1 + 0.12) = 25 \times 1.12 = $28$.
+Use the increase multiplier:
 
-Extra per month: $$28 - $25 = $3$.
+$$25 \times (1 + 0.12) = 25 \times 1.12 = \$28$$
 
-Extra over a year: $$3 \times 12 = $36$.
+Extra per month:
+
+$$28 - 25 = \$3$$
+
+Extra over a year:
+
+$$3 \times 12 = \$36$$
+
+This means a small monthly increase can become a bigger yearly cost.
 
 ---
 
@@ -337,6 +379,10 @@ $$P_{10} = 850{,}000 \times (1.014)^{10}$$
 $(1.014)^{10} = 1.1495$ (to 4 d.p.)
 
 $$P_{10} = 850{,}000 \times 1.1495 \approx 977{,}000$$
+
+Here, $P_{10}$ means the population after 10 years.
+This means the city grows by the same percentage each year, but the
+number added each year gets larger.
 
 ---
 
@@ -353,6 +399,9 @@ $(0.88)^4 = 0.5997$
 $$N_4 = 5000 \times 0.5997 \approx 2,999 \text{ atoms}$$
 
 In 4 hours, roughly 40% of the atoms have decayed.
+
+This means decay is the same structure as growth, but the multiplier is
+less than 1.
 
 ---
 
@@ -536,12 +585,13 @@ viewof numYears = Inputs.range(
 
 ## Where this goes
 
-Percent applied once is straightforward proportion. Applied
-repeatedly, it produces exponential behaviour — and **exponents
-and logarithms** (Volume 4, Chapter 1) is where that behaviour
-is studied properly. Logarithms undo the compounding: if you want
-to know how long it takes for a quantity to double, you are solving
-an exponential equation, which requires a logarithm.
+This chapter builds directly on ratio and proportion. First we used
+comparisons. Now we use a comparison out of 100.
+
+When percent is applied once, it is still a proportion problem.
+When it is applied again and again, it becomes exponential growth
+or decay. **Exponents and logarithms** (Volume 4, Chapter 1) studies
+that repeated growth more carefully.
 
 **Statistics and probability** (Chapter 6) uses rates constantly:
 probability is a rate between 0 and 1, and relative frequency is

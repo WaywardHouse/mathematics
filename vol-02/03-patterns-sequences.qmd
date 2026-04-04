@@ -126,6 +126,9 @@ position has exactly one value. Position 1 has a value. Position 2
 has a value. Position $n$ has a value. The order matters — you can't
 shuffle the terms and call it the same sequence.
 
+This means a sequence is not just a pile of numbers. The position is
+part of the meaning.
+
 What makes a sequence *useful* is when there's a pattern: a rule that
 connects each term to the one before it, or better yet, a rule that
 connects any term directly to its position number.
@@ -134,6 +137,9 @@ That second kind — where you can calculate any term from its position
 alone — is a function. You put a position in, you get a value out.
 That idea is one of the most important in all of mathematics, and
 sequences are where it shows up first in a concrete, tangible way.
+
+This means sequences are our first clear example of a rule that maps
+inputs to outputs.
 
 For now: spot the pattern, name the rule, find any term.
 
@@ -148,12 +154,17 @@ names the sequence; the subscript number is the position. So $a_1$
 — read "a-one" — is the first term, and $a_n$ — read "a-n" — is the
 term at position $n$, wherever that happens to be.
 
+This means the subscript tells you where the term sits in the list.
+
 Two sequences, two different rules:
 
 - **Arithmetic sequences** add the same amount each step. That fixed
   amount is called the **common difference**, written $d$.
 - **Geometric sequences** multiply by the same amount each step. That
   fixed multiplier is called the **common ratio**, written $r$.
+
+This means the quickest way to classify a sequence is to ask:
+"am I adding the same amount, or multiplying by the same amount?"
 
 ## Arithmetic sequences
 
@@ -198,6 +209,10 @@ The $(n - 1)$ looks odd at first. Here's why it isn't: at position 1
 you add the difference *zero* times, at position 2 you add it *once*,
 at position $n$ you add it $n - 1$ times. The count of additions is
 always one less than the position.
+
+Here, $a_1$ is the first term, $d$ is the common difference, and $n$
+is the position number. This means the formula jumps straight to any
+term without listing the earlier ones.
 
 **Interactive: Arithmetic sequence builder.** Set the first term and common difference. The dot plot shows the first 10 terms — notice the points fall on a straight line.
 
@@ -327,6 +342,9 @@ constant addition. Real bacterial growth is geometric, but the
 measuring interval can create arithmetic-looking data over short
 spans.)
 
+This means the first step in many sequence problems is converting the
+real-world situation into a position number.
+
 ---
 
 **Example 2 (biz).** A gamer earns 150 points for completing level 1.
@@ -338,6 +356,8 @@ Here $a_1 = 150$ and $d = 25$.
 $$a_{18} = 150 + (18 - 1) \times 25 = 150 + 425 = 575$$
 
 Level 18 awards 575 points.
+
+This means the common difference tells us how much each new level adds.
 
 ---
 
@@ -352,6 +372,9 @@ $$a_{20} = 1 + (20 - 1) \times 2 = 1 + 38 = 39$$
 
 Row 20 needs 39 tiles. A programmer building this pattern in a loop
 would use exactly this calculation to allocate memory or set loop bounds.
+
+This means arithmetic sequences often appear when a pattern grows by
+equal steps.
 
 ---
 
@@ -371,6 +394,9 @@ $$n > 17.67$$
 
 So after the 18th re-termination the cable is below 450mm.
 Check: $a_{18} = 500 + 17 \times (-3) = 500 - 51 = 449$. Yes.
+
+This means a sequence formula can also be used inside an inequality
+when we want to know when a threshold is crossed.
 
 ## Geometric sequences
 
@@ -409,6 +435,9 @@ The $(n - 1)$ is there for the same reason as in arithmetic: at
 position 1 you multiply by $r$ zero times. Any number raised to the
 power zero equals 1 — so $r^0 = 1$, and the first term is just
 $a_1 \times 1 = a_1$. Each step up adds one more multiplication.
+
+Here, $r$ is the common ratio. This means geometric sequences grow or
+shrink by repeated scaling.
 
 **Connection to Vol 1 Ch 3:** if this looks like the compound growth
 formula, that's because it is. Compound interest is a geometric
@@ -556,6 +585,8 @@ $$a_6 = 200 \times 3^{6-1} = 200 \times 3^5 = 200 \times 243 = 48{,}600$$
 48,600 views on day 6. That's the shape of viral growth — it looks
 manageable for the first few steps, then becomes enormous.
 
+This means repeated multiplication grows much faster than repeated addition.
+
 ---
 
 **Example 6 (sci).** A radioactive sample has 640 micrograms at the
@@ -568,6 +599,8 @@ after 5 hours we're looking at term 6.
 $$a_6 = 640 \times 0.5^{6-1} = 640 \times 0.5^5 = 640 \times \frac{1}{32} = 20$$
 
 20 micrograms remain after 5 hours.
+
+This means geometric sequences can describe decay as well as growth.
 
 ## Telling them apart
 
@@ -593,6 +626,8 @@ A sequence is a function. You feed in a position number — 1, 2, 3, …, $n$ �
 and the formula gives you back a value. One input, one output, a
 definite rule. That's the definition of a function.
 
+This means Chapter 4 will build on an idea you already have.
+
 For an arithmetic sequence with $a_1 = 5$ and $d = 3$:
 
 $$a_n = 5 + (n-1) \times 3 = 5 + 3n - 3 = 3n + 2$$
@@ -614,12 +649,11 @@ generalises to real-number inputs, you'll already have the idea.
 
 ## Where this goes
 
+This chapter connects patterns to formulas. The next chapter connects
+those formulas to graphs.
+
 **Chapter 4 — Graphing relations** takes the connection from this chapter
 seriously. If $a_n = 3n + 2$ is a function of $n$, then it has a graph.
-You'll learn to draw that graph, read information off it, and understand
-what the slope and intercept actually mean. Arithmetic sequences produce
-straight-line graphs; geometric sequences produce curves. Seeing them
-visually makes the difference between the two types immediately obvious.
 
 **Volume 4 — Sequences and series** returns to sequences at a higher
 level. A *series* is what you get when you add up the terms of a

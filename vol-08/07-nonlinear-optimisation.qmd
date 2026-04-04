@@ -188,6 +188,9 @@ The stationary conditions are
 
 $$\nabla_{\mathbf{x}} \mathcal{L} = 0, \qquad h(\mathbf{x}) = 0$$
 
+This means constrained optimality is a balance condition: at the solution, the
+objective cannot improve without pushing against the geometry of the constraint.
+
 Geometrically, this means the gradient of the objective lines up with the
 gradient of the constraint. You cannot improve the objective without leaving
 feasibility.

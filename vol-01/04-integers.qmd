@@ -106,13 +106,22 @@ left side of zero.
 
 ## What the notation is saying
 
+Start with the number line from Chapter 1. Positive numbers point one
+way from zero, and negative numbers point the other way.
+
 An **integer** is any whole number: ..., −3, −2, −1, 0, 1, 2, 3, ...
+
+This means integers are whole-number positions on the number line.
 
 The negative sign in front of a number means "opposite direction":
 $-5$ is 5 units to the left of zero.
 
+This means the sign tells you direction, while the number tells you size.
+
 Adding a negative moves you left on the number line:
 $$7 + (-3) = 7 - 3 = 4$$
+
+This means "plus a negative" has the same effect as subtraction.
 
 Subtracting a negative moves you right — you reverse direction twice:
 $$5 - (-2) = 5 + 2 = 7$$
@@ -123,6 +132,9 @@ is the same as adding a positive.
 
 **The double negative rule:** $-(-a) = a$. Two negatives cancel out
 and you get the original positive back.
+
+Here, $a$ means any number. This means the opposite of an opposite
+brings you back to the starting direction.
 
 **Sign rules for multiplication and division:**
 
@@ -135,6 +147,9 @@ and you get the original positive back.
 
 Same signs give positive. Different signs give negative. The same
 rules apply to division.
+
+This means multiplication and division care about whether the directions
+match or oppose each other.
 
 ---
 
@@ -292,6 +307,9 @@ $a - b = a + (-b)$.
 Then use the number line: positive means move right, negative means
 move left. Your result is where you land.
 
+Here, $a$ and $b$ are any numbers. This means one idea can handle both
+addition and subtraction.
+
 **Multiplication**
 
 1. Multiply the absolute values (ignore signs for now).
@@ -299,14 +317,20 @@ move left. Your result is where you land.
    - Even number of negatives → positive result.
    - Odd number of negatives → negative result.
 
+This means the size and the sign can be handled separately.
+
 **Division**
 
 Same rule: divide the absolute values, then apply the sign rule.
+
+This means division follows the same sign pattern as multiplication.
 
 **Order of operations with signed numbers**
 
 Brackets first. Then signs attached to numbers. Then multiply/divide
 left to right. Then add/subtract left to right.
+
+This means the sign belongs to the number it is attached to.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -507,6 +531,9 @@ $$50 + (-30) + (-25) + 60 = 50 - 30 - 25 + 60 = 55$$
 
 End balance: $55.
 
+This means the final balance is the starting amount plus every signed
+change.
+
 ---
 
 **Example 2 — Temperature change.** The temperature at 6 am is
@@ -520,6 +547,8 @@ $$9 - 18 = -9°\text{C} \quad \text{(midnight)}$$
 
 The midnight temperature is −9°C.
 
+This means a rise is positive movement and a fall is negative movement.
+
 ---
 
 **Example 3 — Score in a game.** A quiz game gives +5 for a correct
@@ -530,6 +559,8 @@ Correct answers: $4 \times 5 = 20$.
 Wrong answers: $6 \times (-3) = -18$ — six negatives, so the result is negative.
 
 Total score: $20 + (-18) = 2$.
+
+This means a player's total is the sum of positive and negative points.
 
 ---
 
@@ -544,12 +575,17 @@ $2 \times (-5) = -10$ (different signs → negative), giving $-10$.
 
 Now add: $12 + (-10) = 2$.
 
+This means we apply sign rules first in multiplication, then combine
+the results by addition.
+
 ## Where this goes
+
+This chapter takes the number line idea and turns it into a full set
+of rules for calculation.
 
 Signed arithmetic is the prerequisite for **linear equations**
 (Volume 2, Chapter 1). When you solve $3x - 7 = -19$, you need
 to add 7 to both sides and handle the resulting $-12$ correctly.
-Every algebraic manipulation involves signed numbers.
 
 In physics, signed quantities appear everywhere: displacement,
 velocity, acceleration, force, work, charge, and potential are all

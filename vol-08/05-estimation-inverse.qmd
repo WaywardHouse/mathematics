@@ -151,6 +151,8 @@ becomes $y - H\hat{x}^-$, but the structure of the weighted update is the same.
 If $K$ is close to 1, you trust the new measurement strongly. If $K$ is close
 to 0, you trust the existing estimate strongly. Filtering methods differ in how
 they compute or adapt this weight, but the logic is already visible here.
+This means the update is a controlled compromise, not a hard switch from model
+to measurement.
 
 The rule makes the compromise explicit. Estimation is never "use the
 measurement" or "use the model." It is always a weighted combination of both.

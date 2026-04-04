@@ -139,6 +139,8 @@ This is the central lesson before we write a single proof: **no number of
 confirmed cases constitutes a proof.** Not ten, not a hundred, not a
 trillion. A proof must cover every case, including those that haven't
 been tried.
+This means examples are useful for guessing a theorem, but never enough for
+establishing one.
 
 ```{ojs}
 //| echo: false
@@ -325,6 +327,8 @@ Since $a + b$ is an integer, $m + n$ is divisible by 2, hence even. $\square$
 Notice the structure: start with the definitions of the objects involved,
 do algebra, end at the conclusion. The key move was unpacking "even" into
 its definition ($m = 2a$) so that the algebra could work.
+This means direct proof usually begins by translating words like "even" or
+"odd" into algebraic form.
 
 ### 2. Proof by contrapositive
 
@@ -355,6 +359,8 @@ The reason to choose contrapositive over direct proof here: starting from
 "$n^2$ is even" and trying to work towards "$n$ is even" is awkward —
 you'd have to take a square root, and it isn't obvious that $\sqrt{2k}$
 is an integer. The contrapositive avoids that entirely.
+This means contrapositive proof is not a different theorem, only a smarter
+route to the same theorem.
 
 ### 3. Proof by contradiction
 
@@ -392,6 +398,8 @@ Therefore $\sqrt{2}$ is irrational. $\square$
 Note how the proof assembled earlier results — "if $n^2$ is even then $n$
 is even" was used twice. Proofs are built on top of other proofs. The
 earlier theorem was not an isolated exercise; it was a tool.
+This means contradiction works by assuming the opposite and showing that the
+assumption breaks the logical system you started with.
 
 ### 4. Mathematical induction
 
@@ -443,6 +451,8 @@ The formula $n(n+1)/2$ is not new to you — it appeared when we studied
 arithmetic series. But now you have not just a formula and some confirming
 examples. You have a proof. It holds for $n = 10^{100}$ as surely as for
 $n = 5$.
+This means induction proves infinitely many cases by establishing a base and a
+reliable step from one case to the next.
 
 ```{ojs}
 //| echo: false
@@ -582,6 +592,8 @@ triangles that only handles the acute case.
 Before finishing a proof, ask: are there configurations I haven't
 considered? Edge cases, boundary values, negative inputs, degenerate
 shapes?
+This means a proof can fail not only through bad algebra, but through an
+argument that silently covers only part of the problem.
 
 ### 3. An invalid step
 
@@ -598,6 +610,8 @@ An algebraic manipulation that is not universally valid. The most common:
 Every algebraic step has conditions under which it is valid. When those
 conditions aren't met, the step is wrong — even if it gives the right
 answer in specific cases.
+This means correctness in proof depends on the legality of each step, not on
+whether the final line happens to look plausible.
 
 ::: {.callout-tip}
 ## What proofs are actually for
@@ -653,6 +667,8 @@ the answer has the right form — it is one more than an even number.
 The proof doesn't appeal to intuition, examples, or the fact that you've
 tested it. It works because the algebra always produces $2(\ldots) + 1$,
 regardless of what $a$ and $b$ are.
+This means a direct proof succeeds when the conclusion appears naturally from
+the definition of the objects involved.
 
 ### Example 2: Proof by contradiction — infinitely many primes
 
@@ -692,6 +708,8 @@ This is one of the most elegant proofs in mathematics. It uses no
 advanced machinery — only the definition of prime, the fact that every
 integer greater than 1 has a prime factor, and arithmetic. The idea
 (constructing $N$) is the creative step; the logic is then straightforward.
+This means contradiction proofs often hinge on constructing exactly the object
+that the false assumption cannot accommodate.
 
 ### Example 3: Proof by induction — $2^n > n$ for all $n \geq 1$
 
@@ -728,8 +746,14 @@ inductive hypothesis to get a bound on $2^{k+1}$; second, connecting
 that bound to $k + 1$. The step "$2k \geq k+1$ because $k \geq 1$" looks
 almost too obvious to write down. Write it down anyway. In a proof,
 "obvious" is not a valid reason — the valid reason is "$k \geq 1$."
+This means induction is only convincing when every link in the chain is
+explicitly justified.
 
 ## Where this goes
+
+This chapter shifted mathematics from calculation to justification. The ideas
+ahead do not only need formulas; they rely on knowing why the formulas and
+theorems can be trusted.
 
 **Throughout this series.** Every other volume has been making claims
 without full justification — the sum formula for arithmetic series, the

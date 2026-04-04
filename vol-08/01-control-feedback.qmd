@@ -144,6 +144,9 @@ So the closed-loop transfer function is
 
 $$T(s) = \frac{Y(s)}{R(s)} = \frac{C(s)G(s)}{1 + C(s)G(s)}$$
 
+This means feedback does not merely add another block to the diagram. It
+changes the input-output law of the whole system.
+
 The equation $1 + C(s)G(s) = 0$ is the **characteristic equation** of the
 closed-loop system, and its roots are the **closed-loop poles**. They determine
 whether the response decays, oscillates, grows, or diverges.

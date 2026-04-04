@@ -135,6 +135,8 @@ $$\lambda(t) = \frac{f(t)}{R(t)} = \frac{-R'(t)}{R(t)}$$
 
 For the exponential model $\lambda(t) = \lambda$ (constant), which is why the
 scalar $\lambda$ appears in both the survival function and the hazard.
+This means hazard is about conditional risk right now, given survival so far,
+not about total failure probability over the whole lifetime.
 
 ### Weibull model for non-constant hazard
 

@@ -154,6 +154,8 @@ For this chapter the key split is **categorical vs. quantitative**,
 because it determines every choice that follows: which summary statistics
 to compute, which plots to draw, and whether correlation and regression
 make sense at all.
+This means the type of data is not a bookkeeping detail; it determines which
+mathematical tools are legitimate.
 
 ---
 
@@ -186,6 +188,8 @@ unusual — one student has a second job. The mean got pulled to 12.3
 by that one outlier, past six of the seven actual values. The median
 ($8$) is not sensitive to the extreme value. The mode tells you the
 most common single value.
+This means centre is not a single fixed idea: different summaries answer
+different questions about what is "typical."
 
 ::: {.callout-note appearance="simple"}
 **The outlier rule of thumb**
@@ -220,6 +224,8 @@ For our seven values $4, 6, 6, 8, 9, 11, 42$:
 
 The middle 50% of students work between 6 and 11 hours per week.
 The 42 did not affect this at all.
+This means the IQR is resistant to extreme values in a way the range and
+standard deviation are not.
 
 **Standard deviation** measures the average distance from the mean.
 You will see this written as $s$ for a sample:
@@ -230,6 +236,8 @@ The formula squares the deviations (so positive and negative distances
 don't cancel), takes their average (roughly — the $n-1$ is a technical
 correction for samples), then takes the square root to get back to the
 original units.
+This means standard deviation measures a typical distance from the mean in the
+same units as the data.
 
 For the work-hours example, with mean $\approx 12.3$:
 
@@ -312,6 +320,8 @@ Only if the form is linear does it make sense to ask "how strong is
 this linear relationship?" — which is what the correlation coefficient
 measures. If the form is curved, the correlation coefficient can give
 a misleading answer (we will see this shortly).
+This means the scatter plot comes before the formula because the formula only
+makes sense after the visual pattern is understood.
 
 ---
 
@@ -327,6 +337,8 @@ This is the average of the products of the standardised $x$ and $y$
 values. Standardising means subtracting the mean and dividing by the
 standard deviation, so each variable's scale disappears — $r$ is
 unit-free.
+This means correlation compares whether the two variables are above or below
+their own averages together, regardless of their units.
 
 **The intuition:** when a standardised $x$ is positive (above average)
 and the corresponding standardised $y$ is also positive, their product
@@ -367,6 +379,8 @@ Sum of products: $3.958$. Divide by $n - 1 = 4$: $r \approx 0.99$.
 
 That is a very strong positive linear relationship. More sleep, higher
 score — and it is nearly perfectly linear across this small sample.
+This means a value of $r$ near 1 signals that the points follow a line closely,
+not that the slope itself is large.
 
 **Interpreting $r$:** there is no single rule, but typical conventions are:
 
@@ -385,6 +399,7 @@ If the relationship is curved, $r$ can be close to zero even when there
 is a strong and obvious pattern. A dataset where $y = x^2$ centred at
 zero will give $r \approx 0$ even though $y$ is completely determined
 by $x$. This is why you always look at the scatter plot first.
+This means correlation can miss strong non-linear structure entirely.
 :::
 
 ```{ojs}
@@ -599,6 +614,8 @@ Ask three questions:
 3. Could this be coincidence in a large dataset?
 
 If any of these is plausible, the causal claim is not established.
+This means observational association is evidence for a question, not a final
+answer about cause.
 :::
 
 ---
@@ -622,6 +639,9 @@ negative errors don't cancel), and it penalises large errors more
 heavily than small ones. The least-squares line is the unique line that
 minimises the total squared error — it is "as close as possible" to all
 the points simultaneously.
+This means regression is not guessing a line by eye; it is choosing the
+line that makes overall prediction error as small as possible by a
+precise rule.
 
 **The formulas.** For the least-squares line $\hat{y} = b_0 + b_1 x$:
 
@@ -631,6 +651,8 @@ $$b_0 = \bar{y} - b_1 \bar{x}$$
 
 where $r$ is the Pearson correlation, $s_x$ and $s_y$ are the standard
 deviations of $x$ and $y$, and $\bar{x}$, $\bar{y}$ are the means.
+This means the slope depends on two things at once: how strongly the
+variables move together, and how their units and spreads compare.
 
 **Interpretation.**
 
@@ -645,6 +667,8 @@ intercept is just an algebraic anchor with no practical interpretation.
 
 **The regression line always passes through $(\bar{x}, \bar{y})$.** This
 is a useful sanity check.
+This means the fitted line is anchored at the centre of the data cloud,
+not floating independently of the observed averages.
 
 ```{ojs}
 //| echo: false
@@ -811,6 +835,9 @@ is left unexplained — you might be missing important variables, or the
 relationship might not be well-described by a line.
 
 $R^2 = 0.95$ means 95% of the variation is explained — a strong fit.
+This means a high $R^2$ says the line tracks the observed variation
+closely, but it does not by itself prove causation or guarantee that
+the model is appropriate outside the observed range.
 
 ::: {.callout-note appearance="simple"}
 **$R^2$ in plain language**
@@ -851,6 +878,8 @@ random scatter around zero — no pattern.
 
 The residual plot is the diagnostic. A clean residual plot validates
 your model; a patterned one tells you to reconsider.
+This means residuals are not a minor afterthought. They are the main
+check on whether the simple line has missed structure in the data.
 
 ---
 
@@ -910,6 +939,8 @@ about 2.5 additional iced coffees sold. This makes intuitive sense.
 nonsensical — no café sells negative drinks — but we should not expect
 the intercept to be meaningful here. The data ranges from 18°C to 36°C.
 Extrapolating to 0°C is far outside that range.
+This means intercepts should be interpreted only when $x = 0$ is both
+inside the data range and meaningful in the real situation.
 
 **Step 5: Predict a new value.**
 
@@ -926,6 +957,9 @@ $$R^2 = r^2 = (0.999)^2 \approx 0.998$$
 The linear model explains about 99.8% of the variation in drinks sold.
 Temperature is almost the entire story here (within this range and this
 simple model).
+This means the fit is excellent for these observed days, but the claim
+should stay tied to this temperature range and this simple one-variable
+model.
 
 **Step 7: Check a residual.**
 
@@ -1249,6 +1283,7 @@ The least-squares criterion is the same; the algebra requires linear
 algebra. Multiple regression is also the foundation of the simplest
 supervised machine learning model — gradient descent and neural networks
 are, at their roots, sophisticated generalisations of fitting a line to
+data and checking how well it explains what you observed.
 data. Everything you have learned in this chapter is load-bearing for
 what follows.
 

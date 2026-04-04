@@ -122,6 +122,10 @@ Straight lines describe constant rates. Polynomials describe the rest.
 
 ## What the notation is saying
 
+Start with a contrast from earlier chapters. A line keeps the same
+steepness. A quadratic bends. The extra power of $x$ is what creates
+that bend.
+
 Here is a polynomial:
 
 $$ax^2 + bx + c$$
@@ -135,6 +139,8 @@ unknown — the variable you're either solving for, or letting run freely
 while you watch what the output does. When you write $y = ax^2 + bx + c$,
 $y$ is the output — the value the polynomial produces for each value of $x$.
 
+This means the coefficients shape the curve, while $x$ moves along it.
+
 Each piece — $ax^2$, $bx$, $c$ — is called a **term**. Count the terms
 and you know you have three. The $c$ term has no $x$ at all; it's a
 plain number, a constant.
@@ -144,6 +150,8 @@ $ax^2 + bx + c$ the highest power is 2, so the degree is 2. Degree-2
 polynomials are called **quadratics**. Degree-1 polynomials — like
 $3x + 7$ — are the linear equations from Vol 2. Degree-3 polynomials
 are called cubics, and so on.
+
+This means the degree tells you what kind of behaviour to expect.
 
 Why does the $x^2$ term make the graph curve? Because $x^2$ grows faster
 than $x$. When $x = 2$, $x^2 = 4$. When $x = 10$, $x^2 = 100$. The
@@ -155,6 +163,9 @@ The negative $b$ means the straight-line part is pulling down, and the
 positive $c$ shifts the whole thing up by 6 units. The coefficient $a = 1$
 means the parabola opens upward — a positive $a$ always curves upward,
 a negative $a$ always curves downward.
+
+This means the sign of $a$ tells you whether the graph has a minimum
+or a maximum.
 
 ## The method
 
@@ -187,6 +198,8 @@ The pattern is worth noticing. With $(x + 3)(x + 2)$, the number in
 the middle ($5$) is the sum of 3 and 2. The constant term ($6$) is their
 product. That observation is what makes factoring work in reverse.
 
+This means expanding and factoring are inverse ideas.
+
 ### Part b: Factoring
 
 Factoring means breaking a polynomial back into the brackets that produced
@@ -200,6 +213,8 @@ $$6x^2 + 9x = 3x(2x + 3)$$
 The common factor here is $3x$. Dividing both terms by $3x$ gives the
 bracket. Always check for a common factor first — it simplifies what
 comes next.
+
+This means factoring should start with the simplest shared structure.
 
 **Method 2: Difference of squares.** When you have two perfect squares
 separated by a minus sign, it factors as:
@@ -216,6 +231,8 @@ This works because the middle terms cancel. It doesn't work if the sign
 between the squares is positive — $x^2 + 25$ doesn't factor over the
 real numbers.
 
+This means the pattern needs both perfect squares and a minus sign.
+
 **Method 3: Factoring a trinomial $ax^2 + bx + c$.** When $a = 1$, look
 for two numbers that multiply to $c$ and add to $b$.
 
@@ -225,6 +242,9 @@ You need two numbers that multiply to $6$ and add to $-5$. Try: $-2$ and
 $-3$. Product: $(-2)(-3) = 6$. Sum: $(-2) + (-3) = -5$. Yes.
 
 $$x^2 - 5x + 6 = (x - 2)(x - 3)$$
+
+This means factoring a trinomial is a search for two numbers that fit
+both the sum and the product condition.
 
 When $a \neq 1$, try the **grouping method** (also called the $ac$
 method). Multiply $a$ by $c$, find two numbers with that product and sum
@@ -245,6 +265,9 @@ $$x(2x + 1) + 3(2x + 1) = (x + 3)(2x + 1)$$
 
 Both terms contain the factor $(2x + 1)$, so it can be pulled out — the
 same distributive law used in expanding, run backwards.
+
+This means grouping turns a harder trinomial into a familiar
+common-factor problem.
 
 Check by expanding: $(x + 3)(2x + 1) = 2x^2 + x + 6x + 3 = 2x^2 + 7x + 3$. Yes.
 
@@ -267,6 +290,9 @@ $$(x - 2)(x - 3) = 0$$
 Either $(x - 2) = 0$ or $(x - 3) = 0$. So $x = 2$ or $x = 3$.
 
 Check both: $4 - 10 + 6 = 0$. Yes. $9 - 15 + 6 = 0$. Yes.
+
+This means solving by factoring finds the x-values where the polynomial
+becomes zero.
 
 **Solving with the quadratic formula.** Not every quadratic factors
 neatly. For any quadratic $ax^2 + bx + c = 0$, the solutions are always:
@@ -298,6 +324,8 @@ The **roots** are where the parabola crosses the x-axis — the values of
 $x$ where $y = 0$. These are exactly the solutions to $ax^2 + bx + c = 0$.
 Factoring gives you the roots. The roots are the x-intercepts of the graph.
 
+This means solving the equation and reading x-intercepts are the same task.
+
 The **vertex** is the turning point — the very top of a downward parabola
 (the maximum) or the very bottom of an upward one (the minimum). The
 x-coordinate of the vertex is:
@@ -311,6 +339,8 @@ For $y = x^2 - 5x + 6$: $x_v = -(-5)/(2 \cdot 1) = 5/2 = 2.5$. Then
 $y = (2.5)^2 - 5(2.5) + 6 = 6.25 - 12.5 + 6 = -0.25$. The vertex is
 at $(2.5, -0.25)$ — the minimum point, halfway between the two roots at
 $x = 2$ and $x = 3$.
+
+This means the vertex summarises the turning behaviour of the parabola.
 
 ```{ojs}
 //| echo: false
@@ -517,6 +547,9 @@ The vertex — the highest point — is at $t = 14/(2 \times 4.9) = 14/9.8
 \approx 1.43$ s, at height $h(1.43) = 14(1.43) - 4.9(1.43)^2 \approx
 20.02 - 10.02 \approx 10$ m.
 
+This means one quadratic can answer several different questions about
+the same motion.
+
 ```{ojs}
 //| echo: false
 viewof ballH0 = Inputs.range([0, 5], { value: 0, step: 0.5, label: "Initial height h₀ (m)" })
@@ -639,6 +672,8 @@ $$x_v = -\frac{20}{2 \times (-1)} = 10 \text{ m}$$
 Length $= 20 - 10 = 10$ m. Area $= 10 \times 10 = 100$ m². A square
 encloses the most area for a given perimeter.
 
+This means the vertex can represent the best possible design choice.
+
 ---
 
 **Example 3 (biz) — maximum revenue from a pricing function**
@@ -659,6 +694,9 @@ per week.
 To confirm it's a maximum and not a minimum: $a = -2 < 0$, so the parabola
 opens downward. The vertex is the top. Any price above or below $15 gives
 less revenue.
+
+This means the sign of the quadratic term quickly tells you what kind
+of optimum you have.
 
 ---
 
@@ -688,7 +726,12 @@ Evaluating a polynomial at a specific value — like checking the height at
 $t = 1$ or $t = 2$ — is a calculation every game engine runs many times
 per second to determine where characters and objects are.
 
+This means polynomial models can directly control motion and timing.
+
 ## Where this goes
+
+This chapter turns curved relationships into algebra you can expand,
+factor, solve, and interpret.
 
 The natural next step is **Vol 3, Chapter 4: Functions and relations**.
 A quadratic is a function — it takes an $x$ value and produces a $y$

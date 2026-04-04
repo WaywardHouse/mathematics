@@ -136,6 +136,9 @@ Now name the three sides relative to $\theta$:
 - The **adjacent** side is the one next to $\theta$ that isn't the
   hypotenuse — the side $\theta$ "leans against".
 
+This means the names opposite and adjacent can change if you choose a
+different angle.
+
 The three trig ratios are:
 
 $$\sin(\theta) = \frac{\text{opposite}}{\text{hypotenuse}}$$
@@ -153,6 +156,9 @@ Read it: "the tangent of theta equals opposite over adjacent."
 The memory aid is **SOH-CAH-TOA**: Sine = Opposite/Hypotenuse,
 Cosine = Adjacent/Hypotenuse, Tangent = Opposite/Adjacent. It's a
 mnemonic, not mathematics — use it until you don't need it any more.
+
+This means the real task is not memorising letters. It is identifying
+which sides belong in the ratio for the angle you chose.
 
 ```{ojs}
 //| echo: false
@@ -291,6 +297,8 @@ viewof triHyp = Inputs.range([1, 10], {
 You know an angle and one side. You want another side. Pick the ratio
 that connects what you know to what you want.
 
+This means trig starts with a side-labeling decision, not with a calculator.
+
 **Example.** A ramp rises 0.5 m. The angle at the base is 4°. How
 long is the ramp surface?
 
@@ -309,6 +317,8 @@ $$\text{hyp} \approx \frac{0.5}{0.0698} \approx 7.2 \text{ m}$$
 
 The ramp needs to be about 7.2 m long.
 
+This means a very small angle needs a much longer ramp than people often expect.
+
 ### Finding an unknown angle
 
 You know two sides. You want the angle between them. Use the inverse
@@ -318,6 +328,9 @@ $\sin^{-1}$ reads as "inverse sine" or "arcsine". It asks: what angle
 has this sine value? If $\sin(\theta) = 0.5$, then
 $\theta = \sin^{-1}(0.5) = 30°$. The $^{-1}$ notation means "undo
 the sine" — it does not mean "one over sine."
+
+This means inverse trig functions reverse the direction of the question:
+from ratio back to angle.
 
 Similarly, $\cos^{-1}$ and $\tan^{-1}$ undo the cosine and tangent
 respectively. All three inverse functions work the same way: give them
@@ -337,6 +350,8 @@ Apply inverse tangent to both sides:
 $$\theta = \tan^{-1}(0.4615) \approx 24.8°$$
 
 The diagonal meets the long side at about 25°.
+
+This means once you know a side ratio, the angle is determined.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -374,6 +389,9 @@ $$\text{height} = 40 \times 1.8807 \approx 75.2 \text{ m}$$
 The mast is approximately 75 m tall. Check: $\tan^{-1}(75.2/40)
 = \tan^{-1}(1.880) \approx 62°$. Yes.
 
+This means an angle measurement can replace a direct height measurement
+when the object is hard to reach.
+
 ---
 
 **Example 2 — Rope from a fence post (geometry/practical)**
@@ -398,6 +416,8 @@ $$\text{horizontal component} = 80 \times 0.5736 \approx 45.9 \text{ N}$$
 
 The peg must hold against about 46 N of horizontal pull.
 
+This means trig is useful for splitting one force into its components.
+
 ---
 
 **Example 3 — Finding the ramp angle for a target slope (science/engineering)**
@@ -414,6 +434,8 @@ $$\tan(\theta) = \frac{1}{8} = 0.125$$
 $$\theta = \tan^{-1}(0.125) \approx 7.1°$$
 
 The ramp makes an angle of about 7° with the floor.
+
+This means a simple slope ratio can be turned into an angle by tangent.
 
 ---
 
@@ -434,6 +456,8 @@ $$y' = 5 \times \sin(40°) \approx 5 \times 0.6428 \approx 3.21$$
 
 The object moves to approximately $(3.83,\ 3.21)$. This is the core of
 every 2D rotation in a game engine.
+
+This means trig can convert a distance-and-angle description into coordinates.
 
 ```{ojs}
 //| echo: false
@@ -567,6 +591,9 @@ viewof elevDist = Inputs.range([5, 30], {
 ```
 
 ## Where this goes
+
+This chapter extends geometry by turning angles into usable numerical
+relationships.
 
 The three ratios in this chapter are functions — you put in an angle
 and get out a number. **Volume 3, Chapter 4** (Functions and relations)

@@ -131,6 +131,8 @@ $$i^2 = -1$$
 
 That's the whole definition. $i$ is the number whose square is $-1$. It's not
 a number on the real number line — it's something new.
+This means complex numbers do not extend the number line by stretching it.
+They extend arithmetic by adding a new direction.
 
 From this one rule, powers of $i$ cycle in a pattern:
 
@@ -138,6 +140,8 @@ $$i^1 = i \qquad i^2 = -1 \qquad i^3 = -i \qquad i^4 = 1 \qquad i^5 = i \qquad \
 
 Every four powers, the cycle repeats. That's a hint that $i$ has something
 to do with rotation — four quarter-turns bring you back to where you started.
+This means repeated multiplication by $i$ behaves more like turning than like
+moving left or right on a line.
 
 ### Complex numbers
 
@@ -149,6 +153,8 @@ Read it as: "the real part $a$, plus $b$ times $i$." Here $a$ and $b$ are
 ordinary real numbers. $a$ is called the **real part** of $z$, written
 $\operatorname{Re}(z)$. $b$ is called the **imaginary part**, written
 $\operatorname{Im}(z)$.
+This means a complex number keeps the familiar real-number part, then adds a
+second part that tracks how much of the new $i$-direction is present.
 
 Examples: $3 + 4i$, $-2 + i$, $5$ (which is $5 + 0i$), $3i$ (which is $0 + 3i$).
 
@@ -163,6 +169,8 @@ is the point three units right and four units up.
 This is the **Argand diagram**, or the **complex plane**. The horizontal axis
 is the real line you already know. The vertical axis is entirely imaginary
 numbers. Every complex number lives at exactly one point in this plane.
+This means complex numbers are easier to understand as positions in a plane
+than as mysterious symbols attached to square roots of negatives.
 
 ```{ojs}
 //| echo: false
@@ -292,6 +300,9 @@ $$(3 + 4i) + (1 - 2i) = (3 + 1) + (4 - 2)i = 4 + 2i$$
 
 $$(3 + 4i) - (1 - 2i) = (3 - 1) + (4 - (-2))i = 2 + 6i$$
 
+This means addition and subtraction treat the real and imaginary parts as two
+separate coordinates.
+
 **Multiplying** uses FOIL (expand like brackets), then replace every $i^2$
 with $-1$.
 
@@ -305,6 +316,8 @@ $$= 3 - 6i + 4i - 8(-1) = 3 - 6i + 4i + 8 = 11 - 2i$$
 
 The key move: $i^2$ always becomes $-1$. That's the entire rule for complex
 multiplication.
+This means complex multiplication still follows ordinary algebra, but every
+time a pair of $i$'s appears it folds back into a real number.
 
 **Dividing** requires a trick. A complex denominator means the fraction can't
 be split into real and imaginary parts yet — you need a real number on the
@@ -328,6 +341,9 @@ Numerator: $3 + 6i + 4i + 8i^2 = 3 + 10i - 8 = -5 + 10i$
 
 Result: $\dfrac{-5 + 10i}{5} = -1 + 2i$
 
+This means the conjugate is the tool that converts a messy complex denominator
+into an ordinary real one.
+
 ### Part 2: Modulus and argument
 
 The **modulus** of $z = a + bi$, written $|z|$, is its distance from the
@@ -336,6 +352,8 @@ origin in the complex plane. By Pythagoras:
 $$|z| = \sqrt{a^2 + b^2}$$
 
 For $z = 3 + 4i$: $|z| = \sqrt{9 + 16} = \sqrt{25} = 5$.
+This means the modulus tells you how far the number is from zero, not where it
+lies on a line but where it sits in the plane.
 
 The **argument** of $z$, written $\arg(z)$, is the angle the line from the
 origin to $z$ makes with the positive real axis. Measured in radians
@@ -351,6 +369,8 @@ For $z = 3 + 4i$: $\arg(z) = \arctan(4/3) \approx 0.927$ radians ($\approx 53.1�
 
 Together, modulus and argument give two ways to describe the same point:
 Cartesian form $a + bi$ and polar form $r \angle \theta$.
+This means every complex number can be described either by its horizontal and
+vertical parts, or by its size and direction.
 
 ### Part 3: Polar form and Euler's formula
 
@@ -366,6 +386,7 @@ $$z = r(\cos\theta + i\sin\theta)$$
 
 This is **polar form**. Read it as: go distance $r$ from the origin, at angle
 $\theta$ from the positive real axis.
+This means polar form packages the geometry directly: length first, then angle.
 
 Now for the extraordinary fact. **Euler's formula** says:
 
@@ -382,6 +403,8 @@ $$z = re^{i\theta}$$
 
 This is often the cleanest way to write a complex number when you're
 multiplying, dividing, or raising to a power.
+This means exponentials are not separate from trigonometry here; they are a
+compact way to encode rotation.
 
 The famous identity $e^{i\pi} + 1 = 0$ is just the special case $\theta = \pi$:
 $e^{i\pi} = \cos\pi + i\sin\pi = -1 + 0i = -1$.
@@ -508,6 +531,8 @@ $$z^n = (re^{i\theta})^n = r^n e^{in\theta} = r^n(\cos n\theta + i\sin n\theta)$
 
 This is **de Moivre's theorem**. To find the $n$th power of a complex number:
 raise the modulus to the $n$th power, multiply the argument by $n$.
+This means powers of complex numbers are easiest in polar form because
+multiplication becomes "stretch and rotate."
 
 Example: find $(1 + i)^4$.
 
@@ -522,6 +547,8 @@ $$(1 + i)^4 = (\sqrt{2})^4 \cdot e^{i \cdot 4 \cdot \pi/4} = 4 \cdot e^{i\pi} = 
 
 Check by direct multiplication: $(1+i)^2 = 1 + 2i - 1 = 2i$. Then
 $(2i)^2 = 4i^2 = -4$. Matches.
+This means polar form is not changing the answer; it is giving a faster route
+to the same answer.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -562,6 +589,8 @@ $$\arg(Z) = \arctan\!\left(\frac{-30}{50}\right) \approx -30.96°$$
 
 The negative angle means the voltage lags behind the current by about 31°,
 which is the expected behaviour for a capacitive circuit.
+This means the same complex number records two useful facts at once: overall
+size and phase shift.
 
 ---
 
@@ -580,6 +609,8 @@ $$|\psi|^2 = \left(\frac{3}{5}\right)^2 + \left(\frac{4}{5}\right)^2 = \frac{9}{
 A probability of 1 means the particle is certain to be found in this state.
 The amplitude is normalised — its modulus is 1. This is a constraint
 quantum mechanics imposes on all valid probability amplitudes: $|\psi| = 1$.
+This means the modulus turns a complex amplitude into a measurable physical
+quantity.
 
 ---
 
@@ -608,8 +639,14 @@ $$= \frac{1}{\sqrt{2}}(3 - i + 2) = \frac{1}{\sqrt{2}}(5 - i) = \frac{5}{\sqrt{2
 In polar terms: multiplication by $W$ kept the modulus the same (since
 $|W| = 1$) and rotated the point by $-45°$. The FFT is, at its core, a
 very efficient way to apply many such rotations simultaneously.
+This means FFT arithmetic works because complex multiplication can rotate data
+without changing its size.
 
 ## Where this goes
+
+This chapter began with a quadratic equation that had no real solution, then
+showed that the same new arithmetic also describes rotation, phase, and waves.
+The next destinations build on exactly that shift.
 
 **Polynomials (Vol 3 Ch 3)** — every polynomial with real coefficients that
 has no real roots has complex roots. The quadratic formula $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$

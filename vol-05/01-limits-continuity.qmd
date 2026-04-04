@@ -132,6 +132,8 @@ at $x = a$.
 
 All three situations share the same structure: a value is *approached*
 without necessarily being *reached*. That is the concept of a limit.
+This means limits let you describe behaviour exactly at the places where
+ordinary evaluation becomes unreliable.
 
 ## What the notation is saying
 
@@ -151,6 +153,8 @@ Every piece matters:
 The limit says nothing about $f(a)$ itself. The function might be defined
 at $a$, undefined at $a$, or defined but with the wrong value. The limit
 only asks about the *approach*.
+This means "what happens near the point" and "what happens at the point" are
+different questions, and calculus keeps them separate on purpose.
 
 ### One-sided limits
 
@@ -166,6 +170,8 @@ $$\lim_{x \to a^+} f(x)$$
 
 is the **right-hand limit** — the value $f(x)$ approaches as $x$ comes in
 from values *greater than* $a$. Read it: *the limit from the right*.
+This means one-sided limits are the tool for checking whether the two sides of
+a function agree at a boundary.
 
 ::: {.callout-note}
 **The two-sided limit exists if and only if both one-sided limits exist and
@@ -215,6 +221,8 @@ Cases 2 and 3 are genuinely different situations: in Case 2 you have a
 value but it conflicts with the limit; in Case 3 you simply have nothing.
 Both are called *removable discontinuities* because the fix — redefining
 or defining $f(a) = L$ — is the same in both cases.
+This means continuity fails here for a local reason only: the surrounding
+behaviour already agrees on what the value should be.
 
 ```{ojs}
 //| echo: false
@@ -362,6 +370,8 @@ the function has no break at that point — then:
 $$\lim_{x \to a} f(x) = f(a)$$
 
 Just substitute. This always works when no algebraic obstruction exists.
+This means direct substitution works whenever the function behaves normally at
+the point you are approaching.
 
 **When to use it:** Try this first. If the substitution gives a real number,
 you're done.
@@ -374,6 +384,8 @@ $$\lim_{x \to 3} (x^2 + 2x - 1) = 3^2 + 2(3) - 1 = 9 + 6 - 1 = 14$$
 
 The limit is 14. The function is a polynomial — continuous everywhere — so
 direct substitution is valid at every real number.
+This means polynomials are the simplest case: nearby behaviour and actual
+value already match.
 
 **When it fails:** If substitution gives $\frac{0}{0}$, $\frac{\infty}{\infty}$,
 or another indeterminate form, you need one of the other techniques.
@@ -408,6 +420,8 @@ $$\lim_{x \to 2} \frac{x^2 - 4}{x - 2} = \lim_{x \to 2}(x + 2) = 2 + 2 = 4$$
 
 The cancellation is legal only because we never set $x = 2$ — the limit
 asks what happens *as* $x$ approaches 2, not *at* $x = 2$.
+This means factoring does not change the nearby behaviour of the function; it
+reveals the simpler rule hidden behind the removable discontinuity.
 
 ---
 
@@ -444,6 +458,8 @@ $$\frac{x}{x(\sqrt{x+4} + 2)} = \frac{1}{\sqrt{x+4} + 2}$$
 $$\lim_{x \to 0} \frac{\sqrt{x+4} - 2}{x} = \frac{1}{\sqrt{0+4} + 2} = \frac{1}{2 + 2} = \frac{1}{4}$$
 
 The limit is $\frac{1}{4}$.
+This means rationalising removes the square-root expression that is causing
+the indeterminate form.
 
 ---
 
@@ -478,6 +494,8 @@ $$\lim_{x \to 3} f(x) \text{ does not exist}$$
 Note that $f(3) = 5$ is defined — but the two-sided limit still fails to
 exist because the one-sided limits disagree. The value at the point is
 irrelevant to whether the limit exists.
+This means a function can have a value at a point and still fail to have a
+two-sided limit there.
 
 ---
 
@@ -495,6 +513,8 @@ conditions hold:
 
 If any condition fails, $f$ is **discontinuous at $a$**.
 :::
+This means continuity is a three-part agreement: the value exists, the limit
+exists, and both are the same.
 
 Informally: a function is continuous at a point if you can draw through
 that point without lifting your pen. The limit and the value agree.
@@ -521,6 +541,8 @@ The graph has a vertical asymptote at $x = a$.
 
 Example: $h(x) = \dfrac{1}{x}$ at $x = 0$. As $x \to 0^+$, $h(x) \to +\infty$.
 As $x \to 0^-$, $h(x) \to -\infty$.
+This means the type of discontinuity tells you *why* continuity failed, not
+just that it failed.
 
 ```{ojs}
 //| echo: false
@@ -705,6 +727,9 @@ In plain language: however small a target band you set around $L$ (the
 $\varepsilon$-band), I can find a window around $a$ (the $\delta$-window)
 such that every $x$ inside the window — but not equal to $a$ itself —
 sends $f(x)$ inside the target band.
+This means no matter how tightly you specify the output window around $L$, the
+inputs can be restricted tightly enough around $a$ to force the function into
+that window.
 :::
 
 **One worked example.** Prove that $\lim_{x \to 2} 3x = 6$.
@@ -726,6 +751,8 @@ This tells us to choose $\delta = \varepsilon/3$.
 $$|3x - 6| = 3|x - 2| < 3 \cdot \frac{\varepsilon}{3} = \varepsilon$$
 
 The condition is satisfied for every $\varepsilon > 0$. The limit is 6. $\square$
+This means the whole epsilon-delta proof is a controlled translation from an
+allowed output error back to a sufficient input error.
 
 ::: {.callout-note}
 **Why this works — the logical structure.**
@@ -858,6 +885,10 @@ has a structural break at $t = 5$ that must be accounted for, not patched
 over.
 
 ## Where this goes
+
+This chapter took the informal idea of "getting closer and closer" and turned
+it into a precise language for analysing functions. The next chapter uses that
+language to define the derivative itself.
 
 **Toward differential calculus (Chapter 2).** The derivative of $f$ at a
 point $a$ is defined as:

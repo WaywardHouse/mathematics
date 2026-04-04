@@ -141,6 +141,8 @@ We'll write $\sum$ (capital sigma, the Greek letter S) to mean "add up all the t
 $$\sum_{\text{all } k} P(X = k) = 1$$
 
 This is just saying that *something* must happen.
+This means a distribution is complete: every possible outcome has to receive a
+share of the total probability mass.
 
 ### Mean, variance, and standard deviation
 
@@ -155,6 +157,8 @@ $$\mu = \sum_k k \cdot P(X = k)$$
 
 Read this as: multiply each possible value by its probability, then add
 everything up. It is a probability-weighted average.
+This means the mean is the balance point of the whole distribution, not just
+the middle of the listed values.
 
 **The variance** $\sigma^2$ (sigma-squared) measures how spread out the
 distribution is — how far values tend to stray from the mean on average.
@@ -163,6 +167,8 @@ putting it back in the same units as $X$ itself.
 
 The key intuition: $\sigma$ measures spread, not location. Two
 distributions can have the same mean but look completely different.
+This means centre and spread answer different questions, and both are needed
+to describe a distribution properly.
 
 | Distribution | Mean $\mu$ | Std dev $\sigma$ | What it looks like |
 |---|---|---|---|
@@ -189,6 +195,8 @@ The binomial distribution answers one specific question:
 
 If your situation fits all four, the count of successes $X$ follows a
 **binomial distribution**, written $X \sim B(n, p)$.
+This means the binomial model applies only when the trials really have the
+same success probability and are independent.
 
 ### Deriving the formula
 
@@ -233,6 +241,8 @@ Three parts:
 - $(1-p)^{n-k}$: the probability that each of the remaining trials is a failure
 
 Multiply the parts: count of arrangements × probability of each arrangement.
+This means the binomial formula separates the problem into two pieces:
+how many success-failure patterns work, and how likely each such pattern is.
 
 ### Mean and variance of the binomial
 
@@ -245,6 +255,8 @@ These make intuitive sense. If you flip a fair coin 100 times ($n=100$,
 $p=0.5$), you'd expect 50 heads on average: $\mu = 100 \times 0.5 = 50$.
 The standard deviation is $\sqrt{100 \times 0.5 \times 0.5} = \sqrt{25} = 5$,
 meaning a "typical" result is within about 5 heads of 50.
+This means the mean tells you the expected count of successes, while the
+standard deviation tells you how much fluctuation to expect around it.
 
 ```{ojs}
 //| echo: false
@@ -425,6 +437,8 @@ curve centred at $\mu$ and spreading out by $\sigma$ in each direction
 deviation — to find the spread in the original units, take the square
 root: $\sigma = \sqrt{\sigma^2}$).
 You specify it by two numbers only: the mean and the variance.
+This means the normal distribution is a family of curves, all with the same
+bell shape but shifted and stretched by $\mu$ and $\sigma$.
 
 ### Why the bell curve appears everywhere
 
@@ -439,6 +453,8 @@ does.
 This is the **central limit theorem**. You won't prove it at this stage,
 but you'll use it, and you'll see it confirmed every time you look at
 data from a natural process.
+This means the bell curve matters because sums and averages of many small
+effects tend to produce it.
 
 ### The 68-95-99.7 rule
 
@@ -452,6 +468,8 @@ For any normal distribution $N(\mu, \sigma^2)$:
 
 This is sometimes called the **empirical rule**. It gives you a quick
 sense of what is "normal" variation and what is surprising.
+This means standard deviations give a practical scale for judging how unusual
+a value is in a normal setting.
 
 If exam scores are $N(65, 144)$ — so $\mu = 65$ and $\sigma = 12$ —
 then about 95% of students score between $65 - 24 = 41$ and
@@ -477,6 +495,8 @@ $$z = \frac{x - \mu}{\sigma}$$
 The value $z$ is called a **z-score**. It tells you how many standard
 deviations above (positive) or below (negative) the mean the value $x$
 sits.
+This means standardising translates any normal-distribution problem into one
+common scale measured in standard deviations.
 
 Once you have $z$, you look up $P(Z \leq z)$ in a standard normal
 table or compute it on a calculator. This single table handles all
@@ -490,6 +510,8 @@ $$z = \frac{83 - 65}{12} = \frac{18}{12} = 1.5$$
 A score of 83 sits 1.5 standard deviations above the mean. A table gives
 $P(Z \leq 1.5) \approx 0.933$, so about 93.3% of students scored 83
 or below — and about 6.7% scored above 83.
+This means a z-score is a position statement: it tells you where a value sits
+relative to the rest of the distribution.
 
 ```{ojs}
 //| echo: false
@@ -722,6 +744,8 @@ About 24% of batches of 8 will contain exactly 2 defectives.
 
 Check: the mean number of defectives is $\mu = np = 8 \times 0.15 = 1.2$,
 so 2 is slightly above average — a 24% probability is plausible.
+This means "slightly above average" does not imply "rare"; the spread matters
+as well.
 
 ```{ojs}
 //| echo: false
@@ -827,6 +851,8 @@ There is about a 38% probability that at least 8 of 10 patients are
 cured. Note: you would use the complement approach when the "at least"
 threshold is low — e.g., $P(X \geq 2)$ is much easier to compute as
 $1 - P(X=0) - P(X=1)$ than to sum 9 terms directly.
+This means the complement is often a computational shortcut for cumulative
+binomial probabilities.
 
 ```{ojs}
 //| echo: false
@@ -866,6 +892,8 @@ A quick check with the 68-95-99.7 rule: 80 is $\frac{15}{12} = 1.25$
 standard deviations above the mean, which is between 1$\sigma$ and
 2$\sigma$. The rule says about 16% of values lie beyond 1$\sigma$, so
 10.6% beyond 1.25$\sigma$ is consistent.
+This means exact z-score calculations refine the rough intuition supplied by
+the empirical rule.
 
 ```{ojs}
 //| echo: false
@@ -903,6 +931,8 @@ A score of about 80 is the distinction threshold.
 Note the structure: for a forward problem you go $x \to z \to$ probability.
 For a reverse problem you go probability $\to z \to x$. The formula
 $x = \mu + z\sigma$ is just the standardisation formula solved for $x$.
+This means reverse-lookup problems use the same machinery as ordinary
+probability questions, only in the opposite direction.
 
 ```{ojs}
 //| echo: false
@@ -915,6 +945,10 @@ makeStepperHTML(4, [
 ```
 
 ## Where this goes
+
+This chapter turned event-based probability into full models for random
+variables. The next chapter uses those models to judge whether observed sample
+results are ordinary or statistically persuasive.
 
 **Statistical inference (Chapter 3)** is the direct next step. A
 distribution gives you the expected shape of data from a random process.

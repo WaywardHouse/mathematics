@@ -147,6 +147,8 @@ The discrete sequence only sees the ratio $f/f_s$. Two different continuous
 frequencies can therefore produce sampled sequences that are indistinguishable,
 if the sampling frequency is too low. The samples no longer carry enough
 information to tell you which continuous oscillation was actually present.
+This means aliasing is not a small numerical error. It is a structural loss of
+information created at the moment of sampling.
 
 The **Nyquist–Shannon sampling theorem** states the safe condition:
 

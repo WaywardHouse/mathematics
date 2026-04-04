@@ -132,6 +132,8 @@ $$\int_{-L}^{L}\cos\!\left(\frac{m\pi x}{L}\right)\sin\!\left(\frac{n\pi x}{L}\r
 These follow from the product-to-sum identities. Take the $m \neq n$ case of the cosine integral as an example: the identity $\cos A \cos B = \tfrac{1}{2}[\cos(A-B)+\cos(A+B)]$ turns the product into a sum of two cosines at frequencies $(m-n)\pi/L$ and $(m+n)\pi/L$. Integrating either of those over exactly one complete period gives zero — the positive and negative half-cycles cancel. When $m = n$ the first term becomes $\cos(0) = 1$, which integrates to $2L$, accounting for the factor of $L$ in the diagonal case. The sine-sine and cosine-sine cases follow by the same argument with the analogous identities.
 
 They mean that multiplying the Fourier series by $\cos(m\pi x/L)$ and integrating over $[-L, L]$ kills every term except the one with $n = m$ — which is exactly how $a_m$ is isolated.
+This means orthogonality is the filtering mechanism behind the coefficient
+formulas: integration keeps the matching frequency and cancels the rest.
 
 Think of the trigonometric functions as a set of directions in function space that are pairwise perpendicular. The Fourier coefficients are the projections of $f$ onto those directions.
 
@@ -550,6 +552,10 @@ $$f(x) = \sum_{n=1}^{\infty} b_n\sin\!\left(\frac{n\pi x}{L}\right), \quad b_n =
 
 **Which to choose?** The boundary conditions of the physical problem decide: if $f(0) = f(L) = 0$ is required (as in a fixed-end vibrating string or a rod with fixed-temperature endpoints), use the sine extension. If the derivative $f'(0) = f'(L) = 0$ is required (insulated endpoints), use the cosine extension.
 
+For heat problems, "insulated" means no heat flux through the boundary.
+Because heat flux is proportional to the temperature gradient, that gives the
+condition $u_x = 0$ at the endpoints.
+
 <!-- STUDENT: This is the right guidance, but it assumes the reader already knows what "insulated endpoints" means in terms of a derivative condition. First time this connection (insulated ↔ zero derivative) appears without explanation. The heat equation section in the PDE chapter makes this clearer; a forward pointer here, or one sentence of justification ("insulated means no heat flux, which means $u_x = 0$"), would help. -->
 
 ---
@@ -565,6 +571,9 @@ where the **complex Fourier coefficients** are:
 $$c_n = \frac{1}{2L}\int_{-L}^{L} f(x)\,e^{-in\pi x/L}\,dx$$
 
 The relationship to the real coefficients: $c_0 = a_0/2$, $c_n = (a_n - ib_n)/2$, $c_{-n} = (a_n + ib_n)/2 = \overline{c_n}$ for $n \geq 1$.
+
+This means the complex form does not introduce new information. It repackages
+the sine and cosine coefficients into a single symmetric sequence.
 
 <!-- STUDENT: The derivation of why $c_n = (a_n - ib_n)/2$ is not shown — it follows from Euler's formula substituting $\cos\theta = (e^{i\theta}+e^{-i\theta})/2$ and $\sin\theta = (e^{i\theta}-e^{-i\theta})/(2i)$, but a student who tries to check this will need to carry through the algebra themselves with no guide. One worked line showing the substitution into the $c_n$ integral would confirm the formula is not just asserted. -->
 

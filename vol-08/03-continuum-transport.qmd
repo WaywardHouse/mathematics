@@ -123,6 +123,8 @@ where:
 This one line is the template behind most continuum modelling. Change the
 meaning of $u$, $\mathbf{q}$, and $s$, and you get a different physical
 system. The bookkeeping structure stays the same.
+This means the conservation architecture is reusable: once you understand the
+balance law, many different physical theories become variations on one pattern.
 
 The divergence term matters because a continuum model is local. It does not ask
 "how much crossed the outer boundary of the whole pipe?" first. It asks what is

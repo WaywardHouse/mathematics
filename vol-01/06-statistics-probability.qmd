@@ -114,6 +114,10 @@ which number to look at.
 
 ## What the notation is saying
 
+Start with a simple list of scores: 4, 6, 7, 7, 9. We could ask two
+different questions. What is a typical score? And how spread out are
+the scores?
+
 **The mean** $\bar{x}$ is the sum of all values divided by the
 number of values. Given data $x_1, x_2, \ldots, x_n$:
 
@@ -122,12 +126,20 @@ $$\bar{x} = \frac{x_1 + x_2 + \cdots + x_n}{n} = \frac{\sum x_i}{n}$$
 The $\Sigma$ (capital sigma) means "sum all of the following."
 It is notation for a loop: add every term $x_i$ for $i = 1$ to $n$.
 
+Here, $x_1, x_2, \ldots, x_n$ are the data values, and $n$ is how many
+values there are. This means the mean is the total shared equally.
+
 **The median** is the middle value when the data are ordered.
 If there are two middle values, take their mean. The median is
 less sensitive to extreme values than the mean.
 
+This means the median tells us what sits in the middle, not what would
+happen if we shared everything equally.
+
 **The range** is maximum minus minimum. It measures total spread
 but is heavily influenced by outliers.
+
+This means range uses only the two end values.
 
 **Probability** of event $A$ is:
 
@@ -136,9 +148,15 @@ $$P(A) = \frac{\text{number of favourable outcomes}}{\text{total number of equal
 $P(A) = 0$: impossible. $P(A) = 1$: certain. All probabilities
 for a complete set of outcomes sum to 1.
 
+Here, $A$ is the event we care about. This means probability is a
+fraction of all possible outcomes.
+
 **Relative frequency**: when you can't count outcomes theoretically,
 estimate probability from data:
 $$P(A) \approx \frac{\text{number of times A occurred}}{\text{total trials}}$$
+
+This means data can give us an estimate of probability, even when we
+cannot work it out exactly in advance.
 
 ## The method
 
@@ -147,11 +165,15 @@ $$P(A) \approx \frac{\text{number of times A occurred}}{\text{total trials}}$$
 1. Add all values — to get the total.
 2. Divide by the count — to find the fair share per value.
 
+This means the mean is the equal-share value.
+
 **Computing the median**
 
 1. Order the values from least to greatest.
 2. If $n$ is odd, the median is the value at position $\frac{n+1}{2}$.
 3. If $n$ is even, average the values at positions $\frac{n}{2}$ and $\frac{n}{2}+1$.
+
+This means the median depends on order, so you must sort the data first.
 
 **Computing the range and IQR**
 
@@ -165,11 +187,15 @@ $\text{IQR} = Q3 - Q1$.
 The IQR describes the spread of the middle 50% of the data —
 it ignores the extremes at both ends.
 
+This means IQR is often more stable than range when there are outliers.
+
 **Computing probability from equally likely outcomes**
 
 1. Count total possible outcomes.
 2. Count outcomes that match event $A$.
 3. Divide.
+
+This means probability compares successful outcomes to all possible ones.
 
 ::: {.callout-note appearance="simple"}
 **Why this works**
@@ -402,6 +428,8 @@ $$66$$
 The mean and median are close, which tells you the scores are
 fairly evenly spread — no extreme result is pulling the average up or down.
 
+This means either measure gives a similar picture for this set of data.
+
 ---
 
 **Example 1b — IQR for the same dataset.**
@@ -418,6 +446,9 @@ $$\text{IQR} = Q3 - Q1 = 71 - 62 = 9$$
 
 The middle 50% of scores sit within a 9-point range.
 
+This means the centre of the data is less spread out than the full
+range suggests.
+
 ---
 
 **Example 2 — Weather probability.** Over the past 60 days, it
@@ -429,6 +460,8 @@ $$P(\text{rain}) \approx \frac{15}{60} = \frac{1}{4} = 0.25 = 25\%$$
 This is a relative frequency estimate — it uses past data rather
 than counting equally likely outcomes. The more data you have,
 the more reliable the estimate.
+
+This means 25% is an estimate from evidence, not a guarantee.
 
 ---
 
@@ -442,6 +475,8 @@ $$P(\text{football}) = \frac{5}{12}$$
 
 $$P(\text{not basketball}) = \frac{12 - 4}{12} = \frac{8}{12} = \frac{2}{3}$$
 
+This means "not basketball" includes every outcome except basketball.
+
 ---
 
 **Example 4 — Expected score.** A game show gives two options:
@@ -454,6 +489,9 @@ $$E = (0.5 \times 800) + (0.5 \times 0) = 400 + 0 = $400$$
 The expected value of spinning is $400 — higher than the certain
 $300. But "expected value" means the average across many spins,
 not a guarantee for this one spin. You could walk away with nothing.
+
+This means the best long-run average choice is not always the safest
+single choice.
 
 ---
 
@@ -674,11 +712,12 @@ viewof sim_button = Inputs.button("Simulate 100 draws")
 
 ## Where this goes
 
-This chapter gives you the vocabulary — mean, median, spread,
-probability — that makes statistical arguments legible. **Volume 6**
-develops this substantially: probability distributions, hypothesis
-testing, and regression. That is where statistics becomes a tool
-for making decisions under uncertainty rather than just summarising data.
+This chapter gives us the first tools for reading data honestly.
+We are no longer asking only "what is the answer?" We are also asking
+"how typical is it?" and "how sure are we?"
+
+**Volume 6** develops this much further: probability distributions,
+hypothesis testing, and regression.
 
 The expected value calculation in Example 4 is also the foundation
 of decision theory, financial option pricing (Black-Scholes is built
