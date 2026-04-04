@@ -420,6 +420,64 @@ heat flowing from cold to hot.
 The same applies to every constitutive law in this chapter. Continuum
 mathematics is geometry with units attached. Direction is part of the answer.
 
+```{ojs}
+//| echo: false
+{
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 720px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; align-items:end; margin-bottom:0.75rem;";
+  const wrap = document.createElement("label");
+  wrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  wrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Field slope" }));
+  const slider = document.createElement("input");
+  slider.type = "range"; slider.min = "-2"; slider.max = "2"; slider.step = "0.1"; slider.value = "1.2";
+  const out = document.createElement("span");
+  out.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  wrap.append(slider, out);
+  controls.appendChild(wrap);
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 680 240");
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const m = parseFloat(slider.value);
+    out.textContent = m.toFixed(1);
+    const text=(x,y,t,fill="#374151",size=12,anchor="middle",weight="400")=>{const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);};
+    const line=(x1,y1,x2,y2,stroke,w=1.5,dash="")=>{const l=svgEl("line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",stroke); l.setAttribute("stroke-width",w); if(dash) l.setAttribute("stroke-dasharray",dash); svg.appendChild(l);};
+    const rect=svgEl("rect"); rect.setAttribute("x","70"); rect.setAttribute("y","72"); rect.setAttribute("width","420"); rect.setAttribute("height","36"); rect.setAttribute("fill","#f8fafc"); rect.setAttribute("stroke","#cbd5e1"); svg.appendChild(rect);
+    const leftVal = 1.5 + m, rightVal = 1.5 - m;
+    text(70, 58, leftVal > rightVal ? "high field" : "low field", "#374151", 11, "start");
+    text(490, 58, leftVal > rightVal ? "low field" : "high field", "#374151", 11, "end");
+    line(90, 90, 470, 90 - 18*m, "#2563eb", 3);
+    text(280, 52, "field profile", "#2563eb", 12);
+    const dir = m > 0 ? 1 : m < 0 ? -1 : 0;
+    if (dir !== 0) {
+      line(300, 150, 300 + 90*dir, 150, "#2563eb", 3);
+      line(300 + 90*dir, 150, 300 + 90*dir - 10*dir, 145, "#2563eb", 3);
+      line(300 + 90*dir, 150, 300 + 90*dir - 10*dir, 155, "#2563eb", 3);
+      line(300, 190, 300 - 90*dir, 190, "#ef4444", 3);
+      line(300 - 90*dir, 190, 300 - 90*dir + 10*dir, 185, "#ef4444", 3);
+      line(300 - 90*dir, 190, 300 - 90*dir + 10*dir, 195, "#ef4444", 3);
+    }
+    text(300, 172, m > 0 ? "gradient points right" : m < 0 ? "gradient points left" : "zero gradient", "#374151", 12);
+    text(300, 212, dir !== 0 ? "flux points opposite" : "no net flux", "#b91c1c", 12);
+    text(560, 96, "q = -k∇T", "#374151", 13);
+    caption.textContent = "When the field rises to the right, the gradient points right. Fourier's and Fick's laws place a minus sign in front, so the flux points the other way: from high values toward low values.";
+  }
+
+  slider.addEventListener("input", redraw);
+  container.append(controls, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ::: {.callout-note appearance="simple"}
 ## Where the PDE comes from
 

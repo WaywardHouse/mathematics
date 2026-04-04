@@ -131,6 +131,71 @@ geometrically, so the influence of distant past inputs becomes negligible in
 practice. IIR filters appear in the z-transform and state-space frameworks; the
 stability rules derived later in this chapter apply to them.
 
+```{ojs}
+//| echo: false
+{
+  const width = 700, height = 230;
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 740px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; align-items:end; margin-bottom:0.75rem;";
+  const stepWrap = document.createElement("label");
+  stepWrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  stepWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Window position n" }));
+  const step = document.createElement("input");
+  step.type = "range"; step.min = "2"; step.max = "10"; step.step = "1"; step.value = "5";
+  const out = document.createElement("span");
+  out.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  stepWrap.append(step, out);
+  controls.appendChild(stepWrap);
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  const xVals = [0,1,2,4,3,5,2,1,0,2,1,0];
+  const hVals = [0.2,0.3,0.5];
+
+  function rect(x,y,w,h,fill,stroke="#cbd5e1"){const r=svgEl("rect"); r.setAttribute("x",x); r.setAttribute("y",y); r.setAttribute("width",w); r.setAttribute("height",h); r.setAttribute("fill",fill); r.setAttribute("stroke",stroke); svg.appendChild(r);}
+  function text(x,y,t,fill="#374151",size=12,anchor="middle",weight="400"){const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);}
+
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const n = parseInt(step.value,10);
+    out.textContent = `${n}`;
+    text(100, 28, "input sequence x[n]", "#374151", 12, "middle", "700");
+    text(100, 122, "filter weights h[k]", "#374151", 12, "middle", "700");
+    text(100, 202, "output sample y[n]", "#374151", 12, "middle", "700");
+    for(let i=0;i<xVals.length;i++){
+      const x = 150 + i*42;
+      const active = i >= n-2 && i <= n;
+      rect(x, 40, 34, 34, active ? "#dbeafe" : "#f8fafc", active ? "#2563eb" : "#cbd5e1");
+      text(x+17, 62, `${xVals[i]}`, active ? "#1d4ed8" : "#374151", 12);
+      text(x+17, 87, `${i}`, "#6b7280", 10);
+    }
+    for(let k=0;k<hVals.length;k++){
+      const x = 150 + (n-2+k)*42;
+      rect(x, 105, 34, 28, "#ecfdf5", "#059669");
+      text(x+17, 123, `${hVals[k].toFixed(1)}`, "#047857", 11);
+      const l=svgEl("line"); l.setAttribute("x1",x+17); l.setAttribute("x2",x+17); l.setAttribute("y1","74"); l.setAttribute("y2","105"); l.setAttribute("stroke","#059669"); l.setAttribute("stroke-dasharray","4 3"); svg.appendChild(l);
+    }
+    const y = hVals[0]*xVals[n-2] + hVals[1]*xVals[n-1] + hVals[2]*xVals[n];
+    rect(150 + n*42 - 10, 182, 54, 28, "#fef3c7", "#f59e0b");
+    text(150 + n*42 + 17, 200, `${y.toFixed(1)}`, "#b45309", 12, "middle", "700");
+    text(430, 164, `y[${n}] = 0.2x[${n-2}] + 0.3x[${n-1}] + 0.5x[${n}]`, "#374151", 12, "middle");
+    caption.textContent = "An FIR filter computes each output sample from a finite sliding window of past inputs. Moving the window makes the convolution rule visible as local weighted averaging.";
+  }
+
+  step.addEventListener("input", redraw);
+  container.append(controls, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 <!-- VIZ: Sampling and aliasing explorer. Show a continuous sine wave with adjustable frequency f and a sampling comb with adjustable sampling frequency f_s. Simultaneously display the sampled points, the reconstructed lower-frequency apparent wave, and a readout comparing true frequency to aliased frequency. Let the reader drag f past the Nyquist limit and watch the apparent discrete-time behaviour change. -->
 
 Use the controls to compare the real continuous oscillation with what the
@@ -504,6 +569,72 @@ like $a^n$, so the magnitude of $a$ decides whether repeated updates shrink or
 blow up. Exponentials become powers, and left-half-plane stability becomes
 unit-circle stability.
 :::
+
+```{ojs}
+//| echo: false
+{
+  const width = 700, height = 280;
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 740px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; align-items:end; margin-bottom:0.75rem;";
+  const wrap = document.createElement("label");
+  wrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  wrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Mode location s" }));
+  const slider = document.createElement("input");
+  slider.type = "range"; slider.min = "-1.4"; slider.max = "1.4"; slider.step = "0.02"; slider.value = "0.6";
+  const out = document.createElement("span");
+  out.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  wrap.append(slider, out);
+  controls.appendChild(wrap);
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const a = parseFloat(slider.value);
+    out.textContent = a.toFixed(2);
+    const left = { x: 40, y: 30, w: 260, h: 220 };
+    const right = { x: 380, y: 30, w: 260, h: 220 };
+    const mapSx = x => left.x + left.w * (x + 2) / 4;
+    const mapSy = y => left.y + left.h * (1 - (y + 2) / 4);
+    const mapZx = x => right.x + right.w * (x + 1.6) / 3.2;
+    const mapZy = y => right.y + right.h * (1 - (y + 1.6) / 3.2);
+    const text=(x,y,t,fill="#374151",size=12,anchor="middle",weight="400")=>{const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);};
+    const line=(x1,y1,x2,y2,stroke,w=1.5,dash="")=>{const l=svgEl("line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",stroke); l.setAttribute("stroke-width",w); if(dash) l.setAttribute("stroke-dasharray",dash); svg.appendChild(l);};
+    text(left.x + left.w/2, 20, "continuous-time s-plane", "#374151", 12, "middle", "700");
+    line(mapSx(0), mapSy(-2), mapSx(0), mapSy(2), "#9ca3af", 1.8, "5 4");
+    line(mapSx(-2), mapSy(0), mapSx(1), mapSy(0), "#6b7280", 1.5);
+    const stableShade = svgEl("rect");
+    stableShade.setAttribute("x", mapSx(-2)); stableShade.setAttribute("y", mapSy(2)); stableShade.setAttribute("width", mapSx(0)-mapSx(-2)); stableShade.setAttribute("height", mapSy(-2)-mapSy(2));
+    stableShade.setAttribute("fill","rgba(5,150,105,0.12)");
+    svg.appendChild(stableShade);
+    const pole = svgEl("circle"); pole.setAttribute("cx", mapSx(a)); pole.setAttribute("cy", mapSy(0)); pole.setAttribute("r", "6"); pole.setAttribute("fill", "#2563eb"); svg.appendChild(pole);
+    text(mapSx(-1), left.y + left.h + 18, "stable: Re(s) < 0", "#059669", 12);
+    text(mapSx(a), mapSy(0) - 10, `s = ${a.toFixed(2)}`, "#2563eb", 11);
+
+    text(right.x + right.w/2, 20, "discrete-time z-plane", "#374151", 12, "middle", "700");
+    line(mapZx(-1.6), mapZy(0), mapZx(1.6), mapZy(0), "#6b7280", 1.5);
+    line(mapZx(0), mapZy(-1.6), mapZx(0), mapZy(1.6), "#6b7280", 1.5);
+    const unit = svgEl("circle"); unit.setAttribute("cx", mapZx(0)); unit.setAttribute("cy", mapZy(0)); unit.setAttribute("r", right.w/3.2); unit.setAttribute("fill","rgba(5,150,105,0.08)"); unit.setAttribute("stroke","#059669"); unit.setAttribute("stroke-width","2"); svg.appendChild(unit);
+    const z = Math.exp(a);
+    const mode = svgEl("circle"); mode.setAttribute("cx", mapZx(z)); mode.setAttribute("cy", mapZy(0)); mode.setAttribute("r", "6"); mode.setAttribute("fill", "#f59e0b"); svg.appendChild(mode);
+    text(right.x + right.w/2, right.y + right.h + 18, "stable: |z| < 1", "#059669", 12);
+    text(mapZx(z), mapZy(0) - 10, `z ≈ ${z.toFixed(2)}`, "#b45309", 11);
+    caption.textContent = "In continuous time, decay means the mode sits left of the imaginary axis. After sampling, the corresponding discrete-time mode must sit inside the unit circle. The region changes, but the stability idea does not.";
+  }
+
+  slider.addEventListener("input", redraw);
+  container.append(controls, svg, caption);
+  redraw();
+  return container;
+}
+```
 
 ## The core method
 

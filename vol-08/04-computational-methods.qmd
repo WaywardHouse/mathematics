@@ -386,6 +386,90 @@ operators, recovering second-order accuracy in time while remaining stable for
 all step sizes. For fine spatial grids or stiff problems, solving a system at
 each step is almost always the correct exchange.
 
+```{ojs}
+//| echo: false
+{
+  const width = 700, height = 290;
+  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 740px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; align-items:end; margin-bottom:0.75rem;";
+  const dxWrap = document.createElement("label");
+  dxWrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  dxWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Δx" }));
+  const dx = document.createElement("input");
+  dx.type = "range"; dx.min = "0.05"; dx.max = "0.30"; dx.step = "0.01"; dx.value = "0.10";
+  const dxVal = document.createElement("span"); dxVal.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  dxWrap.append(dx, dxVal);
+  const dtWrap = document.createElement("label");
+  dtWrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+  dtWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Δt" }));
+  const dt = document.createElement("input");
+  dt.type = "range"; dt.min = "0.001"; dt.max = "0.04"; dt.step = "0.001"; dt.value = "0.005";
+  const dtVal = document.createElement("span"); dtVal.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
+  dtWrap.append(dt, dtVal);
+  controls.append(dxWrap, dtWrap);
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label){const box=document.createElement("div"); box.style.cssText="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;"; const k=document.createElement("div"); k.style.cssText="font-size:0.76rem; color:#6b7280;"; k.textContent=label; const v=document.createElement("div"); v.style.cssText="font-size:0.96rem; font-variant-numeric: tabular-nums;"; box.append(k,v); readout.appendChild(box); return v;}
+  const rBox = card("r = DΔt/Δx²");
+  const explicitBox = card("Explicit");
+  const implicitBox = card("Backward Euler");
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const dxv = parseFloat(dx.value), dtv = parseFloat(dt.value), D = 1;
+    dxVal.textContent = dxv.toFixed(2);
+    dtVal.textContent = dtv.toFixed(3);
+    const r = D * dtv / (dxv * dxv);
+    rBox.textContent = r.toFixed(2);
+    explicitBox.textContent = r <= 0.5 ? "stable region" : "unstable region";
+    explicitBox.style.color = r <= 0.5 ? "#166534" : "#b91c1c";
+    implicitBox.textContent = "stable for all shown points";
+    const left = 70, top = 24, plotW = 260, plotH = 220;
+    const sx = x => left + plotW * (x - 0.05) / 0.25;
+    const sy = y => top + plotH * (1 - (y - 0.001) / 0.039);
+    const line=(x1,y1,x2,y2,stroke,w=1.5,dash="")=>{const l=svgEl("line"); l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",stroke); l.setAttribute("stroke-width",w); if(dash) l.setAttribute("stroke-dasharray",dash); svg.appendChild(l);};
+    const text=(x,y,t,fill="#374151",size=12,anchor="middle",weight="400")=>{const n=svgEl("text"); n.setAttribute("x",x); n.setAttribute("y",y); n.setAttribute("fill",fill); n.setAttribute("font-size",size); n.setAttribute("text-anchor",anchor); n.setAttribute("font-weight",weight); n.textContent=t; svg.appendChild(n);};
+    line(sx(0.05), sy(0.001), sx(0.30), sy(0.001), "#6b7280");
+    line(sx(0.05), sy(0.001), sx(0.05), sy(0.04), "#6b7280");
+    text(left + plotW/2, 16, "explicit scheme", "#374151", 12, "middle", "700");
+    const boundaryPts = [];
+    for(let x=0.05;x<=0.30+1e-9;x+=0.005){ boundaryPts.push(`${sx(x)},${sy(0.5*x*x)}`); }
+    const stablePoly = svgEl("polygon");
+    stablePoly.setAttribute("points", `${sx(0.05)},${sy(0.001)} ${sx(0.30)},${sy(0.001)} ${boundaryPts.slice().reverse().join(" ")}`);
+    stablePoly.setAttribute("fill","rgba(5,150,105,0.12)");
+    stablePoly.setAttribute("stroke","none");
+    svg.appendChild(stablePoly);
+    const boundary = svgEl("polyline"); boundary.setAttribute("points", boundaryPts.join(" ")); boundary.setAttribute("fill","none"); boundary.setAttribute("stroke","#2563eb"); boundary.setAttribute("stroke-width","2.5"); svg.appendChild(boundary);
+    text(sx(0.20), sy(0.010), "stable", "#059669", 13, "middle", "700");
+    text(sx(0.14), sy(0.030), "unstable", "#b91c1c", 13, "middle", "700");
+    const pt = svgEl("circle"); pt.setAttribute("cx", sx(dxv)); pt.setAttribute("cy", sy(dtv)); pt.setAttribute("r", "5"); pt.setAttribute("fill", r <= 0.5 ? "#059669" : "#ef4444"); svg.appendChild(pt);
+    text(sx(dxv)+16, sy(dtv)-8, `(${dxv.toFixed(2)}, ${dtv.toFixed(3)})`, "#374151", 11, "start");
+    const box = svgEl("rect"); box.setAttribute("x","420"); box.setAttribute("y","44"); box.setAttribute("width","220"); box.setAttribute("height","180"); box.setAttribute("fill","#f8fafc"); box.setAttribute("stroke","#e5e7eb"); box.setAttribute("rx","10"); svg.appendChild(box);
+    text(530, 66, "implicit schemes", "#374151", 12, "middle", "700");
+    text(530, 104, "Backward Euler", "#2563eb", 12, "middle");
+    text(530, 126, "no CFL-style stability wall", "#374151", 12, "middle");
+    text(530, 162, "tradeoff:", "#6b7280", 12, "middle", "700");
+    text(530, 182, "stable for large Δt", "#059669", 12, "middle");
+    text(530, 202, "but more diffusive and costlier per step", "#b45309", 12, "middle");
+    caption.textContent = "For the explicit diffusion update, Δx and Δt cannot be chosen independently: crossing the blue boundary violates the usual r ≤ 1/2 stability condition. Implicit methods avoid that wall, but they pay for it elsewhere.";
+  }
+
+  [dx, dt].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ::: {.callout-note appearance="simple"}
 ## Discretisation always introduces error
 
