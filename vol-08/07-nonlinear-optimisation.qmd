@@ -4,7 +4,7 @@ subtitle: "Tradeoffs, constraints, and the shape of a best solution"
 chapter: 7
 volume: 8
 layer: "discipline"
-status: "draft"
+status: "review"
 
 axiom: |
   Real design problems are rarely linear, and the best answer depends on what
@@ -31,7 +31,7 @@ destinations:
     career_example: "Quantitative analyst tuning a constrained optimisation model under nonlinear risk penalties"
   - field: comp
     label: Computing and data
-    hook: "Training and tuning modern models is an optimisation problem long before it is an implementation problem."
+    hook: "Every neural-network training run is a non-convex nonlinear optimisation: the choice of objective, regulariser, and solver directly determines what the model learns."
     career_example: "ML engineer choosing objectives, constraints, and solvers for a real training pipeline"
 
 hook: |
@@ -46,7 +46,10 @@ notation_introduced:
     reads_as: "f of x bold — the objective function"
     notation_weight: 2
   - symbol: "g_i(\\mathbf{x}) \\leq 0"
-    reads_as: "g sub i of x less than or equal to zero — a constraint"
+    reads_as: "g sub i of x less than or equal to zero — an inequality constraint"
+    notation_weight: 2
+  - symbol: "h(\\mathbf{x}) = 0"
+    reads_as: "h of x equals zero — an equality constraint"
     notation_weight: 2
   - symbol: "\\nabla f"
     reads_as: "grad f — the direction of steepest local increase"
@@ -76,14 +79,14 @@ compute budget. Once the world stops being linear, "the best answer" is no
 longer a corner point on a clean polygon. It is a shape in a curved space,
 and getting there becomes part geometry, part computation, part judgment.
 
-This chapter closes Volume 8 because it gathers together the themes that the
-earlier chapters developed separately. Simulation creates a model of system
-behaviour. Estimation tells you what is known and uncertain. Reliability tells
-you what risk costs you. Optimisation turns all of that into a decision rule.
+This chapter gathers the themes that the earlier chapters developed separately.
+Simulation creates a model of system behaviour. Estimation tells you what is
+known and uncertain. Reliability tells you what risk costs you. Optimisation
+turns all of that into a decision rule.
 
-The mathematics changes here because the objective and constraints are no longer
-linear in the design variables. That means the geometry changes, the algorithms
-change, and the meaning of "best" becomes more local and more conditional.
+When the objective and constraints are nonlinear in the design variables, the
+geometry changes, the algorithms change, and the meaning of "best" becomes more
+local and more conditional.
 
 ---
 
@@ -110,25 +113,61 @@ $$\mathbf{x}_{k+1} = \mathbf{x}_k - \alpha \nabla f(\mathbf{x}_k)$$
 The negative gradient points in the direction of steepest local decrease.
 Choose a step size $\alpha$, move, and repeat.
 
-This sounds easy. In practice the difficulties are exactly the ones you would
-expect in a curved space: the descent direction is only locally good, the step
-size can be too large or too small, and constraints can make the locally best
-direction infeasible.
+In practice the difficulties are exactly the ones you would expect in a curved
+space: the descent direction is only locally good, the step size can be too
+large or too small, and constraints can make the locally best direction
+infeasible.
+
+**Convergence and local optima.** Gradient descent converges to a *local*
+minimum, not necessarily a global one. For *convex* problems — where the
+feasible set is convex and the objective has no local minima that are not also
+global — any stationary point found is a global optimum and convergence
+guarantees are strong. For *non-convex* problems, gradient descent may stop at
+a local minimum or saddle point. The algorithm has no way to know whether a
+better basin exists elsewhere in the space. Global optimisation (basin-hopping,
+simulated annealing, branch-and-bound for mixed-integer problems) is a
+separate, harder task. Most real engineering design problems and essentially
+all deep-learning objectives are non-convex.
+
+**Step size.** A fixed $\alpha$ that is too large causes divergence; too small
+makes convergence impractically slow. In practice, the step size is set by a
+*line search* — a procedure that finds an $\alpha$ satisfying a formal
+sufficient-decrease condition. The Armijo condition requires that the objective
+drop by at least a fixed fraction of what a full gradient step would give; the
+stronger Wolfe conditions additionally bound how much the gradient is allowed to
+change. Either condition ensures progress without committing to a fixed schedule.
+Alternatively, an adaptive schedule decreases $\alpha$ over iterations.
+Automatic differentiation and adaptive-rate optimisers have made fixed-rate
+gradient descent rare in production systems.
 
 ::: {.callout-note appearance="simple"}
-## Computing note: batch versus stochastic gradient descent
+## Computing note: batch, stochastic, and mini-batch gradient descent
 
 The rule above evaluates the full gradient over all data at each step — this is
 **batch gradient descent**. In machine learning, where $f$ is a loss summed over
 millions of examples, evaluating the full gradient per step is computationally
-prohibitive. **Stochastic gradient descent** (SGD) substitutes an estimate of
-the gradient computed on a randomly chosen mini-batch of examples. The update
-direction is noisy but cheap. Modern ML training uses variants of mini-batch
-SGD — Adam, AdaGrad, RMSProp — that also adapt the step size per parameter.
+prohibitive.
 
-The mathematics of convergence guarantees and step-size schedules for SGD is
-different from the deterministic case, but the core geometry is the same: move
-opposite to an estimate of the gradient, iterate, and check for convergence.
+**Stochastic gradient descent** (SGD) in its strict form uses a *single*
+randomly chosen example per step. The gradient estimate is very noisy but each
+step is cheap. In practice, training uses **mini-batch SGD**: the gradient is
+estimated from a randomly sampled subset (a mini-batch, typically 32–512
+examples), balancing noise against computational cost.
+
+Modern optimisers — **Adam**, **AdaGrad**, **RMSProp** — extend mini-batch SGD
+by maintaining per-parameter step sizes. AdaGrad accumulates the squared
+gradients and divides by their square root, shrinking the effective step for
+parameters that receive large or frequent updates. RMSProp uses an exponential
+moving average of squared gradients rather than accumulating them, preventing
+the step size from decaying to zero. Adam combines an RMSProp-style second
+moment estimate with a first moment estimate (momentum), making it an adaptive
+gradient method with memory of both direction and curvature. All three are still
+gradient-based and inherit the local-minimum limitation of gradient descent.
+
+The convergence theory for stochastic methods differs from the deterministic
+case (requires diminishing step-size schedules or noise conditions), but the
+geometric intuition is the same: move opposite to an estimate of the gradient,
+iterate, and check for convergence.
 :::
 
 
@@ -154,16 +193,19 @@ gradient of the constraint. You cannot improve the objective without leaving
 feasibility.
 
 For inequality constraints the full Karush-Kuhn-Tucker (KKT) conditions are
-needed in general — these extend the Lagrangian stationarity conditions to
-handle inequalities by requiring that each active constraint contributes a
-non-negative multiplier and that inactive constraints exert no force on the
-optimum. The intuition is similar to the equality case: active constraints
-shape which directions are allowed at the optimum.
+needed. A constraint $g_i(\mathbf{x}) \leq 0$ is *active* at a point if
+$g_i(\mathbf{x}) = 0$ (the point sits on the constraint boundary) and *inactive*
+if the strict inequality holds (the constraint has slack). The KKT conditions
+extend the Lagrangian stationarity conditions by requiring that each active
+constraint contributes a non-negative multiplier and that inactive constraints
+contribute nothing ($\lambda_i = 0$). The intuition is the same as the equality
+case: at an optimum you cannot improve the objective without violating at least
+one binding constraint, so the gradients of objective and active constraints must
+be in balance.
 
 ## Tradeoffs are the real subject
 
-Nonlinear optimisation is often introduced as an algorithm chapter. In upper
-year engineering, it is better understood as a tradeoff chapter.
+Nonlinear optimisation is a tradeoff chapter, not just an algorithm chapter.
 
 If you minimise mass, stress may rise. If you maximise throughput, queueing
 risk may rise. If you improve prediction accuracy, compute cost may rise. The
@@ -174,15 +216,15 @@ That is why sensitivity analysis matters. A computed optimum is only useful if
 you can explain how it shifts when assumptions, weights, or constraints change.
 
 ::: {.callout-note appearance="simple"}
-## Why This Works
+## A self-check
 
-Optimisation turns design or operational judgment into geometry. The objective
-describes which direction counts as improvement. The constraints describe where
-you are allowed to move. A solution is optimal only relative to both.
+Before running any solver, you should be able to answer three questions about
+your formulation: (1) What does the objective reward or penalise? (2) Are the
+constraints physically motivated, or are some just computational convenience?
+(3) If the optimum shifts when you tighten a constraint by 10%, does that shift
+make physical sense?
 
-In nonlinear settings, there may be many locally good choices. The mathematics
-helps you navigate them, but it does not remove the need to interpret what the
-objective and constraints mean physically.
+If you cannot answer all three, the formulation is not ready.
 :::
 
 ## The core method
@@ -222,8 +264,8 @@ so $x=2$ is a local minimum. The minimum value is
 
 $$f(2) = 4 - 8 + 7 = 3$$
 
-This is a simple example, but it already shows the core logic: stationary point
-plus curvature check.
+The core logic is visible here in its simplest form: stationary point, then
+curvature check.
 
 ## Worked example 2: equality-constrained optimisation
 
@@ -245,7 +287,7 @@ $$\frac{\partial \mathcal{L}}{\partial x} = 2x + \lambda = 0$$
 $$\frac{\partial \mathcal{L}}{\partial y} = 2y + \lambda = 0$$
 $$x+y-1 = 0$$
 
-The first two equations imply
+The first two equations each give $\lambda = -2x$ and $\lambda = -2y$, so
 
 $$x = y$$
 
@@ -262,36 +304,41 @@ objective's level sets touch the feasible set at the best allowable point.
 
 ## Worked example 3: design under a penalty tradeoff
 
-Suppose an engineer uses the toy objective
+Suppose an engineer uses the objective
 
 $$J(x) = (x-3)^2 + 0.5x^4$$
 
-Here one term rewards staying near a target value $x=3$, while the quartic term
-penalises large magnitude. This is not exotic. Real design objectives often mix
-performance and regularisation in exactly this way.
+One term rewards staying near a target value $x=3$; the quartic term penalises
+large magnitude. Real design objectives often mix performance and regularisation
+in exactly this way.
 
 Different penalty weights produce different optima. That means the "best"
 design is partly a statement about priorities, not just about calculus.
 
-The same logic appears in many settings. In machine learning, **ridge
-regression** (L2 regularisation) adds a penalty $\lambda\|\mathbf{w}\|^2$ to the
+In machine learning the same structure recurs. **Ridge regression**
+(L2 regularisation) adds a penalty $\lambda\|\mathbf{w}\|^2$ to the
 loss function, trading fit quality for smaller parameter magnitudes. The penalty
 weight $\lambda$ plays the same role as the 0.5 here: it encodes how strongly
 the solver is pushed away from large solutions, and changing it shifts the
 optimum. **Lasso** (L1 regularisation) uses $\lambda\|\mathbf{w}\|_1$ and
-produces sparse solutions for geometric reasons that the Lagrangian framework
-makes precise. Portfolio risk penalties and operations scheduling with nonlinear
-costs follow the same two-term structure.
+produces sparse solutions — many weights driven to exactly zero — for a
+geometric reason: the L1 ball has corners on the coordinate axes, and when the
+objective's level sets first touch the constraint boundary they typically land at
+a corner. Note that the L1 norm is not differentiable at zero, so the standard
+Lagrangian gradient condition does not directly apply there; the analysis uses
+*subgradients*, which generalise gradients to non-smooth functions, but the
+physical intuition (level set touching constraint boundary at a corner) holds
+without that machinery. Portfolio risk penalties and operations scheduling
+with nonlinear costs follow the same two-term structure.
 
 ## Where this goes
 
-This is the terminal chapter of the current volume, so `opens_to` is empty on
-purpose. The continuation is not a single next topic. It is the practice of
+There is no single next topic from here. The continuation is the practice of
 using the whole Volume 8 stack together: models, estimates, risks, and
 objectives inside one decision loop.
 
-By this point, mathematics in the engineering curriculum no longer appears as a
-supporting subject. It is the working medium of design judgment.
+The mathematics is no longer a supporting subject. It is the working medium of
+design judgment.
 
 ::: {.callout-tip appearance="simple"}
 ## Applications
@@ -358,7 +405,7 @@ steps:
     note: ~
   - op: "Relate x and y"
     eq: "2x = 8y \\Rightarrow x = 4y"
-    note: "Both equal -\\lambda."
+    note: "From the first two conditions, $-\\lambda = 2x$ and $-\\lambda = 8y$, so $2x = 8y$."
   - op: "Use the constraint"
     eq: "4y + y = 3 \\Rightarrow y = \\frac{3}{5}, \\qquad x = \\frac{12}{5}"
     note: ~

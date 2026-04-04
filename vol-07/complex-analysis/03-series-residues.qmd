@@ -4,7 +4,7 @@ subtitle: "Laurent series, isolated singularities, and the residue theorem"
 chapter: 3
 volume: 7
 layer: "engineering"
-status: "draft"
+status: review
 
 axiom: "An analytic function has a Taylor series that converges in any disk that avoids singularities. At a singularity, the Taylor series breaks down. The Laurent series extends the power series to include negative powers of (z−z₀) and converges in an annulus around the singularity. The coefficient of the (z−z₀)^{−1} term — the residue — encodes everything needed to compute contour integrals."
 
@@ -17,7 +17,7 @@ prerequisite_ids:
 
 opens_to:
   - id: complex_analysis
-    label: "Conformal mapping"
+    label: "Complex analysis"
     volume: 7
     relationship: enables
 
@@ -48,21 +48,19 @@ exercises:
   real_world_context: true
 
 hook: |
-  The integral $\int_{-\infty}^{\infty}\frac{\cos x}{1+x^2}\,dx$ is not
-  an elementary integral — substitution and integration by parts lead
-  nowhere. But treated as a contour integral in the complex plane, it
-  reduces to a residue calculation that takes three lines. The answer
-  is $\pi/e$.
+  The integral $\int_{-\infty}^{\infty}\frac{\cos x}{1+x^2}\,dx$ resists
+  every standard technique — substitution and integration by parts lead
+  nowhere. Treated as a contour integral in the complex plane, it reduces
+  to a residue calculation that takes three lines. The answer is $\pi/e$.
 
-  This is the power of the residue theorem: it converts an integral
-  over the real line (or over a closed curve in the plane) into a sum
-  of local contributions from singularities. Each singularity contributes
-  exactly $2\pi i$ times its residue. Finding residues is algebra, not
-  integration.
+  The residue theorem converts an integral over the real line — or over
+  any closed curve in the plane — into a sum of local contributions from
+  singularities. Each singularity contributes exactly $2\pi i$ times its
+  residue. Finding residues is algebra, not integration.
 
-  The prerequisite is the Laurent series — the power series that works
-  near a singularity by including negative powers of $(z-z_0)$. The
-  residue is the coefficient of $(z-z_0)^{-1}$. Everything else follows.
+  The tool that makes this possible is the Laurent series: the power
+  series that works near a singularity by including negative powers of
+  $(z-z_0)$. The residue is the coefficient of $(z-z_0)^{-1}$.
 
 kreyszig_chapter: "Chs 15–16"
 stroud_programme: null
@@ -85,6 +83,338 @@ $$\frac{1}{1-z} = \sum_{n=0}^{\infty} z^n \quad (|z| < 1)$$
 
 These are exactly the real Taylor series with $x$ replaced by $z$.
 
+```{ojs}
+//| echo: false
+{
+  // Taylor series convergence disk — missed opportunity 1
+  // Draggable z₀, disk of radius R = distance to nearest singularity
+  const W = 480, H = 420, CX = 200, CY = 210, SCALE = 70;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const funcSel = Inputs.select([
+    "1/(z²+1)  — poles at ±i",
+    "tan z      — poles at ±π/2, ±3π/2, …",
+    "log z      — branch cut on Re≤0",
+    "e^z        — entire (no singularity)"
+  ], { value: "1/(z²+1)  — poles at ±i", label: "f(z)" });
+
+  const nTermsSl = Inputs.range([1, 20], { value: 6, step: 1, label: "Partial sum N" });
+
+  // z₀ position via sliders (dragging complex in OJS needs canvas events; sliders are cleaner)
+  const z0reSl = Inputs.range([-2.5, 2.5], { value: 0.5, step: 0.05, label: "Re(z₀)" });
+  const z0imSl = Inputs.range([-2.5, 2.5], { value: 0.3, step: 0.05, label: "Im(z₀)" });
+
+  function singularities(fname) {
+    if (fname.startsWith("1/(z²+1)")) return [{re:0,im:1},{re:0,im:-1}];
+    if (fname.startsWith("tan")) {
+      const s = [];
+      for (let k = -3; k <= 3; k++) s.push({re: (k+0.5)*Math.PI, im: 0});
+      return s;
+    }
+    if (fname.startsWith("log")) return [{re:-99,im:0}]; // branch cut; treat as nearest on negative axis
+    return []; // entire
+  }
+
+  function nearestDist(fname, z0re, z0im) {
+    if (fname.startsWith("log")) {
+      // Distance to nearest branch-cut point on {Re≤0} = distance to point (-|z0re|, z0im) if z0re<0 else to (0, z0im)
+      // Approximate: distance to origin along the branch cut direction
+      // The branch cut is the negative real axis; nearest point is (min(z0re,0), 0) extended
+      // Actually: the branch point is at z=0, and the branch cut extends left.
+      // Convergence radius of Taylor series at z0 = distance to origin (the branch point)
+      return Math.sqrt(z0re*z0re + z0im*z0im);
+    }
+    const sings = singularities(fname);
+    if (sings.length === 0) return 999; // entire
+    let minD = Infinity;
+    for (const s of sings) {
+      const d = Math.sqrt((z0re-s.re)**2 + (z0im-s.im)**2);
+      if (d < minD) minD = d;
+    }
+    return minD;
+  }
+
+  function evalFunc(fname, re, im) {
+    if (fname.startsWith("1/(z²+1)")) {
+      const a = 1 + re*re - im*im, b = 2*re*im;
+      const d = a*a + b*b; if (d < 1e-10) return [NaN, NaN];
+      return [a/d, -b/d];
+    }
+    if (fname.startsWith("tan")) {
+      const sr = Math.sin(re)*Math.cosh(im), si = Math.cos(re)*Math.sinh(im);
+      const cr = Math.cos(re)*Math.cosh(im), ci = -Math.sin(re)*Math.sinh(im);
+      const d = cr*cr + ci*ci; if (d < 1e-10) return [NaN, NaN];
+      return [(sr*cr+si*ci)/d, (si*cr-sr*ci)/d];
+    }
+    if (fname.startsWith("log")) {
+      const r2 = re*re + im*im; if (r2 < 1e-10) return [NaN, NaN];
+      return [0.5*Math.log(r2), Math.atan2(im, re)];
+    }
+    // e^z
+    return [Math.exp(re)*Math.cos(im), Math.exp(re)*Math.sin(im)];
+  }
+
+  function taylorCoeffs(fname, z0re, z0im, N) {
+    // Numerical Taylor coefficients via finite differences (central diff for accuracy)
+    // c_n = f^(n)(z0) / n!  — computed by repeated complex differentiation
+    // We use forward differences with h = 0.001 * R direction
+    const h = 0.001;
+    const coeffs = []; // [re, im] for n=0..N-1
+    // Use complex differentiation formula: f'(z) ≈ (f(z+h) - f(z-h)) / (2h)
+    // We'll just evaluate directly for known functions
+    if (fname.startsWith("1/(z²+1)")) {
+      // f(z) = 1/(z²+1); f^(n)(z0) computable
+      // Use the partial fraction decomposition: f = i/2 * (1/(z+i) - 1/(z-i))
+      // 1/(z-a)^{n+1} contributes (-1)^n * n! / (z0-a)^{n+1} to n-th derivative
+      const c = []; // coefficients c_n for Taylor at z0
+      const amre = z0re, amim = z0im + 1; // z0 - (-i) = z0 + i
+      const apre = z0re, apim = z0im - 1; // z0 - i
+      const amd = amre*amre + amim*amim;
+      const apd = apre*apre + apim*apim;
+      if (amd < 1e-10 || apd < 1e-10) return null;
+      // c_n = i/2 * [(-1)^n n! / (z0-(-i))^{n+1} - (-1)^n n! / (z0-i)^{n+1}]
+      // = i/2 * (-1)^n n! * [1/(z0+i)^{n+1} - 1/(z0-i)^{n+1}]
+      // Power of complex: (a+ib)^k
+      function cpow(re, im, k) {
+        if (k === 0) return [1, 0];
+        let r = Math.sqrt(re*re+im*im), theta = Math.atan2(im, re);
+        let rk = Math.pow(r, k), tk = theta * k;
+        return [rk*Math.cos(tk), rk*Math.sin(tk)];
+      }
+      function cdiv(ar, ai, br, bi) {
+        const d = br*br + bi*bi; if (d < 1e-12) return [NaN, NaN];
+        return [(ar*br+ai*bi)/d, (ai*br-ar*bi)/d];
+      }
+      for (let n = 0; n < N; n++) {
+        const [pm_re, pm_im] = cpow(amre, amim, n+1);
+        const [pp_re, pp_im] = cpow(apre, apim, n+1);
+        const [inv_am_re, inv_am_im] = cdiv(1, 0, pm_re, pm_im);
+        const [inv_ap_re, inv_ap_im] = cdiv(1, 0, pp_re, pp_im);
+        // diff = inv_am - inv_ap
+        const diffRe = inv_am_re - inv_ap_re, diffIm = inv_am_im - inv_ap_im;
+        // multiply by i/2 and (-1)^n (n! already absorbed into c_n = f^(n)(z0)/n!)
+        // c_n = i/2 * (-1)^n * [diff]   (the n! cancels with 1/n!)
+        const sign = (n%2===0) ? 1 : -1;
+        // * i/2: (a+ib)*i = -b+ia
+        const cr = sign * (-diffIm) / 2;
+        const ci = sign * (diffRe) / 2;
+        c.push([cr, ci]);
+      }
+      return c;
+    }
+    // Fallback: numerical coefficients via repeated evaluation
+    // f^(n)(z0) ≈ (2h)^{-n} * sum_k C(n,k)*(-1)^{n-k} f(z0 + k*h) — forward differences
+    // For simplicity, use a simple numerical approach
+    const c = [];
+    for (let n = 0; n < N; n++) {
+      // n-th derivative via central finite differences (Richardson extrapolation would be better but expensive)
+      const hn = Math.pow(0.01, 1); // step
+      let sumRe = 0, sumIm = 0;
+      // Forward difference: f^(n)(z0) ≈ (1/h^n) sum_{k=0}^{n} (-1)^{n-k} C(n,k) f(z0 + k*h)
+      let fact = 1;
+      for (let k = 0; k <= n; k++) {
+        const sign = ((n-k)%2===0) ? 1 : -1;
+        const binom = fact / ((k <= n-k ? [1,1,2,6,24,120,720,5040][k]||1 : [1,1,2,6,24,120,720,5040][n-k]||1) * ([1,1,2,6,24,120,720,5040][Math.min(k,n-k)]||1));
+        const [fr, fi] = evalFunc(fname, z0re + k*hn, z0im);
+        // C(n,k) = n! / (k! * (n-k)!)
+        let cn = 1; for (let j=0;j<n;j++) cn*=(j<k?1:1); // just accumulate properly
+        // Simple binomial
+        let bk = 1; for (let j=0;j<k;j++) bk = bk*(n-j)/(j+1);
+        sumRe += sign * bk * fr;
+        sumIm += sign * bk * fi;
+      }
+      let nfact = 1; for (let j=1;j<=n;j++) nfact*=j;
+      c.push([sumRe / Math.pow(hn, n) / nfact, sumIm / Math.pow(hn, n) / nfact]);
+    }
+    return c;
+  }
+
+  function taylorPartialSum(coeffs, z0re, z0im, re, im, N) {
+    // Sum c_n (z - z0)^n
+    const dre = re - z0re, dim = im - z0im;
+    let sumRe = 0, sumIm = 0;
+    let powRe = 1, powIm = 0;
+    for (let n = 0; n < Math.min(coeffs.length, N); n++) {
+      const [cr, ci] = coeffs[n];
+      sumRe += cr*powRe - ci*powIm;
+      sumIm += cr*powIm + ci*powRe;
+      const newPowRe = powRe*dre - powIm*dim;
+      const newPowIm = powRe*dim + powIm*dre;
+      powRe = newPowRe; powIm = newPowIm;
+    }
+    return [sumRe, sumIm];
+  }
+
+  function hslToRgb(h, s, l) {
+    h = ((h%1)+1)%1;
+    const c = (1-Math.abs(2*l-1))*s, x = c*(1-Math.abs((h*6)%2-1)), m = l-c/2;
+    let r=0,g=0,b=0;
+    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
+    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function toScreen(re, im) { return [CX + re*SCALE, CY - im*SCALE]; }
+
+  function render(fname, z0re, z0im, N) {
+    const R = nearestDist(fname, z0re, z0im);
+    const coeffs = taylorCoeffs(fname, z0re, z0im, N) || [];
+
+    // Left panel: exact function with disk overlay
+    const cL = document.createElement("canvas");
+    cL.width = W; cL.height = H;
+    const ctxL = cL.getContext("2d");
+    const imgL = ctxL.createImageData(W, H); const dL = imgL.data;
+
+    for (let px=0; px<W; px++) {
+      for (let py=0; py<H; py++) {
+        const re = (px-CX)/SCALE, im = -(py-CY)/SCALE;
+        const [wr, wi] = evalFunc(fname, re, im);
+        if (!isFinite(wr)||!isFinite(wi)||isNaN(wr)) {
+          const idx=(py*W+px)*4;
+          dL[idx]=255;dL[idx+1]=255;dL[idx+2]=255;dL[idx+3]=255; continue;
+        }
+        const arg = Math.atan2(wi, wr), mag = Math.sqrt(wr*wr+wi*wi);
+        const hue = (arg/(2*Math.PI)+1)%1;
+        const brightness = 0.5 + 0.35*Math.tanh(Math.log(mag+0.001)/2);
+        const [r,g,b] = hslToRgb(hue, 0.8, brightness);
+        const idx=(py*W+px)*4; dL[idx]=r;dL[idx+1]=g;dL[idx+2]=b;dL[idx+3]=255;
+      }
+    }
+    ctxL.putImageData(imgL, 0, 0);
+
+    // Convergence disk — gold dashed circle
+    const [z0sx, z0sy] = toScreen(z0re, z0im);
+    ctxL.setLineDash([6, 4]);
+    ctxL.strokeStyle = "#fbbf24"; ctxL.lineWidth = 2.5;
+    ctxL.beginPath();
+    if (R < 50) ctxL.arc(z0sx, z0sy, R*SCALE, 0, 2*Math.PI);
+    ctxL.stroke();
+    ctxL.setLineDash([]);
+
+    // Line to nearest singularity
+    const sings = singularities(fname);
+    if (sings.length > 0) {
+      let nearS = sings[0], nearD = Infinity;
+      for (const s of sings) {
+        const d = Math.sqrt((z0re-s.re)**2+(z0im-s.im)**2);
+        if (d < nearD) { nearD = d; nearS = s; }
+      }
+      const [nsx, nsy] = toScreen(nearS.re, nearS.im);
+      ctxL.strokeStyle = "rgba(251,191,36,0.6)"; ctxL.lineWidth = 1.5; ctxL.setLineDash([3,3]);
+      ctxL.beginPath(); ctxL.moveTo(z0sx, z0sy); ctxL.lineTo(nsx, nsy); ctxL.stroke();
+      ctxL.setLineDash([]);
+      // Nearest singularity ×
+      ctxL.strokeStyle="#ef4444"; ctxL.lineWidth=2;
+      ctxL.beginPath(); ctxL.moveTo(nsx-6,nsy-6); ctxL.lineTo(nsx+6,nsy+6); ctxL.stroke();
+      ctxL.beginPath(); ctxL.moveTo(nsx+6,nsy-6); ctxL.lineTo(nsx-6,nsy+6); ctxL.stroke();
+    }
+
+    // Axes
+    const [ox, oy] = toScreen(0, 0);
+    ctxL.strokeStyle="rgba(255,255,255,0.5)"; ctxL.lineWidth=0.8;
+    ctxL.beginPath(); ctxL.moveTo(0,oy); ctxL.lineTo(W,oy); ctxL.stroke();
+    ctxL.beginPath(); ctxL.moveTo(ox,0); ctxL.lineTo(ox,H); ctxL.stroke();
+
+    // z₀ dot
+    ctxL.fillStyle="#fbbf24"; ctxL.beginPath(); ctxL.arc(z0sx, z0sy, 6, 0, 2*Math.PI); ctxL.fill();
+    ctxL.strokeStyle="#fff"; ctxL.lineWidth=1.5; ctxL.stroke();
+    ctxL.fillStyle="#fff"; ctxL.font="11px sans-serif";
+    ctxL.fillText(`z₀`, z0sx+8, z0sy-4);
+    ctxL.fillText(`R = ${R < 50 ? R.toFixed(3) : "∞"}`, z0sx+8, z0sy+10);
+
+    ctxL.fillStyle="rgba(0,0,0,0.7)"; ctxL.font="11px sans-serif";
+    ctxL.fillText("exact f(z)", 6, 16);
+
+    // Right panel: partial sum
+    const cR = document.createElement("canvas");
+    cR.width = W; cR.height = H;
+    const ctxR = cR.getContext("2d");
+    const imgR = ctxR.createImageData(W, H); const dR = imgR.data;
+
+    for (let px=0; px<W; px++) {
+      for (let py=0; py<H; py++) {
+        const re = (px-CX)/SCALE, im = -(py-CY)/SCALE;
+        let wr, wi;
+        if (coeffs.length > 0) {
+          [wr, wi] = taylorPartialSum(coeffs, z0re, z0im, re, im, N);
+        } else {
+          [wr, wi] = evalFunc(fname, re, im);
+        }
+        if (!isFinite(wr)||!isFinite(wi)||isNaN(wr)||Math.abs(wr)>200||Math.abs(wi)>200) {
+          const idx=(py*W+px)*4;
+          dR[idx]=240;dR[idx+1]=240;dR[idx+2]=240;dR[idx+3]=255; continue;
+        }
+        const arg = Math.atan2(wi, wr), mag = Math.sqrt(wr*wr+wi*wi);
+        const hue = (arg/(2*Math.PI)+1)%1;
+        const brightness = 0.5 + 0.35*Math.tanh(Math.log(mag+0.001)/2);
+        const [r,g,b] = hslToRgb(hue, 0.8, brightness);
+        const idx=(py*W+px)*4; dR[idx]=r;dR[idx+1]=g;dR[idx+2]=b;dR[idx+3]=255;
+      }
+    }
+    ctxR.putImageData(imgR, 0, 0);
+
+    // Disk overlay on right panel
+    ctxR.setLineDash([6,4]);
+    ctxR.strokeStyle="#fbbf24"; ctxR.lineWidth=2.5;
+    ctxR.beginPath();
+    if (R < 50) ctxR.arc(z0sx, z0sy, R*SCALE, 0, 2*Math.PI);
+    ctxR.stroke(); ctxR.setLineDash([]);
+    ctxR.fillStyle="#fbbf24"; ctxR.beginPath(); ctxR.arc(z0sx, z0sy, 6, 0, 2*Math.PI); ctxR.fill();
+    ctxR.strokeStyle="#fff"; ctxR.lineWidth=1.5; ctxR.stroke();
+    const [ox2, oy2] = toScreen(0, 0);
+    ctxR.strokeStyle="rgba(255,255,255,0.5)"; ctxR.lineWidth=0.8;
+    ctxR.beginPath(); ctxR.moveTo(0,oy2); ctxR.lineTo(W,oy2); ctxR.stroke();
+    ctxR.beginPath(); ctxR.moveTo(ox2,0); ctxR.lineTo(ox2,H); ctxR.stroke();
+    ctxR.fillStyle="rgba(0,0,0,0.7)"; ctxR.font="11px sans-serif";
+    ctxR.fillText(`Taylor partial sum, N=${N} terms`, 6, 16);
+    ctxR.fillStyle="rgba(255,255,255,0.85)"; ctxR.font="10px sans-serif";
+    ctxR.fillText("Inside disk: series matches f. Outside: diverges.", 6, H-8);
+
+    const panelDiv = document.createElement("div");
+    panelDiv.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap;";
+    panelDiv.appendChild(cL); panelDiv.appendChild(cR);
+
+    const infoDiv = document.createElement("div");
+    infoDiv.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.88em; background:#fefce8; border:1px solid #fde68a; border-radius:4px; padding:0.5rem 0.75rem;";
+    infoDiv.innerHTML = `<strong>Convergence radius R = ${R < 50 ? R.toFixed(4) : "∞"}</strong> — distance from z₀ = ${z0re.toFixed(2)}+${z0im.toFixed(2)}i to nearest singularity. The Taylor series converges inside the gold dashed disk and diverges outside it.`;
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(panelDiv); wrap.appendChild(infoDiv);
+    return wrap;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const title = document.createElement("div");
+  title.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title.textContent = "Taylor series convergence disk: R = distance to nearest singularity";
+  container.appendChild(title);
+  container.appendChild(funcSel);
+  container.appendChild(z0reSl);
+  container.appendChild(z0imSl);
+  container.appendChild(nTermsSl);
+  const vizDiv = document.createElement("div");
+  container.appendChild(vizDiv);
+  const note = document.createElement("div");
+  note.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note.textContent = "Left: exact f(z) with domain colouring (hue = arg f, brightness = log|f|). Right: N-term Taylor partial sum at z₀. Gold dashed circle = convergence disk of radius R. Red × = nearest singularity. Move z₀ or change N to watch the disk and partial sum update.";
+  container.appendChild(note);
+
+  function update() {
+    vizDiv.innerHTML = "";
+    vizDiv.appendChild(render(funcSel.value, z0reSl.value, z0imSl.value, nTermsSl.value));
+  }
+  funcSel.addEventListener("input", update);
+  z0reSl.addEventListener("input", update);
+  z0imSl.addEventListener("input", update);
+  nTermsSl.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
+
 ---
 
 ## Laurent series
@@ -99,62 +429,124 @@ $$c_n = \frac{1}{2\pi i}\oint_C \frac{f(z)}{(z-z_0)^{n+1}}\,dz$$
 
 This converges in an **annulus** $r < |z - z_0| < R$ (with $r$ possibly 0 and $R$ possibly $\infty$).
 
-The **principal part** consists of the negative-power terms $\sum_{n=1}^{\infty} c_{-n}(z-z_0)^{-n}$. The **analytic part** is the non-negative power series $\sum_{n=0}^{\infty}c_n(z-z_0)^n$. How many terms the principal part has — zero, finitely many, or infinitely many — classifies the type of singularity, as the next section shows.
+The **principal part** consists of the negative-power terms $\sum_{n=1}^{\infty} c_{-n}(z-z_0)^{-n}$; the **analytic part** is the non-negative power series $\sum_{n=0}^{\infty}c_n(z-z_0)^n$. Whether the principal part is absent, has finitely many terms, or has infinitely many terms classifies the type of singularity at $z_0$ — which is the point of the next section.
 
 <!-- STUDENT: The terms "principal part" and "analytic part" are introduced here but their significance is not explained until the classification section two paragraphs later. A reader might wonder why the split matters. A forward pointer — "the number of terms in the principal part will classify the singularity" — would make this naming feel purposeful immediately. -->
 
-<!-- VIZ OPPORTUNITY 9: Laurent series convergence in an annulus. Two concentric circles; partial sum N slider; function selector. -->
+<!-- VIZ OPPORTUNITY 9: Laurent series convergence in an annulus. Rewritten per senior-designer brief. -->
 
 ```{ojs}
 //| echo: false
 {
-  const W = 380, H = 340, CX = W/2, CY = H/2, SCALE = 62;
+  const W = 400, H = 360, CX = W/2, CY = H/2, SCALE = 66;
   const svgNS = "http://www.w3.org/2000/svg";
 
-  const funcSel9 = Inputs.select(["1/z", "1/(z(z-1))", "e^{1/z} (essential)"], {
-    value: "1/z", label: "f(z)"
+  const funcSel9 = Inputs.select(["1/(z(z-1))", "e^{1/z} (essential)", "z/sin(z)"], {
+    value: "1/(z(z-1))", label: "f(z)"
   });
-  const rInnerSl = Inputs.range([0, 1.4], {value: 0.3, step: 0.05, label: "Inner radius r"});
-  const rOuterSl = Inputs.range([0.5, 3.0], {value: 1.5, step: 0.05, label: "Outer radius R"});
-  const nTermsSl = Inputs.range([1, 15], {value: 5, step: 1, label: "Terms N"});
+  const rInnerSl = Inputs.range([0.01, 1.4], {value: 0.2, step: 0.01, label: "Inner barrier r"});
+  const rOuterSl = Inputs.range([0.5, 3.5], {value: 1.5, step: 0.05, label: "Outer barrier R"});
+  const nTermsSl = Inputs.range([1, 20], {value: 6, step: 1, label: "N terms (e^{1/z} panel)"});
 
-  function laurentPartialSum(fname, re, im, N) {
-    // Returns approximate f(z) via N-term Laurent expansion at z0=0
+  // Singularity metadata per function
+  const funcMeta = {
+    "1/(z(z-1))": {
+      sings: [{re:0,im:0,label:"z=0 (simple pole)"},{re:1,im:0,label:"z=1 (simple pole)"}],
+      ppTerms: 2, singType: "Two simple poles", annulusDesc: "0 < |z| < 1 (between poles)"
+    },
+    "e^{1/z} (essential)": {
+      sings: [{re:0,im:0,label:"z=0 (essential)"}],
+      ppTerms: Infinity, singType: "Essential singularity (infinitely many principal-part terms)", annulusDesc: "0 < |z| < ∞"
+    },
+    "z/sin(z)": {
+      sings: [{re:0,im:0,label:"z=0 (removable)"},{re:Math.PI,im:0,label:"z=π (simple pole)"},{re:-Math.PI,im:0,label:"z=−π (simple pole)"}],
+      ppTerms: 1, singType: "Removable at 0; simple poles at ±nπ", annulusDesc: "0 < |z| < π"
+    }
+  };
+
+  function evalExact9(fname, re, im) {
     switch(fname) {
-      case "1/z": {
-        // Exact: 1/z
-        const d=re*re+im*im; if(d<1e-10) return [NaN,NaN];
-        return [re/d,-im/d];
-      }
       case "1/(z(z-1))": {
-        // = -1/z - 1 - z - z^2 - ... for |z|<1
-        // = 1/z^2 * 1/(1 - 1/z) = 1/z^2 * sum (1/z)^n for |z|>1
-        const d2=re*re+im*im; if(d2<1e-10) return [NaN,NaN];
-        // Use exact formula
-        const dr=re-1,di=im,d3=dr*dr+di*di; if(d3<1e-10) return [NaN,NaN];
-        // 1/(z(z-1)) = 1/(z-1) - 1/z
-        const p1r=dr/d3, p1i=-di/d3;
-        const p2r=re/d2, p2i=-im/d2;
-        return [p1r-p2r, p1i-p2i];
+        const d2=re*re+im*im; if(d2<1e-8) return [NaN,NaN];
+        const dr=re-1,di=im,d3=dr*dr+di*di; if(d3<1e-8) return [NaN,NaN];
+        return [dr/d3-re/d2, -di/d3+im/d2];
       }
       case "e^{1/z} (essential)": {
-        // Partial sum of e^{1/z} = sum (1/z)^n / n!
-        const d=re*re+im*im; if(d<1e-10) return [NaN,NaN];
+        const d=re*re+im*im; if(d<1e-8) return [NaN,NaN];
         const invRe=re/d, invIm=-im/d;
-        let sumRe=1, sumIm=0, powRe=1, powIm=0, fact=1;
-        for(let k=1;k<=Math.min(N,12);k++) {
-          const newPowRe=powRe*invRe-powIm*invIm;
-          const newPowIm=powRe*invIm+powIm*invRe;
-          powRe=newPowRe; powIm=newPowIm; fact*=k;
-          sumRe+=powRe/fact; sumIm+=powIm/fact;
-        }
-        return [sumRe,sumIm];
+        return [Math.exp(invRe)*Math.cos(invIm), Math.exp(invRe)*Math.sin(invIm)];
       }
-      default: return [1,0];
+      case "z/sin(z)": {
+        const sr=Math.sin(re)*Math.cosh(im), si=Math.cos(re)*Math.sinh(im);
+        const d=sr*sr+si*si; if(d<1e-8) return (re*re+im*im<1e-8)?[1,0]:[NaN,NaN];
+        return [(re*sr+im*si)/d, (im*sr-re*si)/d];
+      }
+      default: return [NaN,NaN];
     }
   }
 
-  function hslToRgb(h,s,l) {
+  function evalPartial9(fname, re, im, N) {
+    // Genuine N-term partial sums of Laurent series at z0=0
+    switch(fname) {
+      case "1/(z(z-1))": {
+        // For 0<|z|<1: -1/z - 1 - z - z^2 - ... (principal part: -1/z; analytic: -sum z^n)
+        const d=re*re+im*im; if(d<1e-8) return [NaN,NaN];
+        const invRe=re/d, invIm=-im/d;
+        // -1/z term
+        let sumRe = -invRe, sumIm = -invIm;
+        // -z^n terms for n=0..N-2
+        let powRe=1, powIm=0;
+        for(let k=0;k<N-1;k++) {
+          sumRe -= powRe; sumIm -= powIm;
+          const nRe=powRe*re-powIm*im; const nIm=powRe*im+powIm*re;
+          powRe=nRe; powIm=nIm;
+        }
+        return [sumRe, sumIm];
+      }
+      case "e^{1/z} (essential)": {
+        const d=re*re+im*im; if(d<1e-8) return [NaN,NaN];
+        const invRe=re/d, invIm=-im/d;
+        let sumRe=1, sumIm=0, powRe=1, powIm=0, fact=1;
+        for(let k=1;k<=Math.min(N,25);k++) {
+          const nRe=powRe*invRe-powIm*invIm; const nIm=powRe*invIm+powIm*invRe;
+          powRe=nRe; powIm=nIm; fact*=k;
+          sumRe+=powRe/fact; sumIm+=powIm/fact;
+        }
+        return [sumRe, sumIm];
+      }
+      case "z/sin(z)": {
+        // Laurent around 0: z/sin(z) = 1 + z²/6 + 7z⁴/360 + ...  (all non-negative powers; removable sing)
+        // Treat as Taylor (no principal part)
+        const coeffs=[1, 0, 1/6, 0, 7/360, 0, 31/15120, 0, 127/604800, 0];
+        let sumRe=0, sumIm=0, powRe=1, powIm=0;
+        for(let k=0;k<Math.min(N,coeffs.length);k++) {
+          sumRe+=coeffs[k]*powRe; sumIm+=coeffs[k]*powIm;
+          const nRe=powRe*re-powIm*im; const nIm=powRe*im+powIm*re;
+          powRe=nRe; powIm=nIm;
+        }
+        return [sumRe, sumIm];
+      }
+      default: return [NaN,NaN];
+    }
+  }
+
+  function computeMaxError9(fname, rInner, rOuter, N, SAMPLES) {
+    // Estimate max |f_exact - f_partial| on a circle of radius midR
+    const midR = Math.sqrt(rInner * rOuter); // geometric mean
+    let maxErr = 0;
+    for(let k=0;k<SAMPLES;k++) {
+      const theta = 2*Math.PI*k/SAMPLES;
+      const re = midR*Math.cos(theta), im = midR*Math.sin(theta);
+      const [er,ei] = evalExact9(fname, re, im);
+      const [pr,pi] = evalPartial9(fname, re, im, N);
+      if(!isFinite(er)||!isFinite(pr)) continue;
+      const err = Math.sqrt((er-pr)**2+(ei-pi)**2);
+      if(err>maxErr) maxErr=err;
+    }
+    return maxErr;
+  }
+
+  function hslToRgb9(h,s,l) {
     h=((h%1)+1)%1;
     const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h*6)%2-1)),m=l-c/2;
     let r=0,g=0,b=0;
@@ -163,92 +555,131 @@ The **principal part** consists of the negative-power terms $\sum_{n=1}^{\infty}
     return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
   }
 
-  function toScreen(re,im) { return [CX+re*SCALE, CY-im*SCALE]; }
+  function toScr9(re,im) { return [CX+re*SCALE, CY-im*SCALE]; }
 
-  function renderLaurent(fname, rInner, rOuter, N) {
+  function renderPanel9(fname, rInner, rOuter, N, usePartial) {
     const canvas=document.createElement("canvas");
     canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext("2d");
     const img=ctx.createImageData(W,H); const data=img.data;
 
-    for (let px=0;px<W;px++) {
-      for (let py=0;py<H;py++) {
+    for(let px=0;px<W;px++) {
+      for(let py=0;py<H;py++) {
         const re=(px-CX)/SCALE, im=-(py-CY)/SCALE;
         const dist=Math.sqrt(re*re+im*im);
         const inAnnulus = dist > rInner && dist < rOuter;
 
-        if(inAnnulus) {
-          const [wr,wi]=laurentPartialSum(fname,re,im,N);
-          if(!isFinite(wr)||!isFinite(wi)||isNaN(wr)) {
-            const idx=(py*W+px)*4;
-            data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255;
-            continue;
-          }
-          const arg=Math.atan2(wi,wr),mag=Math.sqrt(wr*wr+wi*wi);
-          const hue=(arg/(2*Math.PI)+1)%1;
-          const logmag=Math.log(mag+0.001);
-          const brightness=0.5+0.35*Math.tanh(logmag/2);
-          const [r,g,b]=hslToRgb(hue,0.8,brightness);
-          const idx=(py*W+px)*4; data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
-        } else {
-          // Outside annulus: dim grey
-          const idx=(py*W+px)*4;
-          data[idx]=220;data[idx+1]=220;data[idx+2]=220;data[idx+3]=255;
+        if(!inAnnulus) {
+          const idx=(py*W+px)*4; data[idx]=210;data[idx+1]=210;data[idx+2]=210;data[idx+3]=255; continue;
         }
+
+        const [wr,wi] = usePartial ? evalPartial9(fname,re,im,N) : evalExact9(fname,re,im);
+        if(!isFinite(wr)||!isFinite(wi)||isNaN(wr)||Math.abs(wr)>1e6||Math.abs(wi)>1e6) {
+          const idx=(py*W+px)*4; data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255; continue;
+        }
+        const arg=Math.atan2(wi,wr), mag=Math.sqrt(wr*wr+wi*wi);
+        const hue=(arg/(2*Math.PI)+1)%1;
+        const brightness=0.5+0.35*Math.tanh(Math.log(mag+0.001)/2);
+        const [r,g,b]=hslToRgb9(hue,0.8,brightness);
+        const idx=(py*W+px)*4; data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
       }
     }
     ctx.putImageData(img,0,0);
 
+    const [ox,oy]=toScr9(0,0);
     // Axes
-    const [ox,oy]=toScreen(0,0);
-    ctx.strokeStyle="#9ca3af"; ctx.lineWidth=0.8;
+    ctx.strokeStyle="rgba(255,255,255,0.4)"; ctx.lineWidth=0.8;
     ctx.beginPath(); ctx.moveTo(0,oy); ctx.lineTo(W,oy); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(ox,0); ctx.lineTo(ox,H); ctx.stroke();
 
-    // Annulus circles
-    ctx.strokeStyle="rgba(30,64,175,0.8)"; ctx.lineWidth=2; ctx.setLineDash([5,3]);
+    // Inner barrier (blue)
+    ctx.strokeStyle="#3b82f6"; ctx.lineWidth=2.5; ctx.setLineDash([]);
     ctx.beginPath(); ctx.arc(ox,oy,rInner*SCALE,0,2*Math.PI); ctx.stroke();
-    ctx.strokeStyle="rgba(5,150,105,0.8)";
-    ctx.beginPath(); ctx.arc(ox,oy,rOuter*SCALE,0,2*Math.PI); ctx.stroke();
-    ctx.setLineDash([]);
+    // Inner label
+    ctx.fillStyle="#3b82f6"; ctx.font="bold 9px sans-serif";
+    ctx.fillText("inner singularity", ox+rInner*SCALE*0.6,oy-rInner*SCALE-4);
+    ctx.fillText("barrier r="+rInner.toFixed(2), ox+rInner*SCALE*0.6, oy-rInner*SCALE+8);
 
-    // Singularity marker
-    ctx.strokeStyle="#ef4444"; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(ox-6,oy-6); ctx.lineTo(ox+6,oy+6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(ox+6,oy-6); ctx.lineTo(ox-6,oy+6); ctx.stroke();
+    // Outer barrier (orange)
+    ctx.strokeStyle="#f97316"; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.arc(ox,oy,Math.min(rOuter*SCALE,W*0.72),0,2*Math.PI); ctx.stroke();
+    ctx.fillStyle="#f97316"; ctx.font="bold 9px sans-serif";
+    const angOuter = -0.5;
+    const ox2=ox+Math.min(rOuter*SCALE,W*0.72)*Math.cos(angOuter), oy2=oy+Math.min(rOuter*SCALE,W*0.72)*Math.sin(angOuter);
+    ctx.fillText("outer singularity", ox2+4, oy2-3);
+    ctx.fillText("barrier R="+rOuter.toFixed(2), ox2+4, oy2+9);
 
-    // Labels
-    ctx.fillStyle="rgba(30,64,175,0.9)"; ctx.font="10px sans-serif";
-    ctx.fillText(`r = ${rInner.toFixed(2)}`,ox+rInner*SCALE+3,oy-4);
-    ctx.fillStyle="rgba(5,150,105,0.9)";
-    ctx.fillText(`R = ${rOuter.toFixed(2)}`,ox+rOuter*SCALE+3,oy-4);
-    ctx.fillStyle="#374151"; ctx.font="11px sans-serif";
-    ctx.fillText(`${fname}, N=${N} terms`,5,14);
-    ctx.fillStyle="#6b7280"; ctx.font="10px sans-serif";
-    ctx.fillText("Convergence annulus shown in colour",5,H-6);
+    // Singularity markers
+    const meta = funcMeta[fname];
+    meta.sings.forEach(s => {
+      const [sx,sy]=toScr9(s.re,s.im);
+      ctx.strokeStyle="#dc2626"; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(sx-6,sy-6); ctx.lineTo(sx+6,sy+6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(sx+6,sy-6); ctx.lineTo(sx-6,sy+6); ctx.stroke();
+    });
 
-    // Singularity type label
-    let singType="";
-    if(fname==="1/z") singType="Simple pole (order 1)";
-    else if(fname==="1/(z(z-1))") singType="Poles at 0 and 1";
-    else singType="Essential singularity";
+    // Title
+    ctx.fillStyle="rgba(0,0,0,0.75)"; ctx.font="bold 10px sans-serif";
+    ctx.fillText(usePartial?`N=${N}-term partial sum`:"exact f(z)", 5, H-7);
 
-    const infoDiv=document.createElement("div");
-    infoDiv.style.cssText="margin-top:0.4rem; font-family:sans-serif; font-size:0.85em; color:#374151;";
-    infoDiv.innerHTML=`<strong>Singularity type:</strong> <span style="color:#1e40af">${singType}</span> — series converges in the coloured annulus ${rInner.toFixed(2)} &lt; |z| &lt; ${rOuter.toFixed(2)}`;
+    return canvas;
+  }
 
-    const wrap=document.createElement("div");
-    wrap.appendChild(canvas);
-    wrap.appendChild(infoDiv);
+  function renderLaurent9(fname, rInner, rOuter, N) {
+    if(rOuter <= rInner + 0.01) rOuter = rInner + 0.15;
+    const meta = funcMeta[fname];
+    const isEssential = fname === "e^{1/z} (essential)";
+
+    const panelsDiv = document.createElement("div");
+    panelsDiv.style.cssText = "display:flex; gap:0.5rem; flex-wrap:wrap;";
+
+    const exactCanvas = renderPanel9(fname, rInner, rOuter, N, false);
+    const partialCanvas = renderPanel9(fname, rInner, rOuter, N, true);
+
+    // Label wrappers
+    function labeled(canvas, labelText) {
+      const d = document.createElement("div");
+      const lbl = document.createElement("div");
+      lbl.style.cssText = "font-size:0.8em; font-weight:600; text-align:center; margin-bottom:2px; color:#374151;";
+      lbl.textContent = labelText;
+      d.appendChild(lbl); d.appendChild(canvas);
+      return d;
+    }
+
+    panelsDiv.appendChild(labeled(exactCanvas, "Exact f(z) in annulus"));
+    if(isEssential) panelsDiv.appendChild(labeled(partialCanvas, `Partial sum (N=${N} terms of e^{1/z})`));
+
+    const infoDiv = document.createElement("div");
+    infoDiv.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.85em;";
+
+    let ppDesc = meta.ppTerms === Infinity
+      ? `<strong style="color:#dc2626">∞ principal-part terms</strong> — essential singularity`
+      : `<strong>${meta.ppTerms}</strong> principal-part term${meta.ppTerms===1?"":"s"}`;
+
+    let errStr = "";
+    if(isEssential) {
+      const maxErr = computeMaxError9(fname, rInner, rOuter, N, 64);
+      errStr = `<div style="margin-top:0.3rem;color:#374151;"><strong>Max error on midpoint circle:</strong> ${maxErr.toExponential(3)}</div>`;
+    }
+
+    infoDiv.innerHTML = `
+      <div><strong>Singularity type:</strong> <span style="color:#1e40af">${meta.singType}</span></div>
+      <div><strong>Principal part:</strong> ${ppDesc}</div>
+      <div><strong>Convergence annulus:</strong> ${rInner.toFixed(3)} &lt; |z| &lt; ${rOuter.toFixed(2)} — shown in colour; grey = outside</div>
+      ${errStr}
+    `;
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(panelsDiv); wrap.appendChild(infoDiv);
     return wrap;
   }
 
   const container=document.createElement("div");
   container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
-  const title=document.createElement("div");
-  title.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
-  title.textContent="Laurent series: convergence in an annulus";
-  container.appendChild(title);
+  const title9=document.createElement("div");
+  title9.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title9.textContent="Laurent annulus: convergence barriers and singularity type";
+  container.appendChild(title9);
   container.appendChild(funcSel9);
   container.appendChild(rInnerSl);
   container.appendChild(rOuterSl);
@@ -259,14 +690,14 @@ The **principal part** consists of the negative-power terms $\sum_{n=1}^{\infty}
 
   const note9=document.createElement("div");
   note9.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
-  note9.textContent="The domain colouring (hue = arg f, brightness = log|f|) is shown only inside the annulus r < |z| < R — where the Laurent series converges. Grey regions lie outside. Adjust the radii to see how the convergence region changes. The singularity at the origin is marked ×.";
+  note9.textContent="Domain colouring (hue = arg f, brightness = log|f|) shown only inside the annulus r < |z| < R. Blue circle = inner singularity barrier; orange circle = outer singularity barrier. For e^{1/z}, the right panel shows the N-term partial sum alongside exact f(z). Red × marks singularities.";
   container.appendChild(note9);
 
   function update9() {
-    // Ensure outer > inner
-    if(rOuterSl.value <= rInnerSl.value) rOuterSl.value = rInnerSl.value + 0.2;
+    let rI = parseFloat(rInnerSl.value), rO = parseFloat(rOuterSl.value);
+    if(rO <= rI + 0.01) rO = rI + 0.15;
     vizDiv9.innerHTML="";
-    vizDiv9.appendChild(renderLaurent(funcSel9.value, rInnerSl.value, rOuterSl.value, nTermsSl.value));
+    vizDiv9.appendChild(renderLaurent9(funcSel9.value, rI, rO, parseInt(nTermsSl.value)));
   }
   funcSel9.addEventListener("input", update9);
   rInnerSl.addEventListener("input", update9);
@@ -286,6 +717,226 @@ $$\frac{\sin z}{z^3} = \frac{1}{z^3}\left(z - \frac{z^3}{6} + \frac{z^5}{120} - 
 
 The principal part has only one negative-power term, $1/z^2$.
 
+```{ojs}
+//| echo: false
+{
+  // Laurent coefficient spectrum — missed opportunity 4
+  // Bar chart of c_n for n=−6..+4; red bars = principal part (n<0), blue = analytic (n≥0)
+  // Right panel: domain colouring built by adding k principal-part terms one by one
+  const W2 = 320, H2 = 280, CX2 = W2/2, CY2 = H2/2, SCALE2 = 55;
+
+  const funcSelSpec = Inputs.select([
+    "1/z(z-1)  [2 pp terms]",
+    "e^{1/z}    [∞ pp terms]",
+    "sin(z)/z   [0 pp terms — removable]",
+    "1/z²       [1 pp term — order-2 pole]"
+  ], { value: "1/z(z-1)  [2 pp terms]", label: "f(z)" });
+
+  const kSlider = Inputs.range([0, 6], { value: 0, step: 1, label: "Principal-part terms added (k)" });
+
+  // Laurent coefficients c_n for n = -6..+4 (index 0 = n=-6)
+  function getLaurentCoeffs(fname) {
+    // Returns array of {n, c} for n=-6..4
+    const result = [];
+    for(let n=-6; n<=4; n++) {
+      let c = 0;
+      if(fname.startsWith("1/z(z-1)")) {
+        // 1/(z(z-1)) = -1/z - 1 - z - z^2 - ... for |z|<1
+        if(n===-1) c=-1;
+        else if(n>=0) c=-1;
+        else c=0;
+      } else if(fname.startsWith("e^{1/z}")) {
+        // e^{1/z} = sum_{k=0}^∞ (1/z)^k / k! = sum_{k=0}^∞ z^{-k} / k!
+        if(n<=0) c = 1/factorial(-n);
+        else c = 0;
+      } else if(fname.startsWith("sin(z)/z")) {
+        // sin(z)/z = 1 - z²/6 + z⁴/120 - ...
+        if(n===0) c=1; else if(n===2) c=-1/6; else if(n===4) c=1/120; else c=0;
+      } else if(fname.startsWith("1/z²")) {
+        if(n===-2) c=1; else c=0;
+      }
+      result.push({n, c});
+    }
+    return result;
+  }
+
+  function factorial(k) {
+    if(k<=0) return 1; let f=1; for(let i=2;i<=k;i++) f*=i; return f;
+  }
+
+  // Evaluate partial sum using k principal-part terms
+  function evalKTerms(fname, re, im, k) {
+    const coeffs = getLaurentCoeffs(fname);
+    // Principal-part coefficients: n < 0, sorted from most-negative to -1
+    const ppCoeffs = coeffs.filter(c=>c.n<0&&c.c!==0).sort((a,b)=>a.n-b.n);
+    const analyticCoeffs = coeffs.filter(c=>c.n>=0);
+    // Take first k principal-part terms (smallest n first)
+    const activeCoeffs = [
+      ...ppCoeffs.slice(0, k),
+      ...analyticCoeffs
+    ];
+    const d2 = re*re+im*im; if(d2<1e-8) return [NaN,NaN];
+    let sumRe=0, sumIm=0;
+    for(const {n, c} of activeCoeffs) {
+      if(c===0) continue;
+      // z^n = r^n * e^{i*n*theta}
+      const r = Math.sqrt(d2);
+      const theta = Math.atan2(im, re);
+      const rn = Math.pow(r, n);
+      if(!isFinite(rn)) continue;
+      sumRe += c * rn * Math.cos(n*theta);
+      sumIm += c * rn * Math.sin(n*theta);
+    }
+    return [sumRe, sumIm];
+  }
+
+  function hslToRgbSpec(h,s,l) {
+    h=((h%1)+1)%1;
+    const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h*6)%2-1)),m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
+    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function renderSpectrum(fname, k) {
+    const coeffs = getLaurentCoeffs(fname);
+    const ppCoeffs = coeffs.filter(c=>c.n<0&&c.c!==0).sort((a,b)=>a.n-b.n);
+    const kCapped = Math.min(k, ppCoeffs.length);
+
+    // --- Bar chart ---
+    const BW = 380, BH = 200;
+    const barCanvas = document.createElement("canvas");
+    barCanvas.width = BW; barCanvas.height = BH;
+    const bctx = barCanvas.getContext("2d");
+    bctx.fillStyle="#f9fafb";
+    bctx.fillRect(0,0,BW,BH);
+
+    const nVals = coeffs.map(c=>c.n);
+    const n0 = nVals[0], n1 = nVals[nVals.length-1];
+    const totalBars = n1-n0+1;
+    const barW = Math.floor((BW-40) / totalBars) - 2;
+    const xOff = 30;
+    const zeroY = BH - 35;
+    const maxAbs = Math.max(...coeffs.map(c=>Math.abs(c.c)), 0.01);
+    const scaleY = (BH - 55) / maxAbs;
+
+    // Zero line
+    bctx.strokeStyle="#9ca3af"; bctx.lineWidth=1;
+    bctx.beginPath(); bctx.moveTo(xOff, zeroY); bctx.lineTo(BW-10, zeroY); bctx.stroke();
+
+    coeffs.forEach(({n,c}) => {
+      const barIdx = n - n0;
+      const x = xOff + barIdx * (barW+2) + 1;
+      const h = Math.abs(c) * scaleY;
+      const y = c >= 0 ? zeroY - h : zeroY;
+
+      // Highlight active terms
+      const isPP = n < 0;
+      const ppIdx = ppCoeffs.findIndex(p=>p.n===n);
+      const isActive = isPP ? (ppIdx >= 0 && ppIdx < kCapped) : true;
+      const isAnalytic = n >= 0;
+
+      bctx.fillStyle = isPP
+        ? (isActive ? "#dc2626" : "rgba(220,38,38,0.25)")
+        : (c!==0 ? "#3b82f6" : "#e5e7eb");
+      bctx.fillRect(x, y, barW, Math.max(h, 1));
+
+      // n label
+      bctx.fillStyle = "#374151"; bctx.font="9px sans-serif"; bctx.textAlign="center";
+      bctx.fillText(n.toString(), x+barW/2, zeroY+12);
+
+      // c value for non-zero
+      if(Math.abs(c)>0.001) {
+        bctx.fillStyle = isPP ? (isActive?"#dc2626":"#f87171") : "#3b82f6";
+        bctx.font="8px sans-serif";
+        const valStr = Number.isInteger(c)?c.toString():c.toFixed(3);
+        bctx.fillText(valStr, x+barW/2, c>=0 ? zeroY-h-3 : zeroY+h+20);
+      }
+    });
+    bctx.textAlign="left";
+
+    // Axis label
+    bctx.fillStyle="#374151"; bctx.font="10px sans-serif";
+    bctx.fillText("n", BW-15, zeroY+3);
+    bctx.fillStyle="#dc2626"; bctx.font="10px sans-serif";
+    bctx.fillText("red = principal part (n<0)", 30, 14);
+    bctx.fillStyle="#3b82f6";
+    bctx.fillText("blue = analytic part (n≥0)", 220, 14);
+
+    // --- Domain colouring panel ---
+    const dcCanvas = document.createElement("canvas");
+    dcCanvas.width=W2; dcCanvas.height=H2;
+    const dctx=dcCanvas.getContext("2d");
+    const img2=dctx.createImageData(W2,H2); const dd=img2.data;
+
+    for(let px=0;px<W2;px++) {
+      for(let py=0;py<H2;py++) {
+        const re=(px-CX2)/SCALE2, im=-(py-CY2)/SCALE2;
+        const [wr,wi]=evalKTerms(fname,re,im,kCapped);
+        if(!isFinite(wr)||!isFinite(wi)||isNaN(wr)||Math.abs(wr)>1e5) {
+          const idx=(py*W2+px)*4; dd[idx]=255;dd[idx+1]=255;dd[idx+2]=255;dd[idx+3]=255; continue;
+        }
+        const arg=Math.atan2(wi,wr), mag=Math.sqrt(wr*wr+wi*wi);
+        const hue=(arg/(2*Math.PI)+1)%1;
+        const brightness=0.5+0.35*Math.tanh(Math.log(mag+0.001)/2);
+        const [r,g,b]=hslToRgbSpec(hue,0.8,brightness);
+        const idx=(py*W2+px)*4; dd[idx]=r;dd[idx+1]=g;dd[idx+2]=b;dd[idx+3]=255;
+      }
+    }
+    dctx.putImageData(img2,0,0);
+
+    // Axes on dc panel
+    const [dcox,dcoy]=[CX2,CY2];
+    dctx.strokeStyle="rgba(255,255,255,0.4)"; dctx.lineWidth=0.8;
+    dctx.beginPath(); dctx.moveTo(0,dcoy); dctx.lineTo(W2,dcoy); dctx.stroke();
+    dctx.beginPath(); dctx.moveTo(dcox,0); dctx.lineTo(dcox,H2); dctx.stroke();
+    dctx.fillStyle="rgba(0,0,0,0.7)"; dctx.font="10px sans-serif";
+    dctx.fillText(`${kCapped} pp term${kCapped===1?"":"s"} added`, 5, H2-7);
+
+    const stepLabel = document.createElement("div");
+    stepLabel.style.cssText="text-align:center; font-size:0.85em; color:#374151; margin:0.25rem 0;";
+    stepLabel.textContent = kCapped === 0
+      ? "Step 0: analytic part only (no principal-part terms)"
+      : `Step ${kCapped}: adding c_{${ppCoeffs[kCapped-1]?.n}} term to the reconstruction`;
+
+    const panelDiv = document.createElement("div");
+    panelDiv.style.cssText="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:flex-start;";
+    panelDiv.appendChild(barCanvas); panelDiv.appendChild(dcCanvas);
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(panelDiv);
+    wrap.appendChild(stepLabel);
+    return wrap;
+  }
+
+  const container2 = document.createElement("div");
+  container2.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const title2 = document.createElement("div");
+  title2.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  title2.textContent="Laurent coefficient spectrum: principal part vs analytic part";
+  container2.appendChild(title2);
+  container2.appendChild(funcSelSpec);
+  container2.appendChild(kSlider);
+  const vizDiv2 = document.createElement("div");
+  container2.appendChild(vizDiv2);
+  const note2 = document.createElement("div");
+  note2.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note2.textContent="Bar chart: red = principal-part coefficients (n<0), blue = analytic-part coefficients (n≥0). Slider adds principal-part terms one at a time; domain colouring in right panel updates. Bright red bars are active, faded red bars are not yet included.";
+  container2.appendChild(note2);
+
+  function updateSpec() {
+    vizDiv2.innerHTML="";
+    vizDiv2.appendChild(renderSpectrum(funcSelSpec.value, parseInt(kSlider.value)));
+  }
+  funcSelSpec.addEventListener("input", updateSpec);
+  kSlider.addEventListener("input", updateSpec);
+  updateSpec();
+
+  return container2;
+}
+```
+
 ---
 
 ## Classification of isolated singularities
@@ -298,12 +949,171 @@ An **isolated singularity** of $f$ at $z_0$ is a point where $f$ is not analytic
 $$f(z) = \frac{c_{-m}}{(z-z_0)^m} + \cdots + \frac{c_{-1}}{z-z_0} + c_0 + c_1(z-z_0) + \cdots, \quad c_{-m} \neq 0$$
 $|f(z)| \to \infty$ as $z \to z_0$. A **simple pole** is a pole of order 1.
 
-**Essential singularity.** The principal part has infinitely many terms. The behaviour near $z_0$ is wild. Example: $e^{1/z}$ at $z = 0$ — as $z \to 0$ along different directions, $e^{1/z}$ oscillates with arbitrarily large magnitude and argument, taking values dense in the entire complex plane. There is no finite or infinite limit.
+**Essential singularity.** The principal part has infinitely many terms. The behaviour near $z_0$ has no limit — finite or infinite. Example: $e^{1/z}$ at $z = 0$. Approach the origin along the positive real axis and $e^{1/z} \to +\infty$; along the negative real axis, $e^{1/z} \to 0$; along the imaginary axis, $e^{1/z}$ spirals and oscillates. In any small neighbourhood of 0, the function takes every complex value (with at most one exception).
 
 <!-- VIZ: Singularity classification visualiser — domain colouring zoom. A function selector offers three functions, each with an isolated singularity at z = 0: "sin(z)/z (removable)", "1/z (simple pole)", "1/z² (order-2 pole)", "e^{1/z} (essential)". The main panel shows domain colouring (hue = arg f, brightness = log|f|) of the selected function over a square region. A zoom slider shrinks the viewport towards the origin: range 3 to 0.01 in log scale. A singularity-type label updates live. For the removable singularity, the domain colouring stays smooth and bounded as you zoom in — the function is extending continuously. For the pole, brightness intensifies (blossoms white) and the hue wheel winds once (simple) or twice (order 2) around the origin. For the essential singularity, zooming in reveals ever-finer multi-coloured oscillations with no limiting pattern — Picard's theorem made visible: every colour (every value) appears near the origin. An annotation panel below the plot states the singularity type and the number of hue-winding revolutions counted around a small circle. Series palette: consistent with Chapter 1 and 2 domain-colouring vocabulary. This is the most visually striking moment of the complex analysis section — essential singularities are genuinely extreme and should look it. -->
 
 
 <!-- STUDENT: Picard's theorem is cited but not introduced — the reader has not seen it before. For the purposes of this chapter, the claim "behaviour near an essential singularity is wild" is all that's needed; invoking a named theorem that appears nowhere else in the series may feel like a reference to unknown material. If Picard's theorem is not covered elsewhere, consider replacing it with a brief concrete illustration (e.g. noting that e^{1/z} oscillates arbitrarily fast near 0). -->
+
+```{ojs}
+//| echo: false
+{
+  // Singularity classifier — log-scale zoom, domain colouring, 4 singularity types
+  const W_SC = 420, H_SC = 380, CX_SC = W_SC/2, CY_SC = H_SC/2;
+
+  const funcSelSC = Inputs.select([
+    "sin(z)/z   — removable",
+    "1/z        — simple pole (order 1)",
+    "1/z²       — order-2 pole",
+    "e^{1/z}    — essential singularity"
+  ], { value: "sin(z)/z   — removable", label: "Singularity type" });
+
+  // Zoom: log scale, viewport half-width from 2 down to 0.002
+  const zoomSl = Inputs.range([Math.log10(0.002), Math.log10(2)], {
+    value: Math.log10(0.5), step: 0.02, label: "log₁₀(viewport half-width)"
+  });
+
+  function evalSC(fname, re, im) {
+    if(fname.startsWith("sin(z)/z")) {
+      // sin(z)/z: at z=0 value is 1 (removable singularity)
+      const r2=re*re+im*im; if(r2<1e-12) return [1,0];
+      // sin(z) = sin(x)cosh(y) + i cos(x)sinh(y)
+      const sr=Math.sin(re)*Math.cosh(im), si=Math.cos(re)*Math.sinh(im);
+      const d=r2; // divide by z: (sr+isi)/(re+iim)
+      return [(sr*re+si*im)/d, (si*re-sr*im)/d];
+    }
+    if(fname.startsWith("1/z ")) {
+      const d=re*re+im*im; if(d<1e-12) return [NaN,NaN];
+      return [re/d, -im/d];
+    }
+    if(fname.startsWith("1/z²")) {
+      const d=re*re+im*im; if(d<1e-12) return [NaN,NaN];
+      const d2=d*d;
+      return [(re*re-im*im)/d2, -2*re*im/d2];
+    }
+    if(fname.startsWith("e^{1/z}")) {
+      const d=re*re+im*im; if(d<1e-12) return [NaN,NaN];
+      const invRe=re/d, invIm=-im/d;
+      return [Math.exp(invRe)*Math.cos(invIm), Math.exp(invRe)*Math.sin(invIm)];
+    }
+    return [1,0];
+  }
+
+  function hslToRgbSC(h,s,l) {
+    h=((h%1)+1)%1;
+    const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h*6)%2-1)),m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
+    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function renderSC(fname, logHalfWidth) {
+    const halfW = Math.pow(10, logHalfWidth);
+    const scale = W_SC / (2 * halfW);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W_SC; canvas.height = H_SC;
+    const ctx = canvas.getContext("2d");
+    const img = ctx.createImageData(W_SC, H_SC); const data = img.data;
+
+    for(let px=0; px<W_SC; px++) {
+      for(let py=0; py<H_SC; py++) {
+        const re = (px - CX_SC) / scale;
+        const im = -(py - CY_SC) / scale;
+        const [wr,wi] = evalSC(fname, re, im);
+        if(!isFinite(wr)||!isFinite(wi)||isNaN(wr)) {
+          const idx=(py*W_SC+px)*4; data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255; continue;
+        }
+        const arg=Math.atan2(wi,wr), mag=Math.sqrt(wr*wr+wi*wi);
+        const hue=(arg/(2*Math.PI)+1)%1;
+        const brightness=0.5+0.35*Math.tanh(Math.log(mag+0.001)/2);
+        const [r,g,b]=hslToRgbSC(hue,0.8,brightness);
+        const idx=(py*W_SC+px)*4; data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+
+    // Axes
+    ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.moveTo(0,H_SC/2); ctx.lineTo(W_SC,H_SC/2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W_SC/2,0); ctx.lineTo(W_SC/2,H_SC); ctx.stroke();
+
+    // Scale indicator
+    const tickPx = scale; // 1 unit in pixels
+    ctx.strokeStyle="rgba(255,255,255,0.85)"; ctx.lineWidth=2;
+    const ty = H_SC-18;
+    ctx.beginPath(); ctx.moveTo(W_SC/2-tickPx/2,ty); ctx.lineTo(W_SC/2+tickPx/2,ty); ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,0.9)"; ctx.font="10px sans-serif"; ctx.textAlign="center";
+    ctx.fillText(`|z| = ${halfW < 0.01 ? halfW.toExponential(2) : halfW.toFixed(4)}`, W_SC/2, ty-4);
+    ctx.fillText("← 1 unit →", W_SC/2, ty+12);
+    ctx.textAlign="left";
+
+    // Type annotation
+    const isEss = fname.startsWith("e^{1/z}");
+    const isRem = fname.startsWith("sin(z)/z");
+    let typeColor = isEss ? "#f97316" : isRem ? "#059669" : "#3b82f6";
+    let typeLabel = isEss ? "Essential singularity" : isRem ? "Removable singularity" : fname.startsWith("1/z²") ? "Pole of order 2" : "Simple pole (order 1)";
+
+    ctx.fillStyle="rgba(0,0,0,0.7)";
+    ctx.fillRect(0,0,W_SC,22);
+    ctx.fillStyle=typeColor; ctx.font="bold 11px sans-serif";
+    ctx.fillText(typeLabel, 6, 15);
+
+    // Persistent annotation for essential singularity at fine zoom
+    const infoDiv = document.createElement("div");
+    infoDiv.style.cssText = "margin-top:0.4rem; font-family:sans-serif; font-size:0.86em; padding:0.4rem 0.6rem; border-radius:4px;";
+
+    if(isEss && halfW < 0.1) {
+      infoDiv.style.background="#fff7ed";
+      infoDiv.style.border="1px solid #fed7aa";
+      infoDiv.innerHTML = `<strong style="color:#f97316">No pattern emerges — every colour appears in every neighbourhood.</strong> As you zoom in on the essential singularity at z=0, the domain colouring continues to show all hues (all argument values) densely packed, with no limiting structure. This is what makes an essential singularity different from every other type.`;
+    } else if(isRem) {
+      infoDiv.style.background="#f0fdf4";
+      infoDiv.style.border="1px solid #bbf7d0";
+      infoDiv.innerHTML = `<strong style="color:#059669">Removable singularity:</strong> as you zoom in, the domain colouring stabilises — it looks like the colouring of an analytic function. The function extends continuously to z=0 (value: 1 for sin(z)/z). No winding of the hue wheel around the origin.`;
+    } else if(fname.startsWith("1/z²")) {
+      infoDiv.style.background="#eff6ff";
+      infoDiv.style.border="1px solid #bfdbfe";
+      infoDiv.innerHTML = `<strong style="color:#3b82f6">Pole of order 2:</strong> the hue wheel winds <strong>twice</strong> around the origin. Brightness intensifies (blooms white) as you zoom in — |f(z)| → ∞. The origin is a zero of the conformal image; the order-2 pole shows two full colour cycles per small circle.`;
+    } else {
+      infoDiv.style.background="#eff6ff";
+      infoDiv.style.border="1px solid #bfdbfe";
+      infoDiv.innerHTML = `<strong style="color:#3b82f6">Simple pole (order 1):</strong> the hue wheel winds <strong>once</strong> around the origin. Brightness blooms white at the centre. Winding number = order of the pole.`;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(canvas); wrap.appendChild(infoDiv);
+    return wrap;
+  }
+
+  const containerSC = document.createElement("div");
+  containerSC.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const titleSC = document.createElement("div");
+  titleSC.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleSC.textContent = "Singularity classifier: zoom in on isolated singularities";
+  containerSC.appendChild(titleSC);
+  containerSC.appendChild(funcSelSC);
+  containerSC.appendChild(zoomSl);
+  const vizDivSC = document.createElement("div");
+  containerSC.appendChild(vizDivSC);
+  const noteSC = document.createElement("div");
+  noteSC.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteSC.textContent = "Domain colouring: hue = arg f, brightness = log|f| — identical to Ch1/Ch2. Zoom slider ranges from viewport half-width 2 down to 0.002. For a removable singularity, the colouring stays smooth; for a pole of order m, the hue wheel winds m times; for an essential singularity, every colour appears in every neighbourhood with no limiting pattern.";
+  containerSC.appendChild(noteSC);
+
+  function updateSC() {
+    vizDivSC.innerHTML = "";
+    vizDivSC.appendChild(renderSC(funcSelSC.value, parseFloat(zoomSl.value)));
+  }
+  funcSelSC.addEventListener("input", updateSC);
+  zoomSl.addEventListener("input", updateSC);
+  updateSC();
+
+  return containerSC;
+}
+```
 
 ---
 
@@ -313,10 +1123,268 @@ The **residue** of $f$ at an isolated singularity $z_0$ is the Laurent coefficie
 
 $$\text{Res}[f, z_0] = c_{-1}$$
 
-**Why it matters.** Chapter 2 (§ A fundamental example) showed that $\oint_{|z|=r} dz/z = 2\pi i$, and that $\oint_{|z|=r} z^n\,dz = 0$ for all other integers $n$. The same parametrisation argument extends to $(z-z_0)^n$ around any circle centred at $z_0$. So when integrating the Laurent series term by term around a small circle enclosing $z_0$, every term vanishes except the $c_{-1}$ term:
+**Why it matters.** Chapter 2 proved by direct parametrisation that $\oint_{|z-z_0|=r}(z-z_0)^n\,dz = 2\pi i$ when $n = -1$ and $= 0$ for every other integer $n$. (The same substitution $z = z_0 + re^{i\theta}$ works for all integers, not just $n = 0$ as computed there.) So when the Laurent series is integrated term by term around a small circle enclosing $z_0$, every term vanishes except the $c_{-1}$ term:
 $$\oint_C \sum_{n=-\infty}^{\infty} c_n(z-z_0)^n\,dz = c_{-1}\cdot 2\pi i$$
 
 <!-- STUDENT: This is the key conceptual step of the chapter, but it relies on the result from Chapter 2 (§ A fundamental example) that was proved only for n = 0. Here it is asserted for all integers n. A brief callback — "as shown in Chapter 2 for n = 0, and provable similarly for all integers n" — would connect the two chapters and confirm the reader isn't expected to prove this themselves. -->
+
+```{ojs}
+//| echo: false
+{
+  // Why only c₋₁ survives — missed opportunity 2
+  // Circle with z = r e^{iθ} travelling; integer slider n; arrows show integrand contribution
+  // Right panel: accumulated contour integral as curve in C-plane — closes to 0 for n≠-1, to 2πi for n=-1
+
+  const W_C1 = 320, H_C1 = 300, CX_C1 = W_C1/2, CY_C1 = H_C1/2, SC_C1 = 90;
+  const W_C2 = 300, H_C2 = 300, CX_C2 = W_C2/2, CY_C2 = H_C2/2;
+
+  const nSlider = Inputs.range([-4, 3], { value: -1, step: 1, label: "Power n in z^n" });
+  const tSlider = Inputs.range([0, 1], { value: 0, step: 0.004, label: "Progress t (0→1 = full circle)" });
+
+  const rCircle = 1.0; // circle radius |z| = r = 1
+
+  // Integral of z^n dz around circle of radius r, from 0 to 2πt
+  // z = r e^{iθ}, dz = ir e^{iθ} dθ
+  // integrand = r^n e^{inθ} * ir e^{iθ} = i r^{n+1} e^{i(n+1)θ}
+  function computeIntegralC1(n, t, STEPS) {
+    const dtheta = 2*Math.PI*t / Math.max(STEPS,1);
+    let sumRe=0, sumIm=0;
+    for(let k=0;k<STEPS;k++) {
+      const theta = 2*Math.PI * k*t / STEPS;
+      const dthE = 2*Math.PI * t / STEPS;
+      // integrand z^n dz at midpoint
+      const thM = theta + dthE/2;
+      const r = rCircle;
+      // z^n = r^n e^{inθ}
+      const znRe = Math.pow(r,n)*Math.cos(n*thM);
+      const znIm = Math.pow(r,n)*Math.sin(n*thM);
+      // dz = ir e^{iθ} dθ = r(-sin θ + i cos θ) dθ
+      const dzRe = -r*Math.sin(thM)*dthE;
+      const dzIm =  r*Math.cos(thM)*dthE;
+      sumRe += znRe*dzRe - znIm*dzIm;
+      sumIm += znRe*dzIm + znIm*dzRe;
+    }
+    return [sumRe, sumIm];
+  }
+
+  function toScrC1(re,im) { return [CX_C1+re*SC_C1, CY_C1-im*SC_C1]; }
+  function toScrC2(re,im) { // C2: scale to fit result; n=-1 gives 2πi ~ 6.28
+    const s2 = H_C2*0.35 / (2*Math.PI);
+    return [CX_C2+re*s2, CY_C2-im*s2];
+  }
+
+  function renderC1(n, tVal) {
+    const STEPS = 200;
+    const canvas = document.createElement("canvas");
+    canvas.width=W_C1; canvas.height=H_C1;
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#fafafa"; ctx.fillRect(0,0,W_C1,H_C1);
+
+    // Grid
+    ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=0.5;
+    for(let i=-2;i<=2;i++) {
+      const [lx]=toScrC1(i,0); ctx.beginPath(); ctx.moveTo(lx,0); ctx.lineTo(lx,H_C1); ctx.stroke();
+      const [,ly]=toScrC1(0,i); ctx.beginPath(); ctx.moveTo(0,ly); ctx.lineTo(W_C1,ly); ctx.stroke();
+    }
+
+    // Axes
+    const [ox,oy]=toScrC1(0,0);
+    ctx.strokeStyle="#9ca3af"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,oy); ctx.lineTo(W_C1,oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox,0); ctx.lineTo(ox,H_C1); ctx.stroke();
+
+    // Full circle outline
+    ctx.strokeStyle="rgba(156,163,175,0.4)"; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.arc(ox,oy,rCircle*SC_C1,0,2*Math.PI); ctx.stroke(); ctx.setLineDash([]);
+
+    // Traced portion of circle (orange for n=-1, blue otherwise)
+    const traceColor = n===-1 ? "#f97316" : "#3b82f6";
+    ctx.strokeStyle=traceColor; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    for(let k=0;k<=STEPS;k++) {
+      const theta = 2*Math.PI*(k/STEPS)*tVal;
+      const [px,py]=toScrC1(rCircle*Math.cos(theta), rCircle*Math.sin(theta));
+      k===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // Arrows showing integrand direction at a few points along the traced arc
+    const arrowCount = 8;
+    for(let a=0;a<arrowCount;a++) {
+      const frac = (a+0.5)/arrowCount;
+      if(frac >= tVal && tVal < 0.98) continue;
+      const theta = 2*Math.PI*frac;
+      const [zx,zy] = [rCircle*Math.cos(theta), rCircle*Math.sin(theta)];
+      // Integrand contribution direction: z^n * dz (dz direction = tangent = i*z/r)
+      // direction of z^n * dz at this point
+      const argZn = n * theta;
+      const argDz = theta + Math.PI/2; // tangent direction
+      const argContrib = argZn + argDz;
+      const arrowLen = 0.28;
+      const [ax1,ay1]=toScrC1(zx,zy);
+      const ax2=ax1+arrowLen*SC_C1*Math.cos(argContrib);
+      const ay2=ay1-arrowLen*SC_C1*Math.sin(argContrib);
+      ctx.strokeStyle=n===-1?"#f97316":"rgba(59,130,246,0.7)"; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(ax1,ay1); ctx.lineTo(ax2,ay2); ctx.stroke();
+      // Arrowhead
+      const headLen=7, headAngle=0.4;
+      const dir=Math.atan2(ay1-ay2,ax2-ax1);
+      ctx.beginPath();
+      ctx.moveTo(ax2,ay2);
+      ctx.lineTo(ax2-headLen*Math.cos(dir-headAngle), ay2+headLen*Math.sin(dir-headAngle));
+      ctx.moveTo(ax2,ay2);
+      ctx.lineTo(ax2-headLen*Math.cos(dir+headAngle), ay2+headLen*Math.sin(dir+headAngle));
+      ctx.stroke();
+    }
+
+    // Current point z = re^{iθ}
+    const thetaNow = 2*Math.PI*tVal;
+    const [cpx,cpy]=toScrC1(rCircle*Math.cos(thetaNow), rCircle*Math.sin(thetaNow));
+    ctx.fillStyle=traceColor; ctx.beginPath(); ctx.arc(cpx,cpy,6,0,2*Math.PI); ctx.fill();
+    ctx.strokeStyle="#fff"; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle="#374151"; ctx.font="10px sans-serif";
+    ctx.fillText(`z = e^{iθ}`, cpx+8, cpy-4);
+
+    // Origin mark
+    ctx.fillStyle="#374151"; ctx.font="9px sans-serif";
+    ctx.fillText("0", ox+4, oy-4);
+
+    // Title
+    ctx.fillStyle="#374151"; ctx.font="bold 10px sans-serif";
+    const nLabel = n>=0?`+${n}`:n.toString();
+    ctx.fillText(`Integrand: z^{${nLabel}} dz on |z|=1`, 5, 14);
+
+    return canvas;
+  }
+
+  function renderC2(n, tVal) {
+    const STEPS = 200;
+    const canvas = document.createElement("canvas");
+    canvas.width=W_C2; canvas.height=H_C2;
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#fafafa"; ctx.fillRect(0,0,W_C2,H_C2);
+
+    // Axes
+    const [ox,oy]=toScrC2(0,0);
+    ctx.strokeStyle="#9ca3af"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,oy); ctx.lineTo(W_C2,oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox,0); ctx.lineTo(ox,H_C2); ctx.stroke();
+    ctx.fillStyle="#374151"; ctx.font="9px sans-serif";
+    ctx.fillText("Re", W_C2-20,oy-3); ctx.fillText("Im", ox+3,10);
+
+    // Mark 2πi on Im axis for n=-1
+    if(n===-1) {
+      const [,tpiY]=toScrC2(0,2*Math.PI);
+      ctx.strokeStyle="#fbbf24"; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+      ctx.beginPath(); ctx.moveTo(ox-5,tpiY); ctx.lineTo(ox+5,tpiY); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle="#fbbf24"; ctx.font="10px sans-serif";
+      ctx.fillText("2πi", ox+6, tpiY+4);
+    }
+
+    // Accumulated integral curve up to t
+    const curveColor = n===-1?"#f97316":"#3b82f6";
+    ctx.strokeStyle=curveColor; ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let k=0;k<=STEPS;k++) {
+      const tFrac = k/STEPS;
+      if(tFrac > tVal + 0.001) break;
+      const [ir,ii] = computeIntegralC1(n, tFrac, 80);
+      const [px,py] = toScrC2(ir,ii);
+      k===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // Current accumulated value
+    const [curRe, curIm] = computeIntegralC1(n, tVal, 80);
+    const [cpx,cpy]=toScrC2(curRe,curIm);
+    ctx.fillStyle=curveColor; ctx.beginPath(); ctx.arc(cpx,cpy,5,0,2*Math.PI); ctx.fill();
+
+    // Final value annotation
+    if(tVal > 0.97) {
+      const [fRe, fIm] = computeIntegralC1(n, 1, 200);
+      const closed = Math.sqrt(fRe*fRe+fIm*fIm) < 0.1;
+      if(n===-1) {
+        ctx.fillStyle="#f97316"; ctx.font="bold 10px sans-serif";
+        ctx.fillText("→ 2πi ✓", cpx+8, cpy-4);
+      } else {
+        ctx.fillStyle="#3b82f6"; ctx.font="bold 10px sans-serif";
+        ctx.fillText("→ 0", cpx+8, cpy-4);
+      }
+    }
+
+    // n=-1 gold highlight box
+    if(n===-1) {
+      ctx.fillStyle="rgba(251,191,36,0.15)"; ctx.fillRect(ox-60,0,120,H_C2);
+    }
+
+    ctx.fillStyle="#374151"; ctx.font="bold 10px sans-serif";
+    ctx.fillText("∮ z^n dz (accumulating)", 4, 14);
+    ctx.fillStyle=n===-1?"#f97316":"#374151"; ctx.font="10px sans-serif";
+    const resultLabel = n===-1 ? "n = −1: integral → 2πi" : `n = ${n}: integral → 0`;
+    ctx.fillText(resultLabel, 4, H_C2-7);
+
+    return canvas;
+  }
+
+  function renderC1C2(n, tVal) {
+    const c1 = renderC1(n, tVal);
+    const c2 = renderC2(n, tVal);
+    const panelDiv = document.createElement("div");
+    panelDiv.style.cssText = "display:flex; gap:0.5rem; flex-wrap:wrap;";
+
+    function labeled2(canvas, lbl) {
+      const d=document.createElement("div");
+      const l=document.createElement("div");
+      l.style.cssText="font-size:0.8em;font-weight:600;text-align:center;margin-bottom:2px;color:#374151;";
+      l.textContent=lbl; d.appendChild(l); d.appendChild(canvas); return d;
+    }
+
+    panelDiv.appendChild(labeled2(c1, "Circle: z = e^{iθ}, arrows = integrand direction"));
+    panelDiv.appendChild(labeled2(c2, "Accumulated integral in C"));
+
+    const nLabel = n>=0?`+${n}`:n.toString();
+    const infoDiv = document.createElement("div");
+    infoDiv.style.cssText = "margin-top:0.4rem; font-family:sans-serif; font-size:0.86em;";
+
+    if(n===-1) {
+      infoDiv.style.cssText += "background:#fff7ed; border:1px solid #fed7aa; border-radius:4px; padding:0.35rem 0.6rem;";
+      infoDiv.innerHTML = `<strong style="color:#f97316">n = −1 (the residue term):</strong> the integrand z<sup>−1</sup> dz keeps accumulating in the <em>same direction</em> all around the circle — the curve in the right panel spirals up to 2πi without cancellation. This is why the coefficient c<sub>−1</sub> is the only one that survives when the Laurent series is integrated.`;
+    } else {
+      infoDiv.style.cssText += "background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px; padding:0.35rem 0.6rem;";
+      infoDiv.innerHTML = `<strong style="color:#3b82f6">n = ${nLabel}:</strong> the integrand contributions rotate around the origin — by the time the circle closes, they cancel exactly and the accumulated integral returns to 0. Every term in the Laurent series except c<sub>−1</sub> contributes zero to the contour integral.`;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(panelDiv); wrap.appendChild(infoDiv);
+    return wrap;
+  }
+
+  const containerC1 = document.createElement("div");
+  containerC1.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const titleC1 = document.createElement("div");
+  titleC1.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleC1.textContent = "Why only c₋₁ survives: ∮ zⁿ dz = 2πi if n = −1, else 0";
+  containerC1.appendChild(titleC1);
+  containerC1.appendChild(nSlider);
+  containerC1.appendChild(tSlider);
+  const vizDivC1 = document.createElement("div");
+  containerC1.appendChild(vizDivC1);
+  const noteC1 = document.createElement("div");
+  noteC1.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteC1.textContent = "Left: the contour |z|=1 with arrows showing the direction of z^n dz at each point. Right: the accumulated contour integral as a curve in the complex plane. For n≠−1, the curve closes back on 0. For n=−1 (highlighted in orange), it spirals up to 2πi — the only non-cancelling term.";
+  containerC1.appendChild(noteC1);
+
+  function updateC1() {
+    vizDivC1.innerHTML="";
+    vizDivC1.appendChild(renderC1C2(parseInt(nSlider.value), parseFloat(tSlider.value)));
+  }
+  nSlider.addEventListener("input", updateC1);
+  tSlider.addEventListener("input", updateC1);
+  updateC1();
+
+  return containerC1;
+}
+```
 
 ### Computing residues
 
@@ -331,6 +1399,8 @@ This is just L'Hôpital applied to the simple-pole limit. Quick check: $\text{Re
 
 **At a pole of order $m$:**
 $$\text{Res}[f, z_0] = \frac{1}{(m-1)!}\lim_{z \to z_0}\frac{d^{m-1}}{dz^{m-1}}\left[(z-z_0)^m f(z)\right]$$
+
+Quick check: $\text{Res}[e^z/(z-1)^2,\, 1]$ — multiply by $(z-1)^2$ to get $e^z$, differentiate once (since $m=2$, so $m-1=1$), divide by $1! = 1$: $d(e^z)/dz\big|_{z=1} = e$.
 
 ---
 
@@ -350,13 +1420,17 @@ This is the master formula of complex analysis. Cauchy's integral formula is the
 
 Substitute $z = e^{i\theta}$: $\cos\theta = (z+z^{-1})/2$, $\sin\theta = (z-z^{-1})/(2i)$, $d\theta = dz/(iz)$. The integral becomes a contour integral on $|z| = 1$.
 
+**Example.** $\displaystyle\int_0^{2\pi}\frac{d\theta}{3 + 2\cos\theta}$. Substituting gives $\oint_{|z|=1}\frac{dz}{iz(3 + z + z^{-1})} = \oint_{|z|=1}\frac{dz}{i(z^2+3z+1)}$. The roots of $z^2+3z+1$ are $z = (-3\pm\sqrt{5})/2$; only $z_1 = (-3+\sqrt{5})/2 \approx -0.38$ lies inside $|z|=1$. Residue: $1/(i(2z_1+3)) = 1/(i\sqrt{5})$. Integral: $2\pi i \cdot 1/(i\sqrt{5}) = 2\pi/\sqrt{5}$. Exercise 5 follows the same pattern.
+
 ### Type 2: improper integrals $\int_{-\infty}^{\infty} R(x)\,dx$
 
-Close the contour with a large semicircle in the upper (or lower) half-plane. Jordan's lemma ensures the semicircle's contribution vanishes as the radius grows, provided the degree of the denominator of $R$ exceeds the degree of the numerator by at least 1. The residue theorem gives the real integral as $2\pi i$ times the sum of residues in the upper half-plane.
+Close the contour with a large semicircle in the upper (or lower) half-plane. The semicircular arc's contribution vanishes as the radius grows — but the condition depends on the form of the integrand. For a plain rational $R(x)$ with no oscillatory factor, the ML estimation lemma guarantees the arc vanishes when the degree of the denominator exceeds the degree of the numerator by at least **2**. When the integrand takes the form $e^{iax}R(x)$ with $a > 0$ (for example, $e^{ix}/(1+x^2)$, whose real part gives the hook integral), **Jordan's lemma** applies and degree excess of at least **1** suffices. The residue theorem then gives the real integral as $2\pi i$ times the sum of residues in the upper half-plane.
 
 <!-- STUDENT: "If R(x) → 0 fast enough" is vague. The engineer-prof already noted this: the precise condition is that the degree of the denominator exceeds the numerator's by at least 1. Without this, a reader applying the method to ∫ 1/(x+1) dx or similar won't know whether their problem qualifies. Even one sentence stating the condition explicitly would prevent misapplication. -->
 
 **Example.** $\displaystyle\int_{-\infty}^{\infty}\frac{dx}{1+x^2}$. Poles of $1/(1+z^2)$: $z = \pm i$. Only $z = i$ is in the upper half-plane. Residue: $1/(2i)$. Integral: $2\pi i \cdot 1/(2i) = \pi$.
+
+The hook integral $\int_{-\infty}^{\infty}\cos x/(1+x^2)\,dx$ uses the same idea with one extra step: write $\cos x = \text{Re}(e^{ix})$, so the integral equals $\text{Re}\!\int_{-\infty}^{\infty} e^{ix}/(1+x^2)\,dx$. The integrand is now of the form $e^{iax}R(x)$ with $a=1$, so Jordan's lemma applies. The pole at $z=i$ gives residue $e^{i\cdot i}/(2i) = e^{-1}/(2i)$, and the integral equals $\text{Re}(2\pi i \cdot e^{-1}/(2i)) = \pi/e$.
 
 <!-- VIZ: Residue theorem explorer — contour sweep. The complex plane shows domain colouring of a selectable rational function (default: 1/(1+z²), which has poles at ±i). Poles appear as white blooms in the colouring. A single slider controls the radius R of a circular contour centred at the origin (range 0.1 to 4.5). As R increases past each pole, that pole is highlighted in gold (#fbbf24) and the running residue sum updates in a panel below the plot. The panel shows: "Enclosed poles: [list]", "Sum of residues: [value]", "∮_C f dz = 2πi × ΣRes = [value]". For the 1/(1+z²) function, when R crosses |i| = 1, the integral jumps from 0 to π. The reader sees directly that each pole contributes exactly 2πi × (its residue). A second function option "1/((z²+1)(z²+4))" has four poles at ±i and ±2i; dragging R from 1 to 3 adds them one by one. Series thread: this is the culmination of the winding-number thread from Chapter 1 (winding number) and Chapter 2 (∮ dz/z = 2πi × n) — here the reader sees that residue = generalised winding contribution. -->
 
@@ -393,8 +1467,8 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
         {re:0,im:2,res:{re:0,im:1/12},label:"2i"},
         {re:0,im:-2,res:{re:0,im:-1/12},label:"−2i"}
       ],
-      realIntegral: "π/2",
-      realValue: Math.PI/2,
+      realIntegral: "π/6",
+      realValue: Math.PI/6,
       eval: (re,im) => {
         // f = 1/((z^2+1)(z^2+4))
         const a1=re*re-im*im+1, b1=2*re*im, a2=re*re-im*im+4, b2=2*re*im;
@@ -405,8 +1479,8 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
     },
     "z²/((z²−1)(z+2))": {
       poles: [
-        {re:1,im:0,res:{re:1/3,im:0},label:"1"},
-        {re:-1,im:0,res:{re:1/3,im:0},label:"−1"},
+        {re:1,im:0,res:{re:1/6,im:0},label:"1"},
+        {re:-1,im:0,res:{re:-1/2,im:0},label:"−1"},
         {re:-2,im:0,res:{re:4/3,im:0},label:"−2"}
       ],
       realIntegral: "(sum of residues)",
@@ -473,7 +1547,7 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
     ctx.fillStyle="rgba(255,255,255,0.8)"; ctx.font="11px sans-serif";
     ctx.fillText(`C: |z| = ${R.toFixed(2)}`,5,14);
 
-    // Pole markers and labels
+    // Pole markers, labels, and winding number indicators
     const enclosed = [];
     fd.poles.forEach(p => {
       const [psx,psy]=toScreen(p.re,p.im);
@@ -486,6 +1560,16 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
       ctx.fillStyle=inC?"#fbbf24":"rgba(255,255,255,0.7)";
       ctx.font="10px sans-serif";
       ctx.fillText(p.label,psx+9,psy+4);
+      // Winding number badge — n=1 for each simple pole inside the contour
+      if(inC) {
+        ctx.fillStyle="#1e40af"; ctx.beginPath(); ctx.arc(psx-12,psy-12,10,0,2*Math.PI); ctx.fill();
+        ctx.fillStyle="white"; ctx.font="bold 10px sans-serif"; ctx.textAlign="center";
+        ctx.fillText("n=1", psx-12, psy-8);
+        ctx.textAlign="left";
+        // Small label connecting to Ch1/Ch2
+        ctx.fillStyle="#fbbf24"; ctx.font="9px sans-serif";
+        ctx.fillText("winding=1", psx+9, psy+16);
+      }
     });
 
     // Residue sum
@@ -500,13 +1584,17 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
     const resStr=enclosed.length===0?"0":(`${sumRe.toFixed(4)}${sumIm>=0?"+":""}${sumIm.toFixed(4)}i`);
     const intStr=enclosed.length===0?"0":`${integral2piRe.toFixed(4)} + ${integral2piIm.toFixed(4)}i`;
     const realStr=(fd.realValue!==null&&enclosed.some(p=>p.im>0))
-      ?`<div style="color:#059669">Real integral = 2\u03c0 \xd7 Im(upper-half sum) = ${(2*Math.PI*sumRe).toFixed(4)} [predicted: ${fd.realIntegral}]</div>`
+      ?`<div style="color:#059669">Real integral = \u22122\u03c0 \xd7 Im(\u03a3Res) = ${integral2piRe.toFixed(4)} [predicted: ${fd.realIntegral}]</div>`
       :"";
+    const windingNote = enclosed.length>0
+      ? `<div style="color:#1e40af; font-size:0.9em; margin-top:0.3rem;">Each enclosed pole has winding number n=1 (Ch1/Ch2: \u222e dz/z = 2\u03c0i \xd7 n). The residue theorem is this generalised: each pole contributes 2\u03c0i \xd7 n \xd7 Res.</div>`
+      : "";
     infoDiv.innerHTML=`
       <div><strong>Enclosed poles:</strong> ${encStr}</div>
       <div><strong>Sum of residues:</strong> ${resStr}</div>
       <div><strong>\u222e<sub>C</sub> f\u202fdz = 2\u03c0i \xd7 \u03a3Res = </strong><span style="color:#1e40af">${intStr}</span></div>
       ${realStr}
+      ${windingNote}
     `;
 
     const wrap=document.createElement("div");
@@ -519,7 +1607,7 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
   container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
   const title=document.createElement("div");
   title.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
-  title.textContent="Residue theorem: sweeping poles with the contour";
+  title.textContent="Residue theorem explorer: sweeping poles with the contour";
   container.appendChild(title);
   container.appendChild(funcSelector);
   container.appendChild(radiusSlider);
@@ -529,7 +1617,7 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
 
   const note=document.createElement("div");
   note.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
-  note.textContent="Domain colouring shows f(z): poles appear as white blooms. Gold \u00d7 marks = poles inside contour. As R increases past each pole, the running residue sum updates and the integral changes. Each pole contributes 2\u03c0i times its residue.";
+  note.textContent="Domain colouring shows f(z): poles appear as white blooms. Gold \u00d7 marks = poles inside contour; blue badge shows winding number n=1 for each simple pole (connecting to the Ch1/Ch2 winding-number thread: \u222e dz/z = 2\u03c0i \xd7 n). As R increases past each pole, the residue sum updates. Each pole contributes 2\u03c0i times its residue.";
   container.appendChild(note);
 
   function update3() {
@@ -544,7 +1632,235 @@ Close the contour with a large semicircle in the upper (or lower) half-plane. Jo
 }
 ```
 
-The residue theorem and Laurent series complete the core tools of complex integration. The next chapter turns to a different application of analyticity: conformal mapping, which uses analytic functions to transform complicated geometries into simple ones where Laplace's equation can be solved by inspection.
+```{ojs}
+//| echo: false
+{
+  // Semicircle contour closure — missed opportunity 3
+  // Real axis + growing R semicircle, domain colouring background, poles marked distinctly
+  // ML bound vs Jordan's lemma toggle, default function 1/(1+z²)
+  // Colour palette: orange real axis, blue semicircle, red × poles, green result box
+
+  const W_SM = 440, H_SM = 320, CX_SM = W_SM/2, CY_SM = H_SM - 50, SCALE_SM = 65;
+
+  const funcSelSM = Inputs.select([
+    "1/(1+z²)   — poles at ±i",
+    "1/((z²+1)(z²+4))   — poles at ±i, ±2i",
+    "e^{iz}/(1+z²)   — Jordan's lemma case"
+  ], { value: "1/(1+z²)   — poles at ±i", label: "f(z)" });
+
+  const rSliderSM = Inputs.range([0.5, 4.5], { value: 1.5, step: 0.05, label: "Semicircle radius R" });
+
+  const lemmaSel = Inputs.select(["ML bound", "Jordan's lemma"], {
+    value: "ML bound", label: "Arc vanishing argument"
+  });
+
+  const smFuncData = {
+    "1/(1+z²)   — poles at ±i": {
+      poles: [{re:0,im:1,res:{re:0,im:-0.5},label:"i",half:"upper"},
+              {re:0,im:-1,res:{re:0,im:0.5},label:"−i",half:"lower"}],
+      eval: (re,im)=>{const a=1+re*re-im*im,b=2*re*im;const d=a*a+b*b;if(d<1e-10)return[NaN,NaN];return[a/d,-b/d];},
+      realResult:"π", realVal:Math.PI,
+      mlDegExcess: 2, jordanApplies: false,
+      mlText: "Denominator deg 2, numerator deg 0 — excess 2 ≥ 2. ML bound: |1/(1+z²)| ≤ 1/(R²−1), arc length πR. Arc integral → 0.",
+      jordanText: "Jordan's lemma requires an e^{iaz} oscillatory factor — not present here. Use ML bound instead.",
+      note: "Upper half-plane: only z=i enclosed."
+    },
+    "1/((z²+1)(z²+4))   — poles at ±i, ±2i": {
+      poles: [{re:0,im:1,res:{re:0,im:-1/6},label:"i",half:"upper"},
+              {re:0,im:-1,res:{re:0,im:1/6},label:"−i",half:"lower"},
+              {re:0,im:2,res:{re:0,im:1/12},label:"2i",half:"upper"},
+              {re:0,im:-2,res:{re:0,im:-1/12},label:"−2i",half:"lower"}],
+      eval: (re,im)=>{
+        const a1=re*re-im*im+1,b1=2*re*im,a2=re*re-im*im+4,b2=2*re*im;
+        const ra=a1*a2-b1*b2,ia=a1*b2+a2*b1;const d=ra*ra+ia*ia;if(d<1e-10)return[NaN,NaN];
+        return[ra/d,-ia/d];
+      },
+      realResult:"π/6", realVal:Math.PI/6,
+      mlDegExcess: 4, jordanApplies: false,
+      mlText: "Denominator deg 4, numerator deg 0 — excess 4 ≥ 2. Arc integral vanishes via ML bound.",
+      jordanText: "No oscillatory factor — Jordan's lemma does not apply. ML bound sufficient.",
+      note: "Upper half-plane: poles at i and 2i enclosed when R > 2."
+    },
+    "e^{iz}/(1+z²)   — Jordan's lemma case": {
+      poles: [{re:0,im:1,res:{re:0,im:-0.5*Math.E/Math.E,re_override:Math.exp(-1)/(2)},label:"i",half:"upper"},
+              {re:0,im:-1,res:{re:0,im:0.5},label:"−i",half:"lower"}],
+      eval: (re,im)=>{
+        // e^{iz} * 1/(1+z^2)
+        // e^{iz} = e^{i(re+iim)} = e^{-im}*(cos(re)+i*sin(re))
+        const eR=Math.exp(-im)*Math.cos(re), eI=Math.exp(-im)*Math.sin(re);
+        const a=1+re*re-im*im,b=2*re*im;const d=a*a+b*b;if(d<1e-10)return[NaN,NaN];
+        return[(eR*a+eI*b)/d,(eI*a-eR*b)/d];
+      },
+      realResult:"π/e (real part)", realVal:Math.PI*Math.exp(-1),
+      mlDegExcess: 1, jordanApplies: true,
+      mlText: "Degree excess = 1. ML bound alone gives |arc| ≤ πR/(R²−1) → 0 only at O(1/R) — barely. Better: use Jordan's lemma.",
+      jordanText: "Jordan's lemma applies: integrand = e^{iz}·R(z) with R(z)→0 uniformly. Arc integral → 0 for any degree excess ≥ 1 with oscillatory factor.",
+      note: "Re(∫e^{ix}/(1+x²)dx) = π/e — the hook integral in the chapter."
+    }
+  };
+
+  function hslToRgbSM(h,s,l) {
+    h=((h%1)+1)%1;
+    const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h*6)%2-1)),m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
+    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+
+  function toScrSM(re,im) { return [CX_SM+re*SCALE_SM, CY_SM-im*SCALE_SM]; }
+
+  function renderSM(fname, R, lemmaMode) {
+    const fd = smFuncData[fname];
+
+    const canvas = document.createElement("canvas");
+    canvas.width=W_SM; canvas.height=H_SM;
+    const ctx=canvas.getContext("2d");
+    const img=ctx.createImageData(W_SM,H_SM); const data=img.data;
+
+    // Domain colouring — only upper half-plane
+    for(let px=0;px<W_SM;px++) {
+      for(let py=0;py<H_SM;py++) {
+        const re=(px-CX_SM)/SCALE_SM, im=-(py-CY_SM)/SCALE_SM;
+        if(im < -0.1) {
+          const idx=(py*W_SM+px)*4; data[idx]=245;data[idx+1]=245;data[idx+2]=245;data[idx+3]=255; continue;
+        }
+        const [wr,wi]=fd.eval(re,im);
+        if(!isFinite(wr)||!isFinite(wi)||isNaN(wr)) {
+          const idx=(py*W_SM+px)*4; data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255; continue;
+        }
+        const arg=Math.atan2(wi,wr),mag=Math.sqrt(wr*wr+wi*wi);
+        const hue=(arg/(2*Math.PI)+1)%1;
+        const brightness=0.5+0.35*Math.tanh(Math.log(mag+0.001)/2);
+        // Dim below real axis
+        const dimFactor = im < 0 ? 0.4 : 1.0;
+        const [r,g,b]=hslToRgbSM(hue,0.8*dimFactor,0.5+(brightness-0.5)*dimFactor);
+        const idx=(py*W_SM+px)*4; data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+
+    const [ox,oy]=toScrSM(0,0);
+
+    // Real axis (orange)
+    ctx.strokeStyle="#f97316"; ctx.lineWidth=3;
+    const [rx1]=toScrSM(-R-0.3,0); const [rx2]=toScrSM(R+0.3,0);
+    ctx.beginPath(); ctx.moveTo(rx1,oy); ctx.lineTo(rx2,oy); ctx.stroke();
+    // Arrow at right end
+    ctx.fillStyle="#f97316";
+    ctx.beginPath(); ctx.moveTo(rx2,oy); ctx.lineTo(rx2-10,oy-5); ctx.lineTo(rx2-10,oy+5); ctx.fill();
+    ctx.fillStyle="#f97316"; ctx.font="10px sans-serif"; ctx.fillText("real axis (−R to R)", rx1+4, oy+16);
+
+    // Semicircle (blue)
+    ctx.strokeStyle="#3b82f6"; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.arc(ox,oy,R*SCALE_SM,Math.PI,0,false); ctx.stroke();
+    // Arrow on semicircle
+    const arcAngle = Math.PI/4;
+    const arcX=ox+R*SCALE_SM*Math.cos(arcAngle), arcY=oy-R*SCALE_SM*Math.sin(arcAngle);
+    ctx.strokeStyle="#3b82f6"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(arcX,arcY); ctx.lineTo(arcX-8,-8+arcY); ctx.lineTo(arcX+5,arcY-10); ctx.stroke();
+    ctx.fillStyle="#3b82f6"; ctx.font="10px sans-serif";
+    ctx.fillText(`Γ_R (R=${R.toFixed(2)})`, arcX+8, arcY-5);
+
+    // R label on real axis
+    const [rPx]=toScrSM(R,0); const [nrPx]=toScrSM(-R,0);
+    ctx.fillStyle="#f97316"; ctx.font="10px sans-serif";
+    ctx.fillText("R", rPx+3, oy-6); ctx.fillText("−R", nrPx-20, oy-6);
+
+    // Poles
+    fd.poles.forEach(p => {
+      const [psx,psy]=toScrSM(p.re,p.im);
+      const inUpper = p.im > 0;
+      const enclosed = inUpper && Math.sqrt(p.re*p.re+p.im*p.im) < R;
+
+      ctx.strokeStyle=enclosed?"#fbbf24":"#dc2626"; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.moveTo(psx-8,psy-8); ctx.lineTo(psx+8,psy+8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(psx+8,psy-8); ctx.lineTo(psx-8,psy+8); ctx.stroke();
+      ctx.fillStyle=enclosed?"#fbbf24":"#dc2626"; ctx.font="10px sans-serif";
+      ctx.fillText(p.label, psx+10, psy+4);
+
+      // Winding number badge for enclosed
+      if(enclosed) {
+        ctx.fillStyle="#1e40af"; ctx.beginPath(); ctx.arc(psx-14,psy-14,11,0,2*Math.PI); ctx.fill();
+        ctx.fillStyle="white"; ctx.font="bold 9px sans-serif"; ctx.textAlign="center";
+        ctx.fillText("n=1", psx-14, psy-10);
+        ctx.textAlign="left";
+      }
+    });
+
+    // Axis labels
+    ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.moveTo(ox,0); ctx.lineTo(ox,H_SM); ctx.stroke();
+    ctx.fillStyle="rgba(200,200,200,0.9)"; ctx.font="9px sans-serif";
+    ctx.fillText("i", ox+3, oy-SCALE_SM+3); ctx.fillText("2i", ox+3, oy-2*SCALE_SM+3);
+
+    // Result computation
+    const encPoles = fd.poles.filter(p => p.im>0 && Math.sqrt(p.re*p.re+p.im*p.im)<R);
+    let sumRe=0,sumIm=0;
+    encPoles.forEach(p=>{sumRe+=p.res.re;sumIm+=p.res.im;});
+    const intRe=-2*Math.PI*sumIm, intIm=2*Math.PI*sumRe;
+
+    // Result box (green)
+    if(encPoles.length>0) {
+      ctx.fillStyle="rgba(5,150,105,0.92)";
+      ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(5,5,205,46,5); else ctx.rect(5,5,205,46); ctx.fill();
+      ctx.fillStyle="white"; ctx.font="bold 10px sans-serif";
+      ctx.fillText("∮_C f dz = 2πi × ΣRes", 10, 20);
+      ctx.font="10px sans-serif";
+      const resultStr=`= ${intRe.toFixed(4)} + ${intIm.toFixed(4)}i`;
+      ctx.fillText(resultStr, 10, 35);
+      if(fd.realVal&&encPoles.some(p=>p.im>0)) {
+        ctx.fillStyle="#bbf7d0"; ctx.font="9px sans-serif";
+        ctx.fillText(`Real integral ≈ ${Math.abs(intRe).toFixed(4)} [exact: ${fd.realResult}]`, 10, 47);
+      }
+    }
+
+    // Lemma annotation
+    const lemmaText = lemmaMode==="Jordan's lemma" ? fd.jordanText : fd.mlText;
+    const lemmaDiv = document.createElement("div");
+    lemmaDiv.style.cssText="margin-top:0.4rem; font-family:sans-serif; font-size:0.83em; padding:0.4rem 0.6rem; border-radius:4px; background:#f0f9ff; border:1px solid #bfdbfe;";
+    lemmaDiv.innerHTML=`<strong>${lemmaMode}:</strong> ${lemmaText}`;
+
+    const infoDiv = document.createElement("div");
+    infoDiv.style.cssText="margin-top:0.4rem; font-family:sans-serif; font-size:0.84em;";
+    const encStr=encPoles.length===0?"none (R too small)":encPoles.map(p=>p.label).join(", ");
+    infoDiv.innerHTML=`<strong>Enclosed poles (upper half-plane):</strong> ${encStr} — <em>${fd.note}</em>`;
+
+    const wrap=document.createElement("div");
+    wrap.appendChild(canvas); wrap.appendChild(infoDiv); wrap.appendChild(lemmaDiv);
+    return wrap;
+  }
+
+  const containerSM=document.createElement("div");
+  containerSM.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const titleSM=document.createElement("div");
+  titleSM.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleSM.textContent="Semicircle contour closure: real integrals via the upper half-plane";
+  containerSM.appendChild(titleSM);
+  containerSM.appendChild(funcSelSM);
+  containerSM.appendChild(rSliderSM);
+  containerSM.appendChild(lemmaSel);
+  const vizDivSM=document.createElement("div");
+  containerSM.appendChild(vizDivSM);
+  const noteSM=document.createElement("div");
+  noteSM.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteSM.textContent="Orange line = real axis −R to R; blue arc = semicircle Γ_R. Domain colouring shows f(z) in the upper half-plane. Red × = poles not yet enclosed; gold × = enclosed poles (winding number n=1 shown). Green box shows the integral result as R grows past each pole. Toggle the arc-vanishing argument between ML bound and Jordan's lemma.";
+  containerSM.appendChild(noteSM);
+
+  function updateSM(){
+    vizDivSM.innerHTML="";
+    vizDivSM.appendChild(renderSM(funcSelSM.value, parseFloat(rSliderSM.value), lemmaSel.value));
+  }
+  funcSelSM.addEventListener("input",updateSM);
+  rSliderSM.addEventListener("input",updateSM);
+  lemmaSel.addEventListener("input",updateSM);
+  updateSM();
+
+  return containerSM;
+}
+```
+
+The residue theorem and Laurent series complete the core tools of complex integration. The next chapter takes a different direction: conformal mapping uses analytic functions to deform geometry — turning complicated domains into simple ones where Laplace's equation can be solved directly.
 
 ---
 
@@ -799,18 +2115,19 @@ None — all calculations verified correct.
 <!-- ENGINEER-PROF REVIEW
 ## Chapter 03 — Series and residues
 
-### Fixes applied
-None — no engineering accuracy errors found requiring direct edits.
+### Fixes applied (second pass)
+- [BLOCKER fixed] `realIntegral` for `1/((z²+1)(z²+4))` in the residue-theorem explorer widget was "π/2" (incorrect). Correct value is π/6. Verified: residues at i and 2i are −i/6 and +i/12 respectively; sum = −i/12; integral = 2πi·(−i/12) = π/6. Changed `realIntegral: "π/2"` to `"π/6"` and `realValue: Math.PI/2` to `Math.PI/6`.
+- [BLOCKER fixed] § Type 2 integrals cited "Jordan's lemma" for plain rational integrands and stated "degree excess of at least 1" as the vanishing condition. Both were wrong. Jordan's lemma applies when there is an oscillatory factor $e^{iax}$; for plain rationals the relevant tool is the ML estimation lemma, which requires degree excess of at least 2. Rewrote the paragraph to distinguish the two cases clearly and attribute each to the correct tool.
 
-### Open issues
-- [NOTE] `destinations.eng.hook` — "every partial-fraction decomposition you do by hand is a special case of the residue theorem." Accurate and well-pitched. Engineers doing partial fractions for inverse Laplace transforms are computing residues whether or not they call it that.
-- [NOTE] `destinations.eng.career_example` — "Electrical engineer inverting a Laplace-domain transfer function to find the impulse response of a filter." Accurate and correctly attributed to electrical engineering (signal processing / control).
-- [NOTE] `destinations.comp.career_example` — "Algorithm analyst deriving the exact asymptotic formula for the number of binary trees on n nodes." Accurate combinatorics application, but this is CS theory rather than practical computing. The hook is fine but the career example could be made more applied (e.g. a numerical analyst computing Gamma function values via residues). Not a blocker.
-- [NOTE] The Jordan's lemma mention (§ Type 2 integrals) is left implicit: "Jordan's lemma ensures the semicircle's contribution vanishes." Jordan's lemma requires the integrand to go to zero uniformly on the semicircle — the exact condition is $|R(z)| \to 0$ as $|z| \to \infty$ uniformly in the upper half-plane, which holds when the degree of the denominator exceeds the numerator by at least 1. Engineers applying this need to verify the condition; stating it explicitly would prevent misapplication. Consider adding a one-sentence condition statement.
+### Remaining open issues
+- [NOTE] `destinations.eng.hook` — accurate and well-pitched.
+- [NOTE] `destinations.eng.career_example` — accurate and correctly attributed.
+- [NOTE] `destinations.comp.career_example` — CS theory rather than applied computing; not a blocker.
 - [NOTE] `stroud_programme: null` — Stroud covers Laurent series and residues in Programme 16 (Engineering Mathematics, 7th ed.). Cross-reference worth adding.
-- [NOTE] The hook integral $\int_{-\infty}^{\infty} \cos x / (1+x^2)\,dx = \pi/e$ is correct and a good motivating example.
+- [NOTE] The hook integral $\int_{-\infty}^{\infty} \cos x / (1+x^2)\,dx = \pi/e$ is correct.
+- [NOTE] The previous engineer-prof pass incorrectly stated that Jordan's lemma requires "degree of the denominator exceeds the numerator by at least 1." That condition is correct only for the oscillatory $e^{iax}R(x)$ case. The error has been corrected in this pass.
 
-## Verdict: PASS WITH NOTES
+## Verdict: BLOCK (prior pass) → PASS WITH NOTES (this pass, after fixes)
 -->
 
 <!-- STUDENT REVIEW
@@ -855,6 +2172,10 @@ The chapter has strong exercises and the residue theorem is presented clearly. T
 - [§ Classification of isolated singularities, essential singularity] Removed the Picard's theorem citation (a theorem not introduced anywhere in the series) and replaced with a concrete description of e^{1/z}: it oscillates with arbitrarily large magnitude and argument, taking values dense in the complex plane, with no finite or infinite limit. The claim "behaviour is wild" is now illustrated rather than named.
 - [§ Residues, "Why it matters"] Added a callback to Chapter 2 (§ A fundamental example) for the result that ∮(z−z₀)ⁿ dz = 0 for n ≠ −1, and = 2πi for n = −1. Previously this key fact was asserted without indicating whether the reader was expected to know it or take it on trust. Also displayed the term-by-term integration conclusion explicitly.
 - [§ Computing residues, p/q′ formula] Added an inline worked check immediately after the formula: Res[1/(z²−1), 1] = 1/(2·1) = 1/2. Also named the formula's origin (L'Hôpital applied to the simple-pole limit). Previously three formulas were listed without any example between them.
-- [§ Type 2 integrals, Jordan's lemma] Replaced "if R(x) → 0 fast enough" with the explicit condition: "provided the degree of the denominator of R exceeds the degree of the numerator by at least 1." This is the practical criterion engineers need to verify before applying the method.
+- [§ Type 2 integrals, Jordan's lemma — first pass] Replaced "if R(x) → 0 fast enough" with "degree of denominator exceeds numerator by at least 1." NOTE: this first-pass fix was itself incorrect — see engineer-prof second pass above for the corrected treatment distinguishing ML lemma (plain rationals, degree excess ≥ 2) from Jordan's lemma (oscillatory factor e^{iax}, degree excess ≥ 1).
 - [End of body, before exercises] Added a wayfinding sentence connecting the residue theorem to Chapter 4 (conformal mapping), so the chapter's opens_to relationship is not a surprise to the reader.
+- [§ Residues, "Why it matters" — student second pass] Clarified that the reader is not expected to reprove the general-n result: "You are not expected to reprove this here — it follows by the same substitution used in Chapter 2." Previously "the same parametrisation argument extends" left ambiguous whether the reader should know this or prove it themselves.
+- [§ Computing residues, order-m pole formula — student second pass] Added an inline quick-check for the order-m formula: Res[e^z/(z−1)², 1] = e. Previously the order-m formula was the only one of the three without an inline example.
+- [§ Type 1 integrals — student second pass] Added a body worked example for Type 1 (∫₀²π dθ/(3+2cosθ) = 2π/√5) so that Exercise 5 is not the reader's first encounter with the substitution technique. Previously Type 1 stated the substitution with no illustration.
+- [§ Type 2 integrals, hook integral — student second pass] Added a paragraph working through the hook integral (∫cos x/(1+x²) dx = π/e) immediately after the Type 2 example. The missing step — write cos x = Re(e^{ix}), apply Jordan's lemma — is now shown. The hook promised "three lines"; this delivers them.
 -->

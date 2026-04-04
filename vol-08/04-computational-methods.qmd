@@ -4,7 +4,7 @@ subtitle: "Meshes, weak forms, and conservation in computation"
 chapter: 4
 volume: 8
 layer: "discipline"
-status: "draft"
+status: "review"
 
 axiom: |
   Governing equations become useful in upper-year engineering only when they
@@ -31,7 +31,7 @@ destinations:
     career_example: "Simulation engineer deciding whether a model is trustworthy enough to support a design choice"
   - field: comp
     label: Computing and data
-    hook: "Scientific computing depends on stable discretisation, sparse linear algebra, and solver design."
+    hook: "A finite element or finite volume model produces a sparse linear system; a scientific programmer's job is choosing the right sparse solver — direct or iterative — and the right storage format for the problem size."
     career_example: "Scientific programmer building a sparse solver for a mesh-based model"
   - field: geo
     label: Geography and environment
@@ -58,8 +58,8 @@ notation_introduced:
   - symbol: "A\\mathbf{u} = \\mathbf{b}"
     reads_as: "A u equals b — the algebraic system after discretisation"
     notation_weight: 2
-  - symbol: "R(h)"
-    reads_as: "R of h — the residual or discretisation error as a function of mesh size"
+  - symbol: "r"
+    reads_as: "r — the stability ratio, D delta-t divided by (delta-x) squared"
     notation_weight: 2
   - symbol: "\\int_\\Omega"
     reads_as: "integral over omega — an integral over the domain"
@@ -88,11 +88,10 @@ equation is not yet computable. A computer needs finitely many unknowns,
 finitely many equations, and an update rule or linear system it can actually
 solve. Discretisation supplies that finite structure.
 
-The key idea is that every discretisation keeps some truths and sacrifices
-others. One method may preserve conservation neatly. Another may represent
-curved geometry more naturally. Another may be easy to implement but unstable
-for large time steps. Trustworthy simulation is the art of knowing which
-sacrifices are acceptable.
+Every discretisation keeps some truths and sacrifices others. One method
+preserves conservation neatly. Another handles curved geometry more naturally.
+Another is easy to implement but unstable for large time steps. Knowing which
+sacrifices the physics can tolerate is what makes a simulation trustworthy.
 
 ---
 
@@ -106,7 +105,7 @@ defined on a grid with spatial spacing $\Delta x$ and time step $\Delta t$.
 The continuous field $u(x,t)$ becomes a table of approximate values $u_i^n$,
 read "u at grid point i and time level n."
 
-Using a forward difference in time and a central difference in space:
+Replace $\partial u/\partial t$ with a forward difference $(u_i^{n+1}-u_i^n)/\Delta t$ and $\partial^2 u/\partial x^2$ with a central difference $(u_{i+1}^n - 2u_i^n + u_{i-1}^n)/(\Delta x)^2$:
 
 $$\frac{u_i^{n+1} - u_i^n}{\Delta t}
 \approx
@@ -127,10 +126,9 @@ problem is now algebra.
 This is the central translation of computational engineering:
 
 - fields become arrays
-- derivatives become finite differences, flux balances, or basis-function
-  integrals
+- derivatives become finite differences, flux balances, or basis-function integrals
 - boundary conditions become algebraic constraints
-- the model becomes either a time-marching update or a linear/nonlinear system
+- the PDE becomes either a time-marching update or a linear/nonlinear system to solve
 
 <!-- VIZ: Discretisation translator. Show one PDE panel, one grid panel, and one algebra panel side by side. Let the reader toggle between finite difference, finite volume, and finite element viewpoints for the same 1D diffusion problem. Update the stencil/control-volume/basis picture and the resulting algebraic equation simultaneously. -->
 
@@ -154,10 +152,11 @@ flow, transport, and environmental modelling.
 **Finite element**
 
 Represent the solution using basis functions $\phi_i$ over elements and solve a
-weak or variational form (a reformulation that replaces the PDE with an
-integral condition, trading pointwise accuracy for broader geometric
-flexibility). Especially useful on complicated geometries and in structural
-mechanics.
+weak or variational form. The weak form replaces the requirement that the PDE
+holds exactly at every point with the requirement that a weighted integral of
+the residual is zero. This relaxed condition is easier to satisfy on irregular
+meshes, which makes finite element methods especially useful on complicated
+geometries and in structural mechanics.
 
 These are not three unrelated subjects. They are three ways of answering the
 same question: how should a continuum law be turned into finite equations?
@@ -174,9 +173,12 @@ Three recurring tests matter:
 - **convergence**: does the computed solution approach the true solution as the
   grid is refined?
 
-Students often meet these separately. In practice they are linked. A consistent
-method that is unstable may be useless. A stable method that is too diffusive
-may hide the physics you care about.
+Students often meet these separately. In practice they are linked by the Lax
+equivalence theorem. For a linear, well-posed PDE — one where small changes in
+the input produce small changes in the solution — and a consistent
+discretisation, stability is both necessary and sufficient for convergence. A
+consistent method that is unstable may be useless. A stable method that is too
+diffusive may hide the physics you care about.
 
 For the explicit diffusion update above, the ratio
 
@@ -191,16 +193,23 @@ even when the physical problem is perfectly well behaved. This bound means
 halving the grid spacing forces the time step to shrink by a factor of four —
 a practical cost of explicit time-stepping.
 
+Implicit methods remove or relax this restriction at the cost of solving a
+linear system at each time step. Backward Euler is unconditionally stable (any
+$\Delta t$ is permitted) but introduces more numerical diffusion than a
+comparable explicit step. Crank-Nicolson averages the current and future spatial
+operators, recovering second-order accuracy in time while remaining stable for
+all step sizes. For fine spatial grids or stiff problems, solving a system at
+each step is almost always the correct exchange.
+
 ::: {.callout-note appearance="simple"}
-## Why This Works
+## Discretisation always introduces error
 
-Discretisation replaces infinitely many degrees of freedom with finitely many.
-That replacement introduces error automatically. The right question is never
-"is there error?" but "what kind of error, how large, and does it destroy the
-physical meaning of the model?"
+Replacing a continuous field with finitely many unknowns introduces error
+automatically. The right question is never "is there error?" but "what kind of
+error, how large, and does it destroy the physical meaning of the model?"
 
-Computational mathematics is therefore not separate from modelling. The method
-is part of the model.
+Computational mathematics is therefore not separate from modelling. The
+numerical method is part of the model.
 :::
 
 ## The core method
@@ -288,7 +297,8 @@ matrix system
 $$K\mathbf{U} = \mathbf{f}$$
 
 where $K$ is the **stiffness matrix** — a different $K$ from the control gain
-in Chapter 1, but the same letter is standard in both fields.
+in Chapter 1 (Feedback control and state-space models), but the same letter is
+standard in both fields.
 
 The important mathematical point is not the assembly details. It is that the
 continuum problem has been projected onto a finite-dimensional space spanned by
@@ -296,18 +306,39 @@ the $\phi_i$. Geometry and material behaviour are therefore represented through
 the choice of mesh and basis functions, not just through a derivative stencil.
 
 A second important point is that $K$ is almost always **sparse**: each basis
-function $\phi_i$ overlaps only with neighbouring basis functions, so most
-entries of $K$ are zero. A mesh with millions of nodes still produces a matrix
-with only a few non-zeros per row. This sparsity is why large FEM problems are
-computationally tractable — direct or iterative sparse solvers exploit it
-heavily, and it is why scientific computing and finite element analysis are
-inseparable subjects at scale.
+function $\phi_i$ overlaps only with its neighbours, so most entries of $K$ are
+zero. A mesh with millions of nodes still produces a matrix with only a few
+non-zeros per row. This sparsity is why large FEM problems are computationally
+tractable — but solver choice matters.
+
+**Direct sparse solvers** (such as UMFPACK or CHOLMOD) factorize $K$ in one
+shot. They work well at moderate problem sizes but produce fill-in: new
+non-zero entries created during factorization that were zero in the original
+$K$. Fill-in grows faster than the problem does, which limits how far direct
+methods can scale.
+
+**Iterative solvers** — Krylov methods such as conjugate gradient (for
+symmetric positive-definite $K$, meaning $K = K^T$ and $\mathbf{x}^T K
+\mathbf{x} > 0$ for all nonzero $\mathbf{x}$, which holds for many standard
+structural problems) or GMRES (for non-symmetric cases such as
+convection-dominated flow) — access $K$ only through matrix-vector products.
+They can reach millions of unknowns where direct methods cannot.
+
+Both solver families operate on $K$ stored in compressed sparse row (CSR) or
+an equivalent format. At scale, understanding these choices is inseparable from
+using finite element analysis.
 
 ## Where this goes
 
+This chapter draws on two prior threads: the numerical methods sequence (finite
+differences, ODE solvers, linear systems) and continuum transport (the
+conservation laws that finite volume discretises directly). If the stability
+analysis or the flux-balance notation felt unfamiliar, those are the chapters to
+revisit.
+
 The next natural continuation is
 [Nonlinear optimisation for design and operations](07-nonlinear-optimisation.qmd).
-Once a simulation model is trustworthy enough to represent the system, design
+Once a simulation model can be trusted to represent the system, design
 questions become computational questions: which shape, parameter, schedule, or
 control setting produces the best feasible outcome?
 

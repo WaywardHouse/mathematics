@@ -4,7 +4,7 @@ subtitle: "Angle-preserving transformations and applications to potential theory
 chapter: 4
 volume: 7
 layer: "engineering"
-status: "draft"
+status: review
 
 axiom: "An analytic function with non-zero derivative maps infinitesimally small shapes to similar shapes — it preserves angles. This conformal property means that a problem on a complicated domain can be transformed to a simple domain (a half-plane, a disk, a strip) where the solution is known, and then mapped back."
 
@@ -12,8 +12,9 @@ rewrite: "If f is analytic and f′(z₀) ≠ 0, then f is conformal at z₀: it
 
 prerequisite_ids:
   - complex_seed
-  - multivariable
   - diff_calc
+  - int_calc
+  - multivariable
 
 opens_to:
   - id: vector_integral
@@ -24,7 +25,7 @@ opens_to:
 destinations:
   - field: eng
     label: Engineering
-    hook: "The Joukowski transformation maps flow around a cylinder to flow around an aerofoil — it is the mathematical foundation of thin-aerofoil theory and was used in early aircraft wing design."
+    hook: "The Joukowski transformation maps flow around a cylinder to flow around an aerofoil — it is a foundational conformal-mapping method in aerofoil theory and was used in early aircraft wing design."
     career_example: "Aerospace engineer computing the lift distribution on a wing section using potential flow theory"
   - field: sci
     label: Hard sciences
@@ -38,13 +39,13 @@ destinations:
 notation_introduced:
   - symbol: "w = f(z)"
     reads_as: "w equals f of z"
-    meaning: "A conformal map from the z-plane to the w-plane"
+    notation_weight: 1
   - symbol: "w = \\frac{az+b}{cz+d}"
     reads_as: "Möbius transformation"
-    meaning: "The general fractional-linear transformation; maps circles and lines to circles and lines"
+    notation_weight: 3
   - symbol: "w = z + 1/z"
     reads_as: "Joukowski transformation"
-    meaning: "Maps a near-unit circle in the z-plane to an aerofoil-like curve in the w-plane"
+    notation_weight: 3
 
 exercises:
   type: puzzle
@@ -59,13 +60,11 @@ hook: |
   $w = z + 1/z$. With one formula, he turned a hard problem into
   an easy one.
 
-  This is conformal mapping: using an analytic function to transform
-  a complicated geometry into a simple one where the physics is
-  tractable. The key property is angle preservation — a conformal
-  map distorts distances but preserves angles, so the shape of
-  streamlines and equipotential lines is preserved under the map.
-  Knowing the solution in the simple domain gives the solution in
-  the original domain automatically.
+  The tool that makes this work is angle preservation. A conformal
+  map distorts distances but leaves angles intact, so streamlines
+  and equipotential lines keep their shape under the map. Solve the
+  problem in the simple domain, map back, and you have the solution
+  in the original domain.
 
 kreyszig_chapter: "Ch 17"
 stroud_programme: null
@@ -80,15 +79,507 @@ An analytic function $w = f(z)$ is **conformal at $z_0$** if $f'(z_0) \neq 0$. A
 2. **Scales uniformly**: all infinitesimal lengths at $z_0$ are multiplied by $|f'(z_0)|$.
 3. **Rotates uniformly**: all directions at $z_0$ are rotated by $\arg f'(z_0)$.
 
-*Why angles are preserved.* If two curves $\gamma_1$ and $\gamma_2$ meet at $z_0$ at angle $\alpha$, their images under $f$ meet at $f(z_0)$ at the same angle. The chain rule gives the tangent direction of the image curve as $f'(z_0)\cdot\gamma'(t_0)$ — the original tangent vector multiplied by $f'(z_0)$. Writing $f'(z_0) = |f'(z_0)|e^{i\varphi}$ with $\varphi = \arg f'(z_0)$, this multiplication scales every tangent by $|f'(z_0)|$ and rotates it by $\varphi$. Both curves get the same rotation, so the angle between them is unchanged.
+*Why angles are preserved.* If two curves $\gamma_1$ and $\gamma_2$ meet at $z_0$ at angle $\alpha$, their images under $f$ meet at $f(z_0)$ at the same angle. The chain rule gives the tangent direction of the image curve as $f'(z_0)\cdot\gamma'(t_0)$ — the original tangent vector multiplied by $f'(z_0)$. Write $f'(z_0) = |f'(z_0)|e^{i\varphi}$ where $\varphi = \arg f'(z_0)$. Multiplying a complex number by $e^{i\varphi}$ rotates it by $\varphi$ and multiplying by $|f'(z_0)|$ scales it. Both curves get the same rotation by $\varphi$, so the angle between them is unchanged.
 
-<!-- STUDENT: The chain-rule argument is stated in one sentence but the key step — that multiplying the complex tangent vector by f′(z₀) rotates it by arg f′(z₀) — is compressed into the word "follows." A reader who is comfortable with complex multiplication will accept this; one who isn't will not see why multiplication by a complex number produces a pure rotation. One additional sentence making this explicit ("multiplying by f′(z₀) = |f′(z₀)|e^{iφ} scales by |f′(z₀)| and rotates by φ = arg f′(z₀)") would bridge the gap. -->
+```{ojs}
+//| echo: false
+{
+  // --- Conformal angle-preservation explorer ---
+  // Dual panel: left z-plane (draggable z0, two cross-arms), right w-plane (images).
+  // Domain colouring background in w-panel. Live angle readout + critical point detection.
 
-<!-- VIZ: Conformality — angle preservation explorer. The left panel shows a small cross (two perpendicular red lines) centred on a draggable point z₀ in the z-plane. A function selector offers f(z) = z², f(z) = e^z, f(z) = sin z, f(z) = 1/z. The right panel shows the images of the two cross-arms under f. An angle indicator annotates the angle between the image arms in degrees. When f is analytic and f′(z₀) ≠ 0, the angle should read 90° (within floating-point tolerance), shown in green. When z₀ is dragged to a critical point (e.g. z₀ = 0 for f = z², where f′ = 0), the angle doubles to 180° and the indicator turns red with the annotation "critical point — angle doubled". The background of the right panel is a light domain colouring of f. Include a live readout: "|f′(z₀)| = [scale factor]" and "arg f′(z₀) = [rotation angle]°". This makes the three properties of conformal maps (angle preserved, scale = |f′|, rotation = arg f′) directly observable at each point. Series thread: this builds on the complex multiplication visualiser from Chapter 1, where |w| scaled and arg w rotated — here those same operations are applied pointwise to tangent vectors. -->
+  const svgNS = "http://www.w3.org/2000/svg";
+  const W = 300, H = 280, SCALE = 65;
+  const CX = W / 2, CY = H / 2;
+
+  // --- Complex arithmetic helpers ---
+  function cadd([ar, ai], [br, bi]) { return [ar + br, ai + bi]; }
+  function csub([ar, ai], [br, bi]) { return [ar - br, ai - bi]; }
+  function cmul([ar, ai], [br, bi]) { return [ar*br - ai*bi, ar*bi + ai*br]; }
+  function cdiv([ar, ai], [br, bi]) {
+    const d = br*br + bi*bi;
+    return [(ar*br + ai*bi)/d, (ai*br - ar*bi)/d];
+  }
+  function cexp([r, i]) { const er = Math.exp(r); return [er*Math.cos(i), er*Math.sin(i)]; }
+  function csin([r, i]) {
+    return [Math.sin(r)*Math.cosh(i), Math.cos(r)*Math.sinh(i)];
+  }
+  function cconj([r, i]) { return [r, -i]; }
+
+  // Functions and their derivatives
+  const funcs = {
+    "z²":    { f: ([r,i]) => cmul([r,i],[r,i]),
+                fp: ([r,i]) => cmul([2,0],[r,i]) },
+    "eᶻ":    { f: ([r,i]) => cexp([r,i]),
+                fp: ([r,i]) => cexp([r,i]) },
+    "sin z": { f: ([r,i]) => csin([r,i]),
+                fp: ([r,i]) => [Math.cos(r)*Math.cosh(i), -Math.sin(r)*Math.sinh(i)] },
+    "1/z":   { f: ([r,i]) => { const d=r*r+i*i; return d<1e-12?[NaN,NaN]:[r/d,-i/d]; },
+                fp: ([r,i]) => { const d=r*r+i*i; return d<1e-12?[NaN,NaN]:[(i*i-r*r)/(d*d),(-2*r*i)/(d*d)]; } },
+    "z̄ (reflection)": { f: ([r,i]) => cconj([r,i]),
+                fp: ([r,i]) => [NaN, NaN] }   // not analytic
+  };
+
+  // HSL helper (same formula as Ch 1)
+  function hslToRgb(h, s, l) {
+    let r, g, b;
+    if (s === 0) { r = g = b = l; }
+    else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1; if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q-p)*6*t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q-p)*(2/3-t)*6;
+        return p;
+      };
+      const q = l < 0.5 ? l*(1+s) : l+s-l*s;
+      const p = 2*l-q;
+      r = hue2rgb(p,q,h+1/3); g = hue2rgb(p,q,h); b = hue2rgb(p,q,h-1/3);
+    }
+    return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+  }
+
+  // Screen ↔ complex coordinate helpers
+  function toScreen(re, im) { return [CX + re*SCALE, CY - im*SCALE]; }
+  function fromScreen(px, py) { return [(px - CX)/SCALE, (CY - py)/SCALE]; }
+
+  // State
+  let z0 = [0.8, 0.5];
+  let funcName = "z²";
+
+  // Build UI
+  const funcSel = Inputs.select(Object.keys(funcs), { label: "f(z)", value: "z²" });
+
+  const z0ReSlider = Inputs.range([-2, 2], { value: 0.8, step: 0.05, label: "Re(z₀)" });
+  const z0ImSlider = Inputs.range([-2, 2], { value: 0.5, step: 0.05, label: "Im(z₀)" });
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+
+  const heading = document.createElement("div");
+  heading.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif; font-size:0.95em;";
+  heading.textContent = "Conformal angle-preservation explorer";
+  container.appendChild(heading);
+  container.appendChild(funcSel);
+  container.appendChild(z0ReSlider);
+  container.appendChild(z0ImSlider);
+
+  const panels = document.createElement("div");
+  panels.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;";
+
+  const leftSvgEl = document.createElementNS(svgNS, "svg");
+  leftSvgEl.setAttribute("width", W); leftSvgEl.setAttribute("height", H);
+  leftSvgEl.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; background:#f8fafc; cursor:crosshair;";
+
+  // Right panel: canvas for domain colouring + SVG overlay
+  const rightWrap = document.createElement("div");
+  rightWrap.style.position = "relative";
+  rightWrap.style.display = "inline-block";
+
+  const rightCanvas = document.createElement("canvas");
+  rightCanvas.width = W; rightCanvas.height = H;
+  rightCanvas.style.cssText = "border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+  const rightSvgEl = document.createElementNS(svgNS, "svg");
+  rightSvgEl.setAttribute("width", W); rightSvgEl.setAttribute("height", H);
+  rightSvgEl.style.cssText = "position:absolute; top:0; left:0; pointer-events:none;";
+
+  rightWrap.appendChild(rightCanvas);
+  rightWrap.appendChild(rightSvgEl);
+
+  panels.appendChild(leftSvgEl);
+  panels.appendChild(rightWrap);
+  container.appendChild(panels);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.85em; padding:0.5rem 0.75rem; background:#f0f9ff; border-radius:4px; line-height:1.7;";
+  container.appendChild(readout);
+
+  const note = document.createElement("div");
+  note.style.cssText = "margin-top:0.4rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note.textContent = "Left: z-plane with two cross-arms at z₀ (red and blue). Right: their images under f, on a domain-coloured background (hue = arg f, brightness = log|f|). Angle between image arms shown live. Drag z₀ with the sliders — move to z₀ = 0 with f = z² to see conformality fail.";
+  container.appendChild(note);
+
+  // Draw domain colouring on canvas
+  function drawDomainColouring(ctx, fn) {
+    const imageData = ctx.createImageData(W, H);
+    const data = imageData.data;
+    for (let py = 0; py < H; py++) {
+      for (let px = 0; px < W; px++) {
+        const re = (px - CX) / SCALE;
+        const im = (CY - py) / SCALE;
+        let hue, brightness;
+        const [wr, wi] = fn([re, im]);
+        if (!isFinite(wr) || !isFinite(wi)) {
+          hue = 0; brightness = 1.0;
+        } else {
+          const arg = Math.atan2(wi, wr);
+          const mag = Math.sqrt(wr*wr + wi*wi);
+          hue = (arg / (2*Math.PI) + 1) % 1;
+          const logmag = Math.log(mag + 0.001);
+          brightness = 0.5 + 0.35 * Math.tanh(logmag / 2);
+        }
+        // Desaturate slightly so overlaid arms are readable
+        const [r, g, b] = hslToRgb(hue, 0.55, brightness * 0.85 + 0.1);
+        const idx = (py * W + px) * 4;
+        data[idx] = r; data[idx+1] = g; data[idx+2] = b; data[idx+3] = 255;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  function clearSvg(svgEl) {
+    while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  }
+
+  function makeLine(x1, y1, x2, y2, stroke, sw, dashed) {
+    const l = document.createElementNS(svgNS, "line");
+    l.setAttribute("x1", x1); l.setAttribute("y1", y1);
+    l.setAttribute("x2", x2); l.setAttribute("y2", y2);
+    l.setAttribute("stroke", stroke); l.setAttribute("stroke-width", sw);
+    if (dashed) l.setAttribute("stroke-dasharray", "4,3");
+    return l;
+  }
+
+  function makeCircle(cx, cy, r, fill, stroke, sw) {
+    const c = document.createElementNS(svgNS, "circle");
+    c.setAttribute("cx", cx); c.setAttribute("cy", cy); c.setAttribute("r", r);
+    c.setAttribute("fill", fill); c.setAttribute("stroke", stroke); c.setAttribute("stroke-width", sw);
+    return c;
+  }
+
+  function makeText(x, y, txt, fill, size, weight) {
+    const t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", x); t.setAttribute("y", y);
+    t.setAttribute("fill", fill); t.setAttribute("font-size", size);
+    t.setAttribute("font-family", "sans-serif");
+    if (weight) t.setAttribute("font-weight", weight);
+    t.textContent = txt;
+    return t;
+  }
+
+  const ARM_LEN = 0.55; // arm half-length in complex units
+
+  function render() {
+    const fn = funcs[funcName];
+    const ctx = rightCanvas.getContext("2d");
+    drawDomainColouring(ctx, fn.f);
+
+    // --- Left panel: z-plane ---
+    clearSvg(leftSvgEl);
+
+    // Axes
+    const axG = document.createElementNS(svgNS, "g");
+    axG.setAttribute("stroke", "#d1d5db"); axG.setAttribute("stroke-width", "1");
+    const [ax1x] = toScreen(-3, 0); const [ax2x] = toScreen(3, 0);
+    const [, ay1] = toScreen(0, -2.5); const [, ay2] = toScreen(0, 2.5);
+    const [ox, oy] = toScreen(0, 0);
+    axG.appendChild(makeLine(ax1x, oy, ax2x, oy, "#d1d5db", 1));
+    axG.appendChild(makeLine(ox, ay1, ox, ay2, "#d1d5db", 1));
+    leftSvgEl.appendChild(axG);
+
+    // Tick marks
+    for (let v = -2; v <= 2; v++) {
+      if (v === 0) continue;
+      const [tx] = toScreen(v, 0); const [, ty] = toScreen(0, v);
+      leftSvgEl.appendChild(makeLine(tx, oy-3, tx, oy+3, "#9ca3af", 1));
+      leftSvgEl.appendChild(makeLine(ox-3, ty, ox+3, ty, "#9ca3af", 1));
+    }
+
+    // Cross-arms at z0 (red horizontal, blue vertical)
+    const [z0x, z0y] = toScreen(z0[0], z0[1]);
+    const [rx1, ry1] = toScreen(z0[0] - ARM_LEN, z0[1]);
+    const [rx2, ry2] = toScreen(z0[0] + ARM_LEN, z0[1]);
+    const [bx1, by1] = toScreen(z0[0], z0[1] - ARM_LEN);
+    const [bx2, by2] = toScreen(z0[0], z0[1] + ARM_LEN);
+
+    leftSvgEl.appendChild(makeLine(rx1, ry1, rx2, ry2, "#dc2626", 2.5));
+    leftSvgEl.appendChild(makeLine(bx1, by1, bx2, by2, "#3b82f6", 2.5));
+    leftSvgEl.appendChild(makeCircle(z0x, z0y, 5, "#fff", "#374151", 1.5));
+
+    // Label z0
+    leftSvgEl.appendChild(makeText(z0x + 7, z0y - 7, `z₀ = ${z0[0].toFixed(2)}+${z0[1].toFixed(2)}i`, "#374151", "11"));
+    leftSvgEl.appendChild(makeText(5, 15, "z-plane", "#6b7280", "11"));
+    leftSvgEl.appendChild(makeText(5, H - 6, "Red arm: horizontal  Blue arm: vertical", "#9ca3af", "9"));
+
+    // --- Right panel: w-plane overlaid SVG ---
+    clearSvg(rightSvgEl);
+
+    // Compute images of arm endpoints
+    const armStep = 0.04; // parametric step for arm curve
+    const ARM_N = Math.round(ARM_LEN / armStep);
+
+    function armCurve(baseRe, baseIm, dRe, dIm) {
+      // Trace the image of a short line segment from z0 in direction (dRe, dIm)
+      const pts = [];
+      for (let k = -ARM_N; k <= ARM_N; k++) {
+        const t = k * armStep;
+        const z = [baseRe + t * dRe, baseIm + t * dIm];
+        const w = fn.f(z);
+        if (isFinite(w[0]) && isFinite(w[1])) {
+          const [sx, sy] = toScreen(w[0], w[1]);
+          pts.push([sx, sy]);
+        }
+      }
+      return pts;
+    }
+
+    function ptsToPath(pts) {
+      if (pts.length === 0) return "";
+      return pts.map((p, i) => (i === 0 ? `M ${p[0]} ${p[1]}` : `L ${p[0]} ${p[1]}`)).join(" ");
+    }
+
+    const redPts = armCurve(z0[0], z0[1], 1, 0);
+    const bluePts = armCurve(z0[0], z0[1], 0, 1);
+
+    function makePath(d, stroke, sw) {
+      const p = document.createElementNS(svgNS, "path");
+      p.setAttribute("d", d); p.setAttribute("stroke", stroke); p.setAttribute("stroke-width", sw);
+      p.setAttribute("fill", "none");
+      return p;
+    }
+
+    if (redPts.length > 1) rightSvgEl.appendChild(makePath(ptsToPath(redPts), "#dc2626", 2.5));
+    if (bluePts.length > 1) rightSvgEl.appendChild(makePath(ptsToPath(bluePts), "#3b82f6", 2.5));
+
+    // Centre dot at f(z0)
+    const w0 = fn.f(z0);
+    if (isFinite(w0[0]) && isFinite(w0[1])) {
+      const [wx, wy] = toScreen(w0[0], w0[1]);
+      rightSvgEl.appendChild(makeCircle(wx, wy, 5, "#fff", "#374151", 1.5));
+    }
+
+    rightSvgEl.appendChild(makeText(5, 15, "w-plane", "#e5e7eb", "11"));
+
+    // --- Compute angle between image arms (tangent vectors) ---
+    const fpz = fn.fp(z0);
+    let angleStr = "", angleColour = "#059669", critNote = "";
+
+    if (!isFinite(fpz[0]) || !isFinite(fpz[1]) || funcName === "z̄ (reflection)") {
+      // Not analytic
+      angleStr = "not analytic — not conformal";
+      angleColour = "#dc2626";
+      critNote = "Conjugation reverses orientation — angles are reflected, not preserved.";
+    } else {
+      const fpMag = Math.sqrt(fpz[0]*fpz[0] + fpz[1]*fpz[1]);
+      if (fpMag < 0.001) {
+        // Critical point
+        angleStr = "angle doubled (critical point)";
+        angleColour = "#dc2626";
+        critNote = "f′(z₀) ≈ 0 — conformality fails here.";
+      } else {
+        // Compute angle between tangent image vectors
+        // Red arm tangent in z: (1,0); image tangent = fp * (1,0) = fp
+        const tRed = [fpz[0], fpz[1]];
+        // Blue arm tangent in z: (0,1) (= i); image tangent = fp * i = (-fpz[1], fpz[0])
+        const tBlue = [-fpz[1], fpz[0]];
+        const dot = tRed[0]*tBlue[0] + tRed[1]*tBlue[1];
+        const mR = Math.sqrt(tRed[0]**2 + tRed[1]**2);
+        const mB = Math.sqrt(tBlue[0]**2 + tBlue[1]**2);
+        const cosA = Math.max(-1, Math.min(1, dot / (mR * mB)));
+        const angleDeg = Math.acos(cosA) * 180 / Math.PI;
+        const isCrit = Math.abs(angleDeg - 90) > 5;
+        angleStr = `${angleDeg.toFixed(1)}°`;
+        angleColour = isCrit ? "#dc2626" : "#059669";
+        critNote = isCrit ? "critical point — angle doubled" : "conformal (angle preserved)";
+      }
+
+      const fpArg = Math.atan2(fpz[1], fpz[0]) * 180 / Math.PI;
+
+      readout.innerHTML = `
+        <span style="color:${angleColour}; font-weight:600;">Angle between image arms: ${angleStr}</span>
+        ${critNote ? `<span style="color:${angleColour};"> — ${critNote}</span>` : ""}
+        <br>
+        |f′(z₀)| = <strong>${fpMag.toFixed(3)}</strong> (scale factor)
+        &nbsp;|&nbsp;
+        arg f′(z₀) = <strong>${fpArg.toFixed(1)}°</strong> (rotation applied to both arms)
+      `;
+      return;
+    }
+
+    readout.innerHTML = `
+      <span style="color:${angleColour}; font-weight:600;">${angleStr}</span>
+      ${critNote ? `<br><span style="color:${angleColour}; font-size:0.92em;">${critNote}</span>` : ""}
+    `;
+  }
+
+  funcSel.addEventListener("input", () => { funcName = funcSel.value; render(); });
+  z0ReSlider.addEventListener("input", () => { z0 = [z0ReSlider.value, z0[1]]; render(); });
+  z0ImSlider.addEventListener("input", () => { z0 = [z0[0], z0ImSlider.value]; render(); });
+
+  render();
+  return container;
+}
+```
 
 At a **critical point** where $f'(z_0) = 0$, conformality fails: angles are multiplied by the order of the zero.
 
-**Example.** $w = z^2$ at $z = 0$: $f'(0) = 0$, so the map is not conformal at the origin. The angle between any two curves through 0 is doubled. Away from 0, $f'(z) = 2z \neq 0$ and the map is conformal.
+**Example.** For $w = z^2$ at $z = 0$: $f'(0) = 0$, so the map is not conformal there. The angle between any two curves through the origin is doubled. Away from the origin, $f'(z) = 2z \neq 0$ and the map is conformal everywhere else.
+
+```{ojs}
+//| echo: false
+{
+  // --- Critical-point angle-doubling diagram (static SVG) ---
+  // Left: z-plane, two curves meeting at z=+1 at angle θ.
+  // Right: w-plane, image curves meeting at w=2 at angle 2θ.
+  // Faint aerofoil profile in background of right panel (Joukowski flat-plate limit).
+  const svgNS = "http://www.w3.org/2000/svg";
+  const W = 290, H = 220, SCALE = 60;
+
+  function toSc(re, im, cx, cy, sc) { return [cx + re*sc, cy - im*sc]; }
+
+  function makeSvg(w, h, bg) {
+    const s = document.createElementNS(svgNS, "svg");
+    s.setAttribute("width", w); s.setAttribute("height", h);
+    s.style.cssText = `background:${bg}; border:1px solid #e5e7eb; border-radius:6px;`;
+    return s;
+  }
+
+  function line(x1,y1,x2,y2,stroke,sw,dash) {
+    const l=document.createElementNS(svgNS,"line");
+    l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+    l.setAttribute("stroke",stroke);l.setAttribute("stroke-width",sw);
+    if(dash)l.setAttribute("stroke-dasharray",dash);
+    return l;
+  }
+
+  function txt(x,y,s,fill,size,anchor) {
+    const t=document.createElementNS(svgNS,"text");
+    t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",fill);
+    t.setAttribute("font-size",size);t.setAttribute("font-family","sans-serif");
+    if(anchor)t.setAttribute("text-anchor",anchor);
+    t.textContent=s;
+    return t;
+  }
+
+  function arc(cx,cy,r,a1,a2,stroke,sw) {
+    // SVG arc from angle a1 to a2 (radians, measured from positive x, anti-clockwise in maths = clockwise in SVG)
+    const x1=cx+r*Math.cos(a1), y1=cy-r*Math.sin(a1);
+    const x2=cx+r*Math.cos(a2), y2=cy-r*Math.sin(a2);
+    const sweep=0; // CCW in SVG coords = CW in maths
+    const d=`M ${x1} ${y1} A ${r} ${r} 0 0 0 ${x2} ${y2}`;
+    const p=document.createElementNS(svgNS,"path");
+    p.setAttribute("d",d);p.setAttribute("stroke",stroke);p.setAttribute("stroke-width",sw);
+    p.setAttribute("fill","none");p.setAttribute("stroke-dasharray","4,3");
+    return p;
+  }
+
+  // Left panel: z-plane, critical point at z=+1
+  const leftSvg = makeSvg(W, H, "#f8fafc");
+  const CX = W*0.40, CY = H*0.55;
+
+  // Axes
+  leftSvg.appendChild(line(10,CY,W-10,CY,"#d1d5db",1));
+  leftSvg.appendChild(line(CX,10,CX,H-10,"#d1d5db",1));
+
+  // Critical point at z=+1
+  const [cpx,cpy] = toSc(1,0,CX,CY,SCALE);
+
+  // Two curves meeting at z=+1: one going up-left at ~60°, one going up at 90°
+  // Represent as straight lines (tangent direction is what matters)
+  const THETA = Math.PI / 3; // 60 degrees
+  const len = 0.9 * SCALE;
+  // Curve 1: direction angle THETA from z=+1
+  leftSvg.appendChild(line(cpx,cpy, cpx+len*Math.cos(THETA+Math.PI),cpy-len*Math.sin(THETA+Math.PI), "#dc2626",2.2));
+  leftSvg.appendChild(line(cpx,cpy, cpx+len*Math.cos(THETA),cpy-len*Math.sin(THETA),"#dc2626",2.2));
+  // Curve 2: direction 90° from z=+1 (i.e. straight up/down)
+  leftSvg.appendChild(line(cpx,cpy, cpx+len*Math.cos(Math.PI/2+Math.PI),cpy-len*Math.sin(Math.PI/2+Math.PI),"#3b82f6",2.2));
+  leftSvg.appendChild(line(cpx,cpy, cpx+len*Math.cos(Math.PI/2),cpy-len*Math.sin(Math.PI/2),"#3b82f6",2.2));
+
+  // Arc showing angle θ between the curves
+  leftSvg.appendChild(arc(cpx,cpy,22,Math.PI/2,THETA,"#374151",1.5));
+
+  // Labels
+  const el=document.createElementNS(svgNS,"circle");
+  el.setAttribute("cx",cpx);el.setAttribute("cy",cpy);el.setAttribute("r","5");
+  el.setAttribute("fill","#8b5cf6");el.setAttribute("stroke","#fff");el.setAttribute("stroke-width","1.5");
+  leftSvg.appendChild(el);
+
+  leftSvg.appendChild(txt(cpx+7,cpy-7,"z = +1","#8b5cf6","10"));
+  leftSvg.appendChild(txt(cpx+25,cpy-30,"θ","#374151","13"));
+  leftSvg.appendChild(txt(5,15,"z-plane","#6b7280","11"));
+  leftSvg.appendChild(txt(W/2,H-5,"Critical point of w = z² + 1/z","#9ca3af","9","middle"));
+
+  // Right panel: w-plane, image at w=2
+  const rightSvg = makeSvg(W, H, "#f8fafc");
+  const WCX = W*0.28, WCY = H*0.55;
+  const WSCALE = 48;
+
+  // Faint aerofoil silhouette (Joukowski flat-plate at w=2)
+  const aeroPath = document.createElementNS(svgNS,"path");
+  const apts = [];
+  for(let k=0;k<360;k++){
+    const theta=k*Math.PI/180;
+    const r=1.08, dx=0.08;
+    const zRe=-dx+r*Math.cos(theta), zIm=r*Math.sin(theta);
+    const d2=zRe*zRe+zIm*zIm;
+    const wRe=zRe+zRe/d2, wIm=zIm-zIm/d2;
+    const [px,py]=toSc(wRe,wIm,WCX,WCY,WSCALE);
+    apts.push(`${k===0?"M":"L"} ${px} ${py}`);
+  }
+  aeroPath.setAttribute("d",apts.join(" ")+" Z");
+  aeroPath.setAttribute("fill","rgba(249,115,22,0.08)");
+  aeroPath.setAttribute("stroke","rgba(249,115,22,0.25)");
+  aeroPath.setAttribute("stroke-width","1");
+  rightSvg.appendChild(aeroPath);
+
+  // Axes
+  rightSvg.appendChild(line(10,WCY,W-10,WCY,"#d1d5db",1));
+  rightSvg.appendChild(line(WCX,10,WCX,H-10,"#d1d5db",1));
+
+  // Image point at w=2
+  const [wpx,wpy] = toSc(2,0,WCX,WCY,WSCALE);
+  const THETA2 = THETA * 2; // doubled angle
+
+  // Image curve 1: at angle THETA2
+  rightSvg.appendChild(line(wpx,wpy,wpx+len*Math.cos(THETA2+Math.PI),wpy-len*Math.sin(THETA2+Math.PI),"#dc2626",2.2));
+  rightSvg.appendChild(line(wpx,wpy,wpx+len*Math.cos(THETA2),wpy-len*Math.sin(THETA2),"#dc2626",2.2));
+  // Image curve 2: at 180° (twice 90°) — goes straight left and right = cusp
+  rightSvg.appendChild(line(wpx,wpy,wpx-len,wpy,"#3b82f6",2.2));
+  rightSvg.appendChild(line(wpx,wpy,wpx+len,wpy,"#3b82f6",2.2));
+
+  // Arc showing doubled angle 2θ
+  rightSvg.appendChild(arc(wpx,wpy,22,Math.PI,THETA2,"#374151",1.5));
+
+  const we=document.createElementNS(svgNS,"circle");
+  we.setAttribute("cx",wpx);we.setAttribute("cy",wpy);we.setAttribute("r","5");
+  we.setAttribute("fill","#8b5cf6");we.setAttribute("stroke","#fff");we.setAttribute("stroke-width","1.5");
+  rightSvg.appendChild(we);
+
+  rightSvg.appendChild(txt(wpx+7,wpy-7,"w = 2 (trailing edge)","#8b5cf6","10"));
+  rightSvg.appendChild(txt(wpx+25,wpy-30,"2θ","#374151","13"));
+  rightSvg.appendChild(txt(5,15,"w-plane","#6b7280","11"));
+  rightSvg.appendChild(txt(W/2,H-5,"Angle doubled — trailing-edge cusp","#9ca3af","9","middle"));
+
+  // Arrow between panels
+  const arrow = document.createElementNS(svgNS,"text");
+
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:0.75rem 1rem; margin:1rem 0;";
+  const heading = document.createElement("div");
+  heading.style.cssText = "font-weight:600; font-family:sans-serif; font-size:0.9em; margin-bottom:0.5rem;";
+  heading.textContent = "Critical-point geometry: angle doubling at the trailing edge";
+  wrap.appendChild(heading);
+
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;";
+  row.appendChild(leftSvg);
+
+  const midLabel = document.createElement("div");
+  midLabel.style.cssText = "font-size:1.1em; font-weight:600; color:#6b7280; padding:0 0.25rem;";
+  midLabel.textContent = "w = z + 1/z";
+  row.appendChild(midLabel);
+  row.appendChild(rightSvg);
+  wrap.appendChild(row);
+
+  const cap = document.createElement("div");
+  cap.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  cap.textContent = "At z = +1 (a critical point of w = z + 1/z, since dw/dz = 1 − 1/z² = 0 there), the angle θ between two curves is doubled to 2θ in the w-plane. The blue curve arriving vertically (θ = 90° from red) becomes horizontal (2θ = 180°) — the cusped trailing edge of the Joukowski aerofoil.";
+  wrap.appendChild(cap);
+
+  return wrap;
+}
+```
 
 ---
 
@@ -98,19 +589,15 @@ The **Möbius transformation** (or **fractional linear transformation**) is:
 
 $$w = \frac{az + b}{cz + d}, \qquad ad - bc \neq 0$$
 
-The condition $ad - bc \neq 0$ ensures that $w$ is not constant. These transformations form a group under composition and are the most important class of conformal maps.
+The condition $ad - bc \neq 0$ ensures that $w$ is not constant. These transformations compose cleanly — applying one after another gives another Möbius transformation — which is why they are the most useful class of conformal maps in practice.
 
 **Key property: circles and lines map to circles and lines.** In the extended complex plane — the ordinary plane with a single point at infinity added — a straight line can be viewed as a circle that passes through that point at infinity. Under a Möbius transformation, circles (including lines viewed this way) always map to circles (including lines).
 
-<!-- STUDENT: "A line is a circle through ∞" is stated as a fact but uses the concept of a point at infinity without prior introduction. An engineering student who has not seen the Riemann sphere will find this puzzling — the idea that a line "passes through ∞" is not intuitive. A parenthetical — "(in the extended complex plane, where a single point at infinity is added)" — would make this less opaque. -->
-
-**Three-point determination.** A Möbius transformation is completely determined by specifying three distinct points and their images. Given pairs $(z_1 \mapsto w_1)$, $(z_2 \mapsto w_2)$, $(z_3 \mapsto w_3)$, the transformation is found by the **cross-ratio** equation:
+**Three-point determination.** Specify three distinct points and their images and the transformation is fixed. Given pairs $(z_1 \mapsto w_1)$, $(z_2 \mapsto w_2)$, $(z_3 \mapsto w_3)$, the transformation comes from the **cross-ratio** equation:
 
 $$\frac{(w - w_1)(w_2 - w_3)}{(w - w_3)(w_2 - w_1)} = \frac{(z - z_1)(z_2 - z_3)}{(z - z_3)(z_2 - z_1)}$$
 
 The right side is a known number for each $z$. Cross-multiply to get a linear equation in $w$, then solve — the result is the unique Möbius transformation. Exercise 3 works through this procedure.
-
-<!-- STUDENT: The cross-ratio formula is given without any indication of how to use it to solve for w. A reader seeing this for the first time will not know: do you expand both sides and solve for w algebraically? Is there a standard simplification? Exercise 3 works through the procedure, but the body section could use one sentence saying "expand the left side for w, the rest is algebra" so the reader understands what the formula is asking them to do. -->
 
 **Standard mappings.**
 
@@ -120,7 +607,519 @@ The right side is a known number for each $z$. Cross-multiply to get a linear eq
 
 ### Fixed points
 
-The **fixed points** of a Möbius transformation $w = (az+b)/(cz+d)$ satisfy $z = (az+b)/(cz+d)$, i.e., $cz^2 + (d-a)z - b = 0$. A generic Möbius transformation has two fixed points (possibly coincident or at $\infty$).
+A **fixed point** is a point that the transformation sends to itself. For $w = (az+b)/(cz+d)$, setting $z = w$ gives $cz^2 + (d-a)z - b = 0$. A generic Möbius transformation has two fixed points (possibly coincident or at $\infty$). Knowing the fixed points characterises the geometric type of the transformation — rotation, dilation, translation, or a combination.
+
+```{ojs}
+//| echo: false
+{
+  // --- Möbius circles-to-circles explorer ---
+  // LEFT: z-plane with 3 horizontal lines (blue) and 3 vertical lines (orange).
+  // RIGHT: w-plane images in same colours.
+  // Presets: inversion, half-plane-to-disk, disk-to-half-plane, translation, custom (a/b/c/d sliders).
+  // Fixed-point toggle: gold stars on both panels.
+  // Live annotation: "real axis maps to: [circle/line]".
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const W = 300, H = 280, SCALE = 55;
+  const CX = W/2, CY = H/2;
+
+  function ts(re,im,cx,cy,sc){return [cx+re*sc, cy-im*sc];}
+
+  // Möbius: w = (az+b)/(cz+d)
+  function mobius(zr,zi,a,b,c,d){
+    // numerator = a*z+b, denominator = c*z+d (all complex)
+    const [ar,ai]=a, [br,bi]=b, [cr,ci]=c, [dr,di]=d;
+    const nr=ar*zr-ai*zi+br, ni=ar*zi+ai*zr+bi;
+    const dr2=cr*zr-ci*zi+dr, di2=cr*zi+ci*zr+di;
+    const den=dr2*dr2+di2*di2;
+    if(den<1e-14)return[NaN,NaN];
+    return[(nr*dr2+ni*di2)/den,(ni*dr2-nr*di2)/den];
+  }
+
+  // Fixed points: solve c*z^2 + (d-a)*z - b = 0 (all complex)
+  // Using quadratic formula with complex arithmetic
+  function fixedPoints(a,b,c,d){
+    const [ar,ai]=a,[br,bi]=b,[cr,ci]=c,[dr,di]=d;
+    // c*z^2 + (d-a)*z - b = 0
+    const Ar=cr, Ai=ci;
+    const Br=dr-ar, Bi=di-ai;
+    const Cr=-br, Ci=-bi;
+    // discriminant = B^2 - 4AC
+    const B2r=Br*Br-Bi*Bi, B2i=2*Br*Bi;
+    const ACr=Ar*Cr-Ai*Ci, ACi=Ar*Ci+Ai*Cr;
+    const discr=B2r-4*ACr, disci=B2i-4*ACi;
+    // sqrt of disc
+    const discMag=Math.sqrt(discr*discr+disci*disci);
+    const discArg=Math.atan2(disci,discr);
+    const sqrtMag=Math.sqrt(discMag);
+    const sqrtDisc1=[sqrtMag*Math.cos(discArg/2), sqrtMag*Math.sin(discArg/2)];
+    const sqrtDisc2=[-sqrtDisc1[0],-sqrtDisc1[1]];
+    const twoAr=2*Ar, twoAi=2*Ai;
+    const twoDen=twoAr*twoAr+twoAi*twoAi;
+    if(twoDen<1e-12)return[]; // c=0: translation/scaling, infinite fixed point
+    function cdiv2(nr,ni,dr,di){const d2=dr*dr+di*di;return[(nr*dr+ni*di)/d2,(ni*dr-nr*di)/d2];}
+    const z1=cdiv2(-Br+sqrtDisc1[0],-Bi+sqrtDisc1[1],twoAr,twoAi);
+    const z2=cdiv2(-Br+sqrtDisc2[0],-Bi+sqrtDisc2[1],twoAr,twoAi);
+    const pts=[];
+    if(isFinite(z1[0])&&isFinite(z1[1]))pts.push(z1);
+    if(isFinite(z2[0])&&isFinite(z2[1])&&(Math.abs(z2[0]-z1[0])>0.001||Math.abs(z2[1]-z1[1])>0.001))pts.push(z2);
+    return pts;
+  }
+
+  // Preset transformations: [a,b,c,d] as complex pairs
+  const presets = {
+    "Inversion  w = 1/z":         { a:[0,0],b:[1,0],c:[1,0],d:[0,0] },
+    "Half-plane → disk  w = (z−i)/(z+i)":
+                                    { a:[1,0],b:[0,-1],c:[1,0],d:[0,1] },
+    "Disk → half-plane  w = i(1−z)/(1+z)":
+                                    { a:[0,1],b:[0,1],c:[1,0],d:[1,0] },  // w=i(1-z)/(1+z): a=0+i, b=0+i, c=1, d=1
+    "Translation  w = z+1":        { a:[1,0],b:[1,0],c:[0,0],d:[1,0] },
+    "Custom":                      { a:[1,0],b:[1,0],c:[0,0],d:[1,0] }
+  };
+
+  let preset = "Inversion  w = 1/z";
+  let showFP = false;
+  let customA=[1,0],customB=[1,0],customC=[0,0],customD=[1,0];
+
+  const presetSel = Inputs.select(Object.keys(presets), { label: "Preset", value: preset });
+  const fpToggle = Inputs.toggle({ label: "Show fixed points", value: false });
+
+  const aReS = Inputs.range([-2,2],{value:1,step:0.1,label:"Re(a)"});
+  const aImS = Inputs.range([-2,2],{value:0,step:0.1,label:"Im(a)"});
+  const bReS = Inputs.range([-2,2],{value:1,step:0.1,label:"Re(b)"});
+  const bImS = Inputs.range([-2,2],{value:0,step:0.1,label:"Im(b)"});
+  const cReS = Inputs.range([-2,2],{value:0,step:0.1,label:"Re(c)"});
+  const cImS = Inputs.range([-2,2],{value:0,step:0.1,label:"Im(c)"});
+  const dReS = Inputs.range([-2,2],{value:1,step:0.1,label:"Re(d)"});
+  const dImS = Inputs.range([-2,2],{value:0,step:0.1,label:"Im(d)"});
+
+  const customSliders = document.createElement("div");
+  customSliders.style.cssText = "display:none; flex-wrap:wrap; gap:0.1rem; margin:0.25rem 0;";
+  [aReS,aImS,bReS,bImS,cReS,cImS,dReS,dImS].forEach(s=>customSliders.appendChild(s));
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+
+  const heading = document.createElement("div");
+  heading.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif; font-size:0.95em;";
+  heading.textContent = "Möbius transformation: circles to circles";
+  container.appendChild(heading);
+  container.appendChild(presetSel);
+  container.appendChild(fpToggle);
+  container.appendChild(customSliders);
+
+  const panels = document.createElement("div");
+  panels.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;";
+
+  function makeSvgEl(label){
+    const s=document.createElementNS(svgNS,"svg");
+    s.setAttribute("width",W);s.setAttribute("height",H);
+    s.style.cssText="background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;";
+    return s;
+  }
+
+  const leftSvg = makeSvgEl("z-plane");
+  const rightSvg = makeSvgEl("w-plane");
+  panels.appendChild(leftSvg);
+  panels.appendChild(rightSvg);
+  container.appendChild(panels);
+
+  const annotation = document.createElement("div");
+  annotation.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.85em; padding:0.4rem 0.75rem; background:#f0f9ff; border-radius:4px;";
+  container.appendChild(annotation);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.4rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "Blue lines: Re(z) = const (horizontal). Orange lines: Im(z) = const (vertical). Both are circles through ∞ in the extended plane, so they map to circles or lines in the w-plane. Gold stars: fixed points. Custom preset: set a, b, c, d — ad−bc≠0 checked live.";
+  container.appendChild(noteEl);
+
+  function clearSvg(s){while(s.firstChild)s.removeChild(s.firstChild);}
+  function mkLine(s,x1,y1,x2,y2,stroke,sw,dash){
+    const l=document.createElementNS(svgNS,"line");
+    l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+    l.setAttribute("stroke",stroke);l.setAttribute("stroke-width",sw);
+    if(dash)l.setAttribute("stroke-dasharray",dash);
+    s.appendChild(l);
+  }
+  function mkTxt(s,x,y,str,fill,size){
+    const t=document.createElementNS(svgNS,"text");
+    t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",fill);
+    t.setAttribute("font-size",size);t.setAttribute("font-family","sans-serif");
+    t.textContent=str;s.appendChild(t);
+  }
+  function mkStar(s,x,y){
+    // Simple star: 5 triangles
+    const g=document.createElementNS(svgNS,"text");
+    g.setAttribute("x",x-6);g.setAttribute("y",y+5);
+    g.setAttribute("fill","#fbbf24");g.setAttribute("font-size","14");
+    g.setAttribute("font-family","sans-serif");
+    g.textContent="★";s.appendChild(g);
+  }
+
+  // Draw a curve by mapping N points along horizontal or vertical line
+  function drawMappedLine(svgEl, isHorizontal, cval, colour, sw, a, b, c, d) {
+    let N=200;
+    let pts=[];
+    let prevOk=true;
+    let pathD="";
+    for(let k=0;k<=N;k++){
+      let t=(k/N)*6-3; // range [-3,3] in the 'free' coordinate
+      let zr=isHorizontal?t:cval;
+      let zi=isHorizontal?cval:t;
+      const [wr,wi]=mobius(zr,zi,a,b,c,d);
+      if(!isFinite(wr)||!isFinite(wi)||Math.abs(wr)>6||Math.abs(wi)>6){
+        prevOk=false; continue;
+      }
+      const [px,py]=ts(wr,wi,CX,CY,SCALE);
+      pathD+=prevOk?` L ${px} ${py}`:`M ${px} ${py}`;
+      prevOk=true;
+    }
+    if(!pathD)return;
+    const p=document.createElementNS(svgNS,"path");
+    p.setAttribute("d",pathD.replace(/^ L/,"M"));
+    p.setAttribute("stroke",colour);p.setAttribute("stroke-width",sw);p.setAttribute("fill","none");
+    svgEl.appendChild(p);
+  }
+
+  function render(){
+    clearSvg(leftSvg); clearSvg(rightSvg);
+
+    const p = presets[preset];
+    const {a,b,c,d} = preset==="Custom"
+      ? {a:customA,b:customB,c:customC,d:customD}
+      : p;
+
+    // Check ad-bc ≠ 0
+    const [ar,ai]=a,[br,bi]=b,[cr,ci]=c,[dr,di]=d;
+    const adR=ar*dr-ai*di, adI=ar*di+ai*dr;
+    const bcR=br*cr-bi*ci, bcI=br*ci+bi*cr;
+    const detR=adR-bcR, detI=adI-bcI;
+    const det=Math.sqrt(detR*detR+detI*detI);
+    if(det<0.01){
+      annotation.style.color="#dc2626";
+      annotation.textContent="ad − bc ≈ 0: degenerate (not a valid Möbius transformation). Adjust a, b, c, d.";
+    }
+
+    // Axes both panels
+    [leftSvg,rightSvg].forEach(s=>{
+      const [ox,oy]=ts(0,0,CX,CY,SCALE);
+      mkLine(s,10,oy,W-10,oy,"#e5e7eb",1);
+      mkLine(s,ox,10,ox,H-10,"#e5e7eb",1);
+    });
+
+    // Input lines in z-plane (left panel, static)
+    const hLines = [-1.5, 0, 1.5]; // Im = const (horizontal extended-plane circles)
+    const vLines = [-1.5, 0, 1.5]; // Re = const (vertical extended-plane circles)
+
+    hLines.forEach(im=>{
+      const [x1,y1]=ts(-3,im,CX,CY,SCALE); const [x2,y2]=ts(3,im,CX,CY,SCALE);
+      mkLine(leftSvg,x1,y1,x2,y2,"#3b82f6",im===0?2:1.5);
+    });
+    vLines.forEach(re=>{
+      const [x1,y1]=ts(re,-2.5,CX,CY,SCALE); const [x2,y2]=ts(re,2.5,CX,CY,SCALE);
+      mkLine(leftSvg,x1,y1,x2,y2,"#f97316",re===0?2:1.5);
+    });
+
+    mkTxt(leftSvg,5,15,"z-plane","#6b7280","11");
+
+    // Fixed points in z-plane
+    const fps=fixedPoints(a,b,c,d);
+    if(showFP){
+      fps.forEach(([fr,fi])=>{
+        const [fx,fy]=ts(fr,fi,CX,CY,SCALE);
+        if(fx>0&&fx<W&&fy>0&&fy<H)mkStar(leftSvg,fx,fy);
+      });
+    }
+
+    // Right panel: mapped images
+    hLines.forEach(im=>drawMappedLine(rightSvg,true,im,"#3b82f6",im===0?2:1.5,a,b,c,d));
+    vLines.forEach(re=>drawMappedLine(rightSvg,false,re,"#f97316",re===0?2:1.5,a,b,c,d));
+
+    mkTxt(rightSvg,5,15,"w-plane","#6b7280","11");
+
+    // Fixed points in w-plane (same z coords since they map to themselves)
+    if(showFP){
+      fps.forEach(([fr,fi])=>{
+        const [fx,fy]=ts(fr,fi,CX,CY,SCALE);
+        if(fx>0&&fx<W&&fy>0&&fy<H)mkStar(rightSvg,fx,fy);
+      });
+    }
+
+    // Annotation: where does the real axis (Im=0) map?
+    const testPts=[-2,-1,0,1,2].map(x=>mobius(x,0,a,b,c,d));
+    const imParts=testPts.filter(([r,i])=>isFinite(r)&&isFinite(i)).map(([r,i])=>Math.abs(i));
+    const allReal=imParts.every(v=>v<0.01);
+    const targetDesc=allReal?"the real axis (a line)":"a circle (or arc)";
+    annotation.style.color="#374151";
+    annotation.innerHTML=`Real axis (Im z = 0) maps to: <strong>${targetDesc}</strong>
+      ${det>0.01?`&nbsp;|&nbsp; ad − bc = ${detR.toFixed(2)}${detI>=0?"+":""}${detI.toFixed(2)}i`:""}`;
+  }
+
+  presetSel.addEventListener("input",()=>{
+    preset=presetSel.value;
+    customSliders.style.display=preset==="Custom"?"flex":"none";
+    render();
+  });
+  fpToggle.addEventListener("input",()=>{showFP=fpToggle.value;render();});
+  [aReS,aImS,bReS,bImS,cReS,cImS,dReS,dImS].forEach(s=>s.addEventListener("input",()=>{
+    customA=[+aReS.value,+aImS.value];
+    customB=[+bReS.value,+bImS.value];
+    customC=[+cReS.value,+cImS.value];
+    customD=[+dReS.value,+dImS.value];
+    render();
+  }));
+
+  render();
+  return container;
+}
+```
+
+```{ojs}
+//| echo: false
+{
+  // --- Möbius fixed-point geometry: pencils of circles ---
+  // Four transformation types: Elliptic, Hyperbolic, Loxodromic, Parabolic.
+  // Blue pencil through fixed points; orange orthogonal family.
+  // Square tracer dot iterated under T.
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const W = 380, H = 300, SCALE = 60;
+  const CX = W/2, CY = H/2;
+
+  function ts(re,im){return[CX+re*SCALE,CY-im*SCALE];}
+  function cmul([ar,ai],[br,bi]){return[ar*br-ai*bi,ar*bi+ai*br];}
+  function cadd([ar,ai],[br,bi]){return[ar+br,ai+bi];}
+  function csub([ar,ai],[br,bi]){return[ar-br,ai-bi];}
+  function cdiv([ar,ai],[br,bi]){const d=br*br+bi*bi;return[(ar*br+ai*bi)/d,(ai*br-ar*bi)/d];}
+
+  // Canonical form: conjugate to T(z) = k*z where k is the multiplier
+  // We work directly with explicit Möbius maps defined per type.
+
+  const types = {
+    "Elliptic": {
+      // T(z) = e^(iπ/3) * z  →  pure rotation, fixed points at 0 and ∞
+      // In full Möbius form: a=e^(iπ/3), b=0, c=0, d=1
+      a:[Math.cos(Math.PI/3),Math.sin(Math.PI/3)], b:[0,0], c:[0,0], d:[1,0],
+      fp1:[0,0], fp2:null, // 0 and ∞
+      desc:"Elliptic: |multiplier| = 1. Orbits are circles around the fixed points. Blue family: circles through both fixed points (arcs). Orange family: circles orthogonal to those (the invariant circles).",
+    },
+    "Hyperbolic": {
+      // T(z) = 2*z  →  real dilation, fixed points 0, ∞
+      a:[2,0], b:[0,0], c:[0,0], d:[1,0],
+      fp1:[0,0], fp2:null,
+      desc:"Hyperbolic: multiplier is real > 0. Orbits spiral outward along radii. Blue: circles through origin and ∞ (lines through origin). Orange: concentric circles around origin.",
+    },
+    "Loxodromic": {
+      // T(z) = 1.3*e^(iπ/5)*z  →  spiral, fixed points 0, ∞
+      a:[1.3*Math.cos(Math.PI/5),1.3*Math.sin(Math.PI/5)], b:[0,0], c:[0,0], d:[1,0],
+      fp1:[0,0], fp2:null,
+      desc:"Loxodromic: multiplier has |k|≠1 and arg(k)≠0. Orbits are loxodromes — spirals that cut all members of one pencil at a constant angle.",
+    },
+    "Parabolic": {
+      // T(z) = z + 1  →  translation, one fixed point at ∞
+      a:[1,0], b:[1,0], c:[0,0], d:[1,0],
+      fp1:null, fp2:null,
+      desc:"Parabolic: single fixed point (at ∞). Orbits are parallel horizontal lines. Both pencil families degenerate to parallel lines.",
+    }
+  };
+
+  let typeName = "Elliptic";
+  let orbitStep = 0;
+  let orbitPts = [[0.5, 0.8]]; // starting tracer position
+
+  const typeSel = Inputs.select(Object.keys(types),{label:"Type",value:"Elliptic"});
+  const iterBtn_label = Inputs.button("Iterate T →");
+  const resetOrbitBtn = Inputs.button("Reset orbit");
+
+  const container = document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin:1rem 0;";
+  const heading=document.createElement("div");
+  heading.style.cssText="font-weight:600;margin-bottom:0.5rem;font-family:sans-serif;font-size:0.95em;";
+  heading.textContent="Möbius fixed-point geometry";
+  container.appendChild(heading);
+  container.appendChild(typeSel);
+
+  const ctrlRow=document.createElement("div");
+  ctrlRow.style.cssText="display:flex;gap:0.5rem;align-items:center;margin:0.25rem 0;flex-wrap:wrap;";
+  ctrlRow.appendChild(iterBtn_label);
+  ctrlRow.appendChild(resetOrbitBtn);
+  container.appendChild(ctrlRow);
+
+  const svgEl=document.createElementNS(svgNS,"svg");
+  svgEl.setAttribute("width",W);svgEl.setAttribute("height",H);
+  svgEl.style.cssText="background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;display:block;margin-top:0.5rem;";
+  container.appendChild(svgEl);
+
+  const desc=document.createElement("div");
+  desc.style.cssText="margin-top:0.5rem;font-size:0.85em;color:#374151;padding:0.4rem 0.75rem;background:#f0f9ff;border-radius:4px;";
+  container.appendChild(desc);
+
+  const noteEl=document.createElement("div");
+  noteEl.style.cssText="margin-top:0.4rem;font-size:0.82em;color:#6b7280;font-style:italic;";
+  noteEl.textContent="Blue circles: pencil through fixed points. Orange dashed: orthogonal pencil (invariant under the transformation). Square: tracer point iterating under T. Gold stars: fixed points.";
+  container.appendChild(noteEl);
+
+  function mobius(zr,zi,a,b,c,d){
+    const [ar,ai]=a,[br,bi]=b,[cr,ci]=c,[dr,di]=d;
+    const nr=ar*zr-ai*zi+br,ni=ar*zi+ai*zr+bi;
+    const dr2=cr*zr-ci*zi+dr,di2=cr*zi+ci*zr+di;
+    const den=dr2*dr2+di2*di2;
+    if(den<1e-14)return[NaN,NaN];
+    return[(nr*dr2+ni*di2)/den,(ni*dr2-nr*di2)/den];
+  }
+
+  function clearSvg(s){while(s.firstChild)s.removeChild(s.firstChild);}
+
+  function mkTxt(s,x,y,str,fill,size){
+    const t=document.createElementNS(svgNS,"text");
+    t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",fill);
+    t.setAttribute("font-size",size);t.setAttribute("font-family","sans-serif");
+    t.textContent=str;s.appendChild(t);
+  }
+
+  function mkStar(s,x,y){
+    const g=document.createElementNS(svgNS,"text");
+    g.setAttribute("x",x-6);g.setAttribute("y",y+5);
+    g.setAttribute("fill","#fbbf24");g.setAttribute("font-size","14");
+    g.textContent="★";s.appendChild(g);
+  }
+
+  // Draw a circle (or line) by parametric point set
+  function drawCircle(svg,cx,cy,r,stroke,sw,dash){
+    const N=120;
+    let d="";
+    for(let k=0;k<=N;k++){
+      const t=k/N*2*Math.PI;
+      const wx=cx+r*Math.cos(t),wy=cy+r*Math.sin(t);
+      d+=k===0?`M ${wx} ${wy}`:`L ${wx} ${wy}`;
+    }
+    d+=" Z";
+    const p=document.createElementNS(svgNS,"path");
+    p.setAttribute("d",d);p.setAttribute("stroke",stroke);p.setAttribute("stroke-width",sw);
+    p.setAttribute("fill","none");if(dash)p.setAttribute("stroke-dasharray",dash);
+    svg.appendChild(p);
+  }
+
+  function render(){
+    clearSvg(svgEl);
+    const T=types[typeName];
+    const {a,b,c,d}=T;
+
+    // Axes
+    const [ox,oy]=ts(0,0);
+    const axG=document.createElementNS(svgNS,"g");
+    const hline=document.createElementNS(svgNS,"line");
+    hline.setAttribute("x1","10");hline.setAttribute("y1",oy);hline.setAttribute("x2",W-10);hline.setAttribute("y2",oy);
+    hline.setAttribute("stroke","#e5e7eb");hline.setAttribute("stroke-width","1");
+    const vline=document.createElementNS(svgNS,"line");
+    vline.setAttribute("x1",ox);vline.setAttribute("y1","10");vline.setAttribute("x2",ox);vline.setAttribute("y2",H-10);
+    vline.setAttribute("stroke","#e5e7eb");vline.setAttribute("stroke-width","1");
+    svgEl.appendChild(hline);svgEl.appendChild(vline);
+
+    // For Elliptic and Hyperbolic: fixed points at 0 and ∞
+    // Blue pencil: circles (or lines) through 0 and ∞ = lines through origin
+    // Orange pencil: circles centred at origin = orthogonal to those lines
+    if(typeName==="Elliptic"||typeName==="Loxodromic"){
+      // Orange pencil: concentric circles around origin (invariant circles for elliptic)
+      [0.5,1.0,1.5,2.0,2.5].forEach(r=>{
+        const [cx2,cy2]=ts(0,0);
+        drawCircle(svgEl,cx2,cy2,r*SCALE,"#f97316",typeName==="Elliptic"?1.5:1,"4,3");
+      });
+      // Blue pencil: lines through origin (pencil through 0 and ∞) at various angles
+      [0,30,60,90,120,150].forEach(angDeg=>{
+        const ang=angDeg*Math.PI/180;
+        const [x1,y1]=ts(3*Math.cos(ang),3*Math.sin(ang));
+        const [x2,y2]=ts(-3*Math.cos(ang),-3*Math.sin(ang));
+        const l=document.createElementNS(svgNS,"line");
+        l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+        l.setAttribute("stroke","#3b82f6");l.setAttribute("stroke-width","1.2");
+        svgEl.appendChild(l);
+      });
+    } else if(typeName==="Hyperbolic"){
+      // Blue: lines through origin
+      [0,30,60,90,120,150].forEach(angDeg=>{
+        const ang=angDeg*Math.PI/180;
+        const [x1,y1]=ts(3*Math.cos(ang),3*Math.sin(ang));
+        const [x2,y2]=ts(-3*Math.cos(ang),-3*Math.sin(ang));
+        const l=document.createElementNS(svgNS,"line");
+        l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+        l.setAttribute("stroke","#3b82f6");l.setAttribute("stroke-width","1.2");
+        svgEl.appendChild(l);
+      });
+      // Orange: concentric circles
+      [0.5,1.0,1.5,2.0,2.5].forEach(r=>{
+        const [cx2,cy2]=ts(0,0);
+        drawCircle(svgEl,cx2,cy2,r*SCALE,"#f97316",1.5,"4,3");
+      });
+    } else {
+      // Parabolic: parallel horizontal lines (blue) and vertical (orange)
+      [-2,-1,0,1,2].forEach(v=>{
+        const [x1,y1]=ts(-3,v);const [x2,y2]=ts(3,v);
+        const l=document.createElementNS(svgNS,"line");
+        l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+        l.setAttribute("stroke","#3b82f6");l.setAttribute("stroke-width","1.2");
+        svgEl.appendChild(l);
+        const [vx1,vy1]=ts(v,-2.5);const [vx2,vy2]=ts(v,2.5);
+        const l2=document.createElementNS(svgNS,"line");
+        l2.setAttribute("x1",vx1);l2.setAttribute("y1",vy1);l2.setAttribute("x2",vx2);l2.setAttribute("y2",vy2);
+        l2.setAttribute("stroke","#f97316");l2.setAttribute("stroke-width","1.2");
+        l2.setAttribute("stroke-dasharray","4,3");
+        svgEl.appendChild(l2);
+      });
+    }
+
+    // Fixed point star(s)
+    if(T.fp1){const[fx,fy]=ts(...T.fp1);mkStar(svgEl,fx,fy);}
+
+    // Tracer orbit
+    if(orbitPts.length>1){
+      let pathD=orbitPts.map(([r,i],k)=>{const[px,py]=ts(r,i);return`${k===0?"M":"L"} ${px} ${py}`;}).join(" ");
+      const orbitPath=document.createElementNS(svgNS,"path");
+      orbitPath.setAttribute("d",pathD);orbitPath.setAttribute("stroke","#8b5cf6");
+      orbitPath.setAttribute("stroke-width","1.5");orbitPath.setAttribute("fill","none");
+      orbitPath.setAttribute("stroke-dasharray","3,2");
+      svgEl.appendChild(orbitPath);
+    }
+
+    // Draw tracer square at current position
+    const [tr,ti]=orbitPts[orbitPts.length-1];
+    const[tx,ty]=ts(tr,ti);
+    const sq=document.createElementNS(svgNS,"rect");
+    sq.setAttribute("x",tx-5);sq.setAttribute("y",ty-5);sq.setAttribute("width","10");sq.setAttribute("height","10");
+    sq.setAttribute("fill","#8b5cf6");sq.setAttribute("stroke","#fff");sq.setAttribute("stroke-width","1.5");
+    svgEl.appendChild(sq);
+
+    // Panel label and type annotation
+    mkTxt(svgEl,5,15,typeName,"#6b7280","11");
+    desc.textContent=T.desc;
+  }
+
+  typeSel.addEventListener("input",()=>{
+    typeName=typeSel.value;
+    orbitPts=[[0.5,0.8]];
+    render();
+  });
+
+  iterBtn_label.addEventListener("input",()=>{
+    const T=types[typeName];
+    const{a,b,c,d}=T;
+    const[lr,li]=orbitPts[orbitPts.length-1];
+    const nxt=mobius(lr,li,a,b,c,d);
+    if(isFinite(nxt[0])&&isFinite(nxt[1])&&Math.abs(nxt[0])<5&&Math.abs(nxt[1])<5){
+      orbitPts.push(nxt);
+      if(orbitPts.length>20)orbitPts.shift();
+    }
+    render();
+  });
+
+  resetOrbitBtn.addEventListener("input",()=>{
+    orbitPts=[[0.5,0.8]];render();
+  });
+
+  render();
+  return container;
+}
+```
 
 ---
 
@@ -128,21 +1127,222 @@ The **fixed points** of a Möbius transformation $w = (az+b)/(cz+d)$ satisfy $z 
 
 ### $w = z^2$
 
-Doubles the argument and squares the modulus. The upper half-plane $\{z : \text{Im}(z) > 0\}$ maps to the full complex plane minus the non-negative real axis (since arg doubles from $(0,\pi)$ to $(0,2\pi)$).
+Squaring doubles the argument and squares the modulus. The upper half-plane $\{z : \text{Im}(z) > 0\}$ maps to the full complex plane minus the non-negative real axis: argument ranges from $(0, \pi)$ in the $z$-plane, doubling to $(0, 2\pi)$ in the $w$-plane.
 
-The first quadrant $\{0 < \arg z < \pi/2\}$ maps to the upper half-plane $\{0 < \arg w < \pi\}$.
+A more useful sub-case: the first quadrant $\{0 < \arg z < \pi/2\}$ maps to the upper half-plane $\{0 < \arg w < \pi\}$. Doubling a right angle gives a straight angle.
 
 ### $w = e^z$
 
-Maps the horizontal strip $\{0 < \text{Im}(z) < \pi\}$ to the upper half-plane $\{\text{Im}(w) > 0\}$: the strip width $\pi$ becomes the half-plane argument range $(0, \pi)$.
+Write $z = x + iy$. Then $w = e^x e^{iy}$, so $|w| = e^x$ (any positive real value) and $\arg w = y$. The horizontal strip $\{0 < \text{Im}(z) < \pi\}$ maps to the upper half-plane $\{\text{Im}(w) > 0\}$: the imaginary part of $z$ becomes the argument of $w$.
+
+Check the boundaries directly. The lower edge $y = 0$ gives $e^{x+0i} = e^x > 0$, which lands on the positive real axis ($\arg w = 0$). The upper edge $y = \pi$ gives $e^{x+i\pi} = -e^x < 0$, which lands on the negative real axis ($\arg w = \pi$). The interior maps to the open upper half-plane.
 
 More generally, the strip $\{a < \text{Im}(z) < b\}$ maps to the sector $\{a < \arg w < b\}$.
 
 ### $w = \log z$
 
-The inverse of $w = e^z$. Maps the upper half-plane to the horizontal strip $\{0 < \text{Im}(w) < \pi\}$.
+The inverse of $w = e^z$: it maps the upper half-plane to the horizontal strip $\{0 < \text{Im}(w) < \pi\}$.
 
-<!-- VIZ: Standard conformal maps — dual-panel grid deformation. A dual-panel display (z-plane left, w-plane right). A function selector offers: "w = z²", "w = e^z", "w = log z", "w = (z−i)/(z+i) [half-plane to disk]", "w = (1+z)/(1−z) [disk to half-plane]". The left panel shows a rectangular grid with adjustable range sliders (Re range: −2 to 2; Im range: 0 to π for the strip maps). The right panel shows the image grid — horizontal lines map to curves, vertical lines to other curves. Each family of curves is coloured consistently: lines of constant Re(z) in blue (#3b82f6), lines of constant Im(z) in orange (#f97316). Boundary curves of special domains are thicker and labelled: e.g. the real axis (Im z = 0) maps to the positive real axis under w = e^z and is shown as a thick boundary. A toggle "Animate mapping" smoothly interpolates from the input grid to the output grid over 2 seconds, showing the fabric of space being bent. Series thread: the w = (z−i)/(z+i) map from half-plane to disk links directly to the Möbius transformations described in this chapter; the grid deformation visual vocabulary will appear again in numerical PDE chapters where domain transformations are used for mesh generation. -->
+```{ojs}
+//| echo: false
+{
+  // --- Standard conformal maps: grid deformation ---
+  // LEFT: z-plane grid (Re=const blue, Im=const orange).
+  // RIGHT: image curves in same colours after mapping.
+  // Segmented selector: z², eᶻ, log z, (z−i)/(z+i).
+  // Animate button morphs from identity to final over ~2s.
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const W = 300, H = 280;
+  const SCALE = 55, CX = W/2, CY = H/2;
+
+  // Functions
+  function fzsq([r,i])   { return [r*r-i*i, 2*r*i]; }
+  function fexp([r,i])   { const e=Math.exp(r); return [e*Math.cos(i),e*Math.sin(i)]; }
+  function flog([r,i])   {
+    const mag=Math.sqrt(r*r+i*i);
+    if(mag<1e-12)return[NaN,NaN];
+    return [Math.log(mag), Math.atan2(i,r)];
+  }
+  function fhalf2disk([r,i]) {
+    // (z-i)/(z+i)
+    const nr=r, ni=i-1;
+    const dr=r, di=i+1;
+    const den=dr*dr+di*di; if(den<1e-14)return[NaN,NaN];
+    return[(nr*dr+ni*di)/den,(ni*dr-nr*di)/den];
+  }
+
+  const maps = {
+    "w = z²":    { fn: fzsq,       reRange:[-2,2], imRange:[-2,2],
+                   note:"First quadrant → upper half-plane (right-angle doubles to straight angle)." },
+    "w = eᶻ":    { fn: fexp,       reRange:[-2,2], imRange:[0,Math.PI],
+                   note:"Horizontal strip {0 < Im z < π} → upper half-plane. Im z becomes arg w." },
+    "w = log z": { fn: flog,       reRange:[0.1,3], imRange:[-2,2],
+                   note:"Inverse of eᶻ: upper half-plane → strip {0 < Im w < π}." },
+    "w = (z−i)/(z+i)": { fn: fhalf2disk, reRange:[-3,3], imRange:[0,3],
+                   note:"Upper half-plane → unit disk. Real axis → unit circle." }
+  };
+
+  let mapName = "w = z²";
+  let animating = false;
+  let animT = 1.0; // 0 = identity, 1 = full map
+  let animReq = null;
+
+  const mapSel = Inputs.select(Object.keys(maps),{label:"Map",value:"w = z²"});
+  const animBtn = Inputs.button("Animate mapping");
+
+  const container = document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin:1rem 0;";
+  const heading=document.createElement("div");
+  heading.style.cssText="font-weight:600;margin-bottom:0.5rem;font-family:sans-serif;font-size:0.95em;";
+  heading.textContent="Standard conformal maps: grid deformation";
+  container.appendChild(heading);
+  container.appendChild(mapSel);
+  container.appendChild(animBtn);
+
+  const panels=document.createElement("div");
+  panels.style.cssText="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;";
+
+  function mkSvg(){
+    const s=document.createElementNS(svgNS,"svg");
+    s.setAttribute("width",W);s.setAttribute("height",H);
+    s.style.cssText="background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;";
+    return s;
+  }
+  const leftSvg=mkSvg(), rightSvg=mkSvg();
+  panels.appendChild(leftSvg);panels.appendChild(rightSvg);
+  container.appendChild(panels);
+
+  const noteDiv=document.createElement("div");
+  noteDiv.style.cssText="margin-top:0.5rem;font-size:0.85em;padding:0.4rem 0.75rem;background:#f0f9ff;border-radius:4px;color:#374151;";
+  container.appendChild(noteDiv);
+
+  const captionDiv=document.createElement("div");
+  captionDiv.style.cssText="margin-top:0.3rem;font-size:0.82em;color:#6b7280;font-style:italic;";
+  captionDiv.textContent="Blue lines: Re(z) = const. Orange lines: Im(z) = const. Click Animate to watch the grid bend.";
+  container.appendChild(captionDiv);
+
+  function ts(re,im){return[CX+re*SCALE,CY-im*SCALE];}
+  function clearSvg(s){while(s.firstChild)s.removeChild(s.firstChild);}
+
+  function lerp([ar,ai],[br,bi],t){return[ar*(1-t)+br*t, ai*(1-t)+bi*t];}
+
+  function drawAxes(svg,label){
+    const [ox,oy]=ts(0,0);
+    const lnH=document.createElementNS(svgNS,"line");
+    lnH.setAttribute("x1","5");lnH.setAttribute("y1",oy);lnH.setAttribute("x2",W-5);lnH.setAttribute("y2",oy);
+    lnH.setAttribute("stroke","#d1d5db");lnH.setAttribute("stroke-width","1");svg.appendChild(lnH);
+    const lnV=document.createElementNS(svgNS,"line");
+    lnV.setAttribute("x1",ox);lnV.setAttribute("y1","5");lnV.setAttribute("x2",ox);lnV.setAttribute("y2",H-5);
+    lnV.setAttribute("stroke","#d1d5db");lnV.setAttribute("stroke-width","1");svg.appendChild(lnV);
+    const lbl=document.createElementNS(svgNS,"text");
+    lbl.setAttribute("x","5");lbl.setAttribute("y","14");lbl.setAttribute("fill","#6b7280");
+    lbl.setAttribute("font-size","11");lbl.setAttribute("font-family","sans-serif");
+    lbl.textContent=label;svg.appendChild(lbl);
+  }
+
+  function drawMappedCurve(svg,pts,stroke,sw,t){
+    if(pts.length<2)return;
+    // Interpolate between identity and mapped position
+    let pathD="";let prev=true;
+    pts.forEach(([zr,zi,wr,wi],k)=>{
+      const [ir,ii]=lerp([zr,zi],[wr,wi],t);
+      if(!isFinite(ir)||!isFinite(ii)||Math.abs(ir)>5||Math.abs(ii)>5){prev=false;return;}
+      const [px,py]=ts(ir,ii);
+      if(px<-10||px>W+10||py<-10||py>H+10){prev=false;return;}
+      pathD+=prev?` L ${px} ${py}`:`M ${px} ${py}`;
+      prev=true;
+    });
+    if(!pathD)return;
+    const p=document.createElementNS(svgNS,"path");
+    p.setAttribute("d",pathD.replace(/^ L/,"M"));
+    p.setAttribute("stroke",stroke);p.setAttribute("stroke-width",sw);p.setAttribute("fill","none");
+    svg.appendChild(p);
+  }
+
+  // Precompute sample points for each grid line
+  function buildGridLines(mapCfg){
+    const {fn,reRange,imRange}=mapCfg;
+    const [rMin,rMax]=reRange, [iMin,iMax]=imRange;
+    const N=80;
+    const hLines=[], vLines=[];
+
+    // Horizontal lines: Im = const, Re varies
+    const imVals=[];
+    for(let k=0;k<=6;k++) imVals.push(iMin + k*(iMax-iMin)/6);
+    imVals.forEach(im=>{
+      const pts=[];
+      for(let k=0;k<=N;k++){
+        const re=rMin+k*(rMax-rMin)/N;
+        const [wr,wi]=fn([re,im]);
+        pts.push([re,im,wr,wi]);
+      }
+      hLines.push({pts, boundary:Math.abs(im-iMin)<0.01||Math.abs(im-iMax)<0.01});
+    });
+
+    // Vertical lines: Re = const, Im varies
+    const reVals=[];
+    for(let k=0;k<=6;k++) reVals.push(rMin + k*(rMax-rMin)/6);
+    reVals.forEach(re=>{
+      const pts=[];
+      for(let k=0;k<=N;k++){
+        const im=iMin+k*(iMax-iMin)/N;
+        const [wr,wi]=fn([re,im]);
+        pts.push([re,im,wr,wi]);
+      }
+      vLines.push({pts, boundary:Math.abs(re-rMin)<0.01||Math.abs(re-rMax)<0.01});
+    });
+
+    return{hLines,vLines};
+  }
+
+  let cachedGrid=null;
+  let cachedMapName=null;
+
+  function render(){
+    const mapCfg=maps[mapName];
+    if(cachedMapName!==mapName){
+      cachedGrid=buildGridLines(mapCfg);
+      cachedMapName=mapName;
+    }
+    const{hLines,vLines}=cachedGrid;
+
+    clearSvg(leftSvg);clearSvg(rightSvg);
+    drawAxes(leftSvg,"z-plane");
+    drawAxes(rightSvg,"w-plane (t = "+animT.toFixed(2)+")");
+
+    // Left: always identity (t=0)
+    hLines.forEach(({pts,boundary})=>drawMappedCurve(leftSvg,pts,"#3b82f6",boundary?2:1,0));
+    vLines.forEach(({pts,boundary})=>drawMappedCurve(leftSvg,pts,"#f97316",boundary?2:1,0));
+
+    // Right: interpolated at animT
+    hLines.forEach(({pts,boundary})=>drawMappedCurve(rightSvg,pts,"#3b82f6",boundary?2:1,animT));
+    vLines.forEach(({pts,boundary})=>drawMappedCurve(rightSvg,pts,"#f97316",boundary?2:1,animT));
+
+    noteDiv.textContent=mapCfg.note;
+  }
+
+  function runAnimation(){
+    if(animating)return;
+    animating=true;animT=0;
+    const startTime=performance.now();
+    const dur=2000;
+    function step(now){
+      animT=Math.min(1,(now-startTime)/dur);
+      render();
+      if(animT<1)animReq=requestAnimationFrame(step);
+      else animating=false;
+    }
+    animReq=requestAnimationFrame(step);
+  }
+
+  mapSel.addEventListener("input",()=>{mapName=mapSel.value;animT=1;cachedGrid=null;render();});
+  animBtn.addEventListener("input",()=>{if(!animating)runAnimation();});
+
+  render();
+  return container;
+}
+```
 
 ---
 
@@ -150,7 +1350,7 @@ The inverse of $w = e^z$. Maps the upper half-plane to the horizontal strip $\{0
 
 $$w = z + \frac{1}{z}$$
 
-This is the foundational map of thin-aerofoil theory.
+This map sits at the foundation of thin-aerofoil theory. The behaviour depends on which circle in the $z$-plane you start with.
 
 **The unit circle maps to a degenerate shape.** For $z = e^{i\theta}$:
 $$w = e^{i\theta} + e^{-i\theta} = 2\cos\theta \in [-2, 2]$$
@@ -164,16 +1364,17 @@ This is an **ellipse** with semi-axes $a = r + 1/r$ and $b = r - 1/r$. As $r \to
 
 **Off-centre circles.** Shifting the circle in the $z$-plane before applying the Joukowski map breaks the ellipse's symmetry and produces a curved aerofoil profile with a sharp trailing edge. This is the Joukowski aerofoil — the basis of early wing design.
 
-**Why it works for aerodynamics.** The complex potential for irrotational flow around a cylinder of radius $r$ is known: $F(z) = U(z + r^2/z)$ for uniform flow at speed $U$. Composing with the Joukowski map gives the complex potential for flow around the aerofoil. The Kutta–Joukowski theorem then gives the lift per unit span as $L = \rho U \Gamma$, where $\Gamma = \oint \mathbf{v}\cdot d\mathbf{s}$ is the **circulation** — the line integral of the tangential velocity component around the aerofoil.
-
-<!-- STUDENT: Γ (circulation) is introduced here in the lift formula but is not defined in this chapter. A reader who has not taken fluid mechanics won't know that circulation is the line integral of velocity around a closed curve. This is the chapter's main engineering payoff and the formula deserves a brief definition of each term: "Γ = ∮ v · ds is the circulation (the integral of tangential velocity around the aerofoil)." -->
-
-<!-- VIZ 1 EXTENDED: Joukowski map explorer with streamlines and lift indicator. Two panels: z-plane (circle + flow) and w-plane (aerofoil + flow). Sliders for r, offset, circulation. Critical point annotation. -->
+**Why it works for aerodynamics.** The complex potential for incompressible irrotational flow around a cylinder of radius $r$ is known: $F(z) = U(z + r^2/z)$ for uniform flow at speed $U$. Composing with the Joukowski map gives the complex potential for flow around the aerofoil. The Kutta–Joukowski theorem then gives the lift per unit span as $L = \rho U \Gamma$, where $\Gamma = \oint \mathbf{v}\cdot d\mathbf{s}$ is the **circulation** — the line integral of the tangential velocity component around the aerofoil.
 
 ```{ojs}
 //| echo: false
 {
-  const WP = 340, HP = 320, SCALE = 70;
+  // --- Joukowski map explorer (upgraded) ---
+  // LEFT: z-plane circle + Euler-traced streamlines (parametric, no Newton iteration).
+  // RIGHT: w-plane aerofoil + mapped streamlines + lift arrow + critical point dashed link.
+  // Shape label appears above the w-panel as a bold heading.
+
+  const WP = 320, HP = 300, SCALE = 65;
   const svgNS = "http://www.w3.org/2000/svg";
 
   const rSlider4 = Inputs.range([1.0, 2.0], {value: 1.15, step: 0.01, label: "Circle radius r"});
@@ -190,7 +1391,40 @@ This is an **ellipse** with semi-axes $a = r + 1/r$ and $b = r - 1/r$. As $r \to
     return [cx + re*scale, cy - im*scale];
   }
 
+  // --- Complex velocity for flow around cylinder + circulation ---
+  // dF/dz = U(1 - r²/z²) + i*Gamma/(2*pi*z)
+  // vx = Re(dF/dz), vy = -Im(dF/dz)
+  function complexVelocity(zr, zi, r, circ) {
+    const d2 = zr*zr + zi*zi; if(d2<1e-12)return[NaN,NaN];
+    const z2r=zr*zr-zi*zi,z2i=2*zr*zi; const z2d=z2r*z2r+z2i*z2i;
+    const r2oz2r=r*r*z2r/z2d,r2oz2i=-r*r*z2i/z2d;
+    const t1r=1-r2oz2r,t1i=-r2oz2i;
+    const fac=circ/(2*Math.PI);
+    const t2r=-fac*(-zi/d2),t2i=fac*(zr/d2);
+    return[t1r+t2r,t1i+t2i];
+  }
+
+  function traceEuler(x0,y0,r,delta,circ,dt,maxSteps){
+    const pts=[];let x=x0,y=y0;
+    for(let k=0;k<maxSteps;k++){
+      const dx=x+delta,dy=y;
+      if(dx*dx+dy*dy<r*r*0.92)break;
+      if(Math.abs(x)>4.5||Math.abs(y)>3.5)break;
+      pts.push([x,y]);
+      const[dvr,dvi]=complexVelocity(x,y,r,circ);
+      if(!isFinite(dvr)||!isFinite(dvi))break;
+      const vx=dvr,vy=-dvi;const vmag=Math.sqrt(vx*vx+vy*vy);
+      if(vmag<1e-8)break;
+      const step=dt/vmag;x+=vx*step;y+=vy*step;
+    }
+    return pts;
+  }
+
   function renderJoukowski(r, delta, circ) {
+    const CX = WP/2 + 5, CY = HP/2;
+    const WCX = WP/2, WCY = HP/2;
+    const WSCALE = 42;
+
     // Build aerofoil curve
     const N = 360;
     const aerofoilPts = [];
@@ -202,151 +1436,212 @@ This is an **ellipse** with semi-axes $a = r + 1/r$ and $b = r - 1/r$. As $r \to
       if(isFinite(wRe) && isFinite(wIm)) aerofoilPts.push([wRe, wIm]);
     }
 
+    let shapeLabel="";
+    if(r<=1.02&&delta<0.02)shapeLabel="Flat plate [−2, 2]";
+    else if(delta<0.02)shapeLabel="Ellipse";
+    else shapeLabel="Joukowski aerofoil";
+
+    // Euler-traced streamlines
+    const dt=0.02,maxSteps=600;
+    const zStreamlines=[];
+    for(let sy=-2.5;sy<=2.5;sy+=0.35){
+      const fwd=traceEuler(-3.5,sy,r,delta,circ,dt,maxSteps);
+      let xb=-3.5,yb=sy;const bwd=[];
+      for(let k=0;k<120;k++){
+        const dx=xb+delta,dy=yb;if(dx*dx+dy*dy<r*r*0.92)break;
+        if(Math.abs(xb)>4.5||Math.abs(yb)>3.5)break;
+        bwd.unshift([xb,yb]);
+        const[dvr,dvi]=complexVelocity(xb,yb,r,circ);
+        if(!isFinite(dvr)||!isFinite(dvi))break;
+        const vx=dvr,vy=-dvi;const vmag=Math.sqrt(vx*vx+vy*vy);if(vmag<1e-8)break;
+        xb-=vx*(dt/vmag);yb-=vy*(dt/vmag);
+      }
+      const full=[...bwd,...fwd];if(full.length>2)zStreamlines.push(full);
+    }
+    const wStreamlines=zStreamlines.map(pts=>pts.map(([zx,zy])=>{const[wr,wi]=joukowski(zx,zy);return isFinite(wr)&&isFinite(wi)?[wr,wi]:null;}).filter(Boolean));
+
     // Left panel: z-plane
     const leftSvg = document.createElementNS(svgNS, "svg");
     leftSvg.setAttribute("width", WP); leftSvg.setAttribute("height", HP);
     leftSvg.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px;";
 
-    const CX = WP/2 + 10, CY = HP/2;
-
-    // Grid
-    const gridG = document.createElementNS(svgNS,"g"); gridG.setAttribute("stroke","#e5e7eb"); gridG.setAttribute("stroke-width","0.5");
-    for(let i=-3;i<=3;i++) {
-      const xl=document.createElementNS(svgNS,"line"); const [lx]=toScreen(i,0,CX,CY,SCALE); const [,ly1]=toScreen(0,-2.2,CX,CY,SCALE); const [,ly2]=toScreen(0,2.2,CX,CY,SCALE);
-      xl.setAttribute("x1",lx); xl.setAttribute("y1",ly1); xl.setAttribute("x2",lx); xl.setAttribute("y2",ly2); gridG.appendChild(xl);
-      const yl=document.createElementNS(svgNS,"line"); const [lx1]=toScreen(-3,0,CX,CY,SCALE); const [lx2]=toScreen(3,0,CX,CY,SCALE); const [,ly]=toScreen(0,i,CX,CY,SCALE);
-      yl.setAttribute("x1",lx1); yl.setAttribute("y1",ly); yl.setAttribute("x2",lx2); yl.setAttribute("y2",ly); gridG.appendChild(yl);
+    // Faint grid
+    for(let i=-3;i<=3;i++){
+      const gl=document.createElementNS(svgNS,"line");
+      const[lx]=toScreen(i,0,CX,CY,SCALE),[,ly1]=toScreen(0,-2.2,CX,CY,SCALE),[,ly2]=toScreen(0,2.2,CX,CY,SCALE);
+      gl.setAttribute("x1",lx);gl.setAttribute("y1",ly1);gl.setAttribute("x2",lx);gl.setAttribute("y2",ly2);
+      gl.setAttribute("stroke","#f3f4f6");gl.setAttribute("stroke-width","0.5");leftSvg.appendChild(gl);
+      const gl2=document.createElementNS(svgNS,"line");
+      const[lx1]=toScreen(-3,0,CX,CY,SCALE),[lx2]=toScreen(3,0,CX,CY,SCALE),[,ly]=toScreen(0,i,CX,CY,SCALE);
+      gl2.setAttribute("x1",lx1);gl2.setAttribute("y1",ly);gl2.setAttribute("x2",lx2);gl2.setAttribute("y2",ly);
+      gl2.setAttribute("stroke","#f3f4f6");gl2.setAttribute("stroke-width","0.5");leftSvg.appendChild(gl2);
     }
-    leftSvg.appendChild(gridG);
 
-    // Streamlines in z-plane: Im(F) = U(z + r²/z) = const
-    // F(z) = z + r²/z for uniform flow + vortex
-    // Streamlines: Im(F) = Im(z) + r² * Im(1/z) = y + r²*(-y)/(x²+y²) = const
-    // For vortex: add circulation * i/(2π) * log(z)
-    // Simple: just draw horizontal streamlines mapped through the potential
-    const streamG = document.createElementNS(svgNS,"g");
-    streamG.setAttribute("stroke","rgba(59,130,246,0.4)"); streamG.setAttribute("stroke-width","1"); streamG.setAttribute("fill","none");
-    for(let psi=-2.5; psi<=2.5; psi+=0.35) {
-      // parametric: Im(w + r²/w_conj) = psi — approximate by iterating x
-      let pathD=""; let started=false;
-      for(let x=-3.5; x<=3.5; x+=0.04) {
-        // Im(F) ≈ y(1 - r²/(x²+y²)) = psi; solve for y numerically
-        // simple approximation: far from origin, y ≈ psi
-        // Near origin, use Newton
-        let y=psi;
-        for(let iter=0;iter<8;iter++) {
-          const d2=x*x+y*y; if(d2<0.01) break;
-          const f=y-r*r*y/d2 - psi;
-          const fp=1 - r*r*(d2-2*y*y)/(d2*d2);
-          y -= f/(fp||1e-6);
-        }
-        const d2=x*x+y*y;
-        if(d2 < (r-delta)*(r-delta)*0.9) { started=false; continue; } // inside circle
-        const [px,py]=toScreen(x,y,CX,CY,SCALE);
-        if(px<0||px>WP||py<0||py>HP) { started=false; continue; }
-        pathD += started ? ` L ${px} ${py}` : `M ${px} ${py}`; started=true;
-      }
-      if(pathD) { const pEl=document.createElementNS(svgNS,"path"); pEl.setAttribute("d",pathD); pEl.setAttribute("stroke","rgba(59,130,246,0.35)"); streamG.appendChild(pEl); }
-    }
-    leftSvg.appendChild(streamG);
+    // Euler-traced streamlines in z-plane
+    zStreamlines.forEach(pts=>{
+      let d="";let prev=true;
+      pts.forEach(([x,y])=>{
+        const[px,py]=toScreen(x,y,CX,CY,SCALE);
+        if(px<-5||px>WP+5||py<-5||py>HP+5){prev=false;return;}
+        d+=prev?` L ${px} ${py}`:`M ${px} ${py}`;prev=true;
+      });
+      if(!d)return;
+      const p=document.createElementNS(svgNS,"path");
+      p.setAttribute("d",d.replace(/^ L/,"M"));
+      p.setAttribute("stroke","rgba(59,130,246,0.45)");p.setAttribute("stroke-width","1.2");p.setAttribute("fill","none");
+      leftSvg.appendChild(p);
+    });
 
     // Circle
-    const [cirCx, cirCy] = toScreen(-delta, 0, CX, CY, SCALE);
-    const circleEl = document.createElementNS(svgNS,"circle");
-    circleEl.setAttribute("cx",cirCx); circleEl.setAttribute("cy",cirCy); circleEl.setAttribute("r",r*SCALE);
-    circleEl.setAttribute("fill","none"); circleEl.setAttribute("stroke","#f97316"); circleEl.setAttribute("stroke-width","2");
+    const [cirCx,cirCy]=toScreen(-delta,0,CX,CY,SCALE);
+    const circleEl=document.createElementNS(svgNS,"circle");
+    circleEl.setAttribute("cx",cirCx);circleEl.setAttribute("cy",cirCy);circleEl.setAttribute("r",r*SCALE);
+    circleEl.setAttribute("fill","rgba(249,115,22,0.08)");circleEl.setAttribute("stroke","#f97316");circleEl.setAttribute("stroke-width","2");
     leftSvg.appendChild(circleEl);
 
     // Axes
     const [ox,oy]=toScreen(0,0,CX,CY,SCALE);
-    const axG=document.createElementNS(svgNS,"g"); axG.setAttribute("stroke","#9ca3af"); axG.setAttribute("stroke-width","1");
-    const xa=document.createElementNS(svgNS,"line"); const [ax1]=toScreen(-3,0,CX,CY,SCALE); const [ax2]=toScreen(3,0,CX,CY,SCALE);
-    xa.setAttribute("x1",ax1); xa.setAttribute("y1",oy); xa.setAttribute("x2",ax2); xa.setAttribute("y2",oy); axG.appendChild(xa);
-    const ya=document.createElementNS(svgNS,"line"); const [,ay1]=toScreen(0,-2,CX,CY,SCALE); const [,ay2]=toScreen(0,2,CX,CY,SCALE);
-    ya.setAttribute("x1",ox); ya.setAttribute("y1",ay1); ya.setAttribute("x2",ox); ya.setAttribute("y2",ay2); axG.appendChild(ya);
-    leftSvg.appendChild(axG);
+    const axH=document.createElementNS(svgNS,"line");
+    axH.setAttribute("x1",toScreen(-3.2,0,CX,CY,SCALE)[0]);axH.setAttribute("y1",oy);
+    axH.setAttribute("x2",toScreen(3.2,0,CX,CY,SCALE)[0]);axH.setAttribute("y2",oy);
+    axH.setAttribute("stroke","#9ca3af");axH.setAttribute("stroke-width","1");leftSvg.appendChild(axH);
+    const axV=document.createElementNS(svgNS,"line");
+    axV.setAttribute("x1",ox);axV.setAttribute("y1",toScreen(0,-2.2,CX,CY,SCALE)[1]);
+    axV.setAttribute("x2",ox);axV.setAttribute("y2",toScreen(0,2.2,CX,CY,SCALE)[1]);
+    axV.setAttribute("stroke","#9ca3af");axV.setAttribute("stroke-width","1");leftSvg.appendChild(axV);
 
-    // Critical points at ±1
-    [1,-1].forEach(xc => {
-      const [cpx,cpy]=toScreen(xc,0,CX,CY,SCALE);
-      const cpEl=document.createElementNS(svgNS,"circle"); cpEl.setAttribute("cx",cpx); cpEl.setAttribute("cy",cpy); cpEl.setAttribute("r","4");
-      cpEl.setAttribute("fill","#8b5cf6"); cpEl.setAttribute("stroke","#fff"); cpEl.setAttribute("stroke-width","1.5");
-      leftSvg.appendChild(cpEl);
+    // Critical points ±1
+    [1,-1].forEach(xc=>{
+      const[cpx,cpy]=toScreen(xc,0,CX,CY,SCALE);
+      const cp=document.createElementNS(svgNS,"circle");
+      cp.setAttribute("cx",cpx);cp.setAttribute("cy",cpy);cp.setAttribute("r","5");
+      cp.setAttribute("fill","#8b5cf6");cp.setAttribute("stroke","#fff");cp.setAttribute("stroke-width","1.5");
+      leftSvg.appendChild(cp);
+      const lbl=document.createElementNS(svgNS,"text");
+      lbl.setAttribute("x",cpx+6);lbl.setAttribute("y",cpy-6);lbl.setAttribute("fill","#8b5cf6");
+      lbl.setAttribute("font-size","9");lbl.setAttribute("font-family","sans-serif");
+      lbl.textContent=xc>0?"z=+1":"z=−1";leftSvg.appendChild(lbl);
     });
 
-    const lbl1=document.createElementNS(svgNS,"text"); lbl1.setAttribute("fill","#6b7280"); lbl1.setAttribute("font-size","10"); lbl1.setAttribute("font-family","sans-serif");
-    lbl1.setAttribute("x",5); lbl1.setAttribute("y",14); lbl1.textContent="z-plane";
-    leftSvg.appendChild(lbl1);
+    const lbl1=document.createElementNS(svgNS,"text");
+    lbl1.setAttribute("fill","#6b7280");lbl1.setAttribute("font-size","10");lbl1.setAttribute("font-family","sans-serif");
+    lbl1.setAttribute("x",5);lbl1.setAttribute("y",14);lbl1.textContent="z-plane";leftSvg.appendChild(lbl1);
 
     // Right panel: w-plane
-    const rightSvg = document.createElementNS(svgNS, "svg");
-    rightSvg.setAttribute("width", WP); rightSvg.setAttribute("height", HP);
-    rightSvg.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px;";
+    // Shape label as bold heading above panel
+    const shapeLabelDiv=document.createElement("div");
+    shapeLabelDiv.style.cssText="font-size:14px;font-weight:700;font-family:sans-serif;color:#f97316;margin-bottom:2px;text-align:center;";
+    shapeLabelDiv.textContent=shapeLabel;
 
-    const WCX = WP/2, WCY = HP/2;
-    const WSCALE = 45;
+    const rightSvg=document.createElementNS(svgNS,"svg");
+    rightSvg.setAttribute("width",WP);rightSvg.setAttribute("height",HP);
+    rightSvg.style.cssText="background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;";
 
-    // Grid
-    const wgridG=document.createElementNS(svgNS,"g"); wgridG.setAttribute("stroke","#e5e7eb"); wgridG.setAttribute("stroke-width","0.5");
-    for(let i=-4;i<=4;i++) {
-      const xl2=document.createElementNS(svgNS,"line"); const [lx]=toScreen(i,0,WCX,WCY,WSCALE); const [,ly1]=toScreen(0,-3,WCX,WCY,WSCALE); const [,ly2]=toScreen(0,3,WCX,WCY,WSCALE);
-      xl2.setAttribute("x1",lx); xl2.setAttribute("y1",ly1); xl2.setAttribute("x2",lx); xl2.setAttribute("y2",ly2); wgridG.appendChild(xl2);
-      const yl2=document.createElementNS(svgNS,"line"); const [lx1]=toScreen(-4,0,WCX,WCY,WSCALE); const [lx2]=toScreen(4,0,WCX,WCY,WSCALE); const [,ly]=toScreen(0,i,WCX,WCY,WSCALE);
-      yl2.setAttribute("x1",lx1); yl2.setAttribute("y1",ly); yl2.setAttribute("x2",lx2); yl2.setAttribute("y2",ly); wgridG.appendChild(yl2);
+    // Faint grid
+    for(let i=-4;i<=4;i++){
+      const gl=document.createElementNS(svgNS,"line");
+      const[lx]=toScreen(i,0,WCX,WCY,WSCALE),[,ly1]=toScreen(0,-3.5,WCX,WCY,WSCALE),[,ly2]=toScreen(0,3.5,WCX,WCY,WSCALE);
+      gl.setAttribute("x1",lx);gl.setAttribute("y1",ly1);gl.setAttribute("x2",lx);gl.setAttribute("y2",ly2);
+      gl.setAttribute("stroke","#f3f4f6");gl.setAttribute("stroke-width","0.5");rightSvg.appendChild(gl);
+      const gl2=document.createElementNS(svgNS,"line");
+      const[lx1]=toScreen(-4,0,WCX,WCY,WSCALE),[lx2]=toScreen(4,0,WCX,WCY,WSCALE),[,ly]=toScreen(0,i,WCX,WCY,WSCALE);
+      gl2.setAttribute("x1",lx1);gl2.setAttribute("y1",ly);gl2.setAttribute("x2",lx2);gl2.setAttribute("y2",ly);
+      gl2.setAttribute("stroke","#f3f4f6");gl2.setAttribute("stroke-width","0.5");rightSvg.appendChild(gl2);
     }
-    rightSvg.appendChild(wgridG);
 
-    // w-plane axes
-    const [wox,woy]=toScreen(0,0,WCX,WCY,WSCALE);
-    const waxG=document.createElementNS(svgNS,"g"); waxG.setAttribute("stroke","#9ca3af"); waxG.setAttribute("stroke-width","1");
-    const wxa=document.createElementNS(svgNS,"line"); const [wax1]=toScreen(-4,0,WCX,WCY,WSCALE); const [wax2]=toScreen(4,0,WCX,WCY,WSCALE);
-    wxa.setAttribute("x1",wax1); wxa.setAttribute("y1",woy); wxa.setAttribute("x2",wax2); wxa.setAttribute("y2",woy); waxG.appendChild(wxa);
-    const wya=document.createElementNS(svgNS,"line"); const [,way1]=toScreen(0,-3,WCX,WCY,WSCALE); const [,way2]=toScreen(0,3,WCX,WCY,WSCALE);
-    wya.setAttribute("x1",wox); wya.setAttribute("y1",way1); wya.setAttribute("x2",wox); wya.setAttribute("y2",way2); waxG.appendChild(wya);
-    rightSvg.appendChild(waxG);
+    // Mapped streamlines in w-plane
+    wStreamlines.forEach(pts=>{
+      let d="";let prev=true;
+      pts.forEach(([x,y])=>{
+        const[px,py]=toScreen(x,y,WCX,WCY,WSCALE);
+        if(px<-5||px>WP+5||py<-5||py>HP+5){prev=false;return;}
+        d+=prev?` L ${px} ${py}`:`M ${px} ${py}`;prev=true;
+      });
+      if(!d)return;
+      const p=document.createElementNS(svgNS,"path");
+      p.setAttribute("d",d.replace(/^ L/,"M"));
+      p.setAttribute("stroke","rgba(59,130,246,0.45)");p.setAttribute("stroke-width","1.2");p.setAttribute("fill","none");
+      rightSvg.appendChild(p);
+    });
 
     // Aerofoil curve
-    if(aerofoilPts.length > 2) {
-      let aeroD = "";
-      aerofoilPts.forEach(([wre,wim],i) => {
-        const [px,py]=toScreen(wre,wim,WCX,WCY,WSCALE);
-        aeroD += i===0 ? `M ${px} ${py}` : ` L ${px} ${py}`;
-      });
-      aeroD += " Z";
-      const aeroPath=document.createElementNS(svgNS,"path"); aeroPath.setAttribute("d",aeroD);
-      aeroPath.setAttribute("fill","rgba(249,115,22,0.15)"); aeroPath.setAttribute("stroke","#f97316"); aeroPath.setAttribute("stroke-width","2");
+    if(aerofoilPts.length>2){
+      const aeroD=aerofoilPts.map(([wr,wi],i)=>{
+        const[px,py]=toScreen(wr,wi,WCX,WCY,WSCALE);
+        return`${i===0?"M":"L"} ${px} ${py}`;
+      }).join(" ")+" Z";
+      const aeroPath=document.createElementNS(svgNS,"path");
+      aeroPath.setAttribute("d",aeroD);
+      aeroPath.setAttribute("fill","rgba(249,115,22,0.12)");aeroPath.setAttribute("stroke","#f97316");aeroPath.setAttribute("stroke-width","2");
       rightSvg.appendChild(aeroPath);
     }
 
-    // Labels
-    const wlbl=document.createElementNS(svgNS,"text"); wlbl.setAttribute("fill","#6b7280"); wlbl.setAttribute("font-size","10"); wlbl.setAttribute("font-family","sans-serif");
-    wlbl.setAttribute("x",5); wlbl.setAttribute("y",14); wlbl.textContent="w-plane";
-    rightSvg.appendChild(wlbl);
+    // Critical point image at w=2, dashed link
+    const[cpImgX,cpImgY]=toScreen(2,0,WCX,WCY,WSCALE);
+    const cpImgDot=document.createElementNS(svgNS,"circle");
+    cpImgDot.setAttribute("cx",cpImgX);cpImgDot.setAttribute("cy",cpImgY);cpImgDot.setAttribute("r","5");
+    cpImgDot.setAttribute("fill","#8b5cf6");cpImgDot.setAttribute("stroke","#fff");cpImgDot.setAttribute("stroke-width","1.5");
+    rightSvg.appendChild(cpImgDot);
+    const dashLink=document.createElementNS(svgNS,"line");
+    dashLink.setAttribute("x1",cpImgX+22);dashLink.setAttribute("y1",cpImgY-18);
+    dashLink.setAttribute("x2",cpImgX);dashLink.setAttribute("y2",cpImgY);
+    dashLink.setAttribute("stroke","#8b5cf6");dashLink.setAttribute("stroke-width","1.2");dashLink.setAttribute("stroke-dasharray","3,2");
+    rightSvg.appendChild(dashLink);
+    const cpLbl=document.createElementNS(svgNS,"text");
+    cpLbl.setAttribute("x",cpImgX+24);cpLbl.setAttribute("y",cpImgY-20);cpLbl.setAttribute("fill","#8b5cf6");
+    cpLbl.setAttribute("font-size","9");cpLbl.setAttribute("font-family","sans-serif");
+    cpLbl.textContent="w=2 (trailing edge)";rightSvg.appendChild(cpLbl);
 
-    // Shape label
-    let shapeLabel = "";
-    if(r <= 1.02 && delta < 0.02) shapeLabel = "Flat plate [−2,2]";
-    else if(delta < 0.02) shapeLabel = "Ellipse";
-    else shapeLabel = "Joukowski aerofoil";
-    const shapeLbl=document.createElementNS(svgNS,"text"); shapeLbl.setAttribute("fill","#f97316"); shapeLbl.setAttribute("font-size","10"); shapeLbl.setAttribute("font-family","sans-serif");
-    shapeLbl.setAttribute("x",5); shapeLbl.setAttribute("y",HP-6); shapeLbl.textContent=shapeLabel;
-    rightSvg.appendChild(shapeLbl);
+    // w-plane axes
+    const[wox,woy]=toScreen(0,0,WCX,WCY,WSCALE);
+    const waxH=document.createElementNS(svgNS,"line");
+    waxH.setAttribute("x1",toScreen(-4,0,WCX,WCY,WSCALE)[0]);waxH.setAttribute("y1",woy);
+    waxH.setAttribute("x2",toScreen(4,0,WCX,WCY,WSCALE)[0]);waxH.setAttribute("y2",woy);
+    waxH.setAttribute("stroke","#9ca3af");waxH.setAttribute("stroke-width","1");rightSvg.appendChild(waxH);
+    const waxV=document.createElementNS(svgNS,"line");
+    waxV.setAttribute("x1",wox);waxV.setAttribute("y1",toScreen(0,-3,WCX,WCY,WSCALE)[1]);
+    waxV.setAttribute("x2",wox);waxV.setAttribute("y2",toScreen(0,3,WCX,WCY,WSCALE)[1]);
+    waxV.setAttribute("stroke","#9ca3af");waxV.setAttribute("stroke-width","1");rightSvg.appendChild(waxV);
 
-    // Lift indicator
-    const lift = circ.toFixed(2);
+    // Lift arrow: green, height proportional to Gamma
+    const liftMag=Math.min(circ*WSCALE*0.12,HP*0.35);
+    if(circ>0.05){
+      const arrowX=toScreen(3.2,0,WCX,WCY,WSCALE)[0];
+      const arrowBaseY=woy+10;const arrowTipY=arrowBaseY-liftMag;
+      const shaft=document.createElementNS(svgNS,"line");
+      shaft.setAttribute("x1",arrowX);shaft.setAttribute("y1",arrowBaseY);
+      shaft.setAttribute("x2",arrowX);shaft.setAttribute("y2",arrowTipY);
+      shaft.setAttribute("stroke","#059669");shaft.setAttribute("stroke-width","2.5");rightSvg.appendChild(shaft);
+      const ah=document.createElementNS(svgNS,"polygon");
+      ah.setAttribute("points",`${arrowX},${arrowTipY-8} ${arrowX-5},${arrowTipY+4} ${arrowX+5},${arrowTipY+4}`);
+      ah.setAttribute("fill","#059669");rightSvg.appendChild(ah);
+      const ll=document.createElementNS(svgNS,"text");
+      ll.setAttribute("x",arrowX+7);ll.setAttribute("y",arrowTipY+4);ll.setAttribute("fill","#059669");
+      ll.setAttribute("font-size","10");ll.setAttribute("font-family","sans-serif");ll.setAttribute("font-weight","600");
+      ll.textContent="L = \u03c1U\u0393";rightSvg.appendChild(ll);
+    }
+
+    const wlbl=document.createElementNS(svgNS,"text");
+    wlbl.setAttribute("fill","#6b7280");wlbl.setAttribute("font-size","10");wlbl.setAttribute("font-family","sans-serif");
+    wlbl.setAttribute("x",5);wlbl.setAttribute("y",14);wlbl.textContent="w-plane";rightSvg.appendChild(wlbl);
+
+    // Lift indicator bar
     const liftDiv=document.createElement("div");
-    liftDiv.style.cssText="margin-top:0.4rem; font-family:sans-serif; font-size:0.85em; padding:0.5rem; background:#f0f9ff; border-radius:4px;";
-    liftDiv.innerHTML=`<strong>Kutta–Joukowski:</strong> L = \u03c1U\u0393 &nbsp;|&nbsp; \u0393 = ${lift} &nbsp;|&nbsp; <span style="color:#1e40af">Lift \u221d \u0393 = ${(parseFloat(lift)).toFixed(2)}</span>
-      <div style="color:#6b7280; font-size:0.82em; margin-top:0.2rem;">Purple dots on z-plane: critical points z=±1 (images become trailing/leading edges). Circulation \u0393 = 0 gives symmetric flow; \u0393 > 0 creates lift.</div>`;
+    liftDiv.style.cssText="margin-top:0.4rem;font-family:sans-serif;font-size:0.85em;padding:0.5rem 0.75rem;background:#f0f9ff;border-radius:4px;";
+    const liftBarW=circ>0.05?Math.min(circ/6.3*80,80).toFixed(0):4;
+    const liftBarCol=circ>0.05?"#059669":"#d1d5db";
+    liftDiv.innerHTML=`<strong>Kutta\u2013Joukowski:</strong> <span style="display:inline-block;width:${liftBarW}px;height:8px;background:${liftBarCol};border-radius:3px;vertical-align:middle;margin-right:6px;"></span> L = \u03c1U\u0393 &nbsp;|&nbsp; \u0393 = ${parseFloat(circ).toFixed(2)}
+      <div style="color:#6b7280;font-size:0.82em;margin-top:0.2rem;">Green arrow (w-plane) grows with \u0393. Purple dots: critical points z=\u00b11 in z-plane and trailing edge w=2 in w-plane. Dashed line shows the mapping.</div>`;
 
     const panelsDiv=document.createElement("div");
-    panelsDiv.style.cssText="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;";
+    panelsDiv.style.cssText="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;align-items:flex-start;";
     panelsDiv.appendChild(leftSvg);
-    panelsDiv.appendChild(rightSvg);
+    const rightCol=document.createElement("div");
+    rightCol.appendChild(shapeLabelDiv);rightCol.appendChild(rightSvg);
+    panelsDiv.appendChild(rightCol);
 
     const wrap=document.createElement("div");
-    wrap.appendChild(panelsDiv);
-    wrap.appendChild(liftDiv);
+    wrap.appendChild(panelsDiv);wrap.appendChild(liftDiv);
     return wrap;
   }
 
@@ -354,7 +1649,7 @@ This is an **ellipse** with semi-axes $a = r + 1/r$ and $b = r - 1/r$. As $r \to
   container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
   const title=document.createElement("div");
   title.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
-  title.textContent="Joukowski map explorer: circle to aerofoil";
+  title.textContent="Joukowski map explorer: circle to aerofoil (w = z + 1/z)";
   container.appendChild(title);
   container.appendChild(rSlider4);
   container.appendChild(offsetSlider);
@@ -365,7 +1660,7 @@ This is an **ellipse** with semi-axes $a = r + 1/r$ and $b = r - 1/r$. As $r \to
 
   const note4=document.createElement("div");
   note4.style.cssText="margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
-  note4.textContent="Left: circle in z-plane with uniform flow streamlines (blue). Right: image aerofoil in w-plane under w = z + 1/z. At r=1, \u03b4=0: flat plate. Increase r for ellipse; increase \u03b4 for asymmetric aerofoil. Purple dots mark critical points z=\u00b11 (where the trailing edge forms). Circulation \u0393 controls lift.";
+  note4.textContent="Left: circle in z-plane, streamlines from Euler integration of potential flow. Right: aerofoil in w-plane with mapped streamlines and lift arrow. At r=1, \u03b4=0: flat plate. Increase \u03b4 for asymmetric aerofoil with cusped trailing edge. Purple dots: critical points z=\u00b11 in z-plane (w=2 trailing edge in w-plane). Green arrow grows with \u0393.";
   container.appendChild(note4);
 
   function update4() {
@@ -385,15 +1680,13 @@ This is an **ellipse** with semi-axes $a = r + 1/r$ and $b = r - 1/r$. As $r \to
 
 ## Application to potential theory
 
-The connection between conformal mapping and the Laplace equation makes it the principal analytic tool for two-dimensional field problems.
+Conformal mapping is the main analytic tool for two-dimensional field problems — fluid flow, electrostatics, heat conduction — because it transforms the Laplace equation in a complicated domain into the Laplace equation in a simple one, and solutions to Laplace's equation compose under analytic maps.
 
 ### Complex potential
 
 For a two-dimensional **incompressible irrotational** flow (or electrostatic field, or heat conduction problem), the **complex potential** $F(z) = \Phi(x,y) + i\Psi(x,y)$ has:
 - $\Phi$: velocity potential (or electrostatic potential, or temperature)
 - $\Psi$: stream function (or flux lines)
-
-<!-- ENGINEER-PROF: [WARN] Incompressibility (∇·v = 0) is required for the stream function to exist. Irrotationality alone (∇×v = 0) gives the velocity potential but not the stream function. Both conditions together guarantee an analytic complex potential. The word "incompressible" has been added above; confirm this is the intended scope. -->
 
 The **complex velocity** is $dF/dz = v_x - iv_y$, where $(v_x, v_y)$ is the physical velocity vector. The sign convention ($v_x - iv_y$ rather than $v_x + iv_y$) is standard in potential flow and follows from $F = \Phi + i\Psi$ with $v_x = \Phi_x$, $v_y = \Phi_y$.
 
@@ -403,11 +1696,240 @@ Since $F$ is analytic, both $\Phi$ and $\Psi$ satisfy Laplace's equation, and th
 
 If $w = f(z)$ is a conformal map, and $F(w)$ is the complex potential in the $w$-domain, then $F(f(z))$ is the complex potential in the $z$-domain.
 
-**This means:** solve Laplace's equation in a simple domain (disk, half-plane, strip), map the domain to the complicated geometry using an appropriate conformal map, and the composition gives the solution in the complicated domain.
+In practice: solve Laplace's equation in a simple domain (disk, half-plane, strip), choose a conformal map from that domain to the complicated geometry, and the composition gives the solution in the complicated domain.
 
 **Example.** Take $G(w) = w$ (uniform flow in the $w$-plane) and the conformal map $f(z) = z^2$. The composed potential in the $z$-plane is $G(f(z)) = z^2$. That is, substitute $w = z^2$ directly: the result is a new function of $z$, not $G$ evaluated at $z$. With $f(z) = z^2$, the $z$-plane flow has streamlines $\Psi = \text{Im}(z^2) = 2xy = \text{const}$ — the rectangular hyperbola pattern of flow in a 90° corner.
 
-<!-- STUDENT: The notation jump here is confusing. The statement "F(w) = w maps to F(z) = f(z)" reads as if F is being applied to two different arguments. What is actually happening is: compose F with f to get a new function F(f(z)) = f(z) = z². Stating this as "the composed potential is F∘f(z) = z²" would be clearer. The current phrasing may leave a reader unsure whether F(z) and F(w) are the same function or different ones. -->
+```{ojs}
+//| echo: false
+{
+  // --- Potential theory domain transformation ---
+  // THREE panels: z-plane (first quadrant, corner flow), centre label, w-plane (upper half-plane).
+  // Streamlines Ψ = 2xy = C (blue), equipotentials Φ = x²−y² = C (orange dashed).
+  // Solid grey walls (axes of first quadrant).
+  // Gold tracer dot moving simultaneously in both panels.
+  // Animate button. Toggle: Fluid flow / Electrostatics (swaps label emphasis).
+  // The map w = z² takes first quadrant → upper half-plane.
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const WP = 280, HP = 240, SCALE = 55;
+  const CX = 20, CY = HP - 20; // origin at bottom-left corner for first quadrant
+
+  function ts_fq(re, im) {
+    // First-quadrant panel: origin at bottom-left
+    return [CX + re*SCALE, CY - im*SCALE];
+  }
+  function ts_uhp(re, im, cx, cy, sc) {
+    // Upper half-plane panel: centred origin
+    return [cx + re*sc, cy - im*sc];
+  }
+
+  const animBtn = Inputs.button("Animate tracer");
+  const modeToggle = Inputs.select(["Fluid flow","Electrostatics"],{label:"Interpretation",value:"Fluid flow"});
+
+  let tracerT = 0;
+  let animating = false;
+  let animReq = null;
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin:1rem 0;";
+  const heading = document.createElement("div");
+  heading.style.cssText = "font-weight:600;margin-bottom:0.5rem;font-family:sans-serif;font-size:0.95em;";
+  heading.textContent = "Potential theory: corner flow maps to half-plane flow";
+  container.appendChild(heading);
+
+  const ctrlRow = document.createElement("div");
+  ctrlRow.style.cssText = "display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.5rem;";
+  ctrlRow.appendChild(animBtn);
+  ctrlRow.appendChild(modeToggle);
+  container.appendChild(ctrlRow);
+
+  const panelRow = document.createElement("div");
+  panelRow.style.cssText = "display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;";
+
+  function mkSvg(w, h) {
+    const s = document.createElementNS(svgNS, "svg");
+    s.setAttribute("width", w); s.setAttribute("height", h);
+    s.style.cssText = "background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;";
+    return s;
+  }
+
+  const leftSvg = mkSvg(WP, HP);
+  const rightSvg = mkSvg(WP, HP);
+
+  const midLabel = document.createElement("div");
+  midLabel.style.cssText = "font-size:1em;font-weight:600;color:#6b7280;padding:0 0.25rem;text-align:center;min-width:50px;";
+  midLabel.innerHTML = "w = z²<br><span style='font-size:0.8em;color:#9ca3af;'>→</span>";
+
+  panelRow.appendChild(leftSvg);
+  panelRow.appendChild(midLabel);
+  panelRow.appendChild(rightSvg);
+  container.appendChild(panelRow);
+
+  const readoutDiv = document.createElement("div");
+  readoutDiv.style.cssText = "margin-top:0.5rem;font-size:0.85em;font-family:sans-serif;padding:0.4rem 0.75rem;background:#f0f9ff;border-radius:4px;color:#374151;";
+  container.appendChild(readoutDiv);
+
+  const noteDiv = document.createElement("div");
+  noteDiv.style.cssText = "margin-top:0.4rem;font-size:0.82em;color:#6b7280;font-style:italic;";
+  noteDiv.textContent = "Blue: streamlines Ψ = 2xy = C (fluid flow) or equipotentials (electrostatics). Orange dashed: equipotentials Φ = x²−y² = C (fluid) or field lines (electrostatics). Grey walls: solid boundaries. Gold dot: tracer point moving along a streamline in both planes simultaneously.";
+  container.appendChild(noteDiv);
+
+  function mkLine(s,x1,y1,x2,y2,stroke,sw,dash){
+    const l=document.createElementNS(svgNS,"line");
+    l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+    l.setAttribute("stroke",stroke);l.setAttribute("stroke-width",sw);
+    if(dash)l.setAttribute("stroke-dasharray",dash);
+    s.appendChild(l);
+  }
+  function mkPath(s,d,stroke,sw,dash){
+    const p=document.createElementNS(svgNS,"path");
+    p.setAttribute("d",d);p.setAttribute("stroke",stroke);p.setAttribute("stroke-width",sw);
+    p.setAttribute("fill","none");if(dash)p.setAttribute("stroke-dasharray",dash);
+    s.appendChild(p);
+  }
+  function mkTxt(s,x,y,str,fill,size,weight){
+    const t=document.createElementNS(svgNS,"text");
+    t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",fill);
+    t.setAttribute("font-size",size);t.setAttribute("font-family","sans-serif");
+    if(weight)t.setAttribute("font-weight",weight);
+    t.textContent=str;s.appendChild(t);
+  }
+  function mkDot(s,x,y,fill,r){
+    const c=document.createElementNS(svgNS,"circle");
+    c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",r||"6");
+    c.setAttribute("fill",fill);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","1.5");
+    s.appendChild(c);
+  }
+
+  // Streamlines Ψ = 2xy = C; for x in [0,2.5], y = C/(2x)
+  // Equipotentials Φ = x²-y² = C; parametrise as x = sqrt((C+t²)/2)... or just plot
+  function clearSvg(s){while(s.firstChild)s.removeChild(s.firstChild);}
+
+  function render(){
+    clearSvg(leftSvg);clearSvg(rightSvg);
+    const mode = modeToggle.value;
+
+    // --- LEFT: z-plane, first quadrant ---
+    // Solid grey walls (axes)
+    const [ox, oy] = ts_fq(0,0);
+    mkLine(leftSvg, ox, oy, ts_fq(2.5,0)[0], ts_fq(2.5,0)[1], "#6b7280", 2.5); // x-axis
+    mkLine(leftSvg, ox, oy, ts_fq(0,2.2)[0], ts_fq(0,2.2)[1], "#6b7280", 2.5); // y-axis
+
+    // Streamlines Ψ = 2xy = C (blue): y = C/(2x), x in [0.01, 2.5]
+    const psiVals = [0.3, 0.7, 1.2, 1.8, 2.5];
+    psiVals.forEach(C=>{
+      let d="";
+      for(let k=1;k<=80;k++){
+        const x=0.08+k*2.42/80;
+        const y=C/(2*x);
+        if(y>2.3)continue;
+        const[px,py]=ts_fq(x,y);
+        d+=k===1?`M ${px} ${py}`:`L ${px} ${py}`;
+      }
+      if(d)mkPath(leftSvg,d,mode==="Fluid flow"?"#3b82f6":"#f97316",1.5,mode==="Fluid flow"?null:"4,3");
+    });
+
+    // Equipotentials Φ = x²-y² = C (orange dashed): rectangular hyperbolae
+    // x² - y² = C; parametrise: x = sqrt(C + y²) for C>0
+    const phiVals = [-1.5, -0.8, 0.2, 0.8, 1.5, 2.2];
+    phiVals.forEach(C=>{
+      let d="";let prev=false;
+      for(let k=0;k<=80;k++){
+        const y=k*2.3/80;
+        const x2=C+y*y;
+        if(x2<0.001)continue;
+        const x=Math.sqrt(x2);
+        if(x>2.5)continue;
+        const[px,py]=ts_fq(x,y);
+        if(!prev){d=`M ${px} ${py}`;prev=true;}else d+=`L ${px} ${py}`;
+      }
+      if(d)mkPath(leftSvg,d,mode==="Fluid flow"?"#f97316":"#3b82f6",1.2,"4,3");
+    });
+
+    // Tracer dot: moves along streamline Ψ = 1.2, parameterised by angle
+    // On streamline 2xy = C: (t/sqrt(2), C/(sqrt(2)*t)) for t in [eps, ...]
+    const C_tracer = 1.2;
+    const tVal = 0.4 + tracerT * 1.6; // t goes from 0.4 to 2.0
+    const tx_z = tVal;
+    const ty_z = C_tracer / (2 * tVal);
+    if(ty_z > 0 && ty_z < 2.5 && tx_z < 2.5){
+      const[dpx,dpy]=ts_fq(tx_z,ty_z);
+      mkDot(leftSvg,dpx,dpy,"#fbbf24");
+    }
+
+    // Axis labels
+    mkTxt(leftSvg,ts_fq(2.4,0)[0]+2,ts_fq(0,0)[1],"Re z","#6b7280","10");
+    mkTxt(leftSvg,ts_fq(0,2.1)[0]+4,ts_fq(0,2.1)[1],"Im z","#6b7280","10");
+    mkTxt(leftSvg,5,15,"z-plane (first quadrant)","#6b7280","10");
+
+    const wallLabel = mode==="Fluid flow"?"solid walls":"conductor boundaries";
+    mkTxt(leftSvg,ox+6,oy-6,wallLabel,"#6b7280","9");
+
+    // --- RIGHT: w-plane, upper half-plane ---
+    const WSCALE=40, WCX=WP/2, WCY=HP-20;
+    const [wox,woy]=ts_uhp(0,0,WCX,WCY,WSCALE);
+
+    // Real axis (solid wall in w-plane)
+    mkLine(rightSvg,10,woy,WP-10,woy,"#6b7280",2.5);
+
+    // w = z² maps: Ψ_w = Im(w) = Im(z²) = 2xy = Ψ_z (same value!)
+    // So streamlines Im(w) = C are horizontal lines Im(w) = C
+    psiVals.forEach(C=>{
+      const [,py]=ts_uhp(0,C,WCX,WCY,WSCALE);
+      if(py<5||py>HP-5)return;
+      mkLine(rightSvg,10,py,WP-10,py,mode==="Fluid flow"?"#3b82f6":"#f97316",1.5,mode==="Fluid flow"?null:"4,3");
+      mkTxt(rightSvg,WP-28,py-3,`Ψ=${C.toFixed(1)}`,"rgba(59,130,246,0.7)","8");
+    });
+
+    // Equipotentials Φ_w = Re(w) = Re(z²) = x²-y² = C are vertical lines Re(w) = C
+    phiVals.forEach(C=>{
+      const[px]=ts_uhp(C,0,WCX,WCY,WSCALE);
+      if(px<5||px>WP-5)return;
+      mkLine(rightSvg,px,5,px,woy,mode==="Fluid flow"?"#f97316":"#3b82f6",1.2,"4,3");
+    });
+
+    // Tracer in w-plane: w = z² for the z-tracer
+    const tw_r = tx_z*tx_z - ty_z*ty_z;
+    const tw_i = 2*tx_z*ty_z;
+    const[wpx,wpy]=ts_uhp(tw_r,tw_i,WCX,WCY,WSCALE);
+    if(wpx>5&&wpx<WP-5&&wpy>5&&wpy<woy)mkDot(rightSvg,wpx,wpy,"#fbbf24");
+
+    // Labels
+    mkTxt(rightSvg,5,15,"w-plane (upper half-plane)","#6b7280","10");
+    mkTxt(rightSvg,WP/2,HP-5,"real axis (boundary)","#6b7280","9","middle");
+
+    // Readout
+    const psiLabel = mode==="Fluid flow"?"stream function Ψ":"flux function Ψ";
+    const phiLabel = mode==="Fluid flow"?"velocity potential Φ":"electrostatic potential Φ";
+    const blueLabel = mode==="Fluid flow"?"streamlines (blue)":"equipotentials (blue)";
+    const orangeLabel = mode==="Fluid flow"?"equipotentials (orange dashed)":"field lines (orange dashed)";
+    readoutDiv.innerHTML=`<strong>${mode}:</strong> ${blueLabel}: ${psiLabel} = 2xy = C &nbsp;|&nbsp; ${orangeLabel}: ${phiLabel} = x²−y² = C<br>
+      <span style="color:#6b7280;font-size:0.9em;">w = z² maps the first-quadrant corner flow to horizontal/vertical uniform flow in the upper half-plane. Both sets of curves are rectangular hyperbolae in z but become straight lines in w.</span>`;
+  }
+
+  // Animate tracer along streamline
+  function runAnimation(){
+    if(animating)return;
+    animating=true;tracerT=0;
+    const startTime=performance.now(),dur=3000;
+    function step(now){
+      tracerT=((now-startTime)/dur)%1;
+      render();
+      animReq=requestAnimationFrame(step);
+    }
+    animReq=requestAnimationFrame(step);
+    // Stop after 3 cycles
+    setTimeout(()=>{animating=false;if(animReq)cancelAnimationFrame(animReq);},9000);
+  }
+
+  animBtn.addEventListener("input",()=>{if(!animating)runAnimation();});
+  modeToggle.addEventListener("input",()=>render());
+
+  render();
+  return container;
+}
+```
 
 ---
 
@@ -636,7 +2158,7 @@ makeStepperHTML([
 ])
 ```
 
-With these four chapters you now have the full analytic toolkit: complex differentiation and the Cauchy-Riemann equations, contour integration and Cauchy's theorem, Laurent series and residues, and conformal mapping. The methods connect directly to the rest of engineering mathematics: the Laplace equation in any two-dimensional domain, potential flow around aerofoils, inverse Laplace transforms via residues, and stability analysis in the complex frequency plane.
+With these four chapters you have the core analytic methods: complex differentiation and the Cauchy-Riemann equations, contour integration and Cauchy's theorem, Laurent series and residues, and conformal mapping. They connect directly to the rest of engineering mathematics — the Laplace equation in any two-dimensional domain, potential flow around aerofoils, inverse Laplace transforms via residues, and stability analysis in the complex frequency plane.
 
 <!-- MATH-PROF REVIEW
 ## Fixes applied

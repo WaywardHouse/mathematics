@@ -4,7 +4,7 @@ subtitle: "Sampling, filtering, and recurrence"
 chapter: 2
 volume: 8
 layer: "discipline"
-status: "draft"
+status: "review"
 
 axiom: |
   Real sensors, controllers, and computers do not live in continuous time.
@@ -56,17 +56,8 @@ notation_introduced:
   - symbol: "f_s = 1/T_s"
     reads_as: "f sub s equals one over T sub s — the sampling frequency"
     notation_weight: 2
-  - symbol: "\\omega"
-    reads_as: "omega — continuous angular frequency, in radians per second"
-    notation_weight: 2
   - symbol: "y[n] = \\sum_{k=0}^{M} b_k x[n-k]"
     reads_as: "y of n equals the weighted sum of present and past input samples"
-    notation_weight: 3
-  - symbol: "H(z)"
-    reads_as: "H of z — the discrete-time transfer function"
-    notation_weight: 3
-  - symbol: "z = e^{j\\omega_d}"
-    reads_as: "z equals e to the j omega-sub-d — points on the unit circle in the z-plane, where omega-sub-d is the normalised discrete angular frequency in radians per sample"
     notation_weight: 3
 
 exercises:
@@ -83,16 +74,15 @@ intervals. A microphone gives a stream of samples. A controller updates once
 per cycle. Once time is sampled, the mathematics changes shape: derivatives
 become recurrences, spectra pick up aliasing, and filters become algorithms.
 
-That shift matters because upper-year engineering is full of systems that are
-modelled in continuous time but built in discrete time. A motor may obey a
-differential equation. The controller that stabilises it still runs on a clock.
-A seismic wave may be continuous in the ground. The data still arrives as a
-sampled trace.
+Upper-year engineering is full of systems that are modelled in continuous time
+but built in discrete time. A motor may obey a differential equation. The
+controller that stabilises it still runs on a clock. A seismic wave may be
+continuous in the ground. The data still arrives as a sampled trace.
 
-This chapter is about that translation. The goal is not to memorise signal
-processing vocabulary. It is to see the structural move: sampling turns a
-continuous object into a sequence, and once you have a sequence, the natural
-questions become delay, recurrence, convolution, spectrum, and stability.
+Sampling turns a continuous object into a sequence, and once you have a
+sequence, the natural questions become delay, recurrence, convolution,
+spectrum, and stability. That structural shift — not signal processing
+vocabulary — is what this chapter is about.
 
 ---
 
@@ -119,20 +109,27 @@ difference equations and delay operators.
 
 If a discrete-time system takes an input sequence $x[n]$ and produces an output
 sequence $y[n]$, the simplest and most important class is the **linear
-time-invariant** discrete system. For those systems, present output depends on
-present and past samples in a fixed way.
+time-invariant** (LTI) discrete system. Linear means the system obeys
+superposition. Time-invariant means the rule does not change between steps — the
+coefficients are fixed constants, not functions of $n$. For those systems,
+present output depends on present and past samples in a fixed way.
 
 One common form is a **finite impulse response** (FIR) filter:
 
 $$y[n] = \sum_{k=0}^{M} b_k x[n-k]$$
 
 "Finite" here means the output depends on only a bounded window of $M+1$ past
-inputs, so the filter's memory is bounded. This is a weighted moving combination
-of current and previous input samples. In plain language: the output at time
-step $n$ is built from a short memory of the input. Filters that also feed back
-past outputs are called infinite impulse response (IIR) and have unbounded
-memory; they arise in the z-transform and state-space frameworks later in the
-chapter.
+inputs, so the filter's memory is bounded. The output at time step $n$ is a
+weighted combination of current and previous input samples.
+
+Filters that also feed back past outputs — so that $y[n]$ depends on earlier
+$y$ values as well as earlier $x$ values — are called **infinite impulse
+response** (IIR) filters. Because the output feeds back into itself, a single
+impulse at the input can in principle affect every future output, giving the
+filter an unbounded memory. In stable IIR filters the impulse response decays
+geometrically, so the influence of distant past inputs becomes negligible in
+practice. IIR filters appear in the z-transform and state-space frameworks; the
+stability rules derived later in this chapter apply to them.
 
 <!-- VIZ: Sampling and aliasing explorer. Show a continuous sine wave with adjustable frequency f and a sampling comb with adjustable sampling frequency f_s. Simultaneously display the sampled points, the reconstructed lower-frequency apparent wave, and a readout comparing true frequency to aliased frequency. Let the reader drag f past the Nyquist limit and watch the apparent discrete-time behaviour change. -->
 
@@ -146,15 +143,12 @@ and you sample it every $T_s$ seconds. Then the discrete sequence is
 
 $$x[n] = \sin(2\pi f nT_s) = \sin\left(2\pi \frac{f}{f_s} n\right)$$
 
-The discrete sequence only sees the ratio $f/f_s$. This is the beginning of
-the aliasing problem.
+The discrete sequence only sees the ratio $f/f_s$. Two different continuous
+frequencies can therefore produce sampled sequences that are indistinguishable,
+if the sampling frequency is too low. The samples no longer carry enough
+information to tell you which continuous oscillation was actually present.
 
-If the sampling frequency is too low, two different continuous frequencies can
-produce sampled sequences that are indistinguishable. The samples no longer
-carry enough information to tell you which continuous oscillation was actually
-present.
-
-The safe rule is the **Nyquist idea**:
+The **Nyquist–Shannon sampling theorem** states the safe condition:
 
 - to represent frequency content up to $f_{\max}$, sample faster than
   $2f_{\max}$
@@ -196,15 +190,13 @@ time. In one case you care about left-half-plane location. In the other you
 care about whether the relevant quantity sits inside the unit circle.
 
 ::: {.callout-note appearance="simple"}
-## Why This Works
+## Why this works
 
 In continuous time, a mode behaves like $e^{st}$, so the sign of
 $\Re(s)$ decides whether it decays or grows. In discrete time, a mode behaves
 like $a^n$, so the magnitude of $a$ decides whether repeated updates shrink or
-blow up.
-
-That is the structural translation. Exponentials become powers. Left-half-plane
-stability becomes unit-circle stability.
+blow up. Exponentials become powers, and left-half-plane stability becomes
+unit-circle stability.
 :::
 
 ## The core method
@@ -217,14 +209,17 @@ A first pass through a discrete-time systems problem usually goes like this:
    genuinely discrete process, or a digital controller state.
 3. Write the update rule or filter equation.
 4. Interpret every term as memory, delay, or input contribution.
-5. Check the relevant stability test: pole inside the unit circle, or
-   coefficient magnitude less than 1 in the simple first-order case.
+5. Check the relevant stability test: for the first-order case, the coefficient
+   magnitude must be less than 1. For higher-order systems, stability requires
+   all poles — the roots of the system's characteristic equation — to lie inside
+   the unit circle in the complex plane. This is the discrete-time counterpart
+   of the left-half-plane test from continuous-time control.
 6. Connect the algebra back to behaviour: smoothing, lag, oscillation, alias,
    or amplification.
 
-The habit to build is the same one from the control chapter: do not leave the
-recurrence as pure symbol manipulation. Ask what it means for the sequence the
-machine is actually computing.
+The habit is the same one from the control chapter: do not leave the recurrence
+as pure symbol manipulation. Ask what it means for the sequence the machine is
+actually computing.
 
 ## Worked example 1: a moving-average sensor filter
 
@@ -234,10 +229,9 @@ $$y[n] = \frac{1}{3}\bigl(x[n] + x[n-1] + x[n-2]\bigr)$$
 
 This is a three-point moving average.
 
-What does it do? It smooths out rapid sample-to-sample variation by replacing
-the present sample with the average of the present and previous two samples.
-If one sample spikes upward because of noise, the output spike is diluted by
-the neighbouring samples.
+It smooths rapid sample-to-sample variation by replacing the present sample with
+the average of the present and previous two samples. If one sample spikes upward
+because of noise, the output spike is diluted by the neighbouring samples.
 
 The price is delay. A filter that averages over time cannot react instantly to
 a real rapid change. This is the first recurring engineering tradeoff in
@@ -277,8 +271,8 @@ $$y[n] = 1.1^n y[0]$$
 and because $|1.1| > 1$, the sequence grows. A digital implementation with
 this update law is unstable.
 
-That is a cleaner rule than many students expect. In first-order discrete-time
-systems, the entire stability story is often carried by one number.
+In first-order discrete-time systems, the entire stability story is often
+carried by one number.
 
 ## Worked example 3: aliasing in a seismic record
 
@@ -290,8 +284,10 @@ This is above the Nyquist limit of
 $$\frac{f_s}{2} = 50 \text{ Hz}$$
 
 so the signal will alias. The discrete record cannot faithfully represent a
-70 Hz oscillation at that sampling rate. It will appear as a false lower
-frequency in the sampled data.
+70 Hz oscillation at that sampling rate. Because the sampler runs at 100 Hz, a
+frequency $f$ that exceeds the Nyquist limit folds back by the amount it
+overshoots the full sampling rate: the alias frequency is $|f - f_s| = |70 - 100| = 30$ Hz.
+In the sampled record, the 70 Hz component appears as a spurious 30 Hz oscillation.
 
 The engineering lesson is not "compute a formula and move on." It is that data
 collection itself is part of the mathematics. Sampling choices determine what
@@ -310,11 +306,11 @@ usually carried out in discrete time. Kalman filtering, recursive estimation,
 and streaming data assimilation all inherit the language of recurrences,
 sampling, and noise that this chapter sets up.
 
-This chapter also sits beside control rather than after it by accident.
-Upper-year engineers constantly move between the continuous-time model of the
-plant and the discrete-time implementation of the controller. If Chapter 1 was
-about shaping behaviour, this chapter is about what happens when that shaping
-must be done on a clock.
+This chapter sits beside control deliberately. Upper-year engineers constantly
+move between the continuous-time model of the plant and the discrete-time
+implementation of the controller. The control chapter is about shaping behaviour
+in continuous time. This one is about what happens when that shaping must be
+done on a clock.
 
 ::: {.callout-tip appearance="simple"}
 ## Applications
@@ -349,13 +345,13 @@ steps:
     note: "Sampling frequency is the reciprocal of the sampling period."
   - op: "Compute the Nyquist frequency"
     eq: "f_N = \\dfrac{f_s}{2} = 50\\text{ Hz}"
-    note: "This is the highest frequency that can be represented without aliasing in the basic sampling rule."
+    note: "Frequencies strictly below this limit can be represented without aliasing; a signal at exactly the Nyquist frequency is a boundary case that can alias depending on phase."
   - op: "Check the 30 Hz signal"
     eq: "30 < 50 \\quad \\Rightarrow \\quad \\text{30 Hz is representable without aliasing}"
     note: ~
   - op: "Check the 70 Hz signal"
-    eq: "70 > 50 \\quad \\Rightarrow \\quad \\text{70 Hz will alias}"
-    note: "It lies above the Nyquist limit."
+    eq: "70 > 50 \\quad \\Rightarrow \\quad \\text{70 Hz will alias to } |70 - 100| = 30\\text{ Hz}"
+    note: "It lies above the Nyquist limit and folds back by the same amount it exceeds it."
   - op: "Check"
     eq: "\\text{Safe frequency range: } 0 \\leq f < 50\\text{ Hz}"
     note: "Anything above that range risks appearing as a false lower frequency."

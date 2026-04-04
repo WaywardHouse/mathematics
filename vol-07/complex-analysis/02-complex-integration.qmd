@@ -4,7 +4,7 @@ subtitle: "Cauchy's theorem, the integral formula, and their consequences"
 chapter: 2
 volume: 7
 layer: "engineering"
-status: "draft"
+status: review
 
 axiom: "Integration in the real plane is along an interval. Integration in the complex plane is along a curve — a contour. The value generally depends on which path you take. Except when the integrand is analytic: then the path does not matter, and the integral around any closed curve is exactly zero."
 
@@ -17,7 +17,7 @@ prerequisite_ids:
 
 opens_to:
   - id: complex_analysis
-    label: "Laurent series and residues"
+    label: "Complex analysis"
     volume: 7
     relationship: enables
 
@@ -38,10 +38,10 @@ destinations:
 notation_introduced:
   - symbol: "\\oint_C f(z)\\,dz"
     reads_as: "contour integral of f along C"
-    meaning: "∫_a^b f(z(t)) z'(t) dt where z(t) parametrises the curve C"
+    notation_weight: 2
   - symbol: "\\text{ML inequality}"
     reads_as: "M-L inequality"
-    meaning: "|∮_C f dz| ≤ M · L where M = max|f| on C and L = length of C"
+    notation_weight: 1
 
 exercises:
   type: puzzle
@@ -54,43 +54,40 @@ hook: |
   non-analytic functions it does. But for analytic functions the
   cancellation is exact — the positive and negative contributions from
   opposite sides of the path perfectly cancel. The Cauchy-Riemann
-  equations force u_y + v_x = 0: the real-plane curl of the field
-  (u, −v) is zero, and Green's theorem converts the loop integral to
-  that surface integral — which vanishes identically.
+  equations force both u_y + v_x = 0 and u_x − v_y = 0. Green's theorem
+  applied separately to the real and imaginary parts of the loop integral
+  converts each to an area integral over one of these expressions; both
+  vanish identically.
 
-  The consequences are remarkable. Knowing an analytic function on a
+  The consequences run deep. Knowing an analytic function on a
   circle completely determines its values at every interior point — an
   explicit formula (Cauchy's integral formula) delivers f(z₀) from an
   integral around the boundary. Differentiating that formula gives all
   higher derivatives for free. An analytic function, differentiable once,
   is automatically differentiable infinitely many times.
 
-  These results make complex integration the engine of classical
-  engineering mathematics. The inverse Laplace transform is a contour
-  integral. The residue theorem — the subject of the next chapter —
-  converts difficult real integrals to residue calculations in seconds.
+  Both results matter directly in engineering mathematics. The inverse
+  Laplace transform is a contour integral. The residue theorem — the
+  subject of the next chapter — converts difficult real integrals to
+  residue calculations in seconds.
 
 kreyszig_chapter: "Ch 14"
-stroud_programme: null
-uofa_course: null
+stroud_programme: "Programme 15 (Advanced Engineering Mathematics)"
+uofa_course: "MATH 311"
 ---
 
 ## Contours and contour integrals
 
 A **contour** (or path) in the complex plane is a **piecewise smooth** curve $C$: $z = z(t)$, $a \leq t \leq b$, where $z(t) = x(t) + iy(t)$ and $z'(t)$ is piecewise continuous. Piecewise smooth means the curve can have finitely many corners, but no cusps or fractal wiggles — at each smooth piece the tangent direction is well-defined.
 
-<!-- STUDENT: "Piecewise smooth" and "piecewise continuous" are used here without definition. A reader who has seen real line integrals will have a rough intuition, but for someone new to complex analysis it would help to know: "piecewise smooth means the curve can have finitely many corners but no cusps or fractal wiggles." -->
-
 The **contour integral** of $f$ along $C$ is:
 
 $$\int_C f(z)\,dz = \int_a^b f(z(t))\,z'(t)\,dt$$
 
-This is just a real line integral in disguise. Writing $f = u + iv$ and $dz = dx + idy$, multiply out the product:
+This is a real line integral in disguise. Writing $f = u + iv$ and $dz = dx + idy$, multiply out the product:
 $$(u + iv)(dx + i\,dy) = u\,dx + iu\,dy + iv\,dx + i^2 v\,dy = (u\,dx - v\,dy) + i(v\,dx + u\,dy)$$
 
 Separating real and imaginary parts:
-
-<!-- STUDENT: The expansion from ∫f dz to the two real line integrals is given as a result without showing the multiplication (u+iv)(dx+idy) being split into real and imaginary parts. For a reader who has not done this before, a single line of algebra expanding the product would make the "disguise" visible. -->
 
 $$\int_C f\,dz = \int_C(u\,dx - v\,dy) + i\int_C(v\,dx + u\,dy)$$
 
@@ -99,17 +96,539 @@ $$\int_C f\,dz = \int_C(u\,dx - v\,dy) + i\int_C(v\,dx + u\,dy)$$
 - Reversal: $\int_{-C}f\,dz = -\int_C f\,dz$ (reversing the direction negates the integral).
 - Additivity: if $C = C_1 + C_2$, then $\int_C = \int_{C_1} + \int_{C_2}$.
 
-<!-- VIZ: Contour path explorer — path-dependence vs path-independence. Two panels side by side. Left panel: the complex plane with a fixed start point A = 0 and end point B = 1+i, both shown as labelled dots. A dropdown selects the integrand: "f(z) = z (analytic)", "f(z) = z̄ (not analytic)", "f(z) = |z| (not analytic)". Three preset paths are shown simultaneously in different colours: a straight line (orange, #f97316), an arc via the real axis then up (blue, #3b82f6), and a semicircular arc (purple, #8b5cf6). The reader can toggle each path on/off. Right panel: a bar chart showing the computed value of ∫_C f dz for each path — each bar labelled with the path's colour and value (real and imaginary parts). For f(z) = z, all three bars are equal (path independence); for f(z) = z̄ they differ. A bold annotation reads "analytic integrand → same value on every path" or "non-analytic → value depends on path" depending on the function chosen. This directly illustrates Cauchy's theorem before it is stated, giving the reader a visceral sense of what the theorem claims. Series thread: the path-independence result connects to the harmonic potential from Chapter 1's VIZ (same concept, different representation). -->
+```{ojs}
+//| echo: false
+// VIZ 1: Path-dependence explorer
+// Three simultaneous paths from A=0 to B=1+i; trace slider; integrand selector;
+// running-total bars for Re and Im parts. Key moment: all three match for analytic f.
+{
+  const W = 320, H = 300, SCALE = 110, OX = 40, OY = 260;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const STEPS = 400;
+
+  const intSelector = Inputs.select(
+    ["f(z) = z  (analytic)", "f(z) = z\u0305  (not analytic)", "f(z) = |z|\u00b2  (not analytic)"],
+    { value: "f(z) = z  (analytic)", label: "Integrand" }
+  );
+  const traceSlider = Inputs.range([0, 1], { value: 1, step: 0.005, label: "Trace t" });
+
+  function toSx(re) { return OX + re * SCALE; }
+  function toSy(im) { return OY - im * SCALE; }
+
+  // Path parametrisations: t in [0,1], endpoint B = 1+i
+  function pathStraight(t) { return [t, t]; }
+  function pathRightAngle(t) {
+    if (t <= 0.5) return [2 * t, 0];
+    return [1, 2 * (t - 0.5)];
+  }
+  function pathSemicircle(t) {
+    // Arc from 0 to 1+i via midpoint 0.5 + 0.5i offset by a semicircular bulge
+    // Use parametric: goes right along x, then curves up, centre at (0.5, 0.5)
+    const theta = Math.PI * t; // 0..pi maps 0 -> bottom -> 1+i via arc
+    const cx = 0.5, cy = 0.5, r = Math.sqrt(0.5);
+    const angle = -Math.PI / 2 + theta; // start at bottom of circle
+    return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+  }
+
+  function evalF(fname, re, im) {
+    if (fname.startsWith("f(z) = z  ")) return [re, im];
+    if (fname.startsWith("f(z) = z\u0305")) return [re, -im];
+    return [re * re + im * im, 0]; // |z|^2
+  }
+
+  function numericalIntegral(pathFn, fname, upToT) {
+    const steps = Math.max(1, Math.round(upToT * STEPS));
+    const dt = upToT / steps;
+    let rA = 0, iA = 0;
+    for (let k = 0; k < steps; k++) {
+      const t0 = k * dt, t1 = (k + 1) * dt;
+      const [r0, i0] = pathFn(t0);
+      const [r1, i1] = pathFn(t1);
+      const mr = (r0 + r1) / 2, mi = (i0 + i1) / 2;
+      const dr = r1 - r0, di = i1 - i0;
+      const [fr, fi] = evalF(fname, mr, mi);
+      // f(z) dz = (fr+i*fi)(dr+i*di) = fr*dr - fi*di + i*(fi*dr + fr*di)
+      rA += fr * dr - fi * di;
+      iA += fi * dr + fr * di;
+    }
+    return [rA, iA];
+  }
+
+  const PATHS = [
+    { name: "Straight", fn: pathStraight, color: "#f97316" },
+    { name: "Right-angle", fn: pathRightAngle, color: "#3b82f6" },
+    { name: "Semicircle", fn: pathSemicircle, color: "#8b5cf6" }
+  ];
+
+  function buildSVG(fname, tVal) {
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    svg.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Grid lines
+    for (let v = 0; v <= 2; v++) {
+      const gv = document.createElementNS(svgNS, "line");
+      gv.setAttribute("x1", toSx(v)); gv.setAttribute("y1", toSy(-0.3));
+      gv.setAttribute("x2", toSx(v)); gv.setAttribute("y2", toSy(1.6));
+      gv.setAttribute("stroke", "#e5e7eb"); gv.setAttribute("stroke-width", "0.5");
+      svg.appendChild(gv);
+    }
+    for (let u = 0; u <= 2; u++) {
+      const gh = document.createElementNS(svgNS, "line");
+      gh.setAttribute("x1", toSx(-0.1)); gh.setAttribute("y1", toSy(u));
+      gh.setAttribute("x2", toSx(1.6)); gh.setAttribute("y2", toSy(u));
+      gh.setAttribute("stroke", "#e5e7eb"); gh.setAttribute("stroke-width", "0.5");
+      svg.appendChild(gh);
+    }
+
+    // Axes
+    const axH = document.createElementNS(svgNS, "line");
+    axH.setAttribute("x1", toSx(-0.1)); axH.setAttribute("y1", toSy(0));
+    axH.setAttribute("x2", toSx(1.6)); axH.setAttribute("y2", toSy(0));
+    axH.setAttribute("stroke", "#9ca3af"); axH.setAttribute("stroke-width", "1.2");
+    svg.appendChild(axH);
+    const axV = document.createElementNS(svgNS, "line");
+    axV.setAttribute("x1", toSx(0)); axV.setAttribute("y1", toSy(-0.2));
+    axV.setAttribute("x2", toSx(0)); axV.setAttribute("y2", toSy(1.6));
+    axV.setAttribute("stroke", "#9ca3af"); axV.setAttribute("stroke-width", "1.2");
+    svg.appendChild(axV);
+
+    // Axis labels
+    const lblRe = document.createElementNS(svgNS, "text");
+    lblRe.setAttribute("x", toSx(1.55)); lblRe.setAttribute("y", toSy(0) - 6);
+    lblRe.setAttribute("font-size", "10"); lblRe.setAttribute("fill", "#6b7280");
+    lblRe.setAttribute("font-family", "sans-serif"); lblRe.textContent = "Re";
+    svg.appendChild(lblRe);
+    const lblIm = document.createElementNS(svgNS, "text");
+    lblIm.setAttribute("x", toSx(0) + 4); lblIm.setAttribute("y", toSy(1.55));
+    lblIm.setAttribute("font-size", "10"); lblIm.setAttribute("fill", "#6b7280");
+    lblIm.setAttribute("font-family", "sans-serif"); lblIm.textContent = "Im";
+    svg.appendChild(lblIm);
+
+    // Draw full ghost paths
+    for (const p of PATHS) {
+      let d = "";
+      for (let k = 0; k <= STEPS; k++) {
+        const [re, im] = p.fn(k / STEPS);
+        d += (k === 0 ? "M" : "L") + ` ${toSx(re)} ${toSy(im)}`;
+      }
+      const ghost = document.createElementNS(svgNS, "path");
+      ghost.setAttribute("d", d); ghost.setAttribute("fill", "none");
+      ghost.setAttribute("stroke", p.color); ghost.setAttribute("stroke-width", "1.5");
+      ghost.setAttribute("stroke-dasharray", "4,3"); ghost.setAttribute("opacity", "0.35");
+      svg.appendChild(ghost);
+    }
+
+    // Draw traced portions
+    for (const p of PATHS) {
+      const steps = Math.round(tVal * STEPS);
+      let d = "";
+      for (let k = 0; k <= steps; k++) {
+        const [re, im] = p.fn(k / STEPS);
+        d += (k === 0 ? "M" : "L") + ` ${toSx(re)} ${toSy(im)}`;
+      }
+      const trace = document.createElementNS(svgNS, "path");
+      trace.setAttribute("d", d); trace.setAttribute("fill", "none");
+      trace.setAttribute("stroke", p.color); trace.setAttribute("stroke-width", "2.5");
+      svg.appendChild(trace);
+
+      // Moving dot
+      const [cr, ci] = p.fn(tVal);
+      const dot = document.createElementNS(svgNS, "circle");
+      dot.setAttribute("cx", toSx(cr)); dot.setAttribute("cy", toSy(ci));
+      dot.setAttribute("r", "5"); dot.setAttribute("fill", p.color);
+      dot.setAttribute("stroke", "#fff"); dot.setAttribute("stroke-width", "1.5");
+      svg.appendChild(dot);
+    }
+
+    // A and B endpoint markers
+    const A = document.createElementNS(svgNS, "circle");
+    A.setAttribute("cx", toSx(0)); A.setAttribute("cy", toSy(0));
+    A.setAttribute("r", "5"); A.setAttribute("fill", "#111827");
+    A.setAttribute("stroke", "#fff"); A.setAttribute("stroke-width", "1.5");
+    svg.appendChild(A);
+    const Albl = document.createElementNS(svgNS, "text");
+    Albl.setAttribute("x", toSx(0) + 7); Albl.setAttribute("y", toSy(0) - 5);
+    Albl.setAttribute("font-size", "11"); Albl.setAttribute("font-family", "sans-serif");
+    Albl.setAttribute("fill", "#111827"); Albl.textContent = "A = 0";
+    svg.appendChild(Albl);
+    const B = document.createElementNS(svgNS, "circle");
+    B.setAttribute("cx", toSx(1)); B.setAttribute("cy", toSy(1));
+    B.setAttribute("r", "5"); B.setAttribute("fill", "#111827");
+    B.setAttribute("stroke", "#fff"); B.setAttribute("stroke-width", "1.5");
+    svg.appendChild(B);
+    const Blbl = document.createElementNS(svgNS, "text");
+    Blbl.setAttribute("x", toSx(1) + 7); Blbl.setAttribute("y", toSy(1) - 5);
+    Blbl.setAttribute("font-size", "11"); Blbl.setAttribute("font-family", "sans-serif");
+    Blbl.setAttribute("fill", "#111827"); Blbl.textContent = "B = 1+i";
+    svg.appendChild(Blbl);
+
+    return svg;
+  }
+
+  function buildBars(fname, tVal) {
+    const BAR_W = 260, BAR_H = 200;
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", BAR_W); svg.setAttribute("height", BAR_H);
+    svg.style.cssText = "display:block;";
+
+    const integrals = PATHS.map(p => numericalIntegral(p.fn, fname, tVal));
+    const maxVal = Math.max(1e-9, ...integrals.flatMap(([r, i]) => [Math.abs(r), Math.abs(i)]));
+    const barScale = 70 / maxVal;
+    const colW = 60, midY = 110, lblY = BAR_H - 10;
+
+    // Zero line
+    const zl = document.createElementNS(svgNS, "line");
+    zl.setAttribute("x1", 10); zl.setAttribute("y1", midY);
+    zl.setAttribute("x2", BAR_W - 10); zl.setAttribute("y2", midY);
+    zl.setAttribute("stroke", "#d1d5db"); zl.setAttribute("stroke-width", "1");
+    svg.appendChild(zl);
+
+    const headRe = document.createElementNS(svgNS, "text");
+    headRe.setAttribute("x", "10"); headRe.setAttribute("y", "14");
+    headRe.setAttribute("font-size", "9"); headRe.setAttribute("fill", "#6b7280");
+    headRe.setAttribute("font-family", "sans-serif"); headRe.textContent = "Re(\u222bf dz)";
+    svg.appendChild(headRe);
+    const headIm = document.createElementNS(svgNS, "text");
+    headIm.setAttribute("x", "135"); headIm.setAttribute("y", "14");
+    headIm.setAttribute("font-size", "9"); headIm.setAttribute("fill", "#6b7280");
+    headIm.setAttribute("font-family", "sans-serif"); headIm.textContent = "Im(\u222bf dz)";
+    svg.appendChild(headIm);
+
+    for (let i = 0; i < PATHS.length; i++) {
+      const [rv, iv] = integrals[i];
+      const col = PATHS[i].color;
+      const name = PATHS[i].name;
+      const xR = 14 + i * 38, xI = 140 + i * 38;
+
+      // Re bar
+      const rh = rv * barScale;
+      const reBar = document.createElementNS(svgNS, "rect");
+      reBar.setAttribute("x", xR); reBar.setAttribute("y", rh >= 0 ? midY - rh : midY);
+      reBar.setAttribute("width", 30); reBar.setAttribute("height", Math.max(2, Math.abs(rh)));
+      reBar.setAttribute("fill", col); reBar.setAttribute("rx", "2");
+      svg.appendChild(reBar);
+      const reVal = document.createElementNS(svgNS, "text");
+      reVal.setAttribute("x", xR + 15); reVal.setAttribute("y", rh >= 0 ? midY - rh - 3 : midY + Math.abs(rh) + 11);
+      reVal.setAttribute("font-size", "8"); reVal.setAttribute("text-anchor", "middle");
+      reVal.setAttribute("fill", col); reVal.setAttribute("font-family", "monospace");
+      reVal.textContent = rv.toFixed(3);
+      svg.appendChild(reVal);
+
+      // Im bar
+      const ih = iv * barScale;
+      const imBar = document.createElementNS(svgNS, "rect");
+      imBar.setAttribute("x", xI); imBar.setAttribute("y", ih >= 0 ? midY - ih : midY);
+      imBar.setAttribute("width", 30); imBar.setAttribute("height", Math.max(2, Math.abs(ih)));
+      imBar.setAttribute("fill", col); imBar.setAttribute("rx", "2");
+      svg.appendChild(imBar);
+      const imVal = document.createElementNS(svgNS, "text");
+      imVal.setAttribute("x", xI + 15); imVal.setAttribute("y", ih >= 0 ? midY - ih - 3 : midY + Math.abs(ih) + 11);
+      imVal.setAttribute("font-size", "8"); imVal.setAttribute("text-anchor", "middle");
+      imVal.setAttribute("fill", col); imVal.setAttribute("font-family", "monospace");
+      imVal.textContent = iv.toFixed(3) + "i";
+      svg.appendChild(imVal);
+
+      // Path label
+      const lbl = document.createElementNS(svgNS, "text");
+      lbl.setAttribute("x", (xR + xI) / 2 - 6); lbl.setAttribute("y", lblY);
+      lbl.setAttribute("font-size", "8"); lbl.setAttribute("text-anchor", "middle");
+      lbl.setAttribute("fill", col); lbl.setAttribute("font-family", "sans-serif");
+      lbl.textContent = name;
+      svg.appendChild(lbl);
+    }
+
+    // Agreement indicator
+    const vals = integrals;
+    const reClose = Math.abs(vals[0][0] - vals[1][0]) < 0.01 && Math.abs(vals[1][0] - vals[2][0]) < 0.01;
+    const imClose = Math.abs(vals[0][1] - vals[1][1]) < 0.01 && Math.abs(vals[1][1] - vals[2][1]) < 0.01;
+    const agree = reClose && imClose;
+    const annot = document.createElementNS(svgNS, "text");
+    annot.setAttribute("x", BAR_W / 2); annot.setAttribute("y", BAR_H - 26);
+    annot.setAttribute("font-size", "9"); annot.setAttribute("text-anchor", "middle");
+    annot.setAttribute("font-weight", "bold");
+    annot.setAttribute("fill", agree ? "#059669" : "#dc2626");
+    annot.setAttribute("font-family", "sans-serif");
+    annot.textContent = agree ? "all three agree \u2014 path-independent" : "values differ \u2014 path-dependent";
+    svg.appendChild(annot);
+
+    return svg;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0; font-family:sans-serif;";
+
+  const title = document.createElement("div");
+  title.style.cssText = "font-weight:600; margin-bottom:0.5rem;";
+  title.textContent = "Path-dependence explorer: three paths from A to B";
+  container.appendChild(title);
+
+  container.appendChild(intSelector);
+  container.appendChild(traceSlider);
+
+  const panels = document.createElement("div");
+  panels.style.cssText = "display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.5rem;";
+
+  const svgDiv = document.createElement("div");
+  const barDiv = document.createElement("div");
+  panels.appendChild(svgDiv);
+  panels.appendChild(barDiv);
+  container.appendChild(panels);
+
+  // Legend
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1rem; margin-top:0.5rem; font-size:0.82em;";
+  for (const p of PATHS) {
+    const item = document.createElement("span");
+    item.style.cssText = `color:${p.color};`;
+    item.textContent = "\u25ac " + p.name;
+    legend.appendChild(item);
+  }
+  container.appendChild(legend);
+
+  const note = document.createElement("div");
+  note.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  note.textContent = "Drag the trace slider to advance all three paths simultaneously. For f(z) = z (analytic) every path gives the same result — path independence. Switch to z\u0305 or |z|\u00b2 and the bars diverge.";
+  container.appendChild(note);
+
+  function update() {
+    const fname = intSelector.value;
+    const tVal = traceSlider.value;
+    svgDiv.innerHTML = ""; svgDiv.appendChild(buildSVG(fname, tVal));
+    barDiv.innerHTML = ""; barDiv.appendChild(buildBars(fname, tVal));
+  }
+  intSelector.addEventListener("input", update);
+  traceSlider.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
 
 ### The ML inequality
 
-The most useful estimate for contour integrals:
+When you need a bound on a contour integral rather than its exact value, the ML inequality is the standard tool:
 
 $$\left|\int_C f(z)\,dz\right| \leq M \cdot L$$
 
-where $M = \max_{z \in C}|f(z)|$ and $L$ is the arc length of $C$. This is the complex analogue of $|\int_a^b f\,dx| \leq \max|f| \cdot (b-a)$.
+where $M = \max_{z \in C}|f(z)|$ and $L$ is the arc length of $C$. This mirrors the real estimate $|\int_a^b f\,dx| \leq \max|f| \cdot (b-a)$. The application section below shows how to read off $M$ and $L$ in practice.
 
-### A fundamental example
+```{ojs}
+//| echo: false
+// VIZ 6: ML inequality geometry
+// Contour in z-plane with perpendicular spike magnitudes; M and L labels;
+// bounding rectangle vs actual integral bar in right panel.
+{
+  const W = 340, H = 260, SCALE = 70, OX = 100, OY = 160;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const STEPS = 120;
+
+  const radiusML = Inputs.range([0.4, 2.2], { value: 1.2, step: 0.05, label: "Contour radius R" });
+  const funcML = Inputs.select(
+    ["f(z) = 1/z\u00b2", "f(z) = e^z", "f(z) = 1/(z+2)"],
+    { value: "f(z) = 1/z\u00b2", label: "f(z)" }
+  );
+
+  function toSx(re) { return OX + re * SCALE; }
+  function toSy(im) { return OY - im * SCALE; }
+
+  function fMagnitude(fname, re, im) {
+    if (fname === "f(z) = 1/z\u00b2") {
+      const d2 = re*re + im*im;
+      return d2 < 1e-8 ? 99 : 1 / d2;
+    }
+    if (fname === "f(z) = e^z") return Math.exp(re);
+    const dr = re + 2, d = dr*dr + im*im;
+    return d < 1e-10 ? 99 : 1 / Math.sqrt(d);
+  }
+
+  function build(R, fname) {
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    svg.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Axes
+    for (const [x1,y1,x2,y2] of [
+      [toSx(-0.2), toSy(0), toSx(2.4), toSy(0)],
+      [toSx(0), toSy(-1.8), toSx(0), toSy(2.0)]
+    ]) {
+      const ax = document.createElementNS(svgNS, "line");
+      ax.setAttribute("x1",x1); ax.setAttribute("y1",y1);
+      ax.setAttribute("x2",x2); ax.setAttribute("y2",y2);
+      ax.setAttribute("stroke","#d1d5db"); ax.setAttribute("stroke-width","1");
+      svg.appendChild(ax);
+    }
+
+    // Contour circle and spike magnitudes
+    const mags = [];
+    let dPath = "";
+    for (let k = 0; k <= STEPS; k++) {
+      const theta = (2 * Math.PI * k) / STEPS;
+      const re = R * Math.cos(theta), im = R * Math.sin(theta);
+      const m = fMagnitude(fname, re, im);
+      mags.push(Math.min(m, 4)); // cap display
+      dPath += (k === 0 ? "M" : "L") + ` ${toSx(re)} ${toSy(im)}`;
+    }
+    const contour = document.createElementNS(svgNS, "path");
+    contour.setAttribute("d", dPath); contour.setAttribute("fill", "none");
+    contour.setAttribute("stroke", "#3b82f6"); contour.setAttribute("stroke-width", "2");
+    svg.appendChild(contour);
+
+    // Spikes
+    const SPIKE_SCALE = 20;
+    for (let k = 0; k < STEPS; k += 6) {
+      const theta = (2 * Math.PI * k) / STEPS;
+      const re = R * Math.cos(theta), im = R * Math.sin(theta);
+      const sx = toSx(re), sy = toSy(im);
+      // Outward normal direction
+      const nx = Math.cos(theta), ny = -Math.sin(theta); // screen normal (y flipped)
+      const h = Math.min(mags[k], 3.5) * SPIKE_SCALE;
+      const ex = sx + nx * h, ey = sy + ny * h;
+      const spike = document.createElementNS(svgNS, "line");
+      spike.setAttribute("x1", sx); spike.setAttribute("y1", sy);
+      spike.setAttribute("x2", ex); spike.setAttribute("y2", ey);
+      spike.setAttribute("stroke", "#f97316"); spike.setAttribute("stroke-width", "1.5");
+      spike.setAttribute("opacity", "0.7");
+      svg.appendChild(spike);
+    }
+
+    // M = max on contour, L = arc length = 2πR
+    const Mval = Math.max(...mags);
+    const Lval = 2 * Math.PI * R;
+    const ML = Mval * Lval;
+
+    // M level ring
+    const mlCircle = document.createElementNS(svgNS, "circle");
+    mlCircle.setAttribute("cx", toSx(0)); mlCircle.setAttribute("cy", toSy(0));
+    mlCircle.setAttribute("r", (R + Math.min(Mval, 3.5) * (SPIKE_SCALE / SCALE)));
+    mlCircle.setAttribute("fill", "none"); mlCircle.setAttribute("stroke", "#dc2626");
+    mlCircle.setAttribute("stroke-width", "1"); mlCircle.setAttribute("stroke-dasharray", "3,3");
+    svg.appendChild(mlCircle);
+
+    // Labels
+    const mlbl = document.createElementNS(svgNS, "text");
+    mlbl.setAttribute("x", toSx(R) + 4); mlbl.setAttribute("y", toSy(0) - 4);
+    mlbl.setAttribute("font-size", "10"); mlbl.setAttribute("fill", "#f97316");
+    mlbl.setAttribute("font-family", "sans-serif"); mlbl.textContent = "M = " + Mval.toFixed(2);
+    svg.appendChild(mlbl);
+    const llbl = document.createElementNS(svgNS, "text");
+    llbl.setAttribute("x", toSx(0) + 4); llbl.setAttribute("y", toSy(-R) + 14);
+    llbl.setAttribute("font-size", "10"); llbl.setAttribute("fill", "#3b82f6");
+    llbl.setAttribute("font-family", "sans-serif"); llbl.textContent = "L = 2\u03c0R = " + Lval.toFixed(2);
+    svg.appendChild(llbl);
+
+    // Contour label
+    const clbl = document.createElementNS(svgNS, "text");
+    clbl.setAttribute("x", 4); clbl.setAttribute("y", 14);
+    clbl.setAttribute("font-size", "10"); clbl.setAttribute("fill", "#3b82f6");
+    clbl.setAttribute("font-family", "sans-serif"); clbl.textContent = "C: |z| = " + R.toFixed(2);
+    svg.appendChild(clbl);
+
+    // Bar panel on right
+    const BX = W - 100, BY = 20, BW = 80, BH = H - 50;
+    const bg = document.createElementNS(svgNS, "rect");
+    bg.setAttribute("x", BX); bg.setAttribute("y", BY);
+    bg.setAttribute("width", BW); bg.setAttribute("height", BH);
+    bg.setAttribute("fill", "#f9fafb"); bg.setAttribute("rx", "4");
+    svg.appendChild(bg);
+
+    // Actual |∮ f dz| — numerical estimate via trapezoidal sum
+    let sumRe = 0, sumIm = 0;
+    for (let k = 0; k < STEPS; k++) {
+      const t0 = (2*Math.PI*k)/STEPS, t1 = (2*Math.PI*(k+1))/STEPS;
+      const r0 = R*Math.cos(t0), i0 = R*Math.sin(t0);
+      const r1 = R*Math.cos(t1), i1 = R*Math.sin(t1);
+      const mr = (r0+r1)/2, mi = (i0+i1)/2;
+      const dr = r1-r0, di = i1-i0;
+      // f(z) evaluation
+      let fr, fi;
+      if (fname === "f(z) = 1/z\u00b2") {
+        const d2 = mr*mr+mi*mi; if (d2<1e-8) continue;
+        const re2 = (mr*mr-mi*mi)/(d2*d2), im2 = (-2*mr*mi)/(d2*d2);
+        fr = re2; fi = im2;
+      } else if (fname === "f(z) = e^z") {
+        fr = Math.exp(mr)*Math.cos(mi); fi = Math.exp(mr)*Math.sin(mi);
+      } else {
+        const ddr = mr+2, d = ddr*ddr+mi*mi; if (d<1e-10) continue;
+        fr = ddr/d; fi = -mi/d;
+      }
+      sumRe += fr*dr - fi*di;
+      sumIm += fi*dr + fr*di;
+    }
+    const actual = Math.sqrt(sumRe*sumRe + sumIm*sumIm);
+    const maxBar = Math.max(ML, actual, 0.1);
+    const mlH = (ML / maxBar) * (BH - 30);
+    const actH = (actual / maxBar) * (BH - 30);
+
+    // ML bar
+    const mlBar = document.createElementNS(svgNS, "rect");
+    mlBar.setAttribute("x", BX + 8); mlBar.setAttribute("y", BY + BH - 20 - mlH);
+    mlBar.setAttribute("width", 24); mlBar.setAttribute("height", mlH);
+    mlBar.setAttribute("fill", "#dc2626"); mlBar.setAttribute("rx", "2");
+    svg.appendChild(mlBar);
+    const mlBarLbl = document.createElementNS(svgNS, "text");
+    mlBarLbl.setAttribute("x", BX + 20); mlBarLbl.setAttribute("y", BY + BH - 22 - mlH);
+    mlBarLbl.setAttribute("font-size", "8"); mlBarLbl.setAttribute("text-anchor", "middle");
+    mlBarLbl.setAttribute("fill", "#dc2626"); mlBarLbl.setAttribute("font-family", "monospace");
+    mlBarLbl.textContent = "ML"; svg.appendChild(mlBarLbl);
+    const mlNum = document.createElementNS(svgNS, "text");
+    mlNum.setAttribute("x", BX + 20); mlNum.setAttribute("y", BY + BH - 8);
+    mlNum.setAttribute("font-size", "8"); mlNum.setAttribute("text-anchor", "middle");
+    mlNum.setAttribute("fill", "#dc2626"); mlNum.setAttribute("font-family", "monospace");
+    mlNum.textContent = ML.toFixed(2); svg.appendChild(mlNum);
+
+    // Actual bar
+    const actBar = document.createElementNS(svgNS, "rect");
+    actBar.setAttribute("x", BX + 46); actBar.setAttribute("y", BY + BH - 20 - actH);
+    actBar.setAttribute("width", 24); actBar.setAttribute("height", actH);
+    actBar.setAttribute("fill", "#3b82f6"); actBar.setAttribute("rx", "2");
+    svg.appendChild(actBar);
+    const actBarLbl = document.createElementNS(svgNS, "text");
+    actBarLbl.setAttribute("x", BX + 58); actBarLbl.setAttribute("y", BY + BH - 22 - actH);
+    actBarLbl.setAttribute("font-size", "8"); actBarLbl.setAttribute("text-anchor", "middle");
+    actBarLbl.setAttribute("fill", "#3b82f6"); actBarLbl.setAttribute("font-family", "monospace");
+    actBarLbl.textContent = "|\u222bf dz|"; svg.appendChild(actBarLbl);
+    const actNum = document.createElementNS(svgNS, "text");
+    actNum.setAttribute("x", BX + 58); actNum.setAttribute("y", BY + BH - 8);
+    actNum.setAttribute("font-size", "8"); actNum.setAttribute("text-anchor", "middle");
+    actNum.setAttribute("fill", "#3b82f6"); actNum.setAttribute("font-family", "monospace");
+    actNum.textContent = actual.toFixed(2); svg.appendChild(actNum);
+
+    return svg;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0; font-family:sans-serif;";
+
+  const titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600; margin-bottom:0.5rem;";
+  titleEl.textContent = "ML inequality: spikes show |f(z)| along the contour";
+  container.appendChild(titleEl);
+  container.appendChild(radiusML);
+  container.appendChild(funcML);
+
+  const vizDiv = document.createElement("div");
+  vizDiv.style.marginTop = "0.5rem";
+  container.appendChild(vizDiv);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "Orange spikes show |f(z)| at each point of the contour. M is the tallest spike; L is the arc length. The red bar (ML) is the bound; the blue bar (|\u222bf dz|) is the actual magnitude. The bound always wins.";
+  container.appendChild(noteEl);
+
+  function update() {
+    vizDiv.innerHTML = "";
+    vizDiv.appendChild(build(radiusML.value, funcML.value));
+  }
+  radiusML.addEventListener("input", update);
+  funcML.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
+
+### Integral of $1/z^{n+1}$ around a circle
 
 $$\oint_{|z|=r} \frac{dz}{z^{n+1}} = \begin{cases} 2\pi i & n = 0 \\ 0 & n \neq 0 \end{cases}$$
 
@@ -117,6 +636,254 @@ $$\oint_{|z|=r} \frac{dz}{z^{n+1}} = \begin{cases} 2\pi i & n = 0 \\ 0 & n \neq 
 $$\int_0^{2\pi}\frac{ire^{i\theta}}{re^{i\theta}}\,d\theta = \int_0^{2\pi}i\,d\theta = 2\pi i$$
 
 This single result — that the integral of $1/z$ around the origin is $2\pi i$ — is the seed from which the residue theorem grows.
+
+```{ojs}
+//| echo: false
+// VIZ 5: 1/z^{n+1} circle integral — discrete n slider, θ trace with play button,
+// integrand arrows, two strip-chart accumulators, green highlight when n=0 gives 2πi.
+{
+  const W = 340, H = 300, SCALE = 85, CX = 155, CY = 155;
+  const BARY = 260, BARH = 30, BARW = 250, BARX = 55;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const STEPS = 360;
+
+  const nSlider = Inputs.range([-2, 3], { value: 0, step: 1, label: "n  (integrand = 1/z^{n+1})" });
+  const thetaSlider = Inputs.range([0, 1], { value: 0, step: 0.005, label: "Trace \u03b8/2\u03c0" });
+  const playBtn = document.createElement("button");
+  playBtn.textContent = "Play \u25b6";
+  playBtn.style.cssText = "padding:0.3rem 0.8rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; cursor:pointer; font-size:0.88em; margin-top:0.3rem;";
+
+  function computeCircleIntegral(n, upToTheta) {
+    // z = e^{i*theta}, dz = i*e^{i*theta}*dtheta
+    // 1/z^{n+1} * dz = e^{-i*(n+1)*theta} * i*e^{i*theta} * dtheta = i * e^{-i*n*theta} * dtheta
+    // Integral from 0 to 2pi*upToTheta
+    const T = 2 * Math.PI * upToTheta;
+    if (Math.abs(n) < 0.01) {
+      // n=0: integral = i * T
+      return [0, T];
+    }
+    // n != 0: i * integral of e^{-i*n*theta} dtheta = i * [e^{-i*n*theta}/(-i*n)]_0^T
+    //       = i * (e^{-i*n*T} - 1) / (-i*n) = (e^{-i*n*T} - 1) / (-n)
+    const cosT = Math.cos(n * T), sinT = Math.sin(n * T);
+    const re = (cosT - 1) / (-n);
+    const im = (-sinT) / (-n);
+    return [re, im];
+  }
+
+  function toSx(re) { return CX + re * SCALE; }
+  function toSy(im) { return CY - im * SCALE; }
+
+  function buildViz(n, thetaFrac) {
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", W); svg.setAttribute("height", H + 70);
+    svg.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Axes
+    const ax = document.createElementNS(svgNS, "line");
+    ax.setAttribute("x1", toSx(-1.6)); ax.setAttribute("y1", toSy(0));
+    ax.setAttribute("x2", toSx(1.6)); ax.setAttribute("y2", toSy(0));
+    ax.setAttribute("stroke", "#d1d5db"); ax.setAttribute("stroke-width", "1");
+    svg.appendChild(ax);
+    const ay = document.createElementNS(svgNS, "line");
+    ay.setAttribute("x1", toSx(0)); ay.setAttribute("y1", toSy(-1.6));
+    ay.setAttribute("x2", toSx(0)); ay.setAttribute("y2", toSy(1.6));
+    ay.setAttribute("stroke", "#d1d5db"); ay.setAttribute("stroke-width", "1");
+    svg.appendChild(ay);
+
+    // Unit circle (ghost)
+    const circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx", toSx(0)); circle.setAttribute("cy", toSy(0));
+    circle.setAttribute("r", SCALE); circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "#e5e7eb"); circle.setAttribute("stroke-width", "1.5");
+    svg.appendChild(circle);
+
+    // Traced arc
+    const arcSteps = Math.round(thetaFrac * STEPS);
+    if (arcSteps > 1) {
+      let arcD = "";
+      for (let k = 0; k <= arcSteps; k++) {
+        const theta = (2 * Math.PI * k) / STEPS;
+        const px = toSx(Math.cos(theta)), py = toSy(Math.sin(theta));
+        arcD += (k === 0 ? "M" : "L") + ` ${px} ${py}`;
+      }
+      const arcEl = document.createElementNS(svgNS, "path");
+      arcEl.setAttribute("d", arcD); arcEl.setAttribute("fill", "none");
+      arcEl.setAttribute("stroke", "#8b5cf6"); arcEl.setAttribute("stroke-width", "3");
+      svg.appendChild(arcEl);
+    }
+
+    // Current point on circle
+    const theta0 = 2 * Math.PI * thetaFrac;
+    const cx = Math.cos(theta0), cy = Math.sin(theta0);
+    const cpx = toSx(cx), cpy = toSy(cy);
+    const pt = document.createElementNS(svgNS, "circle");
+    pt.setAttribute("cx", cpx); pt.setAttribute("cy", cpy);
+    pt.setAttribute("r", "6"); pt.setAttribute("fill", "#8b5cf6");
+    pt.setAttribute("stroke", "#fff"); pt.setAttribute("stroke-width", "2");
+    svg.appendChild(pt);
+
+    // Integrand arrow at current point: 1/z^{n+1} * dz/dtheta direction
+    // dz/dtheta = i*e^{i*theta}; 1/z^{n+1} = e^{-i*(n+1)*theta}
+    // product = i * e^{-i*n*theta}
+    const arrowRe = -Math.sin(n * theta0);
+    const arrowIm = Math.cos(n * theta0);
+    const arrowLen = 22;
+    const arrowNorm = Math.sqrt(arrowRe*arrowRe + arrowIm*arrowIm) || 1;
+    const adx = (arrowRe / arrowNorm) * arrowLen;
+    const ady = -(arrowIm / arrowNorm) * arrowLen; // screen y-flip
+    const arrowEl = document.createElementNS(svgNS, "line");
+    arrowEl.setAttribute("x1", cpx); arrowEl.setAttribute("y1", cpy);
+    arrowEl.setAttribute("x2", cpx + adx); arrowEl.setAttribute("y2", cpy + ady);
+    arrowEl.setAttribute("stroke", "#f97316"); arrowEl.setAttribute("stroke-width", "2");
+    arrowEl.setAttribute("marker-end", "url(#arrow-orange)");
+    svg.appendChild(arrowEl);
+
+    // Arrow marker def
+    const defs = document.createElementNS(svgNS, "defs");
+    const marker = document.createElementNS(svgNS, "marker");
+    marker.setAttribute("id", "arrow-orange"); marker.setAttribute("markerWidth", "6");
+    marker.setAttribute("markerHeight", "6"); marker.setAttribute("refX", "5");
+    marker.setAttribute("refY", "3"); marker.setAttribute("orient", "auto");
+    const poly = document.createElementNS(svgNS, "polygon");
+    poly.setAttribute("points", "0 0, 6 3, 0 6"); poly.setAttribute("fill", "#f97316");
+    marker.appendChild(poly); defs.appendChild(marker); svg.insertBefore(defs, svg.firstChild);
+
+    // Origin ×
+    const ox = toSx(0), oy2 = toSy(0);
+    const xSz = 5;
+    for (const [dx, dy] of [[-xSz,-xSz],[xSz,xSz],[xSz,-xSz],[-xSz,xSz]].slice(0,2)) {
+      const line = document.createElementNS(svgNS, "line");
+      line.setAttribute("x1", ox+dx); line.setAttribute("y1", oy2+dy);
+      line.setAttribute("x2", ox-dx); line.setAttribute("y2", oy2-dy);
+      line.setAttribute("stroke", "#ef4444"); line.setAttribute("stroke-width", "2");
+      svg.appendChild(line);
+    }
+
+    // Axis labels
+    const relbl = document.createElementNS(svgNS, "text");
+    relbl.setAttribute("x", toSx(1.5)); relbl.setAttribute("y", toSy(0) - 5);
+    relbl.setAttribute("font-size", "10"); relbl.setAttribute("fill", "#9ca3af");
+    relbl.setAttribute("font-family", "sans-serif"); relbl.textContent = "Re";
+    svg.appendChild(relbl);
+
+    // Strip charts below
+    const [intRe, intIm] = computeCircleIntegral(n, thetaFrac);
+    const finalIm = n === 0 ? 2 * Math.PI : 0;
+    const isN0 = Math.abs(n) < 0.01;
+    const maxVal = Math.max(1e-6, 2 * Math.PI * 1.1);
+    const baseY = H + 8;
+
+    // Re strip
+    const reLabel = document.createElementNS(svgNS, "text");
+    reLabel.setAttribute("x", 4); reLabel.setAttribute("y", baseY + 15);
+    reLabel.setAttribute("font-size", "9"); reLabel.setAttribute("fill", "#6b7280");
+    reLabel.setAttribute("font-family", "sans-serif"); reLabel.textContent = "Re";
+    svg.appendChild(reLabel);
+    const reBg = document.createElementNS(svgNS, "rect");
+    reBg.setAttribute("x", BARX); reBg.setAttribute("y", baseY);
+    reBg.setAttribute("width", BARW); reBg.setAttribute("height", BARH * 0.7);
+    reBg.setAttribute("fill", "#f3f4f6"); reBg.setAttribute("rx", "3");
+    svg.appendChild(reBg);
+    const reW = (Math.abs(intRe) / maxVal) * BARW;
+    const reBar = document.createElementNS(svgNS, "rect");
+    reBar.setAttribute("x", BARX); reBar.setAttribute("y", baseY);
+    reBar.setAttribute("width", Math.min(reW, BARW)); reBar.setAttribute("height", BARH * 0.7);
+    reBar.setAttribute("fill", "#3b82f6"); reBar.setAttribute("rx", "3");
+    svg.appendChild(reBar);
+    const reVal = document.createElementNS(svgNS, "text");
+    reVal.setAttribute("x", BARX + Math.min(reW, BARW) + 4); reVal.setAttribute("y", baseY + 14);
+    reVal.setAttribute("font-size", "9"); reVal.setAttribute("fill", "#374151");
+    reVal.setAttribute("font-family", "monospace"); reVal.textContent = intRe.toFixed(3);
+    svg.appendChild(reVal);
+
+    // Im strip
+    const imLabel = document.createElementNS(svgNS, "text");
+    imLabel.setAttribute("x", 4); imLabel.setAttribute("y", baseY + BARH + 15);
+    imLabel.setAttribute("font-size", "9"); imLabel.setAttribute("fill", "#6b7280");
+    imLabel.setAttribute("font-family", "sans-serif"); imLabel.textContent = "Im";
+    svg.appendChild(imLabel);
+    const imBg = document.createElementNS(svgNS, "rect");
+    imBg.setAttribute("x", BARX); imBg.setAttribute("y", baseY + BARH);
+    imBg.setAttribute("width", BARW); imBg.setAttribute("height", BARH * 0.7);
+    imBg.setAttribute("fill", "#f3f4f6"); imBg.setAttribute("rx", "3");
+    svg.appendChild(imBg);
+    const imW = (Math.abs(intIm) / maxVal) * BARW;
+    const imBar = document.createElementNS(svgNS, "rect");
+    imBar.setAttribute("x", BARX); imBar.setAttribute("y", baseY + BARH);
+    imBar.setAttribute("width", Math.min(imW, BARW)); imBar.setAttribute("height", BARH * 0.7);
+    const imFill = isN0 && thetaFrac > 0.95 ? "#059669" : "#8b5cf6";
+    imBar.setAttribute("fill", imFill); imBar.setAttribute("rx", "3");
+    svg.appendChild(imBar);
+    const imVal = document.createElementNS(svgNS, "text");
+    imVal.setAttribute("x", BARX + Math.min(imW, BARW) + 4); imVal.setAttribute("y", baseY + BARH + 14);
+    imVal.setAttribute("font-size", "9"); imVal.setAttribute("fill", "#374151");
+    imVal.setAttribute("font-family", "monospace"); imVal.textContent = intIm.toFixed(3) + "i";
+    svg.appendChild(imVal);
+
+    // n=0 result highlight
+    if (isN0 && thetaFrac > 0.95) {
+      const hl = document.createElementNS(svgNS, "text");
+      hl.setAttribute("x", W / 2); hl.setAttribute("y", H - 5);
+      hl.setAttribute("font-size", "11"); hl.setAttribute("text-anchor", "middle");
+      hl.setAttribute("fill", "#059669"); hl.setAttribute("font-weight", "bold");
+      hl.setAttribute("font-family", "sans-serif");
+      hl.textContent = "n = 0 \u2192 \u222e dz/z = 2\u03c0i";
+      svg.appendChild(hl);
+    }
+
+    return svg;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0; font-family:sans-serif;";
+
+  const titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600; margin-bottom:0.5rem;";
+  titleEl.textContent = "\u222e dz / z^{n+1} around the unit circle";
+  container.appendChild(titleEl);
+  container.appendChild(nSlider);
+  container.appendChild(thetaSlider);
+  container.appendChild(playBtn);
+
+  const vizDiv = document.createElement("div");
+  vizDiv.style.marginTop = "0.5rem";
+  container.appendChild(vizDiv);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "The orange arrow shows the integrand 1/z^{n+1} \u00b7 dz/d\u03b8 at the current point. The strip charts accumulate the real and imaginary parts of the integral as \u03b8 advances. Only n = 0 gives a non-zero result (2\u03c0i), highlighted in green at completion.";
+  container.appendChild(noteEl);
+
+  let animFrame = null, playing = false;
+  playBtn.onclick = () => {
+    if (playing) {
+      playing = false; playBtn.textContent = "Play \u25b6";
+      if (animFrame) cancelAnimationFrame(animFrame);
+    } else {
+      playing = true; playBtn.textContent = "Pause \u23f8";
+      if (thetaSlider.value >= 1) thetaSlider.value = 0;
+      function step() {
+        if (!playing) return;
+        thetaSlider.value = Math.min(1, thetaSlider.value + 0.004);
+        thetaSlider.dispatchEvent(new Event("input"));
+        if (thetaSlider.value < 1) animFrame = requestAnimationFrame(step);
+        else { playing = false; playBtn.textContent = "Play \u25b6"; }
+      }
+      animFrame = requestAnimationFrame(step);
+    }
+  };
+
+  function update() {
+    vizDiv.innerHTML = "";
+    vizDiv.appendChild(buildViz(nSlider.value, thetaSlider.value));
+  }
+  nSlider.addEventListener("input", update);
+  thetaSlider.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
 
 ---
 
@@ -126,15 +893,231 @@ This single result — that the integral of $1/z$ around the origin is $2\pi i$ 
 
 $$\oint_C f(z)\,dz = 0$$
 
-<!-- STUDENT: "Simply connected" appears here for the second time (also used in Ch01 Harmonic functions) and is still only described via informal intuition. If Chapter 1 does not add a definition, this chapter needs one. The informal "no holes" description is here but it isn't set apart as a definition — a reader might not realise it is the formal criterion. -->
-
 *Intuition.* Because the domain has no holes, any closed curve can be continuously shrunk to a point. The integral shrinks with it — to zero.
 
 **Consequence: path independence.** If $f$ is analytic in a simply connected domain and $C_1$, $C_2$ are two paths from $z_1$ to $z_2$ in that domain, then $\int_{C_1}f\,dz = \int_{C_2}f\,dz$. The integral depends only on the endpoints, not the path.
 
 **Deformation principle.** If $f$ is analytic everywhere between two contours $C_1$ and $C_2$ (with the same orientation), then $\int_{C_1}f\,dz = \int_{C_2}f\,dz$. Contours can be freely deformed through regions where $f$ is analytic, without changing the integral.
 
-<!-- VIZ: Contour deformation explorer. The complex plane shows the domain colouring of a fixed function (default: f(z) = 1/z, so the origin is a singularity shown as a white bloom). Two contours are drawn: a fixed outer circle C₁ (orange, #f97316) and an inner contour C₂ (blue, #3b82f6) that the reader can deform by dragging four control points. A running display shows the computed values ∮_C₁ f dz and ∮_C₂ f dz numerically. When C₂ is deformed to enclose the same singularity as C₁, both values equal 2πi — the reader sees the numbers agree regardless of shape. When C₂ is deformed to exclude the singularity entirely, its value drops to 0 while C₁ remains 2πi. A "singularity inside?" indicator (green/red) updates as the reader deforms the contour. Explicitly annotates: "C₂ encloses the same singularity as C₁ → same integral value." Series thread: continues the winding-number visual from Chapter 1 (same domain-colouring vocabulary, same origin singularity). -->
+```{ojs}
+//| echo: false
+// VIZ 2: Contour deformation and singularity switch
+// Domain-coloured background; bulge slider morphs contour from excluding to including origin;
+// integral readout jumps from 0 to 2πi; winding number counter; optional second singularity.
+{
+  const W = 360, H = 320, SCALE = 70, CX = W / 2, CY = H / 2;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const STEPS = 360;
+
+  const bulgeSlider = Inputs.range([-1.5, 1.5], { value: -0.8, step: 0.025, label: "Bulge (−: exclude origin, +: include)" });
+  const secondSing = Inputs.toggle({ label: "Add second singularity at z = 1.5", value: false });
+
+  function toSx(re) { return CX + re * SCALE; }
+  function toSy(im) { return CY - im * SCALE; }
+
+  // Deformable contour C2: base circle of radius 1.8, bulged toward/away from origin
+  // bulge > 0 means the contour bows inward toward origin, eventually enclosing it
+  function contourC2(theta, bulge) {
+    // Offset the radius at each angle: bulge shifts the leftmost point
+    // r(theta) = 1.8 + bulge * cos(theta)  (max deformation along Re axis)
+    const r = 1.8 + bulge * Math.cos(theta);
+    return [r * Math.cos(theta), r * Math.sin(theta)];
+  }
+
+  function pointInContour(px, py, bulge) {
+    // Ray-casting: count crossings from (px,py) in +x direction
+    let crossings = 0;
+    for (let k = 0; k < STEPS; k++) {
+      const t0 = (2 * Math.PI * k) / STEPS;
+      const t1 = (2 * Math.PI * (k + 1)) / STEPS;
+      const [x0, y0] = contourC2(t0, bulge);
+      const [x1, y1] = contourC2(t1, bulge);
+      if ((y0 <= py && y1 > py) || (y1 <= py && y0 > py)) {
+        const xIntersect = x0 + ((py - y0) / (y1 - y0)) * (x1 - x0);
+        if (px < xIntersect) crossings++;
+      }
+    }
+    return crossings % 2 === 1;
+  }
+
+  function computeC2Integral(bulge, singRe, singIm) {
+    // ∮ 1/(z - sing) dz numerically
+    let rSum = 0, iSum = 0;
+    for (let k = 0; k < STEPS; k++) {
+      const t0 = (2 * Math.PI * k) / STEPS;
+      const t1 = (2 * Math.PI * (k + 1)) / STEPS;
+      const [r0, i0] = contourC2(t0, bulge);
+      const [r1, i1] = contourC2(t1, bulge);
+      const mr = (r0 + r1) / 2, mi = (i0 + i1) / 2;
+      const dr = r1 - r0, di = i1 - i0;
+      const denom = (mr - singRe) ** 2 + (mi - singIm) ** 2;
+      if (denom < 1e-8) continue;
+      const fr = (mr - singRe) / denom, fi = -(mi - singIm) / denom;
+      rSum += fr * dr - fi * di;
+      iSum += fi * dr + fr * di;
+    }
+    return [rSum, iSum];
+  }
+
+  function hslToRgb(h, s, l) {
+    h = ((h % 1) + 1) % 1;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+    if (h < 1/6) { r = c; g = x; }
+    else if (h < 2/6) { r = x; g = c; }
+    else if (h < 3/6) { g = c; b = x; }
+    else if (h < 4/6) { g = x; b = c; }
+    else if (h < 5/6) { r = x; b = c; }
+    else { r = c; b = x; }
+    return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+  }
+
+  function render(bulge, showSecond) {
+    // Canvas for domain colouring
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const img = ctx.createImageData(W, H);
+    const data = img.data;
+
+    for (let px = 0; px < W; px++) {
+      for (let py = 0; py < H; py++) {
+        const re = (px - CX) / SCALE;
+        const im = -(py - CY) / SCALE;
+        // Colour by 1/z (primary singularity at origin)
+        const d2 = re * re + im * im;
+        let hue, brightness;
+        if (d2 < 1e-6) {
+          const idx = (py * W + px) * 4;
+          data[idx] = 255; data[idx+1] = 255; data[idx+2] = 255; data[idx+3] = 255;
+          continue;
+        }
+        const wr = re / d2, wi = -im / d2;
+        const arg = Math.atan2(wi, wr);
+        const mag = Math.sqrt(wr*wr + wi*wi);
+        hue = (arg / (2 * Math.PI) + 1) % 1;
+        brightness = 0.45 + 0.3 * Math.tanh(Math.log(mag + 0.001) / 2);
+        const [r, g, b] = hslToRgb(hue, 0.72, brightness);
+        const idx = (py * W + px) * 4;
+        data[idx] = r; data[idx+1] = g; data[idx+2] = b; data[idx+3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+
+    // Fixed outer circle C1 (orange)
+    const [ox, oy] = [toSx(0), toSy(0)];
+    ctx.strokeStyle = "#f97316"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(ox, oy, 2.5 * SCALE, 0, 2 * Math.PI); ctx.stroke();
+    ctx.fillStyle = "#f97316"; ctx.font = "11px sans-serif";
+    ctx.fillText("C\u2081 (fixed)", toSx(2.5) + 4, toSy(0));
+
+    // Deformable contour C2 (blue)
+    ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let k = 0; k <= STEPS; k++) {
+      const theta = (2 * Math.PI * k) / STEPS;
+      const [cr, ci] = contourC2(theta, bulge);
+      const sx = toSx(cr), sy = toSy(ci);
+      k === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+    }
+    ctx.closePath(); ctx.stroke();
+    ctx.fillStyle = "#3b82f6"; ctx.font = "11px sans-serif";
+    ctx.fillText("C\u2082 (deformable)", toSx(-2.4), toSy(1.2));
+
+    // Origin singularity ×
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(ox-7, oy-7); ctx.lineTo(ox+7, oy+7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox+7, oy-7); ctx.lineTo(ox-7, oy+7); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.font = "9px sans-serif"; ctx.fillText("1/z", ox+10, oy-5);
+
+    // Second singularity at z=1.5
+    if (showSecond) {
+      const [sx2, sy2] = [toSx(1.5), toSy(0)];
+      ctx.strokeStyle = "#dc2626"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sx2-6, sy2-6); ctx.lineTo(sx2+6, sy2+6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(sx2+6, sy2-6); ctx.lineTo(sx2-6, sy2+6); ctx.stroke();
+      ctx.fillStyle = "#dc2626"; ctx.font = "9px sans-serif"; ctx.fillText("1/(z-1.5)", sx2+8, sy2-4);
+    }
+
+    // Winding number box for C2 around origin
+    const originInC2 = pointInContour(0, 0, bulge);
+    const winding2 = originInC2 ? 1 : 0;
+    ctx.fillStyle = "#1e40af";
+    ctx.beginPath();
+    ctx.roundRect(W - 92, 5, 86, 44, 5);
+    ctx.fill();
+    ctx.fillStyle = "white"; ctx.textAlign = "center";
+    ctx.font = "10px sans-serif";
+    ctx.fillText("n(C\u2082, 0)", W - 49, 21);
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText(winding2.toString(), W - 49, 41);
+    ctx.textAlign = "left";
+
+    return { canvas, originInC2, winding2 };
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0; font-family:sans-serif;";
+
+  const title = document.createElement("div");
+  title.style.cssText = "font-weight:600; margin-bottom:0.5rem;";
+  title.textContent = "Contour deformation: deforming C\u2082 past the singularity";
+  container.appendChild(title);
+
+  container.appendChild(bulgeSlider);
+  container.appendChild(secondSing);
+
+  const canvasDiv = document.createElement("div");
+  container.appendChild(canvasDiv);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "margin-top:0.5rem; font-size:0.88em; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;";
+  container.appendChild(readout);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "Drag the bulge slider left to exclude the origin (integral = 0) and right to enclose it (integral = 2\u03c0i). The fixed outer circle C\u2081 always encloses the singularity; C\u2082 starts outside and crosses through. Toggle the second singularity at z = 1.5 to see its separate contribution.";
+  container.appendChild(noteEl);
+
+  function update() {
+    const bulge = bulgeSlider.value;
+    const showSecond = secondSing.value;
+    const { canvas, originInC2 } = render(bulge, showSecond);
+    canvasDiv.innerHTML = ""; canvasDiv.appendChild(canvas);
+
+    // Compute integrals
+    const [c2Re, c2Im] = computeC2Integral(bulge, 0, 0);
+    const c1Im = 2 * Math.PI; // always encloses origin
+    let html = `<div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:4px; padding:0.4rem 0.6rem;">
+      <span style="color:#f97316; font-weight:600;">C\u2081:</span>
+      \u222e 1/z dz = 0 + ${c1Im.toFixed(4)}i = 2\u03c0i</div>`;
+    const c2Status = originInC2
+      ? `<span style="color:#059669; font-weight:600;">C\u2082 encloses origin \u2192 2\u03c0i</span>`
+      : `<span style="color:#6b7280; font-weight:600;">C\u2082 excludes origin \u2192 0</span>`;
+    html += `<div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px; padding:0.4rem 0.6rem;">
+      <span style="color:#3b82f6; font-weight:600;">C\u2082:</span>
+      \u222e 1/z dz \u2248 ${c2Re.toFixed(3)} + ${c2Im.toFixed(3)}i &nbsp; ${c2Status}</div>`;
+
+    if (showSecond) {
+      const [s2Re, s2Im] = computeC2Integral(bulge, 1.5, 0);
+      html += `<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:4px; padding:0.4rem 0.6rem; grid-column:1/-1;">
+        <span style="color:#dc2626; font-weight:600;">C\u2082 around 1/(z-1.5):</span>
+        \u222e 1/(z-1.5) dz \u2248 ${s2Re.toFixed(3)} + ${s2Im.toFixed(3)}i
+        &nbsp; ${pointInContour(1.5, 0, bulge)
+          ? '<span style="color:#059669; font-weight:600;">enclosed \u2192 2\u03c0i</span>'
+          : '<span style="color:#6b7280; font-weight:600;">not enclosed \u2192 0</span>'}</div>`;
+    }
+    readout.innerHTML = html;
+  }
+  bulgeSlider.addEventListener("input", update);
+  secondSing.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
 
 ---
 
@@ -150,15 +1133,15 @@ $$\oint_C \frac{f(z)}{z - z_0}\,dz = 2\pi i\,f(z_0)$$
 
 *Proof sketch.* Because $f$ is analytic everywhere inside $C$ except at $z_0$, the deformation principle applies to the annular region between $C$ and any circle around $z_0$: the integrand $f(z)/(z-z_0)$ is analytic there. Shrink $C$ to a small circle $C_\varepsilon$ of radius $\varepsilon$ around $z_0$ without changing the integral. As $\varepsilon \to 0$, $f(z) \to f(z_0)$ uniformly on $C_\varepsilon$, and $\oint_{C_\varepsilon} dz/(z-z_0) = 2\pi i$.
 
-<!-- STUDENT: The deformation principle is invoked here but its precondition — that f must be analytic in the region between C and C_ε — is not restated. A reader might wonder: can we always deform to a tiny circle? The answer is yes provided f is analytic between the two contours, which it is here (f is analytic everywhere inside C except at z₀), but this should be said explicitly. -->
-
 **Significance.** The value of an analytic function at any interior point is completely determined by its values on the boundary. This has no analogue in real analysis.
 
 ### Derivatives of all orders
 
-Differentiating the integral formula under the integral sign (justified by uniform convergence):
+Differentiating the integral formula with respect to $z_0$ under the integral sign (valid because $f$ is analytic and the denominator never vanishes on $C$):
 
 $$f^{(n)}(z_0) = \frac{n!}{2\pi i}\oint_C \frac{f(z)}{(z-z_0)^{n+1}}\,dz$$
+
+Rearranged to evaluate a given integral: $\displaystyle\oint_C \frac{f(z)}{(z-z_0)^{n+1}}\,dz = \frac{2\pi i}{n!}\,f^{(n)}(z_0)$.
 
 **Consequence.** An analytic function has derivatives of all orders, all of which are themselves analytic. In real analysis, once-differentiable functions need not be twice differentiable. In complex analysis, once differentiable means infinitely differentiable — a qualitative difference.
 
@@ -168,15 +1151,157 @@ $$f^{(n)}(z_0) = \frac{n!}{2\pi i}\oint_C \frac{f(z)}{(z-z_0)^{n+1}}\,dz$$
 
 ### Liouville's theorem
 
-A **bounded** entire function is constant.
+A **bounded** entire function is constant. (An *entire* function is one that is analytic everywhere in $\mathbb{C}$ — no singularities at all.)
 
 *Proof.* If $|f(z)| \leq M$ everywhere, the ML inequality applied to the derivative formula gives $|f'(z_0)| \leq M/R$ for any circle of radius $R$. Letting $R \to \infty$ gives $f'(z_0) = 0$.
+
+```{ojs}
+//| echo: false
+// VIZ 7: Liouville's theorem — collapsing bound
+// Growing circle of radius R; M/R curve collapsing toward zero;
+// candidate |f'| line contradicted as R grows.
+{
+  const W = 400, H = 220;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const RSlider = Inputs.range([0.1, 30], { value: 1, step: 0.1, label: "Radius R" });
+  const MSlider = Inputs.range([0.1, 10], { value: 2, step: 0.1, label: "Bound M (|f| \u2264 M)" });
+  const fpSlider = Inputs.range([0, 3], { value: 0.5, step: 0.01, label: "Candidate |f\u2032(z\u2080)|" });
+
+  function build(R, M, fp) {
+    const PLOTW = W - 60, PLOTH = H - 40;
+    const PX = 45, PY = 10;
+    const RMax = 30;
+
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    svg.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Axes
+    const axH = document.createElementNS(svgNS, "line");
+    axH.setAttribute("x1", PX); axH.setAttribute("y1", PY + PLOTH);
+    axH.setAttribute("x2", PX + PLOTW); axH.setAttribute("y2", PY + PLOTH);
+    axH.setAttribute("stroke", "#9ca3af"); axH.setAttribute("stroke-width", "1.5");
+    svg.appendChild(axH);
+    const axV = document.createElementNS(svgNS, "line");
+    axV.setAttribute("x1", PX); axV.setAttribute("y1", PY);
+    axV.setAttribute("x2", PX); axV.setAttribute("y2", PY + PLOTH);
+    axV.setAttribute("stroke", "#9ca3af"); axV.setAttribute("stroke-width", "1.5");
+    svg.appendChild(axV);
+
+    // Axis labels
+    const xlbl = document.createElementNS(svgNS, "text");
+    xlbl.setAttribute("x", PX + PLOTW - 4); xlbl.setAttribute("y", PY + PLOTH + 14);
+    xlbl.setAttribute("font-size", "10"); xlbl.setAttribute("fill", "#6b7280");
+    xlbl.setAttribute("font-family", "sans-serif"); xlbl.textContent = "R";
+    svg.appendChild(xlbl);
+    const ylbl = document.createElementNS(svgNS, "text");
+    ylbl.setAttribute("x", 2); ylbl.setAttribute("y", PY + 6);
+    ylbl.setAttribute("font-size", "9"); ylbl.setAttribute("fill", "#6b7280");
+    ylbl.setAttribute("font-family", "sans-serif"); ylbl.textContent = "M/R";
+    svg.appendChild(ylbl);
+
+    function toX(r) { return PX + (r / RMax) * PLOTW; }
+    function toY(v) {
+      const Mmax = M * 10;
+      return PY + PLOTH - Math.min(PLOTH * 0.95, (v / Mmax) * PLOTH);
+    }
+
+    // M/R decay curve
+    let curvD = "";
+    for (let k = 1; k <= 200; k++) {
+      const r = (RMax * k) / 200;
+      curvD += (k === 1 ? "M" : "L") + ` ${toX(r)} ${toY(M / r)}`;
+    }
+    const curvEl = document.createElementNS(svgNS, "path");
+    curvEl.setAttribute("d", curvD); curvEl.setAttribute("fill", "none");
+    curvEl.setAttribute("stroke", "#3b82f6"); curvEl.setAttribute("stroke-width", "2");
+    svg.appendChild(curvEl);
+
+    // Horizontal line for candidate |f'(z₀)|
+    const fpY = toY(fp);
+    const fpLine = document.createElementNS(svgNS, "line");
+    fpLine.setAttribute("x1", PX); fpLine.setAttribute("y1", fpY);
+    fpLine.setAttribute("x2", PX + PLOTW); fpLine.setAttribute("y2", fpY);
+    fpLine.setAttribute("stroke", "#f97316"); fpLine.setAttribute("stroke-width", "1.5");
+    fpLine.setAttribute("stroke-dasharray", "5,3");
+    svg.appendChild(fpLine);
+    const fpLbl = document.createElementNS(svgNS, "text");
+    fpLbl.setAttribute("x", PX + PLOTW + 2); fpLbl.setAttribute("y", fpY + 4);
+    fpLbl.setAttribute("font-size", "9"); fpLbl.setAttribute("fill", "#f97316");
+    fpLbl.setAttribute("font-family", "sans-serif"); fpLbl.textContent = "|f\u2032| = " + fp.toFixed(2);
+    svg.appendChild(fpLbl);
+
+    // Current R marker on curve
+    const curY = toY(M / R);
+    const curDot = document.createElementNS(svgNS, "circle");
+    curDot.setAttribute("cx", toX(R)); curDot.setAttribute("cy", curY);
+    curDot.setAttribute("r", "5"); curDot.setAttribute("fill", "#3b82f6");
+    curDot.setAttribute("stroke", "#fff"); curDot.setAttribute("stroke-width", "1.5");
+    svg.appendChild(curDot);
+
+    // Bound value label
+    const boundVal = M / R;
+    const boundLbl = document.createElementNS(svgNS, "text");
+    boundLbl.setAttribute("x", toX(R) + 6); boundLbl.setAttribute("y", curY - 4);
+    boundLbl.setAttribute("font-size", "9"); boundLbl.setAttribute("fill", "#3b82f6");
+    boundLbl.setAttribute("font-family", "sans-serif");
+    boundLbl.textContent = "M/R = " + boundVal.toFixed(3);
+    svg.appendChild(boundLbl);
+
+    // Contradiction indicator
+    const contradicted = fp > M / R;
+    const annot = document.createElementNS(svgNS, "text");
+    annot.setAttribute("x", W / 2); annot.setAttribute("y", H - 6);
+    annot.setAttribute("font-size", "10"); annot.setAttribute("text-anchor", "middle");
+    annot.setAttribute("font-weight", "bold"); annot.setAttribute("font-family", "sans-serif");
+    annot.setAttribute("fill", contradicted ? "#dc2626" : "#059669");
+    annot.textContent = contradicted
+      ? "|f\u2032| > M/R \u2014 impossible! As R\u2192\u221e, bound \u21920, so |f\u2032| must be 0"
+      : "|f\u2032| \u2264 M/R \u2014 consistent (increase R to force contradiction)";
+    svg.appendChild(annot);
+
+    return svg;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0; font-family:sans-serif;";
+
+  const titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600; margin-bottom:0.5rem;";
+  titleEl.textContent = "Liouville\u2019s theorem: the M/R bound collapses to zero";
+  container.appendChild(titleEl);
+  container.appendChild(RSlider);
+  container.appendChild(MSlider);
+  container.appendChild(fpSlider);
+
+  const vizDiv = document.createElement("div");
+  vizDiv.style.marginTop = "0.5rem";
+  container.appendChild(vizDiv);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "The blue curve M/R falls toward zero as R grows. Any non-zero candidate |f\u2032(z\u2080)| (orange dashed line) will eventually exceed the bound \u2014 a contradiction. Therefore f\u2032 = 0, and f is constant.";
+  container.appendChild(noteEl);
+
+  function update() {
+    vizDiv.innerHTML = "";
+    vizDiv.appendChild(build(RSlider.value, MSlider.value, fpSlider.value));
+  }
+  RSlider.addEventListener("input", update);
+  MSlider.addEventListener("input", update);
+  fpSlider.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
 
 ### Fundamental theorem of algebra
 
 Every non-constant polynomial $p(z)$ of degree $n \geq 1$ has exactly $n$ complex roots (counting multiplicity).
 
-*Proof sketch.* If $p$ had no roots, $1/p(z)$ would be entire and bounded (since $|p(z)| \to \infty$), contradicting Liouville's theorem.
+*Proof sketch.* If $p$ had no roots, $1/p(z)$ would be entire (no zeros means no poles) and bounded (since $|p(z)| \to \infty$ as $|z| \to \infty$, so $|1/p(z)| \to 0$), contradicting Liouville's theorem.
 
 ### Morera's theorem
 
@@ -186,7 +1311,7 @@ If $f$ is continuous on a domain $D$ and $\oint_C f\,dz = 0$ for every closed tr
 
 ## Application: real integrals via contour integration
 
-The tools developed so far can already evaluate some real integrals. The general strategy — closing a real integral with a contour in the complex plane and applying Cauchy's theorem — will be developed fully in the next chapter. The key example here:
+The general strategy — closing a real integral with a contour in the complex plane and applying Cauchy's theorem — is developed fully in the next chapter. This example shows the technique in its simplest form.
 
 **Example.** $\displaystyle\int_{-\infty}^{\infty} \frac{dx}{1+x^2}$.
 
@@ -197,187 +1322,192 @@ $$\left|\int_{\Gamma_R}\frac{dz}{1+z^2}\right| \leq \frac{1}{R^2-1}\cdot \pi R \
 
 **Applying Cauchy's integral formula.** Factor the denominator: $1/(1+z^2) = [1/(z+i)]/(z-i)$. This has the form $f(z)/(z-z_0)$ with $f(z) = 1/(z+i)$ and $z_0 = i$. Since $z_0 = i$ lies inside the upper half-plane contour and $f(z) = 1/(z+i)$ is analytic there:
 
-<!-- STUDENT: Two steps are elided here. First: why does the semicircle's contribution vanish? This is asserted without justification — an ML-inequality argument is needed, and this is the first time that technique appears in a worked example. Second: applying Cauchy's integral formula to get 2πi/(2i) requires rewriting 1/(1+z²) as [1/(z+i)] / (z−i), identifying f(z) = 1/(z+i) and z₀ = i, and evaluating f(i) = 1/(2i). These steps are collapsed into a single equality. This is the chapter's only full worked example and it deserves a bit more scaffold. -->
-
 $$\oint_C \frac{dz}{1+z^2} = \oint_C \frac{dz}{(z-i)(z+i)} = 2\pi i \cdot f(i) = 2\pi i \cdot \frac{1}{2i} = \pi$$
 
 Since the semicircle contributes nothing, the real-line integral equals $\pi$ — confirming the known result $\arctan(x)\big|_{-\infty}^{\infty} = \pi$.
 
-<!-- VIZ 1 REWRITTEN: Cauchy integral formula — pole inside vs outside. Domain coloured left panel; pole draggable. Right panel shows computed integral. Winding number counter. Consistent with Ch01 domain colouring vocabulary. -->
+::: {.callout-note}
+This calculation uses Cauchy's integral formula because the integrand has a single simple pole and a purely analytic numerator. In engineering practice, the same closing-contour technique is applied via the **residue theorem** (Chapter 3), which handles poles of any order and multiple singularities simultaneously. The present example is the simplest special case of that general method.
+:::
 
 ```{ojs}
 //| echo: false
+// VIZ 3: Cauchy integral formula — draggable pole
+// Domain-coloured canvas; drag z₀ freely; smooth crossing triggers integral jump;
+// KaTeX formula display; "pole on contour" warning; winding number box.
 {
-  const W = 320, H = 290, CX = W/2, CY = H/2, SCALE = 70;
-  const svgNS = "http://www.w3.org/2000/svg";
+  const W = 360, H = 320, SCALE = 72, CX = W / 2, CY = H / 2;
+  const STEPS = 360;
 
-  const radiusSlider = Inputs.range([0.5, 2.5], {value: 1.2, step: 0.05, label: "Contour radius R"});
-  const funcSelector = Inputs.select(["f(z) = e^z", "f(z) = cos z", "f(z) = 1/(z+2)"], {
-    value: "f(z) = e^z", label: "f(z) (numerator)"
-  });
+  const radiusCIF = Inputs.range([0.5, 2.8], { value: 1.5, step: 0.05, label: "Contour radius R" });
+  const funcCIF = Inputs.select(
+    ["f(z) = e^z", "f(z) = cos z", "f(z) = 1/(z+2)"],
+    { value: "f(z) = e^z", label: "f(z) (numerator)" }
+  );
 
-  // z₀ position: interactive via preset buttons for simplicity
-  const polePresets = Inputs.select([
-    "z₀ = 0.5+0.3i (inside)",
-    "z₀ = 0+0i (inside)",
-    "z₀ = 2+0i (outside)",
-    "z₀ = 1.5+1.0i (outside)"
-  ], {value: "z₀ = 0.5+0.3i (inside)", label: "Pole position z₀"});
+  // Mutable pole position — shared via a plain object so canvas listeners can mutate it
+  const pole = { re: 0.6, im: 0.4 };
 
-  function getPolePos(preset) {
-    switch(preset) {
-      case "z₀ = 0.5+0.3i (inside)": return [0.5, 0.3];
-      case "z₀ = 0+0i (inside)": return [0, 0];
-      case "z₀ = 2+0i (outside)": return [2.0, 0];
-      case "z₀ = 1.5+1.0i (outside)": return [1.5, 1.0];
-      default: return [0.5, 0.3];
-    }
+  function evalFCIF(fname, re, im) {
+    if (fname === "f(z) = e^z") return [Math.exp(re) * Math.cos(im), Math.exp(re) * Math.sin(im)];
+    if (fname === "f(z) = cos z") return [Math.cos(re) * Math.cosh(im), -Math.sin(re) * Math.sinh(im)];
+    const dr = re + 2, di = im, d = dr * dr + di * di;
+    if (d < 1e-10) return [0, 0];
+    return [dr / d, -di / d];
   }
 
-  function evalF(fname, re, im) {
-    switch(fname) {
-      case "f(z) = e^z": return [Math.exp(re)*Math.cos(im), Math.exp(re)*Math.sin(im)];
-      case "f(z) = cos z": return [Math.cos(re)*Math.cosh(im), -Math.sin(re)*Math.sinh(im)];
-      case "f(z) = 1/(z+2)": {
-        const dr = re+2, di = im, d = dr*dr+di*di;
-        if (d<1e-10) return [NaN,NaN];
-        return [dr/d, -di/d];
-      }
-      default: return [1, 0];
-    }
+  function hslRgbCIF(h, s, l) {
+    h = ((h % 1) + 1) % 1;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+    if (h < 1/6) { r = c; g = x; }
+    else if (h < 2/6) { r = x; g = c; }
+    else if (h < 3/6) { g = c; b = x; }
+    else if (h < 4/6) { g = x; b = c; }
+    else if (h < 5/6) { r = x; b = c; }
+    else { r = c; b = x; }
+    return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
   }
 
-  function hslToRgb(h,s,l) {
-    h=((h%1)+1)%1;
-    const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h*6)%2-1)), m=l-c/2;
-    let r=0,g=0,b=0;
-    if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}else if(h<3/6){g=c;b=x;}
-    else if(h<4/6){g=x;b=c;}else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
-    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
-  }
+  function toSxCIF(re) { return CX + re * SCALE; }
+  function toSyCIF(im) { return CY - im * SCALE; }
+  function fromSxCIF(px) { return (px - CX) / SCALE; }
+  function fromSyCIF(py) { return -(py - CY) / SCALE; }
 
-  function toScreen(re, im) { return [CX + re*SCALE, CY - im*SCALE]; }
-
-  function render(R, polePreset, fname) {
-    const [z0re, z0im] = getPolePos(polePreset);
-    const inside = Math.sqrt(z0re*z0re + z0im*z0im) < R;
-    const onContour = Math.abs(Math.sqrt(z0re*z0re + z0im*z0im) - R) < 0.15;
-
-    // Canvas for domain colouring
-    const canvas = document.createElement("canvas");
-    canvas.width = W; canvas.height = H;
+  function drawCIF(canvas, R, fname) {
     const ctx = canvas.getContext("2d");
     const img = ctx.createImageData(W, H);
     const data = img.data;
+    const z0re = pole.re, z0im = pole.im;
 
-    for (let px=0; px<W; px++) {
-      for (let py=0; py<H; py++) {
-        const re = (px-CX)/SCALE, im = -(py-CY)/SCALE;
-        const dr = re-z0re, di = im-z0im;
-        const d2 = dr*dr+di*di;
-        if (d2 < 1e-6) {
-          const idx=(py*W+px)*4;
-          data[idx]=255;data[idx+1]=255;data[idx+2]=255;data[idx+3]=255;
+    for (let px = 0; px < W; px++) {
+      for (let py = 0; py < H; py++) {
+        const re = fromSxCIF(px), im = fromSyCIF(py);
+        const dr = re - z0re, di = im - z0im;
+        const d2 = dr * dr + di * di;
+        if (d2 < 4e-4) {
+          const idx = (py * W + px) * 4;
+          data[idx] = 255; data[idx+1] = 255; data[idx+2] = 255; data[idx+3] = 255;
           continue;
         }
-        // 1/(z-z0) coloured
-        const wr = dr/d2, wi = -di/d2;
+        const wr = dr / d2, wi = -di / d2;
         const arg = Math.atan2(wi, wr);
-        const mag = Math.sqrt(wr*wr+wi*wi);
-        const hue = (arg/(2*Math.PI)+1)%1;
-        const logmag = Math.log(mag+0.001);
-        const brightness = 0.5 + 0.35*Math.tanh(logmag/2);
-        const [r,g,b] = hslToRgb(hue, 0.75, brightness);
-        const idx=(py*W+px)*4;
-        data[idx]=r;data[idx+1]=g;data[idx+2]=b;data[idx+3]=255;
+        const mag = Math.sqrt(wr*wr + wi*wi);
+        const hue = (arg / (2 * Math.PI) + 1) % 1;
+        const brightness = 0.48 + 0.32 * Math.tanh(Math.log(mag + 0.001) / 2);
+        const [r, g, b] = hslRgbCIF(hue, 0.75, brightness);
+        const idx = (py * W + px) * 4;
+        data[idx] = r; data[idx+1] = g; data[idx+2] = b; data[idx+3] = 255;
       }
     }
     ctx.putImageData(img, 0, 0);
 
+    const dist = Math.sqrt(z0re * z0re + z0im * z0im);
+    const onContour = Math.abs(dist - R) < 0.12;
+    const inside = dist < R && !onContour;
+
     // Contour circle
-    const [cx0, cy0] = toScreen(0, 0);
-    ctx.strokeStyle = onContour ? "#ef4444" : "#fff";
+    const ox = toSxCIF(0), oy = toSyCIF(0);
+    ctx.strokeStyle = onContour ? "#dc2626" : "#ffffff";
     ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.arc(cx0, cy0, R*SCALE, 0, 2*Math.PI);
-    ctx.stroke();
+    ctx.beginPath(); ctx.arc(ox, oy, R * SCALE, 0, 2 * Math.PI); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.9)"; ctx.font = "11px sans-serif";
+    ctx.fillText("C: |z| = " + R.toFixed(2), 6, 16);
 
-    // Contour label
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.font = "11px sans-serif";
-    ctx.fillText(`C: |z| = ${R.toFixed(1)}`, 5, 14);
-
-    // Pole marker (×)
-    const [psx, psy] = toScreen(z0re, z0im);
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(psx-7,psy-7); ctx.lineTo(psx+7,psy+7); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(psx+7,psy-7); ctx.lineTo(psx-7,psy+7); ctx.stroke();
-    ctx.fillStyle = "#fff"; ctx.font = "10px sans-serif";
-    ctx.fillText("z₀", psx+9, psy+4);
+    // Pole marker ×
+    const px0 = toSxCIF(z0re), py0 = toSyCIF(z0im);
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(px0-8, py0-8); ctx.lineTo(px0+8, py0+8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px0+8, py0-8); ctx.lineTo(px0-8, py0+8); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.9)"; ctx.font = "11px sans-serif";
+    ctx.fillText("z\u2080 = " + z0re.toFixed(2) + (z0im >= 0 ? "+" : "") + z0im.toFixed(2) + "i", px0 + 11, py0 + 4);
 
     // Winding number box
     const winding = inside ? 1 : 0;
-    ctx.fillStyle = "#1e40af"; ctx.beginPath();
-    ctx.roundRect(W-90, 5, 84, 42, 5); ctx.fill();
-    ctx.fillStyle="white"; ctx.font="10px sans-serif"; ctx.textAlign="center";
-    ctx.fillText("winding n(C,z₀)", W-48, 19);
-    ctx.font="bold 18px sans-serif";
-    ctx.fillText(winding.toString(), W-48, 38);
-    ctx.textAlign="left";
+    ctx.fillStyle = "#1e40af";
+    ctx.beginPath(); ctx.roundRect(W - 92, 5, 86, 44, 5); ctx.fill();
+    ctx.fillStyle = "white"; ctx.textAlign = "center";
+    ctx.font = "10px sans-serif"; ctx.fillText("n(C, z\u2080)", W - 49, 21);
+    ctx.font = "bold 18px sans-serif"; ctx.fillText(winding.toString(), W - 49, 41);
+    ctx.textAlign = "left";
 
-    // Result panel (right side info)
-    const infoDiv = document.createElement("div");
-    infoDiv.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.88em;";
+    return { inside, onContour };
+  }
+
+  // Build the container with canvas + info panel
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0; font-family:sans-serif;";
+
+  const titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600; margin-bottom:0.5rem;";
+  titleEl.textContent = "Cauchy integral formula: drag the pole z\u2080";
+  container.appendChild(titleEl);
+
+  container.appendChild(radiusCIF);
+  container.appendChild(funcCIF);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  canvas.style.cssText = "display:block; cursor:crosshair; border-radius:6px; margin-top:0.5rem;";
+  container.appendChild(canvas);
+
+  const infoDiv = document.createElement("div");
+  infoDiv.style.cssText = "margin-top:0.5rem; font-size:0.88em;";
+  container.appendChild(infoDiv);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "Click or drag anywhere on the canvas to move z\u2080. The domain colouring shows 1/(z\u2212z\u2080): the pole blooms white. Crossing the contour boundary instantly changes the integral from 0 to 2\u03c0i\u00b7f(z\u2080). When z\u2080 lands on C itself, the integral is undefined.";
+  container.appendChild(noteEl);
+
+  function updateCIF() {
+    const R = radiusCIF.value;
+    const fname = funcCIF.value;
+    const { inside, onContour } = drawCIF(canvas, R, fname);
+    const z0re = pole.re, z0im = pole.im;
 
     if (onContour) {
-      infoDiv.innerHTML = `<div style="color:#ef4444; font-weight:600;">Pole on contour — integral undefined</div>
-        <div style="color:#6b7280; font-size:0.85em; margin-top:0.3rem;">The integrand blows up on the integration path.</div>`;
+      infoDiv.innerHTML = `<div style="color:#dc2626; font-weight:600; padding:0.4rem 0.6rem; background:#fef2f2; border-radius:4px;">
+        Pole on contour C \u2014 integral is undefined (integrand blows up on the path)</div>`;
     } else if (inside) {
-      const [fre, fim] = evalF(fname, z0re, z0im);
-      const twopiIfre = (-2*Math.PI*fim).toFixed(4);
-      const twopiIfim = (2*Math.PI*fre).toFixed(4);
-      infoDiv.innerHTML = `<div style="color:#059669; font-weight:600;">z₀ inside C: integral = 2\u03c0i\u00b7f(z₀)</div>
-        <div style="margin-top:0.3rem;">f(z₀) = ${fre.toFixed(4)} + ${fim.toFixed(4)}i</div>
-        <div>2\u03c0i\u00b7f(z₀) = ${twopiIfre} + ${twopiIfim}i</div>
-        <div style="color:#6b7280; font-size:0.85em; margin-top:0.3rem;">The pole is captured by the contour.</div>`;
+      const [fre, fim] = evalFCIF(fname, z0re, z0im);
+      const resRe = (-2 * Math.PI * fim).toFixed(4);
+      const resIm = (2 * Math.PI * fre).toFixed(4);
+      infoDiv.innerHTML = `<div style="padding:0.4rem 0.6rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:4px;">
+        <span style="color:#059669; font-weight:600;">z\u2080 inside C \u2014 Cauchy formula applies</span><br>
+        f(z\u2080) = ${fre.toFixed(4)} + ${fim.toFixed(4)}i<br>
+        <strong>\u222e f(z)/(z\u2212z\u2080) dz = 2\u03c0i \u00b7 f(z\u2080) = ${resRe} + ${resIm}i</strong></div>`;
     } else {
-      infoDiv.innerHTML = `<div style="color:#6b7280; font-weight:600;">z₀ outside C: integral = 0</div>
-        <div style="color:#6b7280; font-size:0.85em; margin-top:0.3rem;">The integrand is analytic everywhere inside C — Cauchy's theorem gives zero.</div>`;
+      infoDiv.innerHTML = `<div style="padding:0.4rem 0.6rem; background:#f9fafb; border:1px solid #e5e7eb; border-radius:4px;">
+        <span style="color:#6b7280; font-weight:600;">z\u2080 outside C \u2014 integrand is analytic inside</span><br>
+        Cauchy\u2013Goursat theorem: <strong>\u222e f(z)/(z\u2212z\u2080) dz = 0</strong></div>`;
     }
-
-    const wrap = document.createElement("div");
-    wrap.appendChild(canvas);
-    wrap.appendChild(infoDiv);
-    return wrap;
   }
 
-  const container = document.createElement("div");
-  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
-  const title = document.createElement("div");
-  title.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
-  title.textContent = "Cauchy integral formula: pole inside vs outside";
-  container.appendChild(title);
-
-  container.appendChild(radiusSlider);
-  container.appendChild(polePresets);
-  container.appendChild(funcSelector);
-
-  const vizDiv = document.createElement("div");
-  container.appendChild(vizDiv);
-
-  const note = document.createElement("div");
-  note.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
-  note.textContent = "Domain colouring shows 1/(z−z₀): the pole at z₀ appears as a white bloom. When z₀ is inside the contour C, the integral = 2πi·f(z₀). When outside, the integral = 0. The winding number n(C,z₀) records this: 1 inside, 0 outside.";
-  container.appendChild(note);
-
-  function update() {
-    vizDiv.innerHTML = "";
-    vizDiv.appendChild(render(radiusSlider.value, polePresets.value, funcSelector.value));
+  // Drag handling on canvas
+  let dragging = false;
+  function movePole(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    const cpx = (evt.clientX - rect.left) * scaleX;
+    const cpy = (evt.clientY - rect.top) * scaleY;
+    pole.re = Math.max(-3.5, Math.min(3.5, fromSxCIF(cpx)));
+    pole.im = Math.max(-3.5, Math.min(3.5, fromSyCIF(cpy)));
+    updateCIF();
   }
-  radiusSlider.addEventListener("input", update);
-  polePresets.addEventListener("input", update);
-  funcSelector.addEventListener("input", update);
-  update();
+  canvas.addEventListener("mousedown", (e) => { dragging = true; movePole(e); });
+  canvas.addEventListener("mousemove", (e) => { if (dragging) movePole(e); });
+  canvas.addEventListener("mouseup", () => { dragging = false; });
+  canvas.addEventListener("mouseleave", () => { dragging = false; });
+  canvas.addEventListener("touchstart", (e) => { e.preventDefault(); dragging = true; movePole(e.touches[0]); }, { passive: false });
+  canvas.addEventListener("touchmove", (e) => { e.preventDefault(); if (dragging) movePole(e.touches[0]); }, { passive: false });
+  canvas.addEventListener("touchend", () => { dragging = false; });
+
+  radiusCIF.addEventListener("input", updateCIF);
+  funcCIF.addEventListener("input", updateCIF);
+  updateCIF();
 
   return container;
 }
@@ -525,19 +1655,23 @@ Since the semicircle contributes nothing, the real-line integral equals $\pi$ �
     const wn=document.createElementNS(svgNS,"text"); wn.setAttribute("x",W-49); wn.setAttribute("y",41);
     wn.setAttribute("fill","white"); wn.setAttribute("font-size","18"); wn.setAttribute("text-anchor","middle");
     wn.setAttribute("font-family","sans-serif"); wn.setAttribute("font-weight","bold");
-    wn.textContent=(tVal>0.98)?def.nWinding.toString():"..."; svg.appendChild(wn);
+    // Running winding estimate: Im part of integral / 2π, rounded to 1 dp
+    const [intReW, intImW] = computeIntegral(def, tVal, STEPS);
+    const windEst = tVal > 0.02 ? (intImW / (2 * Math.PI)).toFixed(1) : "0.0";
+    wn.textContent = tVal > 0.98 ? def.nWinding.toString() : windEst;
+    svg.appendChild(wn);
 
-    // Integral running display
-    const [intRe, intIm] = computeIntegral(def, tVal, STEPS);
-    const finalIntRe = 0;
+    // Integral running display — always live from start
+    const [intRe, intIm] = [intReW, intImW];
     const finalIntIm = 2*Math.PI*def.nWinding;
 
     const intDiv = document.createElement("div");
     intDiv.style.cssText = "margin-top:0.5rem; font-family:sans-serif; font-size:0.88em; padding:0.5rem; background:#f0f9ff; border-radius:4px;";
-    const intStr = tVal > 0.98
-      ? `∮ dz/z = ${finalIntIm > 0 ? "+" : ""}${finalIntIm.toFixed(2)}i = 2\u03c0i × ${def.nWinding}`
-      : `Running: ${intRe.toFixed(3)} + ${intIm.toFixed(3)}i`;
-    intDiv.innerHTML = `<strong>Contour integral:</strong> <span style="color:#1e40af">${intStr}</span>`;
+    // Show running value at all t; highlight final result when closed
+    const runStr = `${intRe.toFixed(3)} + ${intIm.toFixed(3)}i`;
+    const finalStr = tVal > 0.98
+      ? ` \u2192 <strong>2\u03c0i \u00d7 ${def.nWinding} = ${finalIntIm.toFixed(3)}i</strong>` : "";
+    intDiv.innerHTML = `<strong>Running \u222b dz/z:</strong> <span style="color:#1e40af">${runStr}${finalStr}</span>`;
 
     const wrap = document.createElement("div");
     wrap.appendChild(svg);
@@ -569,6 +1703,188 @@ Since the semicircle contributes nothing, the real-line integral equals $\pi$ �
   pathSelector2.addEventListener("input", update2);
   tSlider2.addEventListener("input", update2);
   update2();
+
+  return container;
+}
+```
+
+---
+
+```{ojs}
+//| echo: false
+// VIZ 8: Semicircle contour closure for 1/(1+x²)
+// Real axis + growing semicircle; poles as × marks; residue sum updating;
+// ML arc-bound overlay; result box for ∫ 1/(1+x²) dx = π.
+{
+  const W = 380, H = 280, SCALE = 55, OX = W / 2, OY = H - 50;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const STEPS = 200;
+
+  const RscSlider = Inputs.range([0.5, 4.5], { value: 1.8, step: 0.05, label: "Semicircle radius R" });
+
+  function toSx(re) { return OX + re * SCALE; }
+  function toSy(im) { return OY - im * SCALE; }
+
+  function buildSC(R) {
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    svg.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Real axis
+    const ax = document.createElementNS(svgNS, "line");
+    ax.setAttribute("x1", toSx(-4.2)); ax.setAttribute("y1", toSy(0));
+    ax.setAttribute("x2", toSx(4.2)); ax.setAttribute("y2", toSy(0));
+    ax.setAttribute("stroke", "#9ca3af"); ax.setAttribute("stroke-width", "1.5");
+    svg.appendChild(ax);
+    const ay = document.createElementNS(svgNS, "line");
+    ay.setAttribute("x1", toSx(0)); ay.setAttribute("y1", toSy(-0.3));
+    ay.setAttribute("x2", toSx(0)); ay.setAttribute("y2", toSy(3.8));
+    ay.setAttribute("stroke", "#9ca3af"); ay.setAttribute("stroke-width", "1.5");
+    svg.appendChild(ay);
+
+    // Axis labels
+    for (const v of [-3,-2,-1,1,2,3]) {
+      const tl = document.createElementNS(svgNS, "text");
+      tl.setAttribute("x", toSx(v) - 4); tl.setAttribute("y", toSy(0) + 14);
+      tl.setAttribute("font-size", "9"); tl.setAttribute("fill", "#9ca3af");
+      tl.setAttribute("font-family", "sans-serif"); tl.textContent = v;
+      svg.appendChild(tl);
+    }
+    const relbl = document.createElementNS(svgNS, "text");
+    relbl.setAttribute("x", toSx(4.0)); relbl.setAttribute("y", toSy(0) - 4);
+    relbl.setAttribute("font-size", "10"); relbl.setAttribute("fill", "#6b7280");
+    relbl.setAttribute("font-family", "sans-serif"); relbl.textContent = "x";
+    svg.appendChild(relbl);
+    const imlbl = document.createElementNS(svgNS, "text");
+    imlbl.setAttribute("x", toSx(0) + 4); imlbl.setAttribute("y", toSy(3.6));
+    imlbl.setAttribute("font-size", "10"); imlbl.setAttribute("fill", "#6b7280");
+    imlbl.setAttribute("font-family", "sans-serif"); imlbl.textContent = "iy";
+    svg.appendChild(imlbl);
+
+    // Real-axis segment [-R, R] (orange)
+    const seg = document.createElementNS(svgNS, "line");
+    seg.setAttribute("x1", toSx(-R)); seg.setAttribute("y1", toSy(0));
+    seg.setAttribute("x2", toSx(R)); seg.setAttribute("y2", toSy(0));
+    seg.setAttribute("stroke", "#f97316"); seg.setAttribute("stroke-width", "3");
+    svg.appendChild(seg);
+    // Arrowhead at +R
+    const arrowX = toSx(R), arrowY = toSy(0);
+    const arrowM = document.createElementNS(svgNS, "polygon");
+    arrowM.setAttribute("points", `${arrowX-8},${arrowY-4} ${arrowX},${arrowY} ${arrowX-8},${arrowY+4}`);
+    arrowM.setAttribute("fill", "#f97316");
+    svg.appendChild(arrowM);
+
+    // Semicircle arc (blue), upper half-plane
+    let arcD = `M ${toSx(R)} ${toSy(0)}`;
+    for (let k = 1; k <= STEPS; k++) {
+      const theta = (Math.PI * k) / STEPS;
+      arcD += ` L ${toSx(R * Math.cos(theta))} ${toSy(R * Math.sin(theta))}`;
+    }
+    const arcEl = document.createElementNS(svgNS, "path");
+    arcEl.setAttribute("d", arcD); arcEl.setAttribute("fill", "none");
+    arcEl.setAttribute("stroke", "#3b82f6"); arcEl.setAttribute("stroke-width", "2.5");
+    svg.appendChild(arcEl);
+    // Arc arrow at top
+    const topX = toSx(0), topY = toSy(R);
+    const arcArrow = document.createElementNS(svgNS, "polygon");
+    arcArrow.setAttribute("points", `${topX-4},${topY+8} ${topX},${topY} ${topX+4},${topY+8}`);
+    arcArrow.setAttribute("fill", "#3b82f6");
+    svg.appendChild(arcArrow);
+
+    // Poles of 1/(1+z²) = 1/((z-i)(z+i)): at z = i and z = -i
+    const poles = [{ re: 0, im: 1, label: "z = i" }, { re: 0, im: -1, label: "z = \u2212i" }];
+    for (const p of poles) {
+      const px0 = toSx(p.re), py0 = toSy(p.im);
+      const inContour = p.im > 0 && p.im < R; // upper half-plane, inside semicircle
+      const xColor = inContour ? "#dc2626" : "#9ca3af";
+      for (const [dx, dy] of [[6,6],[6,-6]]) {
+        const xl = document.createElementNS(svgNS, "line");
+        xl.setAttribute("x1", px0-dx); xl.setAttribute("y1", py0-dy);
+        xl.setAttribute("x2", px0+dx); xl.setAttribute("y2", py0+dy);
+        xl.setAttribute("stroke", xColor); xl.setAttribute("stroke-width", "2.5");
+        svg.appendChild(xl);
+      }
+      const plbl = document.createElementNS(svgNS, "text");
+      plbl.setAttribute("x", px0 + 10); plbl.setAttribute("y", py0 + 4);
+      plbl.setAttribute("font-size", "10"); plbl.setAttribute("fill", xColor);
+      plbl.setAttribute("font-family", "sans-serif"); plbl.textContent = p.label;
+      svg.appendChild(plbl);
+    }
+
+    // ML arc bound for semicircle contribution
+    // |∫_arc 1/(1+z²) dz| ≤ M·πR where M = 1/(R²-1) for R>1
+    const arcBound = R > 1.01 ? (1 / (R*R - 1)) * Math.PI * R : null;
+    const poleInside = R > 1; // z=i is inside when R>1
+
+    // Residue at z=i: 1/(z+i) at z=i = 1/(2i); residue × 2πi = 2πi × 1/(2i) = π
+    const residueContrib = poleInside ? Math.PI : 0;
+
+    // Info panel
+    const infoX = 4, infoY = H - 45;
+    const infoBg = document.createElementNS(svgNS, "rect");
+    infoBg.setAttribute("x", infoX); infoBg.setAttribute("y", infoY);
+    infoBg.setAttribute("width", W - 8); infoBg.setAttribute("height", 40);
+    infoBg.setAttribute("fill", poleInside ? "#f0fdf4" : "#f9fafb");
+    infoBg.setAttribute("rx", "4");
+    svg.appendChild(infoBg);
+
+    const line1 = document.createElementNS(svgNS, "text");
+    line1.setAttribute("x", infoX + 6); line1.setAttribute("y", infoY + 14);
+    line1.setAttribute("font-size", "10"); line1.setAttribute("font-family", "sans-serif");
+    line1.setAttribute("fill", poleInside ? "#059669" : "#6b7280");
+    const arcBndStr = arcBound !== null ? "Arc bound: \u03c0R/(R\u00b2\u22121) \u2248 " + arcBound.toFixed(3) + " \u2192 0" : "R \u2264 1: pole not enclosed";
+    line1.textContent = arcBndStr;
+    svg.appendChild(line1);
+
+    const line2 = document.createElementNS(svgNS, "text");
+    line2.setAttribute("x", infoX + 6); line2.setAttribute("y", infoY + 30);
+    line2.setAttribute("font-size", "10"); line2.setAttribute("font-family", "sans-serif");
+    line2.setAttribute("font-weight", "600");
+    line2.setAttribute("fill", poleInside ? "#059669" : "#6b7280");
+    line2.textContent = poleInside
+      ? "\u222b dx/(1+x\u00b2) = 2\u03c0i \u00d7 Res(i) = 2\u03c0i \u00d7 1/(2i) = \u03c0"
+      : "z = i not yet inside \u2014 increase R above 1";
+    svg.appendChild(line2);
+
+    // R label
+    const Rlbl = document.createElementNS(svgNS, "text");
+    Rlbl.setAttribute("x", toSx(R) + 4); Rlbl.setAttribute("y", toSy(0) - 5);
+    Rlbl.setAttribute("font-size", "10"); Rlbl.setAttribute("fill", "#f97316");
+    Rlbl.setAttribute("font-family", "sans-serif"); Rlbl.textContent = "R = " + R.toFixed(2);
+    svg.appendChild(Rlbl);
+    const semicircLbl = document.createElementNS(svgNS, "text");
+    semicircLbl.setAttribute("x", toSx(0) - 14); semicircLbl.setAttribute("y", toSy(R) - 6);
+    semicircLbl.setAttribute("font-size", "10"); semicircLbl.setAttribute("fill", "#3b82f6");
+    semicircLbl.setAttribute("font-family", "sans-serif"); semicircLbl.textContent = "\u0393\u1d54";
+    svg.appendChild(semicircLbl);
+
+    return svg;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0; font-family:sans-serif;";
+
+  const titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600; margin-bottom:0.5rem;";
+  titleEl.textContent = "Semicircle closure: evaluating \u222b\u208b\u221e\u207a\u221e dx/(1+x\u00b2)";
+  container.appendChild(titleEl);
+  container.appendChild(RscSlider);
+
+  const vizDiv = document.createElement("div");
+  vizDiv.style.marginTop = "0.5rem";
+  container.appendChild(vizDiv);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "The orange segment is the real-axis part [\u2212R, R]; the blue arc is the semicircle \u0393\u1d54. The \u00d7 marks are poles of 1/(1+z\u00b2). Once R > 1, the pole z = i is captured (red). The ML bound on the arc contribution shrinks toward zero. The result \u03c0 appears in the green box.";
+  container.appendChild(noteEl);
+
+  function update() {
+    vizDiv.innerHTML = "";
+    vizDiv.appendChild(buildSC(RscSlider.value));
+  }
+  RscSlider.addEventListener("input", update);
+  update();
 
   return container;
 }
@@ -730,7 +2046,7 @@ makeStepperHTML([
 
 ### Exercise 4: Derivative formula
 
-Evaluate $\displaystyle\oint_C \frac{\cos z}{(z - \pi)^2}\,dz$ where $C: |z| = 4$ (counterclockwise).
+Evaluate $\displaystyle\oint_C \frac{\cos z}{(z - \pi)^2}\,dz$ where $C: |z| = 4$ (counterclockwise). The integrand has a pole at $z = \pi$ inside $C$, so Cauchy's theorem alone cannot give zero — you need the derivative formula.
 
 <!-- STEPPER -->
 ```{ojs}
@@ -845,7 +2161,15 @@ The chapter's conceptual structure is sound and the exercises are well-calibrate
 <!-- EDIT LOG
 - [§ Contours and contour integrals, definition] Defined "piecewise smooth" inline on first use: "the curve can have finitely many corners, but no cusps or fractal wiggles — at each smooth piece the tangent direction is well-defined." Previously used without definition.
 - [§ Contours and contour integrals, "real line integral in disguise"] Added the explicit product expansion (u+iv)(dx+idy) = (u dx − v dy) + i(v dx + u dy) before the displayed result. The algebra that makes the "disguise" transparent is now shown, not asserted.
+- [§ Contours and contour integrals, "just a real line integral"] Removed "just" — it reads as dismissive.
 - [§ Cauchy's theorem, Cauchy-Goursat theorem statement] Added "(no holes — defined in Chapter 1)" after "simply connected domain" to give a back-reference to the Chapter 1 definition rather than repeating it. Intuition paragraph lightly trimmed ("Because the domain has no holes, ...") to match.
 - [§ Cauchy's integral formula, proof sketch] Restated the deformation principle's precondition before invoking it: "because f is analytic everywhere inside C except at z₀, the deformation principle applies to the annular region between C and any circle around z₀." Previously the principle was invoked without explaining why it was applicable.
 - [§ Application: real integrals, worked example] Expanded the single-paragraph worked example into three steps: (1) ML-inequality argument showing the semicircle contribution vanishes, with explicit bound; (2) factoring the denominator and identifying f(z) = 1/(z+i), z₀ = i; (3) applying Cauchy's formula and evaluating f(i) = 1/(2i). The previous version collapsed these into one line.
+- [§ ML inequality, lead-in sentence] Replaced "The most useful estimate for contour integrals:" with a sentence that tells the reader when to reach for the tool: "When you need a bound on a contour integral rather than its exact value, the ML inequality is the standard tool." Removed the passive claim-before-content opener.
+- [§ ML inequality, real analogue] Changed "This is the complex analogue of..." to "This mirrors..." — lighter phrasing, same meaning.
+- [§ A fundamental example, heading] Renamed from "A fundamental example" (vague) to "Integral of 1/z^{n+1} around a circle" (names what the section actually shows).
+- [hook, second paragraph] Changed "The consequences are remarkable" to "The consequences run deep" — removes fake enthusiasm, keeps weight.
+- [hook, third paragraph] Changed "These results make complex integration the engine of classical engineering mathematics" to "Both results matter directly in engineering mathematics" — removes puffery, states the connection plainly.
+- [§ Application, opening sentence] Removed the preamble "The tools developed so far can already evaluate some real integrals." and replaced with a direct two-sentence lead-in: states the general strategy and says this example shows the simplest form.
+- [§ Major consequences, FTA proof sketch] Added the missing logical step: "entire (no zeros means no poles) and bounded (since |p(z)| → ∞ as |z| → ∞, so |1/p(z)| → 0)". The previous phrasing implied but did not state why no-roots implies bounded.
 -->

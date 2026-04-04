@@ -4,7 +4,7 @@ subtitle: "Making a dynamic system behave"
 chapter: 1
 volume: 8
 layer: "discipline"
-status: "draft"
+status: "review"
 
 axiom: |
   A system evolves in time, and its response matters more than its closed-form
@@ -19,6 +19,10 @@ opens_to:
     label: "Estimation, inverse problems, and filtering"
     volume: 8
     relationship: enriches
+  - id: discrete_systems
+    label: "Discrete-time systems and signal processing"
+    volume: 8
+    relationship: enables
 
 prerequisite_ids:
   - laplace
@@ -27,7 +31,7 @@ prerequisite_ids:
 destinations:
   - field: eng
     label: Engineering
-    hook: "Control theory turns differential equations into decisions about actuators, gains, and stability margins."
+    hook: "Control theory turns differential equations into decisions about actuators, gains, and transient response — the foundation for stability margins, pole placement, and loop tuning in real drive, process, and mechatronic systems."
     career_example: "Electrical or mechanical engineer tuning a feedback loop for a motor, converter, or process unit"
   - field: comp
     label: Computing and data
@@ -66,8 +70,20 @@ notation_introduced:
   - symbol: "T(s) = \\dfrac{C(s)G(s)}{1 + C(s)G(s)}"
     reads_as: "T of s — the closed-loop transfer function"
     notation_weight: 3
+  - symbol: "x"
+    reads_as: "x — the state vector in state-space models"
+    notation_weight: 2
+  - symbol: "A, B"
+    reads_as: "A and B — the system and input matrices in the state-space model dot-x equals Ax plus Bu"
+    notation_weight: 2
+  - symbol: "K (scalar)"
+    reads_as: "K — proportional gain scalar in transfer-function controllers C(s) = K; distinct from the state-feedback gain vector"
+    notation_weight: 1
+  - symbol: "K (row vector)"
+    reads_as: "K — state-feedback gain row vector in u equals minus K x; distinct from the scalar proportional gain"
+    notation_weight: 3
   - symbol: "\\lambda(A-BK)"
-    reads_as: "the eigenvalues of A minus B K"
+    reads_as: "the eigenvalues of A minus B K — the closed-loop modes under state feedback"
     notation_weight: 3
 
 exercises:
@@ -79,22 +95,15 @@ stroud_programme: null
 kreyszig_chapter: null
 ---
 
-A motor overshoots the target speed. A drone wobbles after a gust. A reactor
-temperature drifts when the feed changes. In each case the system is already
-dynamic before anyone touches the controller. Feedback is the act of shaping
-that behaviour instead of merely watching it happen.
+Solving a differential equation tells you what a system will do. Control asks
+a different question: whether that behaviour is acceptable, how fast it settles,
+how much it overshoots, and how sensitive it is to disturbances and modelling
+error.
 
-Control is not the same thing as solving a differential equation. Solving the
-equation tells you what the system will do. Control asks whether that behaviour
-is acceptable, how fast it settles, how much it overshoots, and how sensitive
-it is to disturbances and modelling error.
-
-This chapter keeps the focus on the central move. You measure the output
-$y(t)$, compare it to the target $r(t)$, form the error
-$e(t) = r(t) - y(t)$, and choose a control input $u(t)$ that changes the
-dynamics in your favour. Once you see that structure clearly, stability and
-transient response stop looking like side remarks and start looking like the
-point of the whole subject.
+The central move is this. You measure the output $y(t)$, compare it to the
+target $r(t)$, form the error $e(t) = r(t) - y(t)$, and choose a control input
+$u(t)$ that reshapes the dynamics in your favour. Stability and transient
+response are not side remarks — they are the point.
 
 ---
 
@@ -116,8 +125,8 @@ In **open loop**, you choose $u(t)$ without using the measured output. In
 **closed loop**, you feed back the measured output and let the error signal
 drive the control action. That is the essential difference.
 
-**Unity feedback** means the measured output $Y(s)$ is fed back directly into the
-comparison point with no additional gain element in the feedback path. The block-diagram algebra is:
+**Unity feedback** means the measured output $Y(s)$ is fed back directly, with
+no additional gain in the feedback path. The block-diagram algebra is:
 
 $$E(s) = R(s) - Y(s)$$
 $$U(s) = C(s)E(s)$$
@@ -135,9 +144,9 @@ So the closed-loop transfer function is
 
 $$T(s) = \frac{Y(s)}{R(s)} = \frac{C(s)G(s)}{1 + C(s)G(s)}$$
 
-That denominator matters more than it first appears to. The roots of
-$1 + C(s)G(s) = 0$ are the **closed-loop poles**. They decide whether the
-response decays, oscillates, grows, or diverges.
+The equation $1 + C(s)G(s) = 0$ is the **characteristic equation** of the
+closed-loop system, and its roots are the **closed-loop poles**. They determine
+whether the response decays, oscillates, grows, or diverges.
 
 *Adjust the gain K below. Watch the step response, pole location, and error readouts change simultaneously.*
 
@@ -431,29 +440,33 @@ grow without bound. In continuous-time linear systems, the quick rule is:
 This is why pole location is not bookkeeping. It is a statement about physical
 behaviour.
 
-The same stability idea appears in state-space notation — the same feedback
-principle, expressed with vectors and matrices instead of transfer functions.
-For a state-space model
+The same stability condition applies in state-space form — vectors and matrices
+instead of transfer functions, but the same underlying dynamics. A transfer
+function $G(s)$ and a state-space model $(A, B)$ are two descriptions of the
+same system.
+
+Here $K$ is a row vector of gains — distinct from the scalar proportional gain
+used above. For a state-space model
 
 $$\dot{x} = Ax + Bu, \qquad u = -Kx$$
 
-the closed-loop dynamics become
+substituting $u = -Kx$ into the equation gives
 
-$$\dot{x} = (A - BK)x$$
+$$\dot{x} = Ax + B(-Kx) = (A - BK)x$$
 
 Now the eigenvalues $\lambda(A-BK)$ play the same role that closed-loop poles
 play in transfer-function form. They tell you what the state does in time.
 
 ::: {.callout-note appearance="simple"}
-## Why This Works
+## Why this works
 
 Feedback changes the equation you are solving. Without control, the plant's
-dynamics are built into $G(s)$ or $A$. With control, the controller feeds the
-measured output back into the input channel, so the effective denominator of
-the system changes from "whatever the plant had" to "plant plus feedback."
+dynamics are built into $G(s)$ or $A$. With control, the measured output feeds
+back into the input channel, so the effective denominator changes from the
+plant's own poles to a new set determined by the loop.
 
-That is the whole reason control is powerful. You are not passively accepting
-the poles, modes, or eigenvalues the plant came with. You are moving them.
+You are not accepting the poles, modes, or eigenvalues the plant came with.
+You are choosing them.
 :::
 
 ## The core method
@@ -687,7 +700,7 @@ $$A - BK
 =
 \begin{pmatrix} 0 & 1 \\ -5 & -3 \end{pmatrix}$$
 
-Its characteristic polynomial comes from the 2×2 determinant:
+Its characteristic polynomial is $\det(\lambda I - (A-BK))$, evaluated as:
 
 $$\det(\lambda I - (A-BK))
 = \det\begin{pmatrix} \lambda & -1 \\ 5 & \lambda+3 \end{pmatrix}
@@ -886,48 +899,46 @@ mathematical question is still: what did your feedback law do to the modes?
 
 ## Worked example 3: stabilising a scientific instrument
 
-An optics lab wants the intensity of a laser to stay near a target despite
-thermal drift. A simplified linear model of the plant is slow and first-order,
-so the experimentalist begins with a proportional controller for the same
-reason an engineer would: it is cheap to implement and easy to reason about.
+An optics experiment requires a laser intensity to hold near a target despite
+thermal drift. A simplified model of the plant is slow and first-order, so the
+experimentalist begins with a proportional controller for the same reason an
+engineer would: it is low-complexity and straightforward to analyse.
 
-If the gain is too low, the output drifts and the reference is not tracked
-closely enough. If the gain is pushed too high, noise and delay in the sensor
-chain start to matter. The mathematics is exactly the same as the motor-speed
-example. What changes is the vocabulary of the lab.
+If the gain is too low, the output drifts and tracking is poor. If the gain is
+too high, noise and delay in the sensor chain start to matter. The mathematics
+is identical to the motor-speed example. What changes is the vocabulary.
 
-This is the point of the optional viewpoint. Control theory is not owned by
-electrical engineering. It is a general mathematical structure for shaping
-dynamics under measurement.
+Control theory is not owned by electrical engineering. It is a general
+mathematical structure for shaping dynamics under measurement.
 
 ## Where this goes
 
 The most direct continuation is
-[Estimation, inverse problems, and filtering](05-estimation-inverse.qmd).
-Real control systems rarely have direct access to every state they need. Once
-you start asking how to control a system, the next question is often how to
-estimate the quantities you cannot measure cleanly.
+[Estimation, inverse problems, and filtering](05-estimation-inverse.qmd)
+(Volume 8, Chapter 5).
+Real control systems often cannot measure every state they need directly. Once
+you ask how to control a system, the next question is usually how to estimate
+what you cannot observe cleanly.
 
-This chapter also sharpens the way you should read later Volume 8 material on
-sampled systems and computational models. A simulation is not yet a controller.
-A model can be numerically stable and still be a bad control design. Volume 8
-keeps returning to that distinction.
+This chapter also informs how you read later Volume 8 material on sampled
+systems and computational models. A simulation is not a controller. A model can
+be numerically stable and still be a poor control design. That distinction runs
+through the rest of the volume.
 
 ::: {.callout-tip appearance="simple"}
-## Applications
+## Where this appears in practice
 
 - motor-speed control in electric drives
 - altitude hold and attitude stabilisation in drones
 - furnace and reactor temperature control
 - active vibration suppression in flexible structures
 - instrument stabilisation in optics and experimental physics
-- feedback loops inside robotics and autonomous systems
+- state-feedback and observer design in robotics and autonomous systems
 :::
 
 ## Exercises
 
-These are project-style exercises. Each one asks you to connect the algebra to
-behaviour, not just compute a number.
+Each exercise asks you to connect the algebra to physical behaviour.
 
 ```{ojs}
 //| echo: false
@@ -1092,9 +1103,10 @@ makeStepperHTML(2, [
 
 ### Exercise 3
 
-A lab instrument is stable but too slow. The current proportional gain gives a
-closed-loop pole at $s=-0.2$. The engineer proposes increasing the gain so the
-pole moves to $s=-0.8$.
+A lab instrument is modelled by a first-order plant $G(s) = a/(Ts+1)$. The
+current proportional gain gives a closed-loop pole at $s=-0.2$. Following the
+same pole formula as Worked example 1, the operator proposes increasing the gain
+so the pole moves to $s=-0.8$.
 
 Write a short design note answering:
 

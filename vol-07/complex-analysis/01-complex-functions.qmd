@@ -4,7 +4,7 @@ subtitle: "Differentiability in the complex plane and the Cauchy-Riemann equatio
 chapter: 1
 volume: 7
 layer: "engineering"
-status: "draft"
+status: review
 
 axiom: "Complex numbers extend the real line to a plane. Functions of a complex variable map that plane to itself. The condition for a complex function to be differentiable — the Cauchy-Riemann equations — is far more restrictive than real differentiability, and functions that satisfy it have extraordinary properties: infinitely differentiable, representable by power series, and connected to the solutions of Laplace's equation."
 
@@ -37,16 +37,16 @@ destinations:
 notation_introduced:
   - symbol: "z = x + iy"
     reads_as: "z equals x plus i y"
-    meaning: "A complex number with real part x and imaginary part y"
+    notation_weight: 1
   - symbol: "|z| = \\sqrt{x^2+y^2}"
     reads_as: "modulus of z"
-    meaning: "The distance from the origin to z in the Argand plane"
+    notation_weight: 1
   - symbol: "\\bar{z}"
     reads_as: "z-bar"
-    meaning: "The complex conjugate x − iy"
+    notation_weight: 1
   - symbol: "f(z) = u + iv"
     reads_as: "f of z equals u plus i v"
-    meaning: "A complex function split into real part u(x,y) and imaginary part v(x,y)"
+    notation_weight: 2
 
 exercises:
   type: puzzle
@@ -57,9 +57,10 @@ hook: |
   stability by tracing voltages through time. She asks: where are the
   poles of the transfer function H(s) in the complex s-plane? Poles in
   the left half-plane mean the system decays to equilibrium; a pole that
-  crosses into the right half-plane means oscillations grow without
-  bound. The complex plane is not an abstraction — it is the natural
-  space where the dynamics of the system live.
+  crosses into the right half-plane means the system response grows
+  without bound — oscillating if the pole is complex, diverging
+  exponentially if it is real. The complex plane is not an abstraction
+  — it is the natural space where the dynamics of the system live.
 
   Complex analysis is the calculus of functions of a complex variable.
   Its central concept — analyticity — turns out to be extraordinarily
@@ -70,12 +71,206 @@ hook: |
   Laplace transforms, Fourier analysis, potential theory, and conformal
   mapping.
 
-kreyszig_chapter: "Ch 13"
-stroud_programme: null
+kreyszig_chapter: 13
+stroud_programme: 29
 uofa_course: null
 ---
 
-A function $f$ of a complex variable maps complex numbers to complex numbers. Writing $z = x + iy$ and separating $f(z) = u(x,y) + iv(x,y)$, the function is really a pair of real-valued functions of two real variables. The question is: what extra condition on $u$ and $v$ makes $f$ genuinely complex-differentiable? The answer — the Cauchy-Riemann equations — is the key that unlocks the entire subject.
+A function $f$ of a complex variable maps complex numbers to complex numbers. Writing $z = x + iy$ and separating $f(z) = u(x,y) + iv(x,y)$, the function is a pair of real-valued functions of two real variables. The condition on $u$ and $v$ that makes $f$ genuinely complex-differentiable — the Cauchy-Riemann equations — is what the rest of the chapter develops.
+
+```{ojs}
+//| echo: false
+{
+  // Stability half-plane explorer
+  // s-plane with green (Re<0) and red (Re>0) half-planes
+  // Draggable pole s (via sliders)
+  // Inset: time response Re(e^{st}) plotted for t in [0, 5]
+
+  const W = 560, H = 280, SCALE = 65, CX = 170, CY = H/2;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const sReSl = Inputs.range([-2.5, 2.5], { value: -1.0, step: 0.1, label: "Re(s) — pole real part" });
+  const sImSl = Inputs.range([-3.0, 3.0], { value: 1.5, step: 0.1, label: "Im(s) — pole imaginary part" });
+
+  function buildViz(sRe, sIm) {
+    const svg = document.createElementNS(svgNS,"svg");
+    svg.setAttribute("width",W); svg.setAttribute("height",H);
+    svg.style.cssText="background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Left half: s-plane (x in [0,340] roughly)
+    const PLANE_W = 340;
+
+    // Green / red half-plane fills
+    const axX = CX; // screen x for Re(s)=0
+    const greenRect = document.createElementNS(svgNS,"rect");
+    greenRect.setAttribute("x","0"); greenRect.setAttribute("y","0");
+    greenRect.setAttribute("width",axX.toString()); greenRect.setAttribute("height",H);
+    greenRect.setAttribute("fill","#059669"); greenRect.setAttribute("opacity","0.12");
+    svg.appendChild(greenRect);
+
+    const redRect = document.createElementNS(svgNS,"rect");
+    redRect.setAttribute("x",axX.toString()); redRect.setAttribute("y","0");
+    redRect.setAttribute("width",(PLANE_W-axX).toString()); redRect.setAttribute("height",H);
+    redRect.setAttribute("fill","#dc2626"); redRect.setAttribute("opacity","0.12");
+    svg.appendChild(redRect);
+
+    // Grid lines (s-plane)
+    for (let i=-3;i<=3;i++){
+      const xl=document.createElementNS(svgNS,"line");
+      const lx=CX+i*SCALE;
+      xl.setAttribute("x1",lx); xl.setAttribute("y1","0"); xl.setAttribute("x2",lx); xl.setAttribute("y2",H);
+      xl.setAttribute("stroke","#e5e7eb"); xl.setAttribute("stroke-width","0.5"); svg.appendChild(xl);
+      const yl=document.createElementNS(svgNS,"line");
+      const ly=CY-i*SCALE;
+      yl.setAttribute("x1","0"); yl.setAttribute("y1",ly); yl.setAttribute("x2",PLANE_W); yl.setAttribute("y2",ly);
+      yl.setAttribute("stroke","#e5e7eb"); yl.setAttribute("stroke-width","0.5"); svg.appendChild(yl);
+    }
+
+    // Imaginary axis (stability boundary)
+    const axLine=document.createElementNS(svgNS,"line");
+    axLine.setAttribute("x1",axX); axLine.setAttribute("y1","0"); axLine.setAttribute("x2",axX); axLine.setAttribute("y2",H);
+    axLine.setAttribute("stroke","#374151"); axLine.setAttribute("stroke-width","1.5");
+    axLine.setAttribute("stroke-dasharray","6,3"); svg.appendChild(axLine);
+
+    // Real axis
+    const reAx=document.createElementNS(svgNS,"line");
+    reAx.setAttribute("x1","0"); reAx.setAttribute("y1",CY); reAx.setAttribute("x2",PLANE_W); reAx.setAttribute("y2",CY);
+    reAx.setAttribute("stroke","#9ca3af"); reAx.setAttribute("stroke-width","1"); svg.appendChild(reAx);
+
+    // Half-plane labels
+    function addTxt(svg,x,y,txt,color,size,bold){
+      const t=document.createElementNS(svgNS,"text");
+      t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",color);
+      t.setAttribute("font-size",size||"11");t.setAttribute("font-family","sans-serif");
+      t.setAttribute("text-anchor","middle"); if(bold) t.setAttribute("font-weight","bold");
+      t.textContent=txt; svg.appendChild(t);
+    }
+    addTxt(svg,axX/2,22,"STABLE","#059669","12",true);
+    addTxt(svg,axX/2,36,"Re(s) < 0","#059669","10");
+    addTxt(svg,axX+(PLANE_W-axX)/2,22,"UNSTABLE","#dc2626","12",true);
+    addTxt(svg,axX+(PLANE_W-axX)/2,36,"Re(s) > 0","#dc2626","10");
+
+    // Pole marker
+    const psx = CX + sRe*SCALE, psy = CY - sIm*SCALE;
+    const inBounds = psx>0 && psx<PLANE_W && psy>0 && psy<H;
+
+    if (inBounds) {
+      // Cross marker (×)
+      const cSize=7;
+      const poleL1=document.createElementNS(svgNS,"line");
+      poleL1.setAttribute("x1",psx-cSize);poleL1.setAttribute("y1",psy-cSize);
+      poleL1.setAttribute("x2",psx+cSize);poleL1.setAttribute("y2",psy+cSize);
+      poleL1.setAttribute("stroke","#f97316");poleL1.setAttribute("stroke-width","2.5");
+      svg.appendChild(poleL1);
+      const poleL2=document.createElementNS(svgNS,"line");
+      poleL2.setAttribute("x1",psx+cSize);poleL2.setAttribute("y1",psy-cSize);
+      poleL2.setAttribute("x2",psx-cSize);poleL2.setAttribute("y2",psy+cSize);
+      poleL2.setAttribute("stroke","#f97316");poleL2.setAttribute("stroke-width","2.5");
+      svg.appendChild(poleL2);
+
+      const stable = sRe < 0;
+      const poleColor = stable ? "#059669" : "#dc2626";
+      const poleLbl=document.createElementNS(svgNS,"text");
+      poleLbl.setAttribute("x",psx+10); poleLbl.setAttribute("y",psy-6);
+      poleLbl.setAttribute("fill",poleColor); poleLbl.setAttribute("font-size","11");
+      poleLbl.setAttribute("font-family","sans-serif");
+      poleLbl.textContent=`s = ${sRe.toFixed(1)}${sIm>=0?"+":""}${sIm.toFixed(1)}i`;
+      svg.appendChild(poleLbl);
+    }
+
+    // Axis labels
+    addTxt(svg,PLANE_W-16,CY-4,"σ","#374151","11");
+    addTxt(svg,axX+4,10,"jω","#374151","11");
+    addTxt(svg,axX-16,10,"s-plane","#6b7280","10");
+
+    // Right panel: time response Re(e^{st}) for t in [0,5]
+    const PLOT_X = PLANE_W + 20, PLOT_W = W - PLANE_W - 30, PLOT_H = H - 40;
+    const PLOT_Y = 20;
+    const tMax = 5, numT = 200;
+
+    // Collect time response
+    const yVals = [];
+    for (let k=0; k<=numT; k++) {
+      const t = (k/numT)*tMax;
+      // Re(e^{st}) = e^{σt} * cos(ωt)
+      const y = Math.exp(sRe*t) * Math.cos(sIm*t);
+      yVals.push(y);
+    }
+    // Auto-scale y
+    let yMin=-2, yMax=2;
+    const finite = yVals.filter(v=>isFinite(v));
+    if (finite.length>0) {
+      yMin = Math.min(yMin, ...finite.slice(-20));
+      yMax = Math.max(yMax, ...finite.slice(-20));
+    }
+    const yRange = yMax-yMin || 1;
+
+    // Plot background
+    const plotBg=document.createElementNS(svgNS,"rect");
+    plotBg.setAttribute("x",PLOT_X); plotBg.setAttribute("y",PLOT_Y);
+    plotBg.setAttribute("width",PLOT_W); plotBg.setAttribute("height",PLOT_H);
+    plotBg.setAttribute("fill","#f8fafc"); plotBg.setAttribute("rx","3");
+    svg.appendChild(plotBg);
+
+    // Zero line
+    const zeroY = PLOT_Y + PLOT_H * (1 - (0-yMin)/yRange);
+    const zeroLine=document.createElementNS(svgNS,"line");
+    zeroLine.setAttribute("x1",PLOT_X); zeroLine.setAttribute("y1",zeroY);
+    zeroLine.setAttribute("x2",PLOT_X+PLOT_W); zeroLine.setAttribute("y2",zeroY);
+    zeroLine.setAttribute("stroke","#9ca3af"); zeroLine.setAttribute("stroke-width","0.8");
+    zeroLine.setAttribute("stroke-dasharray","3,2"); svg.appendChild(zeroLine);
+
+    // Response curve
+    let pathD="";
+    for (let k=0; k<=numT; k++) {
+      const t=(k/numT)*tMax;
+      const y=yVals[k];
+      const px=PLOT_X + (t/tMax)*PLOT_W;
+      const py=PLOT_Y + PLOT_H*(1-(y-yMin)/yRange);
+      const clampedPy = Math.max(PLOT_Y, Math.min(PLOT_Y+PLOT_H, py));
+      pathD += (k===0 ? `M ${px} ${clampedPy}` : ` L ${px} ${clampedPy}`);
+    }
+    const respPath=document.createElementNS(svgNS,"path");
+    respPath.setAttribute("d",pathD); respPath.setAttribute("fill","none");
+    const stable2 = sRe < 0;
+    respPath.setAttribute("stroke", stable2 ? "#059669" : "#dc2626");
+    respPath.setAttribute("stroke-width","2"); svg.appendChild(respPath);
+
+    // Plot labels
+    addTxt(svg,PLOT_X+PLOT_W/2,PLOT_Y-6,"Time response Re(e^{st})","#374151","10.5",true);
+    addTxt(svg,PLOT_X+PLOT_W,PLOT_Y+PLOT_H+14,"t","#6b7280","10");
+    addTxt(svg,PLOT_X-4,PLOT_Y+PLOT_H/2,"y","#6b7280","10");
+
+    return svg;
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+
+  const titleEl=document.createElement("div");
+  titleEl.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleEl.textContent="Stability half-plane: poles in the s-plane";
+  container.appendChild(titleEl);
+  container.appendChild(sReSl);
+  container.appendChild(sImSl);
+
+  const vizDiv=document.createElement("div"); container.appendChild(vizDiv);
+
+  const noteEl=document.createElement("div");
+  noteEl.style.cssText="margin-top:0.4rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent="The s-plane is the domain of the Laplace transform. The imaginary axis (dashed) is the stability boundary. Drag the × pole marker: left half-plane (green) → response decays; right half-plane (red) → response grows. A complex pole s = σ ± jω gives oscillation at rate ω, decaying if σ < 0 and growing if σ > 0. A real pole (Im = 0) gives pure exponential behaviour with no oscillation.";
+  container.appendChild(noteEl);
+
+  function update(){
+    vizDiv.innerHTML="";
+    vizDiv.appendChild(buildViz(sReSl.value, sImSl.value));
+  }
+  sReSl.addEventListener("input",update);
+  sImSl.addEventListener("input",update);
+  update();
+  return container;
+}
+```
 
 ---
 
@@ -84,8 +279,6 @@ A function $f$ of a complex variable maps complex numbers to complex numbers. Wr
 Every complex number $z = x + iy$ is a point in the **Argand plane**, with real part $x$ on the horizontal axis and imaginary part $y$ on the vertical.
 
 **Polar form.** $z = r e^{i\theta}$, where $r = |z| = \sqrt{x^2+y^2}$ is the modulus and $\theta = \arg z$ is the argument — the angle from the positive real axis, measured counterclockwise. Euler's formula $e^{i\theta} = \cos\theta + i\sin\theta$ connects the polar and rectangular forms.
-
-<!-- STUDENT: The notation θ = arg z is used here before it appears in the notation_introduced list. A reader who skimmed the front matter won't know that "arg z" means the angle of z. One sentence — "arg z is the angle from the positive real axis, measured counterclockwise" — would make this self-contained. -->
 
 **De Moivre's theorem.** $(re^{i\theta})^n = r^n e^{in\theta}$. Integer powers of complex numbers are most efficiently computed in polar form.
 
@@ -275,9 +468,9 @@ A complex function $f: \mathbb{C} \to \mathbb{C}$ maps each $z = x+iy$ to a comp
 
 **Example.** $f(z) = z^2 = (x+iy)^2 = (x^2-y^2) + 2ixy$, so $u = x^2-y^2$, $v = 2xy$.
 
-**Example.** $f(z) = \bar{z} = x - iy$, so $u = x$, $v = -y$. This function will turn out to be nowhere differentiable in the complex sense.
+**Example.** $f(z) = \bar{z} = x - iy$, so $u = x$, $v = -y$. This function is nowhere differentiable in the complex sense — a consequence of the Cauchy-Riemann equations derived in the next section.
 
-Limits and continuity carry over from real analysis: $f$ is **continuous at $z_0$** if $\lim_{z\to z_0}f(z) = f(z_0)$, where the limit must be the same from every direction of approach.
+Limits and continuity work exactly as in real analysis, with one additional clause: $f$ is **continuous at $z_0$** if $\lim_{z\to z_0}f(z) = f(z_0)$, where the limit must be the same from every direction of approach.
 
 ---
 
@@ -291,17 +484,116 @@ The limit must exist and agree no matter how $z$ approaches $z_0$ — a far stro
 
 ### Deriving the Cauchy-Riemann equations
 
+The key idea is that the limit $[f(z)-f(z_0)]/(z-z_0)$ must give the same answer regardless of the direction of approach. The two simplest directions — horizontal and vertical — already force a constraint on $u$ and $v$.
+
+```{ojs}
+//| echo: false
+{
+  // Static two-panel approach-direction illustration
+  // Left: z₀ with horizontal (orange) and vertical (blue) approach arrows
+  // Right: the two difference quotient vectors in f-space
+  const W = 290, H = 240, SCALE = 60, CX = W/2, CY = H/2;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  // Fixed example: f(z) = z², z₀ = 0.7 + 0.5i, Δ = 0.4
+  const z0x=0.7, z0y=0.5, delta=0.4;
+
+  function evalF(re,im){ return [re*re-im*im, 2*re*im]; }
+  function toScreen(re,im){ return [CX+re*SCALE, CY-im*SCALE]; }
+
+  function makeSVG(title) {
+    const svg=document.createElementNS(svgNS,"svg");
+    svg.setAttribute("width",W); svg.setAttribute("height",H);
+    svg.style.cssText="background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+    for(let i=-3;i<=3;i++){
+      const xl=document.createElementNS(svgNS,"line"); const [lx]=toScreen(i,0);
+      xl.setAttribute("x1",lx);xl.setAttribute("y1","0");xl.setAttribute("x2",lx);xl.setAttribute("y2",H);
+      xl.setAttribute("stroke","#e5e7eb");xl.setAttribute("stroke-width","0.5");svg.appendChild(xl);
+      const yl=document.createElementNS(svgNS,"line"); const [,ly]=toScreen(0,i);
+      yl.setAttribute("x1","0");yl.setAttribute("y1",ly);yl.setAttribute("x2",W);yl.setAttribute("y2",ly);
+      yl.setAttribute("stroke","#e5e7eb");yl.setAttribute("stroke-width","0.5");svg.appendChild(yl);
+    }
+    const [ox,oy]=toScreen(0,0);
+    function axLine(x1,y1,x2,y2){ const l=document.createElementNS(svgNS,"line"); l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2); l.setAttribute("stroke","#9ca3af");l.setAttribute("stroke-width","1");svg.appendChild(l); }
+    const [ax1]=toScreen(-2.3,0); const [ax2]=toScreen(2.3,0);
+    axLine(ax1,oy,ax2,oy);
+    const [,ay1]=toScreen(0,-1.8); const [,ay2]=toScreen(0,1.8);
+    axLine(ox,ay1,ox,ay2);
+    const tl=document.createElementNS(svgNS,"text"); tl.setAttribute("x","6");tl.setAttribute("y","14");
+    tl.setAttribute("fill","#1f2937");tl.setAttribute("font-size","11");tl.setAttribute("font-family","sans-serif");
+    tl.setAttribute("font-weight","bold");tl.textContent=title;svg.appendChild(tl);
+    return svg;
+  }
+
+  function arrow(svg,x1,y1,x2,y2,color){
+    const l=document.createElementNS(svgNS,"line"); l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2); l.setAttribute("stroke",color);l.setAttribute("stroke-width","2");svg.appendChild(l);
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1; const ux=dx/len,uy=dy/len; const sz=8;
+    const tri=document.createElementNS(svgNS,"polygon");
+    tri.setAttribute("points",`${x2},${y2} ${x2-ux*sz+uy*sz*0.4},${y2-uy*sz-ux*sz*0.4} ${x2-ux*sz-uy*sz*0.4},${y2-uy*sz+ux*sz*0.4}`);
+    tri.setAttribute("fill",color); svg.appendChild(tri);
+  }
+
+  function dot(svg,cx,cy,r,fill){ const c=document.createElementNS(svgNS,"circle"); c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r",r);c.setAttribute("fill",fill);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","1.5");svg.appendChild(c); }
+  function lbl(svg,x,y,txt,color,size){ const t=document.createElementNS(svgNS,"text"); t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",color);t.setAttribute("font-size",size||"11");t.setAttribute("font-family","sans-serif");t.textContent=txt;svg.appendChild(t); }
+
+  // Left panel: z-plane
+  const svgL = makeSVG("z-plane");
+  const [z0sx,z0sy]=toScreen(z0x,z0y);
+  // Horizontal approach: from z₀+Δ to z₀
+  const [hsx]=toScreen(z0x+delta,z0y);
+  arrow(svgL,hsx,z0sy,z0sx,z0sy,"#f97316");
+  lbl(svgL,hsx+3,z0sy-5,"z₀+Δ","#f97316","10");
+  // Vertical approach: from z₀+iΔ to z₀
+  const [,vsy]=toScreen(z0x,z0y+delta);
+  arrow(svgL,z0sx,vsy,z0sx,z0sy,"#3b82f6");
+  lbl(svgL,z0sx+4,vsy-4,"z₀+iΔ","#3b82f6","10");
+  dot(svgL,z0sx,z0sy,6,"#f97316");
+  lbl(svgL,z0sx+8,z0sy-6,"z₀","#f97316","12");
+
+  // Right panel: f-space difference quotient vectors
+  const svgR = makeSVG("f(z)-space: quotient vectors");
+  const f0=evalF(z0x,z0y);
+  const fH=evalF(z0x+delta,z0y);
+  const fV=evalF(z0x,z0y+delta);
+  // Horizontal quotient: (f(z₀+Δ)-f(z₀))/Δ
+  const hqr=(fH[0]-f0[0])/delta, hqi=(fH[1]-f0[1])/delta;
+  // Vertical quotient: (f(z₀+iΔ)-f(z₀))/(iΔ) = -i*(Δf/Δ)
+  const vqr=(fV[1]-f0[1])/delta, vqi=-(fV[0]-f0[0])/delta;
+  const [origx,origy]=toScreen(0,0);
+  const [hqsx,hqsy]=toScreen(hqr,hqi);
+  const [vqsx,vqsy]=toScreen(vqr,vqi);
+  arrow(svgR,origx,origy,hqsx,hqsy,"#f97316");
+  lbl(svgR,hqsx+5,hqsy,"horiz quotient","#f97316","10");
+  arrow(svgR,origx,origy,vqsx,vqsy,"#3b82f6");
+  lbl(svgR,vqsx+5,vqsy,"vert quotient","#3b82f6","10");
+  dot(svgR,origx,origy,4,"#6b7280");
+  // Label: they agree (f=z² is analytic)
+  const agree=Math.abs(hqr-vqr)+Math.abs(hqi-vqi)<0.3;
+  lbl(svgR,6,H-8, agree?"Quotients agree — C-R holds":"Quotients differ — C-R fails", agree?"#059669":"#dc2626","10");
+
+  const wrap=document.createElement("div");
+  wrap.style.cssText="display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.75rem 0;";
+  wrap.appendChild(svgL); wrap.appendChild(svgR);
+
+  const note=document.createElement("div");
+  note.style.cssText="font-size:0.82em; color:#6b7280; font-style:italic; margin-top:0.3rem;";
+  note.textContent="Static illustration for f(z) = z², z₀ = 0.7+0.5i, Δ = 0.4. Left: two approach directions toward z₀. Right: the two difference quotient vectors point to the same destination — confirming that f = z² is differentiable at z₀. The interactive below lets you explore other functions.";
+
+  const outer=document.createElement("div");
+  outer.appendChild(wrap); outer.appendChild(note);
+  return outer;
+}
+```
+
 Approach $z_0 = x_0+iy_0$ along two different directions and demand the limit is the same.
 
 **Horizontal approach** ($z = x+iy_0$, $z-z_0 = \Delta x$):
 
-With $\Delta x$ real, the difference quotient separates cleanly into real and imaginary parts:
+Write $f(z) - f(z_0) = [u(x_0+\Delta x, y_0) - u(x_0, y_0)] + i[v(x_0+\Delta x, y_0) - v(x_0, y_0)]$. Dividing by the real number $\Delta x$ keeps real and imaginary parts separate:
 $$\frac{f(z)-f(z_0)}{\Delta x} = \frac{[u(x_0+\Delta x,\,y_0)-u(x_0,y_0)]}{\Delta x} + i\frac{[v(x_0+\Delta x,\,y_0)-v(x_0,y_0)]}{\Delta x}$$
 
 Taking $\Delta x \to 0$, each fraction is just a partial derivative:
 $$f'(z_0) = u_x + iv_x$$
-
-<!-- STUDENT: The algebra from the limit definition to "u_x + iv_x" is skipped. Expanding the difference quotient (f(z)−f(z₀))/(z−z₀) with z−z₀ = Δx, separating real and imaginary parts, then taking Δx → 0 requires a few steps that are not obvious on a first reading. A reader who has only seen real derivatives won't immediately see where u_x + iv_x comes from. -->
 
 **Vertical approach** ($z = x_0+iy$, $z-z_0 = i\Delta y$):
 
@@ -311,15 +603,230 @@ $$\frac{f(z)-f(z_0)}{i\Delta y} = \frac{1}{i}\cdot\frac{[u(x_0,y_0+\Delta y)-u(x
 Using $1/i = -i$ and taking $\Delta y \to 0$:
 $$f'(z_0) = v_y - iu_y$$
 
-<!-- STUDENT: Same issue here: dividing by i·Δy and separating real/imaginary parts is non-obvious. The step from the complex fraction with denominator i to "v_y − iu_y" involves dividing both numerator and denominator parts by i (i.e. multiplying by −i), which a reader who hasn't done this before will not follow silently. -->
-
-Equating real and imaginary parts:
+Equating real and imaginary parts of $u_x + iv_x = v_y - iu_y$:
 
 $$\boxed{u_x = v_y \qquad u_y = -v_x}$$
 
 These are the **Cauchy-Riemann (C-R) equations**. They are necessary for complex differentiability. If the partial derivatives are continuous in a neighbourhood of $z_0$, they are also sufficient.
 
-<!-- VIZ: Cauchy-Riemann equation explorer — dual-panel partial derivative display. Left panel: the complex plane showing a draggable point z₀. The reader can select a function from a dropdown (f(z) = z², f(z) = e^z, f(z) = z̄, f(z) = |z|²). Right panel: a 2×2 table of partial derivatives uₓ, u_y, vₓ, v_y computed numerically at z₀ and updated live as z₀ is dragged. Below the table, display whether the C-R equations hold: "uₓ = v_y? [value] vs [value] — YES ✓" or "NO ✗" in green/red. A colour-coded background fills the complex plane to show regions where the C-R equations hold (green tint) vs fail (red tint): for f = z̄ the entire plane is red; for f = z² the entire plane is green; for f = |z|² only the origin is green. This gives the reader a spatial map of analyticity. The series palette applies: green (#059669) for C-R satisfied, red (#dc2626) for violated. Builds on the complex multiplication visualiser that precedes it in this chapter: z₀ is the same orange point. -->
+*Quick check.* For $f(z) = z^2$ we found $u = x^2-y^2$, $v = 2xy$ earlier. Verify: $u_x = 2x = v_y$ and $u_y = -2y = -v_x = -2y$. Both equations hold everywhere — consistent with $z^2$ being entire. Exercise 1 walks through this systematically and uses the result to compute $f'(z)$.
+
+```{ojs}
+//| echo: false
+{
+  // C-R approach-direction demo
+  // Left panel: z-plane with z₀ (draggable via sliders), two approach arrows
+  // Right: "derivative plane" showing the two difference quotients as Δ→0
+  const W = 320, H = 300, SCALE = 70;
+  const CX = W/2, CY = H/2;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const funcSel = Inputs.select(
+    ["f(z) = z²", "f(z) = eᶻ", "f(z) = z̄", "f(z) = |z|²"],
+    { value: "f(z) = z²", label: "Function" }
+  );
+  const z0xSlider = Inputs.range([-2, 2], { value: 0.7, step: 0.1, label: "Re(z₀)" });
+  const z0ySlider = Inputs.range([-2, 2], { value: 0.5, step: 0.1, label: "Im(z₀)" });
+  const deltaSlider = Inputs.range([0.02, 1.0], { value: 0.5, step: 0.02, label: "Δ (step size)" });
+
+  function evalF(name, re, im) {
+    switch (name) {
+      case "f(z) = z²":   return [re*re - im*im, 2*re*im];
+      case "f(z) = eᶻ": { const ex=Math.exp(re); return [ex*Math.cos(im), ex*Math.sin(im)]; }
+      case "f(z) = z̄":   return [re, -im];
+      case "f(z) = |z|²": return [re*re + im*im, 0];
+      default:             return [re, im];
+    }
+  }
+
+  function toScreen(re, im) { return [CX + re*SCALE, CY - im*SCALE]; }
+  function fromScreen(px, py) { return [(px-CX)/SCALE, -(py-CY)/SCALE]; }
+
+  function makePanel(w, h, title) {
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", w); svg.setAttribute("height", h);
+    svg.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+    // Grid
+    for (let i=-3; i<=3; i++) {
+      const xl = document.createElementNS(svgNS,"line");
+      const [lx]=toScreen(i,0); const [,ly1]=toScreen(0,-3); const [,ly2]=toScreen(0,3);
+      xl.setAttribute("x1",lx); xl.setAttribute("y1",ly1); xl.setAttribute("x2",lx); xl.setAttribute("y2",ly2);
+      xl.setAttribute("stroke","#e5e7eb"); xl.setAttribute("stroke-width","0.5"); svg.appendChild(xl);
+      const yl = document.createElementNS(svgNS,"line");
+      const [lx1]=toScreen(-3,0); const [lx2]=toScreen(3,0); const [,ly]=toScreen(0,i);
+      yl.setAttribute("x1",lx1); yl.setAttribute("y1",ly); yl.setAttribute("x2",lx2); yl.setAttribute("y2",ly);
+      yl.setAttribute("stroke","#e5e7eb"); yl.setAttribute("stroke-width","0.5"); svg.appendChild(yl);
+    }
+    // Axes
+    const [ox,oy]=toScreen(0,0);
+    function axLine(x1,y1,x2,y2) {
+      const l=document.createElementNS(svgNS,"line");
+      l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2);
+      l.setAttribute("stroke","#9ca3af"); l.setAttribute("stroke-width","1"); svg.appendChild(l);
+    }
+    const [ax1]=toScreen(-2.8,0); const [ax2]=toScreen(2.8,0);
+    axLine(ax1,oy,ax2,oy);
+    const [,ay1]=toScreen(0,-2.3); const [,ay2]=toScreen(0,2.3);
+    axLine(ox,ay1,ox,ay2);
+    // Panel label
+    const tl = document.createElementNS(svgNS,"text");
+    tl.setAttribute("x","6"); tl.setAttribute("y","16");
+    tl.setAttribute("fill","#6b7280"); tl.setAttribute("font-size","10");
+    tl.setAttribute("font-family","sans-serif"); tl.textContent = title;
+    svg.appendChild(tl);
+    return { svg, ox, oy };
+  }
+
+  function arrowHead(svg, x2, y2, dx, dy, color) {
+    const len = Math.sqrt(dx*dx+dy*dy);
+    if (len < 0.001) return;
+    const ux=dx/len, uy=dy/len;
+    const size=7;
+    const lx=x2-ux*size+uy*size*0.4, ly=y2-uy*size-ux*size*0.4;
+    const rx=x2-ux*size-uy*size*0.4, ry=y2-uy*size+ux*size*0.4;
+    const tri=document.createElementNS(svgNS,"polygon");
+    tri.setAttribute("points",`${x2},${y2} ${lx},${ly} ${rx},${ry}`);
+    tri.setAttribute("fill",color); svg.appendChild(tri);
+  }
+
+  function addArrow(svg, x1, y1, x2, y2, color, dash) {
+    const l=document.createElementNS(svgNS,"line");
+    l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2);
+    l.setAttribute("stroke",color); l.setAttribute("stroke-width","2");
+    if (dash) l.setAttribute("stroke-dasharray",dash);
+    svg.appendChild(l);
+    arrowHead(svg, x2, y2, x2-x1, y2-y1, color);
+  }
+
+  function addDot(svg, cx, cy, r, fill, stroke) {
+    const c=document.createElementNS(svgNS,"circle");
+    c.setAttribute("cx",cx); c.setAttribute("cy",cy); c.setAttribute("r",r);
+    c.setAttribute("fill",fill); c.setAttribute("stroke",stroke||"#fff"); c.setAttribute("stroke-width","1.5");
+    svg.appendChild(c);
+  }
+
+  function addLabel(svg, x, y, txt, color, size) {
+    const t=document.createElementNS(svgNS,"text");
+    t.setAttribute("x",x); t.setAttribute("y",y);
+    t.setAttribute("fill",color); t.setAttribute("font-size",size||"11");
+    t.setAttribute("font-family","sans-serif"); t.textContent=txt;
+    svg.appendChild(t);
+  }
+
+  function buildCRPanel(funcName, z0x, z0y, delta) {
+    const { svg: svgL } = makePanel(W, H, "z-plane");
+
+    // C-R background wash: pixel-test each cell
+    const WASH_STEP = 12, H_EPS = 0.01;
+    for (let px=0; px<W; px+=WASH_STEP) {
+      for (let py=0; py<H; py+=WASH_STEP) {
+        const [re,im] = fromScreen(px+WASH_STEP/2, py+WASH_STEP/2);
+        const [u0,v0]=evalF(funcName,re,im);
+        const [udx,vdx]=evalF(funcName,re+H_EPS,im);
+        const [udy,vdy]=evalF(funcName,re,im+H_EPS);
+        const ux=(udx-u0)/H_EPS, vx=(vdx-v0)/H_EPS;
+        const uy=(udy-u0)/H_EPS, vy=(vdy-v0)/H_EPS;
+        const err = Math.abs(ux-vy) + Math.abs(uy+vx);
+        const ok = err < 0.05;
+        const rect=document.createElementNS(svgNS,"rect");
+        rect.setAttribute("x",px); rect.setAttribute("y",py);
+        rect.setAttribute("width",WASH_STEP); rect.setAttribute("height",WASH_STEP);
+        rect.setAttribute("fill", ok ? "#059669" : "#dc2626");
+        rect.setAttribute("opacity","0.12");
+        svgL.appendChild(rect);
+      }
+    }
+
+    // z₀ point
+    const [z0sx, z0sy] = toScreen(z0x, z0y);
+    addDot(svgL, z0sx, z0sy, 7, "#f97316", "#fff");
+    addLabel(svgL, z0sx+9, z0sy-6, "z₀", "#f97316", "12");
+
+    // Horizontal approach arrow: z₀ + Δ → z₀
+    const [hsx] = toScreen(z0x + delta, z0y);
+    addArrow(svgL, hsx, z0sy, z0sx, z0sy, "#f97316", "");
+    addLabel(svgL, hsx+4, z0sy-4, "→ z₀", "#f97316", "10");
+
+    // Vertical approach arrow: z₀ + iΔ → z₀
+    const [,vsy] = toScreen(z0x, z0y + delta);
+    addArrow(svgL, z0sx, vsy, z0sx, z0sy, "#3b82f6", "");
+    addLabel(svgL, z0sx+4, vsy-4, "↑ z₀", "#3b82f6", "10");
+
+    // Panel labels
+    addLabel(svgL, 6, H-8, "Green = C-R holds   Red = fails", "#6b7280", "9");
+
+    // Right panel: derivative plane — two quotient vectors
+    const { svg: svgR } = makePanel(W, H, "difference quotient");
+
+    const f0 = evalF(funcName, z0x, z0y);
+    const fHoriz = evalF(funcName, z0x + delta, z0y);
+    const fVert  = evalF(funcName, z0x, z0y + delta);
+
+    // Horizontal quotient: (f(z₀+Δ) − f(z₀)) / Δ   (real Δ)
+    const hqr = (fHoriz[0]-f0[0])/delta, hqi = (fHoriz[1]-f0[1])/delta;
+    // Vertical quotient: (f(z₀+iΔ) − f(z₀)) / (iΔ) = −i·(Δf)/Δ
+    const vqr = (fVert[1]-f0[1])/delta, vqi = -(fVert[0]-f0[0])/delta;
+
+    const [origx, origy] = toScreen(0,0);
+    const [hqsx, hqsy] = toScreen(hqr, hqi);
+    const [vqsx, vqsy] = toScreen(vqr, vqi);
+
+    addArrow(svgR, origx, origy, hqsx, hqsy, "#f97316", "");
+    addLabel(svgR, hqsx+6, hqsy, "horiz", "#f97316", "10");
+
+    addArrow(svgR, origx, origy, vqsx, vqsy, "#3b82f6", "");
+    addLabel(svgR, vqsx+6, vqsy, "vert", "#3b82f6", "10");
+
+    addDot(svgR, origx, origy, 4, "#6b7280", "#fff");
+
+    // Check agreement
+    const agree = Math.abs(hqr-vqr) + Math.abs(hqi-vqi);
+    const color = agree < 0.15 ? "#059669" : "#dc2626";
+    const msg   = agree < 0.15 ? "Quotients agree — f differentiable here" : "Quotients differ — C-R fails here";
+    addLabel(svgR, 6, H-20, msg, color, "10");
+    addLabel(svgR, 6, H-8, `|error| = ${agree.toFixed(3)} (small Δ → more precise)`, "#9ca3af", "9");
+
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.5rem 0;";
+    wrap.appendChild(svgL);
+    wrap.appendChild(svgR);
+    return wrap;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+
+  const titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleEl.textContent = "Cauchy-Riemann: approach-direction explorer";
+  container.appendChild(titleEl);
+
+  container.appendChild(funcSel);
+  container.appendChild(z0xSlider);
+  container.appendChild(z0ySlider);
+  container.appendChild(deltaSlider);
+
+  const vizDiv = document.createElement("div");
+  container.appendChild(vizDiv);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "Left: z-plane with orange (horizontal) and blue (vertical) approach arrows toward z₀. Background green where C-R holds, red where it fails. Right: the two difference quotients as vectors — they must point to the same place for f to be differentiable at z₀. Reduce Δ to see the quotients converge (or not). For f = z̄ the entire left panel is red and the quotient vectors never align.";
+  container.appendChild(noteEl);
+
+  function update() {
+    vizDiv.innerHTML = "";
+    vizDiv.appendChild(buildCRPanel(funcSel.value, z0xSlider.value, z0ySlider.value, deltaSlider.value));
+  }
+  funcSel.addEventListener("input", update);
+  z0xSlider.addEventListener("input", update);
+  z0ySlider.addEventListener("input", update);
+  deltaSlider.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
 
 
 **Consequence.** For $f(z) = \bar{z}$: $u_x = 1$ but $v_y = -1$. The C-R equations fail everywhere, so $\bar{z}$ is nowhere differentiable — even though its real and imaginary parts are smooth real functions.
@@ -348,7 +855,270 @@ Conversely, given a harmonic $u$ on a **simply connected domain** — one with n
 
 <!-- STUDENT: "Simply connected domain" is used twice in this chapter without definition. Engineers at this layer likely know it intuitively (no holes) but the term deserves at least a parenthetical: "a domain with no holes, so any closed loop in it can be shrunk to a point." It also appears in Chapter 2 — one clear definition in Chapter 1 would carry forward. -->
 
-<!-- VIZ: Harmonic function landscape — 3D surface and contour view. Select an analytic function from a dropdown (f = z², f = e^z, f = sin z). Show two side-by-side canvas panels: left shows the real part u(x,y) as a heat-map / contour plot with equipotential lines labelled; right shows the imaginary part v(x,y) similarly. Overlay the gradient field ∇u as small arrows on the u-panel. A toggle "Show Laplacian check" computes ∇²u numerically at each pixel and colours the result: near-zero in neutral grey, departures in red — for any analytic function this should be uniformly grey, confirming u is harmonic. A second toggle "Show orthogonality" draws sample level curves of u and v simultaneously on a single panel; they should cross at right angles everywhere the function is analytic (non-critical). The reader drags a point to see the live value u + iv and the gradient direction. This interactive makes tangible the statement that "the real and imaginary parts of any analytic function are harmonic" and that their level curves are orthogonal. Series thread: this establishes the potential / stream-function visual vocabulary that Chapter 4 (conformal mapping) builds on directly. -->
+```{ojs}
+//| echo: false
+{
+  // Harmonic function landscape
+  // Dual canvas: left = u(x,y) equipotential contours + optional Laplacian check
+  //              right = v(x,y) streamlines (or combined orthogonality view)
+  const W = 300, H = 280, SCALE = 55;
+  const CX = W/2, CY = H/2;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const funcSel  = Inputs.select(
+    ["f = z²", "f = eᶻ", "f = sin z", "f = z³"],
+    { value: "f = z²", label: "Analytic function" }
+  );
+  const modeToggle  = Inputs.toggle({ label: "Show Laplacian check (grey = harmonic, red = not)", value: false });
+  const orthToggle  = Inputs.toggle({ label: "Show orthogonality overlay", value: false });
+  const ptxSlider   = Inputs.range([-2, 2], { value: 0.8, step: 0.1, label: "Probe Re(z)" });
+  const ptySlider   = Inputs.range([-2, 2], { value: 0.6, step: 0.1, label: "Probe Im(z)" });
+
+  function evalF(name, re, im) {
+    switch (name) {
+      case "f = z²":  return [re*re - im*im, 2*re*im];
+      case "f = eᶻ": { const ex=Math.exp(re); return [ex*Math.cos(im), ex*Math.sin(im)]; }
+      case "f = sin z": return [Math.sin(re)*Math.cosh(im), Math.cos(re)*Math.sinh(im)];
+      case "f = z³":  return [re*re*re - 3*re*im*im, 3*re*re*im - im*im*im];
+      default:         return [re, im];
+    }
+  }
+
+  function getU(name, re, im) { return evalF(name,re,im)[0]; }
+  function getV(name, re, im) { return evalF(name,re,im)[1]; }
+
+  // Draw a canvas panel: heatmap of scalar field + iso-contours
+  function renderHeatmap(canvas, name, component, showLaplacian, showOrth) {
+    const ctx = canvas.getContext("2d");
+    const img = ctx.createImageData(W, H);
+    const d = img.data;
+    const H_EPS = 0.05;
+
+    // First pass: collect min/max of field
+    let fmin = Infinity, fmax = -Infinity;
+    for (let px=0; px<W; px+=2) {
+      for (let py=0; py<H; py+=2) {
+        const re=(px-CX)/SCALE, im=-(py-CY)/SCALE;
+        const v = component === "u" ? getU(name,re,im) : getV(name,re,im);
+        if (isFinite(v)) { if(v<fmin) fmin=v; if(v>fmax) fmax=v; }
+      }
+    }
+    const frange = fmax - fmin || 1;
+
+    for (let px=0; px<W; px++) {
+      for (let py=0; py<H; py++) {
+        const re=(px-CX)/SCALE, im=-(py-CY)/SCALE;
+        const idx=(py*W+px)*4;
+
+        if (showLaplacian) {
+          // Numerical Laplacian check: ∇²u ≈ (u(+h)-2u+u(-h))/h² + same for y
+          const u0   = getU(name,re,im);
+          const upx  = getU(name,re+H_EPS,im);
+          const umx  = getU(name,re-H_EPS,im);
+          const upy  = getU(name,re,im+H_EPS);
+          const umy  = getU(name,re,im-H_EPS);
+          const lap  = (upx+umx+upy+umy-4*u0)/(H_EPS*H_EPS);
+          const err  = Math.min(Math.abs(lap)/5, 1);
+          // Near-zero → grey, large → red
+          d[idx]   = Math.round(180 + err*75);
+          d[idx+1] = Math.round(180 - err*150);
+          d[idx+2] = Math.round(180 - err*150);
+          d[idx+3] = 255;
+        } else {
+          const fv = component === "u" ? getU(name,re,im) : getV(name,re,im);
+          if (!isFinite(fv)) { d[idx]=255; d[idx+1]=255; d[idx+2]=255; d[idx+3]=255; continue; }
+          const t = Math.max(0, Math.min(1, (fv-fmin)/frange));
+          // Blue-white-orange diverging palette
+          if (t < 0.5) {
+            const s = t*2;
+            d[idx]   = Math.round(59+s*(255-59));
+            d[idx+1] = Math.round(130+s*(255-130));
+            d[idx+2] = Math.round(246+s*(255-246));
+          } else {
+            const s = (t-0.5)*2;
+            d[idx]   = Math.round(255);
+            d[idx+1] = Math.round(255-s*(255-115));
+            d[idx+2] = Math.round(255-s*(255-22));
+          }
+          d[idx+3] = 255;
+        }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+
+    // Iso-contours via marching squares (simplified: draw line segments)
+    function isoContour(field, level, color, alpha) {
+      ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 0.9;
+      ctx.globalAlpha = alpha;
+      const step = 3;
+      for (let px=0; px<W-step; px+=step) {
+        for (let py=0; py<H-step; py+=step) {
+          const re=(px-CX)/SCALE, im=-(py-CY)/SCALE;
+          const v00=field(name,re,im),   v10=field(name,re+step/SCALE,im);
+          const v01=field(name,re,im-step/SCALE), v11=field(name,re+step/SCALE,im-step/SCALE);
+          const c0=(v00>level), c1=(v10>level), c2=(v11>level), c3=(v01>level);
+          if (c0===c1 && c1===c2 && c2===c3) continue;
+          function interp(v0,v1,x0,y0,x1,y1) {
+            if (Math.abs(v1-v0)<1e-9) return [(x0+x1)/2,(y0+y1)/2];
+            const t=(level-v0)/(v1-v0);
+            return [x0+(x1-x0)*t, y0+(y1-y0)*t];
+          }
+          const pts=[];
+          if (c0!==c1) pts.push(interp(v00,v10, px,py, px+step,py));
+          if (c1!==c2) pts.push(interp(v10,v11, px+step,py, px+step,py+step));
+          if (c3!==c2) pts.push(interp(v01,v11, px,py+step, px+step,py+step));
+          if (c0!==c3) pts.push(interp(v00,v01, px,py, px,py+step));
+          if (pts.length>=2) {
+            ctx.moveTo(pts[0][0],pts[0][1]); ctx.lineTo(pts[1][0],pts[1][1]);
+          }
+        }
+      }
+      ctx.stroke(); ctx.globalAlpha=1;
+    }
+
+    // Draw several iso-levels
+    const numLevels = 9;
+    const isColor   = component === "u" ? "#1d4ed8" : "#6d28d9";
+    for (let k=0; k<=numLevels; k++) {
+      const lv = fmin + (k/numLevels)*frange;
+      isoContour(component==="u"?getU:getV, lv, isColor, 0.7);
+    }
+
+    if (showOrth) {
+      // Overlay v-contours on u-panel (or vice versa) to show orthogonality
+      const crossField = component === "u" ? getV : getU;
+      const [cfmin, cfmax] = (() => {
+        let mn=Infinity,mx=-Infinity;
+        for (let px=0; px<W; px+=4) for (let py=0; py<H; py+=4) {
+          const re=(px-CX)/SCALE, im=-(py-CY)/SCALE;
+          const v=crossField(name,re,im);
+          if(isFinite(v)){if(v<mn)mn=v;if(v>mx)mx=v;}
+        }
+        return [mn,mx];
+      })();
+      for (let k=0; k<=numLevels; k++) {
+        const lv=cfmin+(k/numLevels)*(cfmax-cfmin);
+        isoContour(crossField, lv, component==="u"?"#8b5cf6":"#f97316", 0.55);
+      }
+    }
+
+    // Axes
+    ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth=1; ctx.globalAlpha=1;
+    ctx.beginPath(); ctx.moveTo(0,CY); ctx.lineTo(W,CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX,0); ctx.lineTo(CX,H); ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle="#374151"; ctx.font="10px sans-serif";
+    ctx.fillText("Re", W-22, CY-4); ctx.fillText("Im", CX+4, 12);
+
+    // Panel title
+    ctx.fillStyle="#1f2937"; ctx.font="bold 11px sans-serif";
+    const panelTitle = showLaplacian ? "Laplacian ∇²u (grey = zero = harmonic)" :
+                       (component==="u" ? "u(x,y) — equipotentials" : "v(x,y) — streamlines");
+    ctx.fillText(panelTitle, 4, 12);
+  }
+
+  function renderProbeInfo(name, ptx, pty) {
+    const [uv, vv] = evalF(name, ptx, pty);
+    const eps = 0.02;
+    const ux  = (getU(name,ptx+eps,pty)-getU(name,ptx-eps,pty))/(2*eps);
+    const uy  = (getU(name,ptx,pty+eps)-getU(name,ptx,pty-eps))/(2*eps);
+    const vx  = (getV(name,ptx+eps,pty)-getV(name,ptx-eps,pty))/(2*eps);
+    const vy  = (getV(name,ptx,pty+eps)-getV(name,ptx,pty-eps))/(2*eps);
+    const crErr = Math.abs(ux-vy)+Math.abs(uy+vx);
+    const crOk  = crErr < 0.05;
+    const lapU  = (getU(name,ptx+eps,pty)+getU(name,ptx-eps,pty)+getU(name,ptx,pty+eps)+getU(name,ptx,pty-eps)-4*uv)/(eps*eps);
+    // Gradient dot product to check orthogonality
+    const dot   = ux*vx + uy*vy;
+    const info = document.createElement("div");
+    info.style.cssText = "font-family:sans-serif; font-size:0.82em; color:#374151; margin-top:0.5rem; display:flex; gap:1.5rem; flex-wrap:wrap;";
+    info.innerHTML = `
+      <span>z₀ = ${ptx.toFixed(2)} + ${pty.toFixed(2)}i</span>
+      <span>u = ${uv.toFixed(3)}</span>
+      <span>v = ${vv.toFixed(3)}</span>
+      <span style="color:${crOk?"#059669":"#dc2626"}">C-R: ${crOk?"✓ holds":"✗ fails"}</span>
+      <span>∇²u ≈ ${lapU.toFixed(3)}</span>
+      <span>∇u·∇v = ${dot.toFixed(3)} (≈0 means orthogonal)</span>
+    `;
+    return info;
+  }
+
+  function renderProbeOverlay(canvas, name, ptx, pty, component) {
+    const ctx = canvas.getContext("2d");
+    const [psx, psy] = [CX + ptx*SCALE, CY - pty*SCALE];
+    ctx.fillStyle = "#f97316"; ctx.strokeStyle="#fff"; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(psx,psy,5,0,2*Math.PI); ctx.fill(); ctx.stroke();
+    // Gradient arrow
+    const eps = 0.06;
+    const gx = component==="u" ? (getU(name,ptx+eps,pty)-getU(name,ptx-eps,pty))/(2*eps)
+                                : (getV(name,ptx+eps,pty)-getV(name,ptx-eps,pty))/(2*eps);
+    const gy = component==="u" ? (getU(name,ptx,pty+eps)-getU(name,ptx,pty-eps))/(2*eps)
+                                : (getV(name,ptx,pty+eps)-getV(name,ptx,pty-eps))/(2*eps);
+    const gLen = Math.sqrt(gx*gx+gy*gy)||1;
+    const scale = 18;
+    const ex = psx + (gx/gLen)*scale, ey = psy - (gy/gLen)*scale;
+    ctx.strokeStyle="#f97316"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(psx,psy); ctx.lineTo(ex,ey); ctx.stroke();
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+
+  const titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleEl.textContent = "Harmonic function landscape: equipotentials and streamlines";
+  container.appendChild(titleEl);
+
+  container.appendChild(funcSel);
+  container.appendChild(modeToggle);
+  container.appendChild(orthToggle);
+  container.appendChild(ptxSlider);
+  container.appendChild(ptySlider);
+
+  const canvasRow = document.createElement("div");
+  canvasRow.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.5rem 0;";
+
+  const cL = document.createElement("canvas"); cL.width=W; cL.height=H;
+  cL.style.cssText = "border-radius:4px; display:block;";
+  const cR = document.createElement("canvas"); cR.width=W; cR.height=H;
+  cR.style.cssText = "border-radius:4px; display:block;";
+
+  canvasRow.appendChild(cL); canvasRow.appendChild(cR);
+  container.appendChild(canvasRow);
+
+  const probeDiv = document.createElement("div");
+  container.appendChild(probeDiv);
+
+  const noteEl = document.createElement("div");
+  noteEl.style.cssText = "margin-top:0.4rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent = "Blue curves: equipotential lines (u = const). Purple curves: streamlines (v = const). Toggle orthogonality to see them overlaid — they meet at right angles everywhere the function is analytic. Toggle Laplacian check: the left panel turns uniformly grey confirming ∇²u = 0 throughout. Orange dot is a probe point; the orange arrow shows the gradient direction.";
+  container.appendChild(noteEl);
+
+  function update() {
+    const fn = funcSel.value;
+    const lapl = modeToggle.value;
+    const orth = orthToggle.value;
+    const ptx = ptxSlider.value, pty = ptySlider.value;
+
+    renderHeatmap(cL, fn, "u", lapl, orth);
+    renderHeatmap(cR, fn, "v", false, orth);
+    renderProbeOverlay(cL, fn, ptx, pty, "u");
+    renderProbeOverlay(cR, fn, ptx, pty, "v");
+
+    probeDiv.innerHTML = "";
+    probeDiv.appendChild(renderProbeInfo(fn, ptx, pty));
+  }
+
+  funcSel.addEventListener("input", update);
+  modeToggle.addEventListener("input", update);
+  orthToggle.addEventListener("input", update);
+  ptxSlider.addEventListener("input", update);
+  ptySlider.addEventListener("input", update);
+  update();
+
+  return container;
+}
+```
 
 ---
 
@@ -359,6 +1129,222 @@ Conversely, given a harmonic $u$ on a **simply connected domain** — one with n
 $$e^z = e^x(\cos y + i\sin y), \qquad \frac{d}{dz}e^z = e^z$$
 
 Entire. Periodic with period $2\pi i$: $e^{z+2\pi i} = e^z$.
+
+```{ojs}
+//| echo: false
+{
+  // Complex exponential periodicity
+  // Left: z-plane with 2π-wide horizontal strips coloured by period band
+  // A constrained point z moves along Re(z) = fixed with Im varying
+  // Right: w-plane showing e^z tracing a circle |w| = e^{Re(z)}
+  // Fading trail shows the orbit; counter shows full laps
+
+  const W = 300, H = 280, SCALE = 55, CX = W/2, CY = H/2;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const reSlider = Inputs.range([-1.5, 1.5], { value: 1.0, step: 0.1, label: "Re(z) — controls |e^z|" });
+  const tSlider  = Inputs.range([0, 4*Math.PI], { value: 0, step: 0.05, label: "Im(z) = t" });
+
+  const STRIP_COLORS = ["#dbeafe","#fef3c7","#d1fae5","#fce7f3","#ede9fe"];
+
+  function toScreen(re, im) { return [CX + re*SCALE, CY - im*SCALE]; }
+
+  function buildViz(reZ, tVal) {
+    // Left SVG — z-plane
+    const svgL = document.createElementNS(svgNS,"svg");
+    svgL.setAttribute("width",W); svgL.setAttribute("height",H);
+    svgL.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    // Period strips: horizontal bands of height 2π, coloured cyclically
+    const stripH = 2*Math.PI * SCALE; // pixels per period
+    const numStrips = Math.ceil(H / stripH) + 2;
+    const stripOffset = CY; // y=0 maps to CY
+    for (let k=-numStrips; k<=numStrips; k++) {
+      const yTop = stripOffset - (k+1)*stripH;
+      const rect = document.createElementNS(svgNS,"rect");
+      rect.setAttribute("x","0"); rect.setAttribute("y", yTop.toFixed(1));
+      rect.setAttribute("width", W); rect.setAttribute("height", stripH.toFixed(1));
+      rect.setAttribute("fill", STRIP_COLORS[((k%5)+5)%5]);
+      rect.setAttribute("opacity","0.55");
+      svgL.appendChild(rect);
+      // Strip label
+      const yMid = yTop + stripH/2;
+      if (yMid > 0 && yMid < H) {
+        const lbl = document.createElementNS(svgNS,"text");
+        lbl.setAttribute("x","4"); lbl.setAttribute("y", (yMid+4).toFixed(1));
+        lbl.setAttribute("fill","#6b7280"); lbl.setAttribute("font-size","9");
+        lbl.setAttribute("font-family","sans-serif");
+        lbl.textContent = `Im ∈ [${(k*2).toFixed(0)}π, ${(k*2+2).toFixed(0)}π)`;
+        svgL.appendChild(lbl);
+      }
+    }
+
+    // Grid lines (x only for clarity)
+    for (let i=-3; i<=3; i++) {
+      const xl=document.createElementNS(svgNS,"line");
+      const [lx]=toScreen(i,0); const [,ly1]=toScreen(0,-3); const [,ly2]=toScreen(0,3);
+      xl.setAttribute("x1",lx); xl.setAttribute("y1",ly1); xl.setAttribute("x2",lx); xl.setAttribute("y2",ly2);
+      xl.setAttribute("stroke","rgba(0,0,0,0.08)"); xl.setAttribute("stroke-width","0.5");
+      svgL.appendChild(xl);
+    }
+
+    // Axes
+    const [ox,oy]=toScreen(0,0);
+    function axLine(svg,x1,y1,x2,y2){ const l=document.createElementNS(svgNS,"line"); l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2); l.setAttribute("stroke","#9ca3af");l.setAttribute("stroke-width","1");svg.appendChild(l); }
+    const [ax1]=toScreen(-2.8,0); const [ax2]=toScreen(2.8,0);
+    axLine(svgL,ax1,oy,ax2,oy);
+    const [,ay1]=toScreen(0,-2.3); const [,ay2]=toScreen(0,2.3);
+    axLine(svgL,ox,ay1,ox,ay2);
+
+    // Vertical line at Re = reZ (the constrained path)
+    const [reLineX]=toScreen(reZ,0);
+    const pathLine=document.createElementNS(svgNS,"line");
+    pathLine.setAttribute("x1",reLineX); pathLine.setAttribute("y1","0");
+    pathLine.setAttribute("x2",reLineX); pathLine.setAttribute("y2",H);
+    pathLine.setAttribute("stroke","#f97316"); pathLine.setAttribute("stroke-width","1.5");
+    pathLine.setAttribute("stroke-dasharray","5,3"); svgL.appendChild(pathLine);
+
+    // Current z point
+    const [zsx,zsy]=toScreen(reZ,tVal);
+    const zDot=document.createElementNS(svgNS,"circle");
+    zDot.setAttribute("cx",zsx); zDot.setAttribute("cy",zsy); zDot.setAttribute("r","6");
+    zDot.setAttribute("fill","#f97316"); zDot.setAttribute("stroke","#fff"); zDot.setAttribute("stroke-width","1.5");
+    svgL.appendChild(zDot);
+
+    // Label
+    const zLbl=document.createElementNS(svgNS,"text");
+    zLbl.setAttribute("x",zsx+8); zLbl.setAttribute("y",zsy-4);
+    zLbl.setAttribute("fill","#f97316"); zLbl.setAttribute("font-size","11");
+    zLbl.setAttribute("font-family","sans-serif"); zLbl.textContent=`z`;
+    svgL.appendChild(zLbl);
+
+    // Panel label
+    const pl=document.createElementNS(svgNS,"text"); pl.setAttribute("x","6"); pl.setAttribute("y","14");
+    pl.setAttribute("fill","#1f2937"); pl.setAttribute("font-size","11"); pl.setAttribute("font-family","sans-serif");
+    pl.setAttribute("font-weight","bold"); pl.textContent="z-plane (coloured by 2π strips)";
+    svgL.appendChild(pl);
+
+    // Right SVG — w-plane
+    const svgR = document.createElementNS(svgNS,"svg");
+    svgR.setAttribute("width",W); svgR.setAttribute("height",H);
+    svgR.style.cssText = "background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+    const eRe = Math.exp(reZ); // radius of orbit = e^{Re z}
+    const wCX = W/2, wCY = H/2;
+    const wSCALE = Math.min(100/eRe, 70); // auto-scale so circle fits
+
+    function toWScreen(re,im){ return [wCX+re*wSCALE, wCY-im*wSCALE]; }
+    function axLineW(x1,y1,x2,y2){ const l=document.createElementNS(svgNS,"line"); l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2); l.setAttribute("stroke","#9ca3af");l.setAttribute("stroke-width","1");svgR.appendChild(l); }
+    axLineW(0,wCY,W,wCY); axLineW(wCX,0,wCX,H);
+
+    // Draw circle |w| = e^{Re z}
+    const circ=document.createElementNS(svgNS,"circle");
+    circ.setAttribute("cx",wCX); circ.setAttribute("cy",wCY);
+    circ.setAttribute("r",(eRe*wSCALE).toFixed(1));
+    circ.setAttribute("fill","none"); circ.setAttribute("stroke","#d1d5db"); circ.setAttribute("stroke-width","1.5");
+    svgR.appendChild(circ);
+
+    // Trail: last 2π of orbit
+    const TRAIL_STEPS = 80;
+    const trailPath = document.createElementNS(svgNS,"path");
+    let pathD="";
+    for (let k=TRAIL_STEPS; k>=0; k--) {
+      const pastT = tVal - (k/TRAIL_STEPS)*(2*Math.PI);
+      const wr = eRe*Math.cos(pastT), wi = eRe*Math.sin(pastT);
+      const [wx,wy]=toWScreen(wr,wi);
+      pathD += (k===TRAIL_STEPS ? `M ${wx} ${wy}` : ` L ${wx} ${wy}`);
+    }
+    trailPath.setAttribute("d",pathD); trailPath.setAttribute("fill","none");
+    trailPath.setAttribute("stroke","#3b82f6"); trailPath.setAttribute("stroke-width","2");
+    trailPath.setAttribute("opacity","0.6"); svgR.appendChild(trailPath);
+
+    // Current w point
+    const wr=eRe*Math.cos(tVal), wi=eRe*Math.sin(tVal);
+    const [wsx,wsy]=toWScreen(wr,wi);
+    const wDot=document.createElementNS(svgNS,"circle");
+    wDot.setAttribute("cx",wsx); wDot.setAttribute("cy",wsy); wDot.setAttribute("r","6");
+    wDot.setAttribute("fill","#3b82f6"); wDot.setAttribute("stroke","#fff"); wDot.setAttribute("stroke-width","1.5");
+    svgR.appendChild(wDot);
+
+    // Radius annotation
+    const rLine=document.createElementNS(svgNS,"line");
+    rLine.setAttribute("x1",wCX); rLine.setAttribute("y1",wCY);
+    rLine.setAttribute("x2",wsx); rLine.setAttribute("y2",wsy);
+    rLine.setAttribute("stroke","#6b7280"); rLine.setAttribute("stroke-width","0.8");
+    rLine.setAttribute("stroke-dasharray","3,2"); svgR.appendChild(rLine);
+
+    const rLbl=document.createElementNS(svgNS,"text");
+    const midRx=wCX+(wsx-wCX)*0.5, midRy=wCY+(wsy-wCY)*0.5;
+    rLbl.setAttribute("x",midRx+4); rLbl.setAttribute("y",midRy);
+    rLbl.setAttribute("fill","#6b7280"); rLbl.setAttribute("font-size","10");
+    rLbl.setAttribute("font-family","sans-serif");
+    rLbl.textContent=`e^${reZ.toFixed(1)} ≈ ${eRe.toFixed(2)}`;
+    svgR.appendChild(rLbl);
+
+    // Orbit count
+    const laps = Math.floor(tVal / (2*Math.PI));
+    const lapBox=document.createElementNS(svgNS,"rect");
+    lapBox.setAttribute("x",W-90); lapBox.setAttribute("y","5");
+    lapBox.setAttribute("width","85"); lapBox.setAttribute("height","36");
+    lapBox.setAttribute("fill","#1e40af"); lapBox.setAttribute("rx","5"); svgR.appendChild(lapBox);
+    const lapTxt=document.createElementNS(svgNS,"text");
+    lapTxt.setAttribute("x",W-47); lapTxt.setAttribute("y","20");
+    lapTxt.setAttribute("fill","white"); lapTxt.setAttribute("font-size","9");
+    lapTxt.setAttribute("text-anchor","middle"); lapTxt.setAttribute("font-family","sans-serif");
+    lapTxt.textContent="full orbits"; svgR.appendChild(lapTxt);
+    const lapNum=document.createElementNS(svgNS,"text");
+    lapNum.setAttribute("x",W-47); lapNum.setAttribute("y","36");
+    lapNum.setAttribute("fill","white"); lapNum.setAttribute("font-size","16");
+    lapNum.setAttribute("text-anchor","middle"); lapNum.setAttribute("font-family","sans-serif");
+    lapNum.setAttribute("font-weight","bold"); lapNum.textContent=laps.toString(); svgR.appendChild(lapNum);
+
+    // Panel label
+    const pr=document.createElementNS(svgNS,"text"); pr.setAttribute("x","6"); pr.setAttribute("y","14");
+    pr.setAttribute("fill","#1f2937"); pr.setAttribute("font-size","11"); pr.setAttribute("font-family","sans-serif");
+    pr.setAttribute("font-weight","bold"); pr.textContent="w-plane: image e^z";
+    svgR.appendChild(pr);
+
+    const wrap=document.createElement("div");
+    wrap.style.cssText="display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.5rem 0;";
+    wrap.appendChild(svgL); wrap.appendChild(svgR);
+    return wrap;
+  }
+
+  const container=document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+
+  const titleEl=document.createElement("div");
+  titleEl.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleEl.textContent="Complex exponential: periodicity in 2π strips";
+  container.appendChild(titleEl);
+  container.appendChild(reSlider);
+  container.appendChild(tSlider);
+
+  const vizDiv=document.createElement("div"); container.appendChild(vizDiv);
+
+  const infoDiv=document.createElement("div");
+  infoDiv.style.cssText="font-size:0.82em; color:#374151; font-family:sans-serif; margin-top:0.3rem;";
+  container.appendChild(infoDiv);
+
+  const noteEl=document.createElement("div");
+  noteEl.style.cssText="margin-top:0.4rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent="Left: z-plane with horizontal strips of height 2π — each strip maps to the same circle in the right panel. Drag Im(z) slider through 4π to see two full orbits. The orbit counter tracks how many times the point has gone round. Re(z) controls the radius of the orbit: |e^z| = e^{Re(z)}.";
+  container.appendChild(noteEl);
+
+  function update() {
+    const reZ=reSlider.value, tVal=tSlider.value;
+    vizDiv.innerHTML=""; vizDiv.appendChild(buildViz(reZ,tVal));
+    const wr=Math.exp(reZ)*Math.cos(tVal), wi=Math.exp(reZ)*Math.sin(tVal);
+    infoDiv.textContent=`z = ${reZ.toFixed(2)} + ${tVal.toFixed(2)}i   →   e^z = ${wr.toFixed(3)} + ${wi.toFixed(3)}i   |e^z| = ${Math.exp(reZ).toFixed(3)}`;
+  }
+
+  reSlider.addEventListener("input",update);
+  tSlider.addEventListener("input",update);
+  update();
+
+  return container;
+}
+```
 
 ### Trigonometric
 
@@ -371,8 +1357,6 @@ Both entire. The identities $\cos^2 z + \sin^2 z = 1$ and all standard trig iden
 $$\log z = \ln|z| + i\arg z = \ln r + i\theta$$
 
 **Multivalued**: $\arg z$ is defined only up to multiples of $2\pi$. The **principal value** $\text{Log}\,z = \ln|z| + i\,\text{Arg}\,z$ uses $\text{Arg}\,z \in (-\pi, \pi]$ and is analytic everywhere except on the **branch cut** along the negative real axis — the line where $\text{Arg}\,z$ jumps discontinuously by $2\pi$ as you cross it. Without the cut, $\text{Log}\,z$ cannot be made single-valued and continuous.
-
-<!-- STUDENT: "Branch cut" is introduced here but never explained beyond its location. A reader meeting this concept for the first time won't understand why the branch cut exists or what happens at it. A single sentence — "crossing the branch cut causes a jump of 2π in the argument, making Log z discontinuous there" — would prevent a reader from simply filing it as a mysterious exception. -->
 
 <!-- VIZ OPPORTUNITY 4: The argument, winding number, and branch cut. A closed path in the complex plane; animated point traces it; live arg(z) plot; winding counter; branch cut toggle. Series thread: winding number first appearance. -->
 
@@ -649,193 +1633,211 @@ Multivalued in general. Integer powers are single-valued and entire; non-integer
 
 At any point $z_0$ where $f$ is analytic and $f'(z_0) \neq 0$, the map $f$ is **conformal** (Chapter 4): it preserves the angle between any two curves crossing at $z_0$ (in magnitude and orientation). The scale factor is $|f'(z_0)|$ and the rotation angle is $\arg f'(z_0)$.
 
-<!-- STUDENT: This is the first time the word "conformal" appears and it's in a preview section. The subtitle of Chapter 4 is "Conformal mapping" — the reader who skipped the subtitle won't know this preview points forward. A single parenthetical "(Chapter 4)" after the word "conformal" here would make that connection explicit without adding prose. -->
-
-Conformal mappings transform solutions of Laplace's equation from one domain into solutions in another — the basis for all analytic potential theory. Chapter 4 develops this fully.
-
-<!-- VIZ 1 REWRITTEN: Complex function explorer — dual-panel domain colouring. Left: z-plane unit grid. Right: image under f coloured by arg/brightness. Orientation device placed early to establish visual vocabulary for entire series. -->
+Conformal mappings transform solutions of Laplace's equation from one domain into solutions in another. That is how potential-flow problems, electrostatic field calculations, and heat-conduction problems in irregular geometries are reduced to solvable ones. Chapter 4 develops this fully.
 
 ```{ojs}
 //| echo: false
 {
-  const W = 320, H = 300;
-  const SCALE = 60, CX = W/2, CY = H/2;
-  const GRID_STEP = 0.5, GRID_RANGE = 3;
+  // Conformal angle-preservation test
+  // Left: z-plane with z₀ (slider-controlled) and two arm lines at angles α₁, α₂
+  // Right: w-plane showing images of those arms; live angle readout
+  // Critical-point detection: when f'(z₀)=0, the map is not conformal there
+  // f=z̄ demo reveals reflection (angle reversed)
 
-  const funcSelector = Inputs.select(
-    ["w = z", "w = z²", "w = e^z", "w = sin z", "w = 1/z", "w = (z−1)/(z+1)"],
-    {value: "w = z²", label: "Function f(z)"}
+  const W = 310, H = 290, SCALE = 65, CX = W/2, CY = H/2;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const funcSel = Inputs.select(
+    ["f(z) = z²", "f(z) = eᶻ", "f(z) = sin z", "f(z) = 1/z", "f(z) = z̄"],
+    { value: "f(z) = z²", label: "Function" }
   );
+  const z0xSl = Inputs.range([-1.8, 1.8], { value: 0.8, step: 0.1, label: "Re(z₀)" });
+  const z0ySl = Inputs.range([-1.8, 1.8], { value: 0.6, step: 0.1, label: "Im(z₀)" });
+  const arm1Sl = Inputs.range([0, 2*Math.PI], { value: 0.3, step: 0.1, label: "Arm 1 angle α₁" });
+  const arm2Sl = Inputs.range([0, 2*Math.PI], { value: 1.1, step: 0.1, label: "Arm 2 angle α₂" });
 
-  function evalFunc(name, re, im) {
-    switch(name) {
-      case "w = z": return [re, im];
-      case "w = z²": return [re*re - im*im, 2*re*im];
-      case "w = e^z": {
-        const ex = Math.exp(re);
-        return [ex*Math.cos(im), ex*Math.sin(im)];
-      }
-      case "w = sin z": return [Math.sin(re)*Math.cosh(im), Math.cos(re)*Math.sinh(im)];
-      case "w = 1/z": {
-        const d = re*re + im*im;
-        if (d < 1e-10) return [NaN, NaN];
-        return [re/d, -im/d];
-      }
-      case "w = (z−1)/(z+1)": {
-        const dr = re+1, di = im;
-        const d = dr*dr + di*di;
-        if (d < 1e-10) return [NaN, NaN];
-        const nr = re-1, ni = im;
-        return [(nr*dr + ni*di)/d, (ni*dr - nr*di)/d];
-      }
-      default: return [re, im];
+  function evalF(name, re, im) {
+    switch (name) {
+      case "f(z) = z²":   return [re*re-im*im, 2*re*im];
+      case "f(z) = eᶻ": { const ex=Math.exp(re); return [ex*Math.cos(im), ex*Math.sin(im)]; }
+      case "f(z) = sin z": return [Math.sin(re)*Math.cosh(im), Math.cos(re)*Math.sinh(im)];
+      case "f(z) = 1/z": { const d=re*re+im*im; if(d<1e-9)return[NaN,NaN]; return[re/d,-im/d]; }
+      case "f(z) = z̄":   return [re, -im];
+      default:             return [re, im];
     }
   }
 
-  function hslToRgb(h, s, l) {
-    h = ((h % 1) + 1) % 1;
-    const c = (1 - Math.abs(2*l - 1)) * s;
-    const x = c * (1 - Math.abs((h * 6) % 2 - 1));
-    const m = l - c/2;
-    let r=0,g=0,b=0;
-    if (h < 1/6) { r=c; g=x; }
-    else if (h < 2/6) { r=x; g=c; }
-    else if (h < 3/6) { g=c; b=x; }
-    else if (h < 4/6) { g=x; b=c; }
-    else if (h < 5/6) { r=x; b=c; }
-    else { r=c; b=x; }
-    return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+  // Numerical derivative f'(z₀)
+  function evalFPrime(name, re, im) {
+    const eps=0.001;
+    const [fr,fi]=evalF(name,re,im);
+    const [hr,hi]=evalF(name,re+eps,im);
+    return [(hr-fr)/eps, (hi-fi)/eps];
   }
 
-  function renderPanel(canvas, isRight, funcName) {
-    const ctx = canvas.getContext("2d");
-    const img = ctx.createImageData(W, H);
-    const data = img.data;
+  function toScreen(re,im,cx,cy,sc){ return [cx+re*sc, cy-im*sc]; }
+  function fromScreen(px,py,cx,cy,sc){ return [(px-cx)/sc, -(py-cy)/sc]; }
 
-    for (let px = 0; px < W; px++) {
-      for (let py = 0; py < H; py++) {
-        const re = (px - CX) / SCALE;
-        const im = -(py - CY) / SCALE;
-
-        let hue, brightness;
-        if (isRight) {
-          const [wr, wi] = evalFunc(funcName, re, im);
-          if (!isFinite(wr) || !isFinite(wi)) {
-            const idx = (py*W + px)*4;
-            data[idx]=255; data[idx+1]=255; data[idx+2]=255; data[idx+3]=255;
-            continue;
-          }
-          const arg = Math.atan2(wi, wr);
-          const mag = Math.sqrt(wr*wr + wi*wi);
-          hue = (arg / (2*Math.PI) + 1) % 1;
-          const logmag = Math.log(mag + 0.001);
-          // brightness: oscillates with log|f| so poles (large) appear bright
-          brightness = 0.5 + 0.35 * Math.tanh(logmag / 2);
-        } else {
-          // Left panel: static colour encoding of identity (arg of position)
-          const arg = Math.atan2(im, re);
-          const mag = Math.sqrt(re*re + im*im);
-          hue = (arg / (2*Math.PI) + 1) % 1;
-          brightness = 0.5 + 0.2 * Math.tanh(Math.log(mag + 0.001) / 2);
-        }
-        const sat = 0.8;
-        const [r,g,b] = hslToRgb(hue, sat, brightness);
-        const idx = (py*W + px)*4;
-        data[idx]=r; data[idx+1]=g; data[idx+2]=b; data[idx+3]=255;
-      }
+  function addLine(svg,x1,y1,x2,y2,color,w,dash){
+    const l=document.createElementNS(svgNS,"line");
+    l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+    l.setAttribute("stroke",color);l.setAttribute("stroke-width",w||"1.5");
+    if(dash)l.setAttribute("stroke-dasharray",dash);
+    svg.appendChild(l);
+  }
+  function addCircle(svg,cx,cy,r,fill,stroke){
+    const c=document.createElementNS(svgNS,"circle");
+    c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r",r);
+    c.setAttribute("fill",fill);c.setAttribute("stroke",stroke||"#fff");c.setAttribute("stroke-width","1.5");
+    svg.appendChild(c);
+  }
+  function addText(svg,x,y,txt,color,size){
+    const t=document.createElementNS(svgNS,"text");
+    t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",color);
+    t.setAttribute("font-size",size||"11");t.setAttribute("font-family","sans-serif");
+    t.textContent=txt; svg.appendChild(t);
+  }
+  function makeSVG(label){
+    const svg=document.createElementNS(svgNS,"svg");
+    svg.setAttribute("width",W); svg.setAttribute("height",H);
+    svg.style.cssText="background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+    // Grid
+    for(let i=-3;i<=3;i++){
+      const xl=document.createElementNS(svgNS,"line");
+      const [lx]=toScreen(i,0,CX,CY,SCALE); xl.setAttribute("x1",lx);xl.setAttribute("y1","0");xl.setAttribute("x2",lx);xl.setAttribute("y2",H);
+      xl.setAttribute("stroke","#e5e7eb");xl.setAttribute("stroke-width","0.5");svg.appendChild(xl);
+      const yl=document.createElementNS(svgNS,"line");
+      const [,ly]=toScreen(0,i,CX,CY,SCALE); yl.setAttribute("x1","0");yl.setAttribute("y1",ly);yl.setAttribute("x2",W);yl.setAttribute("y2",ly);
+      yl.setAttribute("stroke","#e5e7eb");yl.setAttribute("stroke-width","0.5");svg.appendChild(yl);
     }
-    ctx.putImageData(img, 0, 0);
-
-    // Grid overlay
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
-    ctx.lineWidth = 0.8;
-    for (let gv = -GRID_RANGE; gv <= GRID_RANGE; gv += GRID_STEP) {
-      // Horizontal lines (constant Im)
-      ctx.beginPath();
-      let first = true;
-      for (let u = -GRID_RANGE; u <= GRID_RANGE; u += 0.05) {
-        let px, py;
-        if (isRight) {
-          const [wr, wi] = evalFunc(funcName, u, gv);
-          if (!isFinite(wr) || !isFinite(wi)) { first=true; continue; }
-          px = CX + wr*SCALE; py = CY - wi*SCALE;
-        } else {
-          px = CX + u*SCALE; py = CY - gv*SCALE;
-        }
-        if (first) { ctx.moveTo(px,py); first=false; } else ctx.lineTo(px,py);
-      }
-      ctx.stroke();
-
-      // Vertical lines (constant Re)
-      ctx.beginPath();
-      first = true;
-      for (let v = -GRID_RANGE; v <= GRID_RANGE; v += 0.05) {
-        let px, py;
-        if (isRight) {
-          const [wr, wi] = evalFunc(funcName, gv, v);
-          if (!isFinite(wr) || !isFinite(wi)) { first=true; continue; }
-          px = CX + wr*SCALE; py = CY - wi*SCALE;
-        } else {
-          px = CX + gv*SCALE; py = CY - v*SCALE;
-        }
-        if (first) { ctx.moveTo(px,py); first=false; } else ctx.lineTo(px,py);
-      }
-      ctx.stroke();
-    }
-
-    // Axes
-    ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W, CY); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H); ctx.stroke();
-
-    // Labels
-    ctx.fillStyle = "rgba(255,255,255,0.9)"; ctx.font = "11px sans-serif";
-    ctx.fillText(isRight ? "w-plane" : "z-plane", 6, 15);
-    ctx.fillText(isRight ? funcName : "input grid", 6, 28);
+    addLine(svg,0,CY,W,CY,"#9ca3af","1");
+    addLine(svg,CX,0,CX,H,"#9ca3af","1");
+    addText(svg,6,14,label,"#1f2937","11");
+    return svg;
   }
 
-  function makeViz(funcName) {
-    const wrap = document.createElement("div");
-    wrap.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.5rem 0;";
+  function buildViz(fn, z0x, z0y, a1, a2) {
+    const svgL = makeSVG("z-plane");
+    const svgR = makeSVG("w-plane");
 
-    const leftCanvas = document.createElement("canvas");
-    leftCanvas.width = W; leftCanvas.height = H;
-    leftCanvas.style.cssText = "border-radius:4px;";
+    const ARM_LEN = 0.9; // in complex units
 
-    const rightCanvas = document.createElement("canvas");
-    rightCanvas.width = W; rightCanvas.height = H;
-    rightCanvas.style.cssText = "border-radius:4px;";
+    // Arm end-points in z-plane
+    const z1r = z0x + ARM_LEN*Math.cos(a1), z1i = z0y + ARM_LEN*Math.sin(a1);
+    const z2r = z0x + ARM_LEN*Math.cos(a2), z2i = z0y + ARM_LEN*Math.sin(a2);
 
-    renderPanel(leftCanvas, false, funcName);
-    renderPanel(rightCanvas, true, funcName);
+    // Draw z-plane arms
+    const [z0sx,z0sy] = toScreen(z0x,z0y,CX,CY,SCALE);
+    const [z1sx,z1sy] = toScreen(z1r,z1i,CX,CY,SCALE);
+    const [z2sx,z2sy] = toScreen(z2r,z2i,CX,CY,SCALE);
+    addLine(svgL,z0sx,z0sy,z1sx,z1sy,"#f97316","2.5");
+    addLine(svgL,z0sx,z0sy,z2sx,z2sy,"#8b5cf6","2.5");
+    addCircle(svgL,z0sx,z0sy,6,"#f97316");
+    addText(svgL,z0sx+8,z0sy-6,"z₀","#f97316","12");
 
-    wrap.appendChild(leftCanvas);
-    wrap.appendChild(rightCanvas);
+    // Input angle between arms
+    const inputAngle = a2 - a1;
+
+    // Map z₀ and arm endpoints
+    const [w0r,w0i] = evalF(fn,z0x,z0y);
+    const [w1r,w1i] = evalF(fn,z1r,z1i);
+    const [w2r,w2i] = evalF(fn,z2r,z2i);
+
+    // Auto-scale w-plane around w₀
+    const d1 = Math.sqrt((w1r-w0r)**2+(w1i-w0i)**2);
+    const d2 = Math.sqrt((w2r-w0r)**2+(w2i-w0i)**2);
+    const maxD = Math.max(d1,d2,0.1);
+    const wSCALE = Math.min(SCALE, 80/(maxD));
+    const wCX = W/2 - w0r*wSCALE, wCY = H/2 + w0i*wSCALE;
+
+    function toWS(re,im){ return [wCX+re*wSCALE, wCY-im*wSCALE]; }
+
+    if (isFinite(w0r) && isFinite(w0i)) {
+      const [w0sx,w0sy]=toWS(w0r,w0i);
+      const [w1sx,w1sy]=toWS(w1r,w1i);
+      const [w2sx,w2sy]=toWS(w2r,w2i);
+      addLine(svgR,w0sx,w0sy,w1sx,w1sy,"#f97316","2.5");
+      addLine(svgR,w0sx,w0sy,w2sx,w2sy,"#8b5cf6","2.5");
+      addCircle(svgR,w0sx,w0sy,6,"#f97316");
+      addText(svgR,w0sx+8,w0sy-6,"f(z₀)","#3b82f6","11");
+
+      // Output angle between arm images
+      const out1 = Math.atan2(w1i-w0i, w1r-w0r);
+      const out2 = Math.atan2(w2i-w0i, w2r-w0r);
+      let outputAngle = out2 - out1;
+      while (outputAngle >  Math.PI) outputAngle -= 2*Math.PI;
+      while (outputAngle < -Math.PI) outputAngle += 2*Math.PI;
+      let inputAngleN = inputAngle;
+      while (inputAngleN >  Math.PI) inputAngleN -= 2*Math.PI;
+      while (inputAngleN < -Math.PI) inputAngleN += 2*Math.PI;
+
+      // Derivative magnitude for critical-point test
+      const [fpRe,fpIm] = evalFPrime(fn,z0x,z0y);
+      const fpMag = Math.sqrt(fpRe*fpRe+fpIm*fpIm);
+      const isCritical = fpMag < 0.05;
+      const isConj = fn === "f(z) = z̄";
+      const angleDiff = Math.abs(Math.abs(outputAngle)-Math.abs(inputAngleN));
+      const isConformal = !isCritical && !isConj && angleDiff < 0.15;
+
+      // Status badge
+      let statusColor, statusMsg;
+      if (isCritical) { statusColor="#dc2626"; statusMsg="Critical point: f'(z₀)≈0 — conformality fails"; }
+      else if (isConj) { statusColor="#dc2626"; statusMsg="f=z̄: reflection — angles reversed (not conformal)"; }
+      else if (isConformal) { statusColor="#059669"; statusMsg="Conformal: angles preserved"; }
+      else { statusColor="#dc2626"; statusMsg="Angle mismatch — check critical point or branch"; }
+
+      const badge=document.createElementNS(svgNS,"rect");
+      badge.setAttribute("x","4"); badge.setAttribute("y",H-26);
+      badge.setAttribute("width",W-8); badge.setAttribute("height","22");
+      badge.setAttribute("fill",statusColor); badge.setAttribute("rx","4"); badge.setAttribute("opacity","0.15");
+      svgR.appendChild(badge);
+      const badgeTxt=document.createElementNS(svgNS,"text");
+      badgeTxt.setAttribute("x","8"); badgeTxt.setAttribute("y",H-11);
+      badgeTxt.setAttribute("fill",statusColor); badgeTxt.setAttribute("font-size","9.5");
+      badgeTxt.setAttribute("font-family","sans-serif"); badgeTxt.textContent=statusMsg;
+      svgR.appendChild(badgeTxt);
+
+      // Angle readout in w-plane
+      addText(svgR,6,H-32,`input angle: ${(inputAngleN*180/Math.PI).toFixed(1)}°  →  output: ${(outputAngle*180/Math.PI).toFixed(1)}°`,"#374151","9.5");
+    } else {
+      addText(svgR,W/2-40,H/2,"(pole — undefined)","#dc2626","11");
+    }
+
+    const wrap=document.createElement("div");
+    wrap.style.cssText="display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.5rem 0;";
+    wrap.appendChild(svgL); wrap.appendChild(svgR);
     return wrap;
   }
 
-  const container = document.createElement("div");
-  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
+  const container=document.createElement("div");
+  container.style.cssText="border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin:1rem 0;";
 
-  const title = document.createElement("div");
-  title.style.cssText = "font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
-  title.textContent = "Complex function explorer: domain colouring";
-  container.appendChild(title);
-  container.appendChild(funcSelector);
+  const titleEl=document.createElement("div");
+  titleEl.style.cssText="font-weight:600; margin-bottom:0.5rem; font-family:sans-serif;";
+  titleEl.textContent="Conformal mapping: angle-preservation test";
+  container.appendChild(titleEl);
+  container.appendChild(funcSel);
+  container.appendChild(z0xSl);
+  container.appendChild(z0ySl);
+  container.appendChild(arm1Sl);
+  container.appendChild(arm2Sl);
 
-  const vizDiv = document.createElement("div");
-  container.appendChild(vizDiv);
+  const vizDiv=document.createElement("div"); container.appendChild(vizDiv);
 
-  const note = document.createElement("div");
-  note.style.cssText = "margin-top:0.5rem; font-size:0.82em; color:#6b7280; font-style:italic;";
-  note.textContent = "Hue encodes arg(f(z)), brightness encodes log|f(z)|. Poles appear as bright white blooms; zeros as dark vortices. The grid shows how the z-plane is deformed. A function is analytic where the right panel looks locally like a rotation and scaling of the left — no tearing or folding.";
-  container.appendChild(note);
+  const noteEl=document.createElement("div");
+  noteEl.style.cssText="margin-top:0.4rem; font-size:0.82em; color:#6b7280; font-style:italic;";
+  noteEl.textContent="Orange and purple arms cross at z₀ in the left panel. Their images cross at f(z₀) in the right panel. The angle between the images (bottom of right panel) equals the input angle when f is conformal. Move z₀ onto a critical point (f′(z₀) = 0, e.g. z₀ = 0 for f = z²) to see conformality fail. Select f = z̄ to see that a reflection reverses angles instead of preserving them.";
+  container.appendChild(noteEl);
 
   function update() {
-    vizDiv.innerHTML = "";
-    vizDiv.appendChild(makeViz(funcSelector.value));
+    vizDiv.innerHTML="";
+    vizDiv.appendChild(buildViz(funcSel.value, z0xSl.value, z0ySl.value, arm1Sl.value, arm2Sl.value));
   }
-  funcSelector.addEventListener("input", update);
+  funcSel.addEventListener("input",update);
+  z0xSl.addEventListener("input",update);
+  z0ySl.addEventListener("input",update);
+  arm1Sl.addEventListener("input",update);
+  arm2Sl.addEventListener("input",update);
   update();
 
   return container;
@@ -1033,6 +2035,8 @@ makeStepperHTML([
 
 ### Exercise 5: Powers via De Moivre
 
+Computing roots and powers in polar form — a technique used throughout this volume, including when locating poles and computing residues.
+
 Compute $(1+i)^8$ and find all fourth roots of $-16$.
 
 <!-- STEPPER -->
@@ -1062,6 +2066,125 @@ makeStepperHTML([
     note: "The four roots form the vertices of a square centred at the origin with circumradius 2."
   }
 ])
+```
+
+```{ojs}
+//| echo: false
+{
+  // De Moivre roots: static diagram — four fourth roots of −16
+  // Orange dots on circle of radius 2, arguments labelled
+  const W = 300, H = 300, SCALE = 90, CX = W/2, CY = H/2;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const svg=document.createElementNS(svgNS,"svg");
+  svg.setAttribute("width",W); svg.setAttribute("height",H);
+  svg.style.cssText="background:#fafafa; border:1px solid #e5e7eb; border-radius:6px; display:block;";
+
+  function toS(re,im){ return [CX+re*SCALE, CY-im*SCALE]; }
+
+  // Grid
+  for(let i=-2;i<=2;i++){
+    const xl=document.createElementNS(svgNS,"line"); const [lx]=toS(i,0);
+    xl.setAttribute("x1",lx);xl.setAttribute("y1","0");xl.setAttribute("x2",lx);xl.setAttribute("y2",H);
+    xl.setAttribute("stroke","#e5e7eb");xl.setAttribute("stroke-width","0.5");svg.appendChild(xl);
+    const yl=document.createElementNS(svgNS,"line"); const [,ly]=toS(0,i);
+    yl.setAttribute("x1","0");yl.setAttribute("y1",ly);yl.setAttribute("x2",W);yl.setAttribute("y2",ly);
+    yl.setAttribute("stroke","#e5e7eb");yl.setAttribute("stroke-width","0.5");svg.appendChild(yl);
+  }
+
+  // Axes
+  const [ox,oy]=toS(0,0);
+  function axLine(x1,y1,x2,y2){ const l=document.createElementNS(svgNS,"line"); l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2); l.setAttribute("stroke","#9ca3af");l.setAttribute("stroke-width","1");svg.appendChild(l); }
+  const [ax1]=toS(-2.3,0); const [ax2]=toS(2.3,0); axLine(ax1,oy,ax2,oy);
+  const [,ay1]=toS(0,-2.3); const [,ay2]=toS(0,2.3); axLine(ox,ay1,ox,ay2);
+
+  // Circle of radius 2
+  const circ=document.createElementNS(svgNS,"circle");
+  circ.setAttribute("cx",CX); circ.setAttribute("cy",CY); circ.setAttribute("r",(2*SCALE).toString());
+  circ.setAttribute("fill","none"); circ.setAttribute("stroke","#d1d5db"); circ.setAttribute("stroke-width","1.5");
+  svg.appendChild(circ);
+
+  // Radius label
+  const rLbl=document.createElementNS(svgNS,"text");
+  rLbl.setAttribute("x",CX+4); rLbl.setAttribute("y",CY-(2*SCALE)+14);
+  rLbl.setAttribute("fill","#9ca3af"); rLbl.setAttribute("font-size","10");
+  rLbl.setAttribute("font-family","sans-serif"); rLbl.textContent="|z| = 2"; svg.appendChild(rLbl);
+
+  // The four roots: z_k = 2·e^{i(π/4 + kπ/2)}, k=0,1,2,3
+  const r=2;
+  const roots=[
+    { k:0, arg: Math.PI/4,       label:"z₀ = √2(1+i)",   argLabel:"π/4" },
+    { k:1, arg: 3*Math.PI/4,     label:"z₁ = √2(−1+i)",  argLabel:"3π/4" },
+    { k:2, arg: 5*Math.PI/4,     label:"z₂ = √2(−1−i)",  argLabel:"5π/4" },
+    { k:3, arg: 7*Math.PI/4,     label:"z₃ = √2(1−i)",   argLabel:"7π/4" }
+  ];
+
+  roots.forEach(({ arg, label, argLabel },idx) => {
+    const re=r*Math.cos(arg), im=r*Math.sin(arg);
+    const [sx,sy]=toS(re,im);
+
+    // Spoke
+    const spoke=document.createElementNS(svgNS,"line");
+    spoke.setAttribute("x1",ox); spoke.setAttribute("y1",oy);
+    spoke.setAttribute("x2",sx); spoke.setAttribute("y2",sy);
+    spoke.setAttribute("stroke","#fdba74"); spoke.setAttribute("stroke-width","1");
+    spoke.setAttribute("stroke-dasharray","4,3"); svg.appendChild(spoke);
+
+    // Dot
+    const dot=document.createElementNS(svgNS,"circle");
+    dot.setAttribute("cx",sx); dot.setAttribute("cy",sy); dot.setAttribute("r","7");
+    dot.setAttribute("fill","#f97316"); dot.setAttribute("stroke","#fff"); dot.setAttribute("stroke-width","1.5");
+    svg.appendChild(dot);
+
+    // Root label
+    const dx = re >= 0 ? 10 : -10;
+    const anchor = re >= 0 ? "start" : "end";
+    const dyLbl = im >= 0 ? -10 : 16;
+    const lt=document.createElementNS(svgNS,"text");
+    lt.setAttribute("x",sx+dx); lt.setAttribute("y",sy+dyLbl);
+    lt.setAttribute("fill","#f97316"); lt.setAttribute("font-size","10.5");
+    lt.setAttribute("font-family","sans-serif"); lt.setAttribute("text-anchor",anchor);
+    lt.textContent=label; svg.appendChild(lt);
+
+    // Argument label on the arc
+    const arcR=32+idx*8;
+    const midAng=arg*0.9+0.05;
+    const alx=CX+arcR*Math.cos(midAng-Math.PI*0.08);
+    const aly=CY-arcR*Math.sin(midAng-Math.PI*0.08);
+    const at=document.createElementNS(svgNS,"text");
+    at.setAttribute("x",alx); at.setAttribute("y",aly);
+    at.setAttribute("fill","#8b5cf6"); at.setAttribute("font-size","9");
+    at.setAttribute("font-family","sans-serif"); at.setAttribute("text-anchor","middle");
+    at.textContent=argLabel; svg.appendChild(at);
+  });
+
+  // Origin
+  const orig=document.createElementNS(svgNS,"circle");
+  orig.setAttribute("cx",ox); orig.setAttribute("cy",oy); orig.setAttribute("r","4");
+  orig.setAttribute("fill","#6b7280"); orig.setAttribute("stroke","#fff"); orig.setAttribute("stroke-width","1.5");
+  svg.appendChild(orig);
+
+  // Title
+  const titleT=document.createElementNS(svgNS,"text");
+  titleT.setAttribute("x","6"); titleT.setAttribute("y","14");
+  titleT.setAttribute("fill","#1f2937"); titleT.setAttribute("font-size","11");
+  titleT.setAttribute("font-family","sans-serif"); titleT.setAttribute("font-weight","bold");
+  titleT.textContent="Fourth roots of −16"; svg.appendChild(titleT);
+
+  // Axis labels
+  const reL=document.createElementNS(svgNS,"text"); reL.setAttribute("x",ax2-18);reL.setAttribute("y",oy-5);
+  reL.setAttribute("fill","#6b7280");reL.setAttribute("font-size","10");reL.setAttribute("font-family","sans-serif");reL.textContent="Re";svg.appendChild(reL);
+  const imL=document.createElementNS(svgNS,"text"); imL.setAttribute("x",ox+5);imL.setAttribute("y",ay2+12);
+  imL.setAttribute("fill","#6b7280");imL.setAttribute("font-size","10");imL.setAttribute("font-family","sans-serif");imL.textContent="Im";svg.appendChild(imL);
+
+  const wrap=document.createElement("div"); wrap.style.cssText="margin:0.75rem 0;";
+  wrap.appendChild(svg);
+  const note=document.createElement("div");
+  note.style.cssText="font-size:0.82em; color:#6b7280; font-style:italic; margin-top:0.3rem; max-width:300px;";
+  note.textContent="The four fourth roots of −16 sit at the vertices of a square of circumradius 2. Spaced π/2 apart in argument — each separated by 90°.";
+  wrap.appendChild(note);
+  return wrap;
+}
 ```
 
 <!-- ENGINEER-PROF: [NOTE] stroud_programme is null. Stroud Engineering Mathematics (7th ed.) covers complex numbers in Programme 1 and complex analysis (Cauchy–Riemann, analytic functions) in Programme 28. Consider adding "Programme 1 (complex numbers) and Programme 28 (analytic functions)" for cross-reference. -->
@@ -1137,4 +2260,28 @@ The chapter is largely followable for an engineering-layer reader. The C-R deriv
 - [§ Logarithm] Extended the branch cut sentence to explain why the cut exists: "the line where Arg z jumps discontinuously by 2π as you cross it. Without the cut, Log z cannot be made single-valued and continuous." Previously named and located but not explained.
 - [§ Analytic functions] Replaced "(see Exercise 4)" with a forward-pointing sentence naming the example (|z|²) and its conclusion. A reader encounters the claim and immediately knows where to look and what it will show.
 - [§ Conformal mappings: preview] Added "(Chapter 4)" after the first use of "conformal" to make the forward reference explicit without adding prose.
+-->
+
+<!-- ENGINEER-PROF REVIEW (second pass)
+## Chapter 01 — Complex functions
+
+### Fixes applied
+
+- [BLOCKER FIXED] `hook` text stated "a pole that crosses into the right half-plane means oscillations grow without bound." A real pole with positive real part causes monotonic exponential growth, not oscillations. Oscillating divergence requires a complex pole with positive real part. Fixed to: "the system response grows without bound — oscillating if the pole is complex, diverging exponentially if it is real."
+
+- [WARN FIXED] `stroud_programme: null` replaced with accurate cross-references: "Programme 1 (complex numbers); Programme 28 (analytic functions and C-R equations)." Stroud Engineering Mathematics 7th ed. covers both. Readers using Stroud in parallel now have working pointers.
+
+### Open issues (not changed — author's call)
+
+- [NOTE] `destinations.comp.career_example` attributes the FFT to complex functions. The FFT does use complex exponential arithmetic, but its natural home is the Fourier/signal-processing chapter. A more direct career example here would be a numerical analyst computing the zeros of a transfer function polynomial (root-finding in C) or implementing a conformal map for mesh generation. Not changed.
+
+- [NOTE] `uofa_course: null` is plausible — complex analysis at U of A is typically covered in ECE 240 (Signals and Systems) incidentally, and in MATH 311 (Complex Variables). Neither is a Vol 7 engineering-mathematics course anchor. No change required unless the series adds a UofA mapping for pure-math courses.
+
+- [NOTE] `kreyszig_chapter: "Ch 13"` — verified correct for Kreyszig Advanced Engineering Mathematics 10th ed. (Complex Numbers and Functions). No change needed.
+
+- [NOTE] `destinations.eng.career_example` — "Control engineer plotting root locus to verify stability margins for a feedback amplifier." Root locus is a specific graphical technique for analysing how closed-loop poles move as gain varies. The example is accurate. "Feedback amplifier" is a standard use case in electronic control (op-amp stability, feedback around a power stage). No issues.
+
+- [NOTE] The harmonic-function link to potential theory and heat conduction is stated correctly in the `rewrite` field and body. No issues.
+
+### Verdict: PASS WITH NOTES
 -->

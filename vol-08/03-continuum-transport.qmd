@@ -4,7 +4,7 @@ subtitle: "Field laws for stress, flow, heat, and diffusion"
 chapter: 3
 volume: 8
 layer: "discipline"
-status: "draft"
+status: "review"
 
 axiom: |
   Materials, fluids, and heat are described locally, even when the structure
@@ -54,7 +54,7 @@ notation_introduced:
     reads_as: "q bold — a flux vector"
     notation_weight: 2
   - symbol: "\\nabla \\cdot \\mathbf{q}"
-    reads_as: "div q — the net outflow of flux"
+    reads_as: "div q — the net outward flux per unit volume at a point"
     notation_weight: 3
   - symbol: "\\sigma"
     reads_as: "sigma — stress"
@@ -87,16 +87,15 @@ scales, different equations on the page. Underneath, the same move repeats:
 write what is conserved, write how the material responds, and let the field
 describe the rest.
 
-This chapter is where upper-year engineering starts to feel less like a list of
-subjects and more like a single modelling language. Structural analysis, heat
-transfer, porous flow, and contaminant transport do not share the same units or
-applications. They do share the same mathematical architecture.
+Structural analysis, heat transfer, porous flow, and contaminant transport do
+not share the same units or applications. They share the same mathematical
+architecture.
 
-The architecture has two parts. First, a **conservation law** says something
-cannot appear or disappear except through flow across a boundary or production
-inside the region. Second, a **constitutive law** says how the material reacts:
-how heat flows down a temperature gradient, how solute diffuses down a
-concentration gradient, how stress relates to strain in a simple elastic solid.
+The architecture has two parts. A **conservation law** says something cannot
+appear or disappear except through flow across a boundary or production inside
+the region. A **constitutive law** says how the material responds: how heat
+flows down a temperature gradient, how solute diffuses down a concentration
+gradient, how stress relates to strain in a simple elastic solid.
 
 ---
 
@@ -121,9 +120,9 @@ where:
 - $\nabla \cdot \mathbf{q}$ is the net outward flux
 - $s$ is a source term
 
-This one line is the template behind a large fraction of continuum modelling.
-Change the meaning of $u$, $\mathbf{q}$, and $s$, and you get a different
-physical system. The bookkeeping structure stays the same.
+This one line is the template behind most continuum modelling. Change the
+meaning of $u$, $\mathbf{q}$, and $s$, and you get a different physical
+system. The bookkeeping structure stays the same.
 
 The divergence term matters because a continuum model is local. It does not ask
 "how much crossed the outer boundary of the whole pipe?" first. It asks what is
@@ -134,8 +133,8 @@ global law follows by integration.
 
 ## Constitutive laws
 
-A balance law alone is not enough. It tells you what must be accounted for, not
-how the material actually behaves. That extra relation is the constitutive law.
+A balance law tells you what must be accounted for. It does not say how the
+material responds. That extra relation is the constitutive law.
 
 Two standard examples are:
 
@@ -165,8 +164,13 @@ where $\sigma$ is **stress** (force per unit area, Pa), $\varepsilon$ is
 **strain** (fractional change in length, dimensionless), and $E$ is Young's
 modulus (the material stiffness).
 
-Again, the structure is familiar: one field quantity is related to another by a
+The structure is the same: one field quantity is related to another by a
 material response parameter.
+
+This 1D relation extends to three dimensions as a tensor equation relating the
+full strain tensor to the full stress tensor through a stiffness matrix. The
+scalar form here captures the logic; discipline courses in mechanics of
+materials and structural analysis build out the three-dimensional version.
 
 ## Why signs and directions matter
 
@@ -177,11 +181,11 @@ If temperature increases to the right, then $\nabla T$ points right. Fourier's
 law says the heat flux points left. Miss the minus sign and you literally model
 heat flowing from cold to hot.
 
-The same warning applies everywhere in this chapter. Continuum mathematics is
-geometry with units attached. Direction is part of the answer.
+The same applies to every constitutive law in this chapter. Continuum
+mathematics is geometry with units attached. Direction is part of the answer.
 
 ::: {.callout-note appearance="simple"}
-## Why This Works
+## Where the PDE comes from
 
 Conservation laws come from bookkeeping on a region. Constitutive laws come
 from empirical or theoretical descriptions of how a material responds. The PDE
@@ -217,14 +221,11 @@ The local energy balance says:
 
 $$\frac{\partial u}{\partial t} + \nabla \cdot \mathbf{q} = 0$$
 
-In one dimension, and with thermal energy density proportional to temperature,
-this becomes
+In one dimension, thermal energy per unit volume is $u = \rho c_p T$, where
+$\rho$ is mass density (kg m$^{-3}$) and $c_p$ is specific heat capacity
+(J kg$^{-1}$ K$^{-1}$). Substituting into the generic balance law gives
 
 $$\rho c_p \frac{\partial T}{\partial t} + \frac{\partial q}{\partial x} = 0$$
-
-where $\rho$ is mass density (kg m$^{-3}$) and $c_p$ is specific heat capacity
-(J kg$^{-1}$ K$^{-1}$) — the two material parameters relating energy storage to
-temperature change.
 
 Use Fourier's law in one dimension:
 
@@ -271,34 +272,58 @@ For constant diffusivity:
 
 $$\frac{\partial c}{\partial t} = D\frac{\partial^2 c}{\partial x^2}$$
 
-Mathematically this is the same diffusion structure as the heat equation.
-Physically the field means something different. That is exactly why this
-chapter matters: it trains you to recognise when two different-looking systems
-share the same mathematical skeleton.
+This has the same structure as the heat equation. Physically the fields mean
+something different — but the mathematical skeleton is shared. Recognising
+that is most of what this chapter is for.
+
+In real groundwater and river-transport problems, advection — the bulk
+movement of solute carried by flowing water — usually dominates or competes
+with diffusion. In the generic framework, advection enters through the flux
+term: the total flux is $J = vc - D\,\partial c/\partial x$, where $vc$ is
+the solute carried by the bulk flow and $-D\,\partial c/\partial x$ is the
+diffusive part from Fick's law. Substituting into the balance law and
+rearranging gives
+
+$$\frac{\partial c}{\partial t} + v\frac{\partial c}{\partial x}
+ = D\frac{\partial^2 c}{\partial x^2}$$
+
+The pure-diffusion case here applies when the pore velocity is low (dense clay,
+for example) or when setting up an initial model to isolate the diffusive
+contribution before adding flow. The full advection-diffusion equation is taken
+up in environmental and geotechnical engineering courses.
 
 ## Worked example 3: linear elasticity in one dimension
 
 Take a slender bar under axial load. In the simplest small-strain setting,
 strain is
 
-$$\varepsilon = \frac{du}{dx}$$
+$$\varepsilon = \frac{dw}{dx}$$
 
-where $u(x)$ is displacement. Hooke's law gives
+where $w(x)$ is axial displacement (using $w$ to avoid confusion with the
+generic stored quantity $u$ used earlier). Hooke's law gives
 
-$$\sigma = E\varepsilon = E\frac{du}{dx}$$
+$$\sigma = E\varepsilon = E\frac{dw}{dx}$$
 
-If body forces are negligible and the bar is in static equilibrium, force
-balance requires axial stress to satisfy
+In the generic framework, stress plays the role of flux: it is the quantity that
+transmits the internal load across a cross-section. The "storage" term vanishes
+in static equilibrium, so the balance law reduces to a divergence-only statement
+with a source. The general 1D force balance in a body with distributed body
+force $b$ (force per unit volume, e.g. self-weight, corresponding to the source
+term $s$ in the generic law) is
+
+$$\frac{d\sigma}{dx} + b = 0$$
+
+If body forces are negligible ($b = 0$), this reduces to
 
 $$\frac{d\sigma}{dx} = 0$$
 
 Substitute the constitutive relation:
 
-$$\frac{d}{dx}\left(E\frac{du}{dx}\right) = 0$$
+$$\frac{d}{dx}\left(E\frac{dw}{dx}\right) = 0$$
 
 For constant $E$:
 
-$$E\frac{d^2u}{dx^2} = 0 \qquad \Rightarrow \qquad \frac{d^2u}{dx^2} = 0$$
+$$E\frac{d^2w}{dx^2} = 0 \qquad \Rightarrow \qquad \frac{d^2w}{dx^2} = 0$$
 
 This is much simpler than the heat and diffusion examples, but the logic is the
 same. Balance law plus constitutive law gives the governing equation.
@@ -312,7 +337,6 @@ derivation to solution. Real geometries, mixed materials, and realistic
 boundary conditions usually push these problems toward numerical methods,
 meshes, and solver design.
 
-This chapter also sets up a habit that carries far beyond classical engineering.
 Environmental transport, remote sensing inversion, and geophysics all use the
 same structure. The quantity and units change. The control-volume logic does
 not.
@@ -330,8 +354,8 @@ not.
 
 ## Exercises
 
-These are project-style exercises. State the physical meaning of each term as
-well as the final equation.
+Each exercise asks you to derive a governing equation. State the physical
+meaning of each term as well as the final equation.
 
 ### Exercise 1
 
@@ -354,6 +378,9 @@ steps:
   - op: "Substitute Fourier's law"
     eq: "\\rho c_p \\frac{\\partial T}{\\partial t} + \\frac{\\partial}{\\partial x}\\left(-k\\frac{\\partial T}{\\partial x}\\right)=0"
     note: "Heat flux points down the temperature gradient."
+  - op: "Factor out the minus sign from the divergence term"
+    eq: "\\rho c_p \\frac{\\partial T}{\\partial t} - \\frac{\\partial}{\\partial x}\\left(k\\frac{\\partial T}{\\partial x}\\right)=0"
+    note: "The minus sign inside moves outside, flipping the sign of the whole term."
   - op: "Move the flux term to the other side"
     eq: "\\rho c_p \\frac{\\partial T}{\\partial t} = \\frac{\\partial}{\\partial x}\\left(k\\frac{\\partial T}{\\partial x}\\right)"
     note: ~
@@ -401,9 +428,9 @@ steps:
 
 ### Exercise 3
 
-For a one-dimensional elastic bar with
+For a one-dimensional elastic bar with axial displacement $w(x)$,
 
-$$\varepsilon = \frac{du}{dx}, \qquad \sigma = E\varepsilon$$
+$$\varepsilon = \frac{dw}{dx}, \qquad \sigma = E\varepsilon$$
 
 and static equilibrium
 
@@ -415,16 +442,16 @@ derive the governing equation for displacement when $E$ is constant.
 exercise: 3
 steps:
   - op: "Write the constitutive law in displacement form"
-    eq: "\\sigma = E\\frac{du}{dx}"
+    eq: "\\sigma = E\\frac{dw}{dx}"
     note: "Stress is proportional to strain, and strain is the displacement gradient."
   - op: "Substitute into equilibrium"
-    eq: "\\frac{d}{dx}\\left(E\\frac{du}{dx}\\right) = 0"
+    eq: "\\frac{d}{dx}\\left(E\\frac{dw}{dx}\\right) = 0"
     note: "Balance is written in terms of stress, so substitute stress first."
   - op: "Use constant modulus"
-    eq: "E\\frac{d^2u}{dx^2} = 0"
+    eq: "E\\frac{d^2w}{dx^2} = 0"
     note: ~
   - op: "Simplify"
-    eq: "\\frac{d^2u}{dx^2} = 0"
+    eq: "\\frac{d^2w}{dx^2} = 0"
     note: "Because E is nonzero and constant."
   - op: "Check"
     eq: "\\text{balance plus constitutive law gives the displacement equation}"

@@ -4,7 +4,7 @@ subtitle: "Failure, variability, and risk over time"
 chapter: 6
 volume: 8
 layer: "discipline"
-status: "draft"
+status: "review"
 
 axiom: |
   Variability is not noise to be ignored. In engineering it changes safety,
@@ -55,20 +55,32 @@ notation_introduced:
     reads_as: "F of t — the failure distribution function"
     notation_weight: 2
   - symbol: "\\lambda(t)"
-    reads_as: "lambda of t — the hazard or failure rate"
+    reads_as: "lambda of t — the hazard or failure rate; equals the constant lambda for the exponential model"
     notation_weight: 3
+  - symbol: "\\beta, \\eta"
+    reads_as: "beta and eta — Weibull shape and scale parameters"
+    notation_weight: 2
+  - symbol: "\\lambda_a"
+    reads_as: "lambda sub a — the arrival rate in a queueing system"
+    notation_weight: 2
+  - symbol: "\\rho = \\lambda_a / \\mu"
+    reads_as: "rho — traffic intensity; ratio of arrival rate to service rate"
+    notation_weight: 2
   - symbol: "L_q"
     reads_as: "L sub q — expected queue length"
     notation_weight: 2
   - symbol: "W_q"
     reads_as: "W sub q — expected waiting time in queue"
     notation_weight: 2
+  - symbol: "C_p, C_{pk}"
+    reads_as: "C sub p and C sub pk — process capability indices"
+    notation_weight: 2
 
 exercises:
   type: "project"
   real_world_context: true
 
-uofa_course: "STAT 235"
+uofa_course: null
 stroud_programme: null
 kreyszig_chapter: null
 ---
@@ -78,15 +90,14 @@ morning, then suddenly grows faster than it clears. A production line meets
 tolerance most days but not all days. Randomness is not a side issue here.
 It changes maintenance, staffing, safety, and design.
 
-Reliability and stochastic systems matter because engineering decisions are
-made before the exact future is known. You do not know which unit will fail
-next, exactly when a line will back up, or precisely how many defects will
-appear in the next batch. What you can do is model the variability honestly and
-let that model shape action.
+Engineering decisions are made before the exact future is known. You do not
+know which unit will fail next, exactly when a line will back up, or how many
+defects will appear in the next batch. What you can do is model the variability
+honestly and let that model shape action.
 
-This chapter keeps three linked ideas in view: lifetime, queueing, and quality.
-They look like separate professional topics, but they are all ways of asking
-how randomness accumulates into operational consequence.
+Three linked ideas run through this chapter: lifetime, queueing, and quality.
+They look like separate professional topics. They are all ways of asking how
+randomness accumulates into operational consequence.
 
 ---
 
@@ -111,21 +122,49 @@ and
 
 $$F(t) = 1 - e^{-\lambda t}$$
 
-This is one of the most common first models because it is simple and because
-its interpretation is clean: the system has a constant failure tendency per unit
-time.
+This is the most common first model: simple, and with a clear interpretation —
+the system has a constant failure tendency per unit time.
 
 The **hazard rate** $\lambda(t)$ describes the instantaneous failure tendency
-conditional on survival up to time $t$. In some systems hazard increases with
-age. In others it is approximately constant over the operational window of
-interest.
+conditional on survival up to time $t$. Let $f(t) = F'(t)$ be the probability
+density of the lifetime. Since $R(t) = 1 - F(t)$, differentiating gives
+$R'(t) = -f(t)$. The hazard rate is then the density of failure conditional on
+having survived so far:
 
-<!-- VIZ: Reliability curve explorer. Show survival function R(t), cumulative failure F(t), and hazard behaviour on linked panels. Let the reader switch between constant hazard, increasing hazard, and early-failure regimes, and update a maintenance-interval marker so the operational implication is visible along with the curve. -->
+$$\lambda(t) = \frac{f(t)}{R(t)} = \frac{-R'(t)}{R(t)}$$
+
+For the exponential model $\lambda(t) = \lambda$ (constant), which is why the
+scalar $\lambda$ appears in both the survival function and the hazard.
+
+### Weibull model for non-constant hazard
+
+The exponential model's constant hazard is a special case that real components
+often do not satisfy. The **Weibull distribution** is the standard extension:
+
+$$R(t) = e^{-(t/\eta)^\beta}$$
+
+where $\eta > 0$ is the scale (characteristic life) and $\beta > 0$ is the
+shape parameter. The hazard rate is
+
+$$\lambda(t) = \frac{\beta}{\eta}\left(\frac{t}{\eta}\right)^{\beta - 1}$$
+
+When $\beta = 1$ the Weibull reduces to the exponential. When $\beta > 1$ the
+hazard increases with age — wear-out behaviour typical of fatigue, corrosion, and
+mechanical degradation. When $\beta < 1$ the hazard decreases — early-life
+failures (infant mortality). Reliability engineers fit $\beta$ from field data
+and use the value to decide whether early screening, scheduled replacement, or
+condition monitoring is the appropriate response.
+
+In some systems hazard is approximately constant over the operational window of
+interest and the exponential model is adequate. In others the shape parameter
+matters for every maintenance and safety decision.
+
+<!-- VIZ: Reliability curve explorer. Show survival function R(t), cumulative failure F(t), and hazard rate on linked panels. Provide sliders for the Weibull shape parameter beta and scale eta. At beta=1 the model is exponential (constant hazard). Let the reader drag beta above 1 to see wear-out (increasing hazard) and below 1 to see infant mortality (decreasing hazard). Overlay a maintenance-interval marker so the operational implication is visible: the optimal scheduled-replacement point shifts as beta changes. -->
 
 ## Queueing as accumulation under uncertainty
 
-Now switch interpretation. Instead of asking when a unit fails, ask what
-happens when random arrivals meet random service.
+Instead of asking when a unit fails, ask what happens when random arrivals
+meet random service.
 
 In a queueing system:
 
@@ -146,14 +185,24 @@ $$L_q = \lambda_a W_q$$
 The expected queue length equals the arrival rate times the expected waiting
 time. Little's Law holds under mild conditions regardless of the arrival or
 service distribution — it is a conservation statement about flow rather than an
-assumption about randomness. For a single-server queue with traffic intensity
-$\rho < 1$, the queue length grows sharply as $\rho$ approaches 1, even when
-mean demand still looks safely below capacity.
+assumption about randomness.
 
-The engineering lesson is the same as in reliability: variability matters even
-when average values look harmless. A system with average arrival rate only
-slightly below service rate can still produce long queues if the variability is
-large enough.
+For the system to reach a steady state, arrivals must not permanently outpace
+service: the condition is $\rho < 1$. If $\rho \geq 1$ the queue grows without
+bound — the system is unstable and no finite long-run average exists. When
+$\rho < 1$ but is close to 1, the queue length grows sharply, even when mean
+demand still looks safely below capacity.
+
+Variability matters even when average values look harmless. A system with
+average arrival rate only slightly below service rate can still produce long
+queues if the variability is large enough.
+
+For the simplest tractable case — Poisson arrivals, exponential service, one
+server (M/M/1) — the expected queue length has a closed form:
+
+$$L_q = \frac{\rho^2}{1 - \rho}$$
+
+This grows steeply as $\rho \to 1$. The worked example below shows the numbers.
 
 This is why service reliability in computing and waiting-time models in
 operations research belong in the same chapter as bearing lifetime and defect
@@ -170,19 +219,39 @@ If a machined diameter is modelled as approximately normal with mean $\mu$ and
 standard deviation $\sigma$, then defect probability is the area in the tails
 beyond the specification limits.
 
+In manufacturing engineering this is operationalised through the **process
+capability index**. The most common form is
+
+$$C_p = \frac{\text{USL} - \text{LSL}}{6\sigma}$$
+
+where USL (upper specification limit) and LSL (lower specification limit) are
+the boundaries of acceptable product and $6\sigma$ is the spread of the process
+distribution. A value of $C_p \geq 1.33$ is a common
+minimum standard in production; it means the process spread fits inside the
+tolerance window with margin. The one-sided version $C_{pk}$ accounts for
+centring:
+
+$$C_{pk} = \min\!\left(\frac{\text{USL} - \mu}{3\sigma},\; \frac{\mu - \text{LSL}}{3\sigma}\right)$$
+
+A process can have adequate spread ($C_p$ high) but still produce defects if
+the mean is off-centre ($C_{pk}$ low). Capability indices are the bridge between
+the tail-area probability from the normal model and the tolerance decisions made
+in a production environment.
+
 This is not only a manufacturing question. The same logic appears in service
 level agreements, anomaly thresholds, and risk tolerances in data systems.
 
 ::: {.callout-note appearance="simple"}
-## Why This Works
+## Why this structure works
 
-Reliability, queueing, and quality all convert randomness into operational
-questions. Survival functions convert uncertainty into maintenance or safety
-policy. Queueing models convert uncertainty into staffing and capacity policy.
-Quality models convert uncertainty into tolerance and acceptance policy.
+Reliability, queueing, and quality are all asking the same underlying question:
+given a random process, what is the probability that a threshold is crossed?
+For reliability the threshold is failure; for queueing it is demand exceeding
+capacity; for quality it is a measurement leaving the specification band.
 
-The mathematics is useful precisely because it does not pretend the future is
-deterministic.
+That shared structure means the same probabilistic tools — tail probabilities,
+expected values, densities — apply across all three, and a result in one domain
+often has a direct analogue in another.
 :::
 
 ## The core method
@@ -235,13 +304,22 @@ The traffic intensity is
 
 $$\rho = \frac{\lambda_a}{\mu} = 0.8$$
 
-This means the server is busy most of the time. Even though capacity still
-exceeds mean demand, there is not much slack. A burst of arrivals can create a
-substantial queue.
+For an M/M/1 queue (Poisson arrivals, exponential service, single server), the
+expected number waiting in queue is
 
-The lesson is operational, not just probabilistic: systems that look adequate
-on average can still feel overloaded to users because variability is lived in
-real time, not as a long-run mean.
+$$L_q = \frac{\rho^2}{1 - \rho} = \frac{0.64}{0.2} = 3.2 \text{ jobs}$$
+
+By Little's Law the expected waiting time in queue is
+
+$$W_q = \frac{L_q}{\lambda_a} = \frac{3.2}{8} = 0.4 \text{ h}$$
+
+So at 80% utilisation, a job waits on average 24 minutes before being served.
+If utilisation rises to $\rho = 0.9$, $L_q = 8.1$ jobs and $W_q = 1.01$ h —
+more than twice as long for a 12.5% increase in load. That nonlinear blowup is
+the engineering message.
+
+Systems that look adequate on average can still feel overloaded because
+variability is experienced in real time, not as a long-run mean.
 
 ## Worked example 3: defect probability from a normal model
 
@@ -274,17 +352,13 @@ The next continuation is
 Once risk, waiting, and failure are quantified, design decisions become
 tradeoffs between cost, performance, safety, and uncertainty.
 
-This chapter also reframes what "uncertainty" means in Volume 8. It is not only
-about estimation error. It is about lifetime, demand, variability, and the
-operational consequences of randomness over time.
-
 ::: {.callout-tip appearance="simple"}
 ## Applications
 
 - maintenance interval planning
-- reliability engineering and survival analysis
-- queueing in production, logistics, and computing
-- defect rates and process capability
+- reliability engineering and survival analysis (exponential and Weibull models)
+- queueing in production, logistics, and computing (M/M/1 and related models)
+- defect rates and process capability ($C_p$, $C_{pk}$)
 - service availability and incident risk
 - uncertainty-aware operations decisions
 :::
@@ -341,12 +415,18 @@ steps:
   - op: "Compute"
     eq: "\\rho = 0.8"
     note: ~
-  - op: "Interpret"
-    eq: "\\text{the server is busy most of the time and has limited slack}"
-    note: "A value close to 1 means queues can build quickly under variability."
-  - op: "Check"
-    eq: "\\text{mean capacity still exceeds mean demand, but not by much}"
-    note: ~
+  - op: "Interpret (part 2)"
+    eq: "\\text{server is busy 80\\% of the time — limited slack, but not near saturation}"
+    note: "A value close to 1 means queues can build quickly under variability. 0.8 is moderate; 0.9+ is where queues grow steeply."
+  - op: "Update for 14 jobs/h (part 3)"
+    eq: "\\rho = \\dfrac{14}{15} \\approx 0.933"
+    note: "This is well into the steep region of the L_q curve."
+  - op: "Find the dangerous-load threshold"
+    eq: "\\dfrac{\\lambda_a}{15} > 0.95 \\implies \\lambda_a > 14.25 \\text{ jobs/h}"
+    note: "Only 2.25 jobs/h of headroom remain between current demand and the dangerous threshold."
+  - op: "Operational decision"
+    eq: "\\text{add server capacity before demand reaches 14.25 jobs/h}"
+    note: "The nonlinear blowup in L_q means waiting until demand hits the limit is too late."
 -->
 
 ### Exercise 3
