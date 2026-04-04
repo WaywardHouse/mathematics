@@ -436,7 +436,10 @@ not.
   const alpha = 1;
   function stepHeat(dx, dt, steps) {
     const n = Math.round(1 / dx);
-    let u = Array.from({ length: n + 1 }, (_, j) => Math.exp(-((j * dx - 0.5) / 0.08) ** 2));
+    let u = Array.from({ length: n + 1 }, (_, j) => {
+      const z = (j * dx - 0.5) / 0.08;
+      return Math.exp(-(z * z));
+    });
     u[0] = 0; u[n] = 0;
     const r = alpha * dt / (dx * dx);
     for (let s = 0; s < steps; s++) {
@@ -1005,4 +1008,3 @@ EDIT LOG (editor agent)
   down to exploit the tridiagonal sparsity pattern, solving in O(N) rather than O(N³)
   operations") is brief and self-contained.
 -->
-

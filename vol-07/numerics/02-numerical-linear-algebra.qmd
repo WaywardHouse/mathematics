@@ -512,6 +512,121 @@ magnitude.
 
 <!-- VIZ: condition number explorer — 2×2 matrix [[a,b],[c,d]] with sliders for entries a, b, c, d (range −5 to 5, step 0.1), live display of κ_∞(A). Below the matrix, show a vector b with a slider for a small perturbation δ, and display the resulting solution x and perturbed solution x+Δx side by side, with Δx/x highlighted to show how even a small δ in b can cause a large shift in x when κ is large. Label the display "Small change in b → large change in x when κ is large." -->
 
+Use the matrix sliders to move toward or away from singularity, then nudge the
+right-hand side and compare how much the solution moves.
+
+```{ojs}
+//| echo: false
+{
+  function inv2(a, b, c, d) {
+    const det = a * d - b * c;
+    if (Math.abs(det) < 1e-9) return null;
+    return { det, m: [d / det, -b / det, -c / det, a / det] };
+  }
+  function normInf(a, b, c, d) { return Math.max(Math.abs(a) + Math.abs(b), Math.abs(c) + Math.abs(d)); }
+  function mul(inv, v1, v2) { return [inv.m[0] * v1 + inv.m[1] * v2, inv.m[2] * v1 + inv.m[3] * v2]; }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:780px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.45rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+
+  function row(labelText, min, max, step, value) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = String(step);
+    input.value = String(value);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric:tabular-nums; min-width:4rem;";
+    controls.append(label, input, out);
+    return { input, out };
+  }
+
+  const aRow = row("a", -5, 5, 0.1, 2.0);
+  const bRow = row("b", -5, 5, 0.1, 1.8);
+  const cRow = row("c", -5, 5, 0.1, 2.1);
+  const dRow = row("d", -5, 5, 0.1, 1.9);
+  const rhs1 = row("b₁", -5, 5, 0.1, 1.0);
+  const rhs2 = row("b₂", -5, 5, 0.1, 1.0);
+  const delta = row("δ added to b₁", -0.5, 0.5, 0.01, 0.05);
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.7rem; color:#334155;";
+  const detBox = document.createElement("span");
+  const kappaBox = document.createElement("span");
+  const sensBox = document.createElement("span");
+  summary.append(detBox, kappaBox, sensBox);
+
+  const matrixWrap = document.createElement("div");
+  matrixWrap.style.cssText = "display:grid; grid-template-columns:repeat(3, auto); gap:1rem 1.5rem; align-items:start;";
+  const aTable = document.createElement("table");
+  const xTable = document.createElement("table");
+  const xpTable = document.createElement("table");
+  [aTable, xTable, xpTable].forEach(t => t.style.cssText = "border-collapse:collapse; font-size:0.95rem;");
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "margin:0.7rem 0 0 0; color:#475569;";
+
+  function tableFrom(table, title, rows, accent) {
+    table.replaceChildren();
+    const cap = document.createElement("caption");
+    cap.textContent = title;
+    cap.style.cssText = `caption-side:top; text-align:left; font-weight:700; margin-bottom:0.25rem; color:${accent};`;
+    table.appendChild(cap);
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      r.forEach(v => {
+        const td = document.createElement("td");
+        td.textContent = v;
+        td.style.cssText = "border:1px solid #cbd5e1; padding:0.45rem 0.65rem; text-align:center;";
+        tr.appendChild(td);
+      });
+      table.appendChild(tr);
+    });
+  }
+
+  function redraw() {
+    const a = Number(aRow.input.value), b = Number(bRow.input.value), c = Number(cRow.input.value), d = Number(dRow.input.value);
+    const v1 = Number(rhs1.input.value), v2 = Number(rhs2.input.value), dv = Number(delta.input.value);
+    [aRow, bRow, cRow, dRow, rhs1, rhs2, delta].forEach(r => r.out.textContent = Number(r.input.value).toFixed(r === delta ? 2 : 1));
+    const inv = inv2(a, b, c, d);
+    tableFrom(aTable, "A", [[a.toFixed(1), b.toFixed(1)], [c.toFixed(1), d.toFixed(1)]], "#0f172a");
+    if (!inv) {
+      tableFrom(xTable, "x = A⁻¹b", [["singular", "matrix"]], "#dc2626");
+      tableFrom(xpTable, "x + Δx", [["not defined", ""]], "#dc2626");
+      detBox.textContent = `det(A) = ${(a * d - b * c).toFixed(3)}`;
+      kappaBox.textContent = "κ∞(A) = ∞";
+      sensBox.textContent = "small change in b can produce arbitrarily large change in x";
+      caption.textContent = "At singularity the inverse does not exist, so the linear system cannot be solved uniquely.";
+      return;
+    }
+    const x = mul(inv, v1, v2);
+    const xp = mul(inv, v1 + dv, v2);
+    const ainvNorm = normInf(...inv.m);
+    const kappa = normInf(a, b, c, d) * ainvNorm;
+    const dxRel = Math.max(Math.abs(xp[0] - x[0]), Math.abs(xp[1] - x[1])) / Math.max(1e-9, Math.max(Math.abs(x[0]), Math.abs(x[1])));
+    tableFrom(xTable, "x = A⁻¹b", [[x[0].toFixed(3)], [x[1].toFixed(3)]], "#2563eb");
+    tableFrom(xpTable, "x + Δx", [[xp[0].toFixed(3)], [xp[1].toFixed(3)]], "#16a34a");
+    detBox.textContent = `det(A) = ${inv.det.toFixed(3)}`;
+    kappaBox.textContent = `κ∞(A) ≈ ${kappa.toFixed(2)}`;
+    sensBox.textContent = `relative solution change ≈ ${(100 * dxRel).toFixed(1)}%`;
+    caption.textContent = kappa > 50
+      ? "This matrix is ill-conditioned: a modest perturbation in the data is being amplified strongly in the solution."
+      : "This matrix is reasonably conditioned: the solution changes, but not wildly, when the right-hand side is nudged.";
+  }
+
+  [aRow, bRow, cRow, dRow, rhs1, rhs2, delta].forEach(r => r.input.addEventListener("input", redraw));
+  matrixWrap.append(aTable, xTable, xpTable);
+  container.append(controls, summary, matrixWrap, caption);
+  redraw();
+  return container;
+}
+```
+
 <!-- ENGINEER-PROF: [WARN] This section introduces only Jacobi and Gauss-Seidel as iterative methods. In engineering practice (FEM, CFD, structural analysis) these classical stationary methods are almost never used directly on large systems — they are too slow and lack robust convergence guarantees on non-diagonally-dominant matrices. The real workhorses are Krylov subspace methods: conjugate gradient (CG) for symmetric positive-definite systems (FEM stiffness), GMRES or BiCGSTAB for non-symmetric systems (CFD). Consider adding a brief signposting paragraph: "Jacobi and Gauss-Seidel are taught here to build intuition. The methods actually used in production FEM and CFD codes are Krylov subspace methods (conjugate gradient, GMRES) — a more advanced family that uses the same iteration idea but chooses each update to minimise the error in an optimal subspace. They converge far faster on the systems engineers actually encounter." -->
 ## Iterative methods
 

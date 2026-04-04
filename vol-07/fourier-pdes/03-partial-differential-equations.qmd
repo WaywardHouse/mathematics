@@ -405,6 +405,74 @@ $$B_n = \frac{2}{L}\int_0^L f(x)\,\sin\!\left(\frac{n\pi x}{L}\right)dx$$
 
 <!-- VIZ: Heat equation evolution — a rod of length π with initial temperature f(x) = sin(x) + 0.5sin(3x). Slider for time t from 0 to 2 (thermal diffusivity α = 1). SVG shows the temperature profile at the current time in orange, the initial profile in grey. As t increases, the n=3 mode decays 9× faster than the n=1 mode — the profile becomes increasingly sinusoidal. Label the two contributions on a small legend. -->
 
+Use the time slider to watch the fast-decaying third mode disappear and leave
+the broad first mode behind.
+
+```{ojs}
+//| echo: false
+{
+  const L = Math.PI;
+  function temp(x, t) { return Math.sin(x) * Math.exp(-t) + 0.5 * Math.sin(3 * x) * Math.exp(-9 * t); }
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+  const label = document.createElement("label"); label.textContent = "Time t";
+  const slider = document.createElement("input");
+  slider.type = "range"; slider.min = "0"; slider.max = "2"; slider.step = "0.02"; slider.value = "0";
+  const out = document.createElement("span"); out.style.cssText = "font-variant-numeric:tabular-nums; min-width:4rem;";
+  controls.append(label, slider, out);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 720 360");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.55rem; color:#334155; font-size:0.95rem;";
+  const m1Box = document.createElement("span");
+  const m3Box = document.createElement("span");
+  legend.append(m1Box, m3Box);
+
+  function redraw() {
+    const t = Number(slider.value);
+    out.textContent = t.toFixed(2);
+    svg.replaceChildren();
+    const sx = x => 55 + x / L * 620;
+    const sy = y => 180 - y * 120;
+    const axis = svgEl("line");
+    axis.setAttribute("x1", "55"); axis.setAttribute("y1", "180");
+    axis.setAttribute("x2", "675"); axis.setAttribute("y2", "180");
+    axis.setAttribute("stroke", "#64748b"); axis.setAttribute("stroke-width", "1.2");
+    svg.appendChild(axis);
+
+    const initPath = [], curPath = [];
+    for (let i = 0; i < 220; i++) {
+      const x = i / 219 * L;
+      initPath.push(`${i === 0 ? "M" : "L"} ${sx(x)} ${sy(temp(x, 0))}`);
+      curPath.push(`${i === 0 ? "M" : "L"} ${sx(x)} ${sy(temp(x, t))}`);
+    }
+    [["#94a3b8", initPath.join(" "), 2], ["#f97316", curPath.join(" "), 3]].forEach(([color, d, w]) => {
+      const p = svgEl("path");
+      p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", color); p.setAttribute("stroke-width", String(w));
+      svg.appendChild(p);
+    });
+
+    m1Box.textContent = `mode 1 amplitude = e^(−t) = ${Math.exp(-t).toFixed(3)}`;
+    m3Box.textContent = `mode 3 amplitude = 0.5e^(−9t) = ${(0.5 * Math.exp(-9 * t)).toFixed(3)}`;
+  }
+
+  slider.addEventListener("input", redraw);
+  container.append(controls, svg, legend);
+  redraw();
+  return container;
+}
+```
+
 ---
 
 ## The wave equation
@@ -453,6 +521,82 @@ These are the **natural frequencies** (harmonics) of the string. A guitar string
 The ratio of overtones is always integer multiples of the fundamental — this is why stringed instruments produce musical notes rather than noise.
 
 <!-- VIZ: Standing wave modes — dropdown for mode number n (1 to 5). SVG shows the nth standing wave sin(nπx/L)cos(nπct/L) animated at its natural frequency. A static plot below shows the spatial shape sin(nπx/L). Label the frequency fₙ = nc/(2L) with c = 1, L = π. -->
+
+Use the mode selector to compare the standing-wave shapes and their increasing
+frequencies.
+
+```{ojs}
+//| echo: false
+{
+  const L = Math.PI, c = 1;
+  function shape(n, x) { return Math.sin(n * Math.PI * x / L); }
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+  const label = document.createElement("label"); label.textContent = "Mode n";
+  const select = document.createElement("select");
+  for (let n = 1; n <= 5; n++) {
+    const opt = document.createElement("option");
+    opt.value = String(n); opt.textContent = String(n);
+    select.appendChild(opt);
+  }
+  const freqOut = document.createElement("span");
+  controls.append(label, select, freqOut);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", "0 0 720 360");
+  svg.style.width = "100%";
+  svg.style.height = "auto";
+  svg.style.border = "1px solid #e2e8f0";
+  svg.style.background = "#fff";
+
+  let timer = 0;
+  function redraw() {
+    const n = Number(select.value);
+    const omega = n * Math.PI * c / L;
+    const fHz = n * c / (2 * L);
+    freqOut.textContent = `fₙ = ${fHz.toFixed(3)}`;
+    svg.replaceChildren();
+    const sx = x => 55 + x / L * 620;
+    const syTop = y => 120 - y * 70;
+    const syBot = y => 285 - y * 55;
+
+    const topAxis = svgEl("line");
+    topAxis.setAttribute("x1", "55"); topAxis.setAttribute("y1", "120");
+    topAxis.setAttribute("x2", "675"); topAxis.setAttribute("y2", "120");
+    topAxis.setAttribute("stroke", "#64748b"); topAxis.setAttribute("stroke-width", "1.2");
+    const botAxis = svgEl("line");
+    botAxis.setAttribute("x1", "55"); botAxis.setAttribute("y1", "285");
+    botAxis.setAttribute("x2", "675"); botAxis.setAttribute("y2", "285");
+    botAxis.setAttribute("stroke", "#64748b"); botAxis.setAttribute("stroke-width", "1.2");
+    svg.append(topAxis, botAxis);
+
+    const dynamicPath = [], staticPath = [];
+    for (let i = 0; i < 220; i++) {
+      const x = i / 219 * L;
+      const y = shape(n, x);
+      dynamicPath.push(`${i === 0 ? "M" : "L"} ${sx(x)} ${syTop(y * Math.cos(omega * timer))}`);
+      staticPath.push(`${i === 0 ? "M" : "L"} ${sx(x)} ${syBot(y)}`);
+    }
+    [["#f97316", dynamicPath.join(" "), 3], ["#2563eb", staticPath.join(" "), 3]].forEach(([color, d, w]) => {
+      const p = svgEl("path");
+      p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", color); p.setAttribute("stroke-width", String(w));
+      svg.appendChild(p);
+    });
+  }
+
+  select.addEventListener("input", redraw);
+  const id = setInterval(() => { timer += 0.06; redraw(); }, 50);
+  invalidation.then(() => clearInterval(id));
+
+  container.append(controls, svg);
+  redraw();
+  return container;
+}
+```
 
 ### D'Alembert's solution
 
