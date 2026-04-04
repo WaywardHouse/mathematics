@@ -132,6 +132,188 @@ This is the central translation of computational engineering:
 
 <!-- VIZ: Discretisation translator. Show one PDE panel, one grid panel, and one algebra panel side by side. Let the reader toggle between finite difference, finite volume, and finite element viewpoints for the same 1D diffusion problem. Update the stencil/control-volume/basis picture and the resulting algebraic equation simultaneously. -->
 
+Use the selector to see how the same diffusion law changes shape as it is
+translated into three different computational languages.
+
+```{ojs}
+//| echo: false
+{
+  const METHODS = {
+    fd: {
+      label: "Finite difference",
+      gridTitle: "grid picture",
+      algebraHTML: "u<sub>i</sub><sup>n+1</sup> = u<sub>i</sub><sup>n</sup> + r(u<sub>i+1</sub><sup>n</sup> - 2u<sub>i</sub><sup>n</sup> + u<sub>i-1</sub><sup>n</sup>)",
+      note: "Local derivatives become stencil differences at neighbouring nodes."
+    },
+    fv: {
+      label: "Finite volume",
+      gridTitle: "control-volume picture",
+      algebraHTML: "du<sub>i</sub>/dt = (q<sub>i-1/2</sub> - q<sub>i+1/2</sub>)/Δx",
+      note: "The balance is written on a cell, and fluxes enter through its faces."
+    },
+    fem: {
+      label: "Finite element",
+      gridTitle: "basis-function picture",
+      algebraHTML: "M u̇ + K u = f",
+      note: "The field is expanded in basis functions and the PDE becomes a matrix system."
+    }
+  };
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 860px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.75rem;";
+  const label = document.createElement("span");
+  label.textContent = "Viewpoint";
+  const select = document.createElement("select");
+  select.style.cssText = "padding:0.35rem 0.5rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+  [["fd","Finite difference"],["fv","Finite volume"],["fem","Finite element"]].forEach(([v,l]) => {
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = l; select.appendChild(opt);
+  });
+  controls.append(label, select);
+
+  const panels = document.createElement("div");
+  panels.style.cssText = "display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.75rem;";
+
+  function makePanel(title) {
+    const panel = document.createElement("div");
+    panel.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:0.7rem;";
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:0.82rem; color:#6b7280; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.03em;";
+    h.textContent = title;
+    panel.appendChild(h);
+    panels.appendChild(panel);
+    return panel;
+  }
+
+  const pdePanel = makePanel("PDE");
+  const gridPanel = makePanel("Geometry");
+  const algPanel = makePanel("Algebra");
+
+  pdePanel.innerHTML += "<div style='font-size:1rem; color:#111827; line-height:1.5;'>Diffusion law<br><span style='font-family:serif;'>u<sub>t</sub> = D u<sub>xx</sub></span><br><span style='font-size:0.88rem; color:#4b5563;'>same continuum statement in every view</span></div>";
+
+  const gridSvg = svgEl("svg");
+  gridSvg.setAttribute("viewBox", "0 0 240 140");
+  gridSvg.setAttribute("width", "100%");
+  gridSvg.style.display = "block";
+  gridPanel.appendChild(gridSvg);
+
+  const gridTitle = document.createElement("div");
+  gridTitle.style.cssText = "font-size:0.88rem; color:#4b5563; margin-top:0.45rem;";
+  gridPanel.appendChild(gridTitle);
+
+  const algEq = document.createElement("div");
+  algEq.style.cssText = "font-size:1rem; color:#111827; line-height:1.6;";
+  algPanel.appendChild(algEq);
+  const algNote = document.createElement("div");
+  algNote.style.cssText = "font-size:0.88rem; color:#4b5563; margin-top:0.45rem;";
+  algPanel.appendChild(algNote);
+
+  function clearSvg() {
+    while (gridSvg.firstChild) gridSvg.removeChild(gridSvg.firstChild);
+  }
+
+  function text(x, y, value, fill = "#374151", size = 12, anchor = "middle") {
+    const t = svgEl("text");
+    t.setAttribute("x", x);
+    t.setAttribute("y", y);
+    t.setAttribute("fill", fill);
+    t.setAttribute("font-size", size);
+    t.setAttribute("text-anchor", anchor);
+    t.textContent = value;
+    gridSvg.appendChild(t);
+  }
+
+  function redraw() {
+    const method = METHODS[select.value];
+    clearSvg();
+
+    const base = svgEl("line");
+    base.setAttribute("x1", "20");
+    base.setAttribute("x2", "220");
+    base.setAttribute("y1", "95");
+    base.setAttribute("y2", "95");
+    base.setAttribute("stroke", "#9ca3af");
+    base.setAttribute("stroke-width", "2");
+    gridSvg.appendChild(base);
+
+    if (select.value === "fd") {
+      [50, 95, 140, 185].forEach((x, idx) => {
+        const c = svgEl("circle");
+        c.setAttribute("cx", x);
+        c.setAttribute("cy", "95");
+        c.setAttribute("r", idx === 1 ? "7" : "5");
+        c.setAttribute("fill", idx === 1 ? "#2563eb" : "#f59e0b");
+        gridSvg.appendChild(c);
+      });
+      const brace = svgEl("line");
+      brace.setAttribute("x1", "50"); brace.setAttribute("x2", "140");
+      brace.setAttribute("y1", "62"); brace.setAttribute("y2", "62");
+      brace.setAttribute("stroke", "#2563eb"); brace.setAttribute("stroke-width", "2");
+      gridSvg.appendChild(brace);
+      text(95, 55, "stencil at i", "#2563eb", 12);
+      text(50, 115, "i-1", "#374151", 11);
+      text(95, 115, "i", "#374151", 11);
+      text(140, 115, "i+1", "#374151", 11);
+    } else if (select.value === "fv") {
+      [45, 95, 145, 195].forEach(x => {
+        const line = svgEl("line");
+        line.setAttribute("x1", x); line.setAttribute("x2", x);
+        line.setAttribute("y1", "62"); line.setAttribute("y2", "128");
+        line.setAttribute("stroke", "#9ca3af"); line.setAttribute("stroke-width", "2");
+        gridSvg.appendChild(line);
+      });
+      const cell = svgEl("rect");
+      cell.setAttribute("x", "95");
+      cell.setAttribute("y", "62");
+      cell.setAttribute("width", "50");
+      cell.setAttribute("height", "66");
+      cell.setAttribute("fill", "rgba(245,158,11,0.2)");
+      cell.setAttribute("stroke", "#f59e0b");
+      cell.setAttribute("stroke-width", "2");
+      gridSvg.appendChild(cell);
+      text(120, 58, "cell i", "#b45309", 12);
+      text(95, 145, "q_{i-1/2}", "#2563eb", 11);
+      text(145, 145, "q_{i+1/2}", "#2563eb", 11);
+    } else {
+      const pts = [[40,110],[90,40],[140,110],[190,70]];
+      for (let i = 0; i < pts.length - 1; i++) {
+        const l = svgEl("line");
+        l.setAttribute("x1", pts[i][0]); l.setAttribute("y1", pts[i][1]);
+        l.setAttribute("x2", pts[i+1][0]); l.setAttribute("y2", pts[i+1][1]);
+        l.setAttribute("stroke", "#7c3aed"); l.setAttribute("stroke-width", "3");
+        gridSvg.appendChild(l);
+      }
+      [90,140].forEach(x => {
+        const l = svgEl("line");
+        l.setAttribute("x1", x); l.setAttribute("y1", "25");
+        l.setAttribute("x2", x); l.setAttribute("y2", "120");
+        l.setAttribute("stroke", "#e5e7eb"); l.setAttribute("stroke-width", "1.5");
+        gridSvg.appendChild(l);
+      });
+      text(115, 24, "hat functions / elements", "#6d28d9", 12);
+      text(90, 134, "node i", "#374151", 11);
+      text(140, 134, "node i+1", "#374151", 11);
+    }
+
+    gridTitle.textContent = method.gridTitle;
+    algEq.innerHTML = `<span style="font-family:serif;">${method.algebraHTML}</span>`;
+    algNote.textContent = method.note;
+  }
+
+  select.addEventListener("change", redraw);
+  container.append(controls, panels);
+  redraw();
+  return container;
+}
+```
+
 ## Three dominant viewpoints
 
 Upper-year engineering simulation is often organised around three families of

@@ -484,9 +484,9 @@ take $300 for certain, or spin a wheel that pays $800 with
 probability 0.5 and $0 with probability 0.5.
 What is the expected value of spinning the wheel?
 
-$$E = (0.5 \times 800) + (0.5 \times 0) = 400 + 0 = $400$$
+$$E = (0.5 \times 800) + (0.5 \times 0) = 400 + 0 = 400$$
 
-The expected value of spinning is $400 — higher than the certain
+The expected value of spinning is $400$ — higher than the certain
 $300. But "expected value" means the average across many spins,
 not a guarantee for this one spin. You could walk away with nothing.
 

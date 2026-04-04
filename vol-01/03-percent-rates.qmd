@@ -340,10 +340,12 @@ $$Q_5 = 2000 \times (1.035)^5$$
 Work out $(1.035)^5$ — that is 1.035 multiplied by itself five times.
 Using a calculator: $(1.035)^5 = 1.1877$ (to 4 d.p.).
 
-$$Q_5 = 2000 \times 1.1877 = $2,375.40$$
+$$Q_5 = 2000 \times 1.1877 = 2375.40$$
 
-Compare to simple interest: $5 \times 3.5\% \times 2000 = $350$,
-giving $2,350. The compounded version is $25.40 more — the gap
+So after 5 years, the value is **$2,375.40**.
+
+Compare to simple interest: $5 \times 3.5\% \times 2000 = 350$,
+giving **$2,350**. The compounded version is **$25.40** more — the gap
 grows larger the longer you leave it.
 
 This means compound interest pays interest on earlier interest as well.

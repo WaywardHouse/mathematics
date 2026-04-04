@@ -97,6 +97,302 @@ you could draw a line and read off every answer at once.
 That line is the graph of the equation. It doesn't replace the
 algebra. It shows you the whole relationship in one picture.
 
+**Opening visual: the number line becomes the coordinate plane.** Press
+play and watch the one-dimensional address from earlier chapters turn
+into a point with two coordinates.
+
+```{ojs}
+//| echo: false
+{
+  const W = 560, H = 360;
+  const margin = { left: 48, right: 28, top: 28, bottom: 56 };
+  const x0 = margin.left;
+  const x1 = W - margin.right;
+  const yMid = H * 0.58;
+  const step = (x1 - x0) / 10;
+  const originX = x0 + 5 * step;
+  const originY = yMid;
+  const teal = "#0d9488";
+  const purple = "#7c3aed";
+  const amber = "#f59e0b";
+  const axisGrey = "#9ca3af";
+  const gridGrey = "#f3f4f6";
+  const textGrey = "#374151";
+
+  let timer = null;
+  let t = 0;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const ease = u => 1 - Math.pow(1 - clamp(u, 0, 1), 3);
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 620px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.55rem;";
+
+  const playBtn = document.createElement("button");
+  playBtn.textContent = "Begin";
+  playBtn.style.cssText = "padding:0.45rem 0.85rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; cursor:pointer; font:inherit;";
+
+  const replayBtn = document.createElement("button");
+  replayBtn.textContent = "Replay";
+  replayBtn.style.cssText = "padding:0.45rem 0.85rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; cursor:pointer; font:inherit; display:none;";
+
+  const status = document.createElement("div");
+  status.style.cssText = "font-size:0.92rem; color:#4b5563;";
+  controls.append(playBtn, replayBtn, status);
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:white; border:1px solid #e5e7eb; border-radius:10px;";
+
+  const bg = svgEl("rect");
+  bg.setAttribute("x", "0");
+  bg.setAttribute("y", "0");
+  bg.setAttribute("width", W);
+  bg.setAttribute("height", H);
+  bg.setAttribute("fill", "white");
+  svg.appendChild(bg);
+
+  const gridGroup = svgEl("g");
+  const axisGroup = svgEl("g");
+  const labelGroup = svgEl("g");
+  const guideGroup = svgEl("g");
+  const pointGroup = svgEl("g");
+  svg.append(gridGroup, axisGroup, guideGroup, pointGroup, labelGroup);
+
+  function addText(x, y, text, opts = {}) {
+    const node = svgEl("text");
+    node.setAttribute("x", x);
+    node.setAttribute("y", y);
+    node.setAttribute("fill", opts.fill || textGrey);
+    node.setAttribute("font-size", opts.size || 14);
+    node.setAttribute("font-weight", opts.weight || "500");
+    node.setAttribute("text-anchor", opts.anchor || "start");
+    node.textContent = text;
+    if (opts.opacity != null) node.setAttribute("opacity", opts.opacity);
+    if (opts.rotate) node.setAttribute("transform", `rotate(${opts.rotate} ${x} ${y})`);
+    labelGroup.appendChild(node);
+    return node;
+  }
+
+  const axisCaption = addText(W / 2, 26, "From one dimension to two dimensions", { anchor: "middle", size: 16, weight: "600" });
+  const phaseText = addText(W / 2, H - 18, "", { anchor: "middle", size: 13, fill: "#6b7280" });
+  const xLineLabel = addText(originX + 3 * step, originY + 36, "x = 3", { anchor: "middle", size: 13, fill: teal, opacity: 1 });
+  const planeLabel = addText(originX + 3 * step + 8, originY - 4 * step - 10, "(3, 4)", { anchor: "start", size: 13, fill: amber, opacity: 0 });
+  const oldAddress = addText(originX + 3 * step, originY + 54, "x = 3 was its address on one line.", { anchor: "middle", size: 12, fill: "#6b7280", opacity: 0 });
+  const newAddress = addText(originX + 3 * step + 8, originY - 4 * step - 28, "(3, 4) is its address on the plane.", { anchor: "start", size: 12, fill: "#6b7280", opacity: 0 });
+  const fromVol1 = addText(originX, originY + 72, "The number line you know from Vol 1.", { anchor: "middle", size: 12, fill: "#6b7280", opacity: 1 });
+
+  const hAxis = svgEl("line");
+  const vAxis = svgEl("line");
+  const xArrow = svgEl("line");
+  const yArrow = svgEl("line");
+  [hAxis, vAxis, xArrow, yArrow].forEach(n => axisGroup.appendChild(n));
+
+  const xTag = addText(x1 + 4, originY - 8, "x", { fill: teal, weight: "700", opacity: 0 });
+  const yTag = addText(originX + 8, margin.top - 4, "y", { fill: purple, weight: "700", opacity: 0 });
+
+  const point = svgEl("circle");
+  point.setAttribute("r", "7");
+  point.setAttribute("fill", amber);
+  point.setAttribute("stroke", "#b45309");
+  point.setAttribute("stroke-width", "1.2");
+  pointGroup.appendChild(point);
+
+  const vGuide = svgEl("line");
+  const hGuide = svgEl("line");
+  [vGuide, hGuide].forEach(g => {
+    g.setAttribute("stroke-width", "2");
+    g.setAttribute("stroke-dasharray", "6 5");
+    g.setAttribute("opacity", "0");
+    guideGroup.appendChild(g);
+  });
+  vGuide.setAttribute("stroke", teal);
+  hGuide.setAttribute("stroke", purple);
+
+  function drawTicks(lineY) {
+    const group = svgEl("g");
+    for (let i = -5; i <= 5; i += 1) {
+      const x = originX + i * step;
+      const tick = svgEl("line");
+      tick.setAttribute("x1", x);
+      tick.setAttribute("x2", x);
+      tick.setAttribute("y1", lineY - 6);
+      tick.setAttribute("y2", lineY + 6);
+      tick.setAttribute("stroke", axisGrey);
+      tick.setAttribute("stroke-width", "1.5");
+      group.appendChild(tick);
+
+      if (i !== 0) {
+        const label = svgEl("text");
+        label.setAttribute("x", x);
+        label.setAttribute("y", lineY + 20);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("font-size", "11");
+        label.setAttribute("fill", axisGrey);
+        label.textContent = i;
+        group.appendChild(label);
+      }
+    }
+    return group;
+  }
+
+  const hTicks = drawTicks(originY);
+  axisGroup.appendChild(hTicks);
+
+  function redraw() {
+    const p1 = ease(t / 1.0);
+    const p2 = ease((t - 1.0) / 1.5);
+    const p3 = ease((t - 2.5) / 1.5);
+
+    gridGroup.replaceChildren();
+    if (p2 > 0) {
+      for (let i = -5; i <= 5; i += 1) {
+        const gx = originX + i * step;
+        const gy = originY - i * step;
+
+        const v = svgEl("line");
+        v.setAttribute("x1", gx);
+        v.setAttribute("x2", gx);
+        v.setAttribute("y1", margin.top);
+        v.setAttribute("y2", H - margin.bottom);
+        v.setAttribute("stroke", gridGrey);
+        v.setAttribute("stroke-width", "1");
+        v.setAttribute("opacity", (0.9 * p2).toFixed(2));
+        gridGroup.appendChild(v);
+
+        const h = svgEl("line");
+        h.setAttribute("x1", x0);
+        h.setAttribute("x2", x1);
+        h.setAttribute("y1", originY - i * step);
+        h.setAttribute("y2", originY - i * step);
+        h.setAttribute("stroke", gridGrey);
+        h.setAttribute("stroke-width", "1");
+        h.setAttribute("opacity", (0.9 * p2).toFixed(2));
+        gridGroup.appendChild(h);
+      }
+    }
+
+    hAxis.setAttribute("x1", x0);
+    hAxis.setAttribute("y1", originY);
+    hAxis.setAttribute("x2", x1);
+    hAxis.setAttribute("y2", originY);
+    hAxis.setAttribute("stroke", axisGrey);
+    hAxis.setAttribute("stroke-width", "2");
+
+    xArrow.setAttribute("x1", x1 - 12);
+    xArrow.setAttribute("y1", originY - 6);
+    xArrow.setAttribute("x2", x1);
+    xArrow.setAttribute("y2", originY);
+    xArrow.setAttribute("stroke", teal);
+    xArrow.setAttribute("stroke-width", "2");
+    xArrow.setAttribute("opacity", p2.toFixed(2));
+
+    const angle = 90 * p2;
+    const length = (H - margin.bottom) - margin.top;
+    vAxis.setAttribute("x1", originX);
+    vAxis.setAttribute("y1", originY);
+    vAxis.setAttribute("x2", originX);
+    vAxis.setAttribute("y2", originY - length);
+    vAxis.setAttribute("stroke", axisGrey);
+    vAxis.setAttribute("stroke-width", "2");
+    vAxis.setAttribute("transform", `rotate(${-angle} ${originX} ${originY})`);
+    vAxis.setAttribute("opacity", p2.toFixed(2));
+
+    yArrow.setAttribute("x1", originX - 6);
+    yArrow.setAttribute("y1", margin.top + 12);
+    yArrow.setAttribute("x2", originX);
+    yArrow.setAttribute("y2", margin.top);
+    yArrow.setAttribute("stroke", purple);
+    yArrow.setAttribute("stroke-width", "2");
+    yArrow.setAttribute("opacity", p2.toFixed(2));
+
+    xTag.setAttribute("opacity", p2.toFixed(2));
+    yTag.setAttribute("opacity", p2.toFixed(2));
+    fromVol1.setAttribute("opacity", (1 - 0.6 * p2).toFixed(2));
+
+    const startX = originX + 3 * step;
+    const startY = originY;
+    const endX = startX;
+    const endY = originY - 4 * step;
+    point.setAttribute("cx", startX);
+    point.setAttribute("cy", lerp(startY, endY, p3));
+
+    xLineLabel.setAttribute("opacity", (1 - 0.5 * p3).toFixed(2));
+    planeLabel.setAttribute("opacity", p3.toFixed(2));
+    oldAddress.setAttribute("opacity", p3.toFixed(2));
+    newAddress.setAttribute("opacity", p3.toFixed(2));
+
+    vGuide.setAttribute("x1", startX);
+    vGuide.setAttribute("x2", startX);
+    vGuide.setAttribute("y1", originY);
+    vGuide.setAttribute("y2", point.getAttribute("cy"));
+    vGuide.setAttribute("opacity", p3.toFixed(2));
+
+    hGuide.setAttribute("x1", originX);
+    hGuide.setAttribute("x2", startX);
+    hGuide.setAttribute("y1", originY);
+    hGuide.setAttribute("y2", originY);
+    hGuide.setAttribute("opacity", p3.toFixed(2));
+
+    if (t < 1) {
+      phaseText.textContent = "Phase 1: one number line, one address.";
+      status.textContent = "A familiar number line from earlier chapters.";
+    } else if (t < 2.5) {
+      phaseText.textContent = "Phase 2: add a vertical axis and a grid.";
+      status.textContent = "One dimension becomes two dimensions.";
+    } else {
+      phaseText.textContent = "Phase 3: lift the point into the plane.";
+      status.textContent = "x = 3 becomes the point (3, 4).";
+    }
+
+    replayBtn.style.display = t >= 4 ? "inline-block" : "none";
+  }
+
+  function stopAnim() {
+    if (timer) {
+      cancelAnimationFrame(timer);
+      timer = null;
+    }
+  }
+
+  function startAnim() {
+    stopAnim();
+    t = 0;
+    playBtn.textContent = "Playing...";
+    replayBtn.style.display = "none";
+    let start = null;
+    function frame(ts) {
+      if (start == null) start = ts;
+      t = Math.min(4.1, (ts - start) / 1000);
+      redraw();
+      if (t < 4.1) {
+        timer = requestAnimationFrame(frame);
+      } else {
+        playBtn.textContent = "Begin";
+        timer = null;
+      }
+    }
+    timer = requestAnimationFrame(frame);
+  }
+
+  playBtn.addEventListener("click", startAnim);
+  replayBtn.addEventListener("click", startAnim);
+
+  container.append(controls, svg);
+  redraw();
+  return container;
+}
+```
+
 ## What the notation is saying
 
 ### The coordinate plane
@@ -856,7 +1152,7 @@ makeStepperHTML(1, [
   { op: "Write as an equation: Service B",  eq: "y = x + 2" },
   { op: "Set them equal",                   eq: "6 = x + 2" },
   { op: "Solve for x",                      eq: "x = 4 \\text{ films}" },
-  { op: "Compare at 5 films",               eq: "A: $6,\\quad B: 5 + 2 = $7", note: "Service A is cheaper above 4 films per month." },
+  { op: "Compare at 5 films",               eq: "A: 6,\\quad B: 5 + 2 = 7", note: "Service A is cheaper above 4 films per month." },
   { op: "Check",                            eq: "x=4:\\; 4+2=6 \\checkmark" }
 ])
 ```

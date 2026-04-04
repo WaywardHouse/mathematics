@@ -133,6 +133,240 @@ global law follows by integration.
 
 <!-- VIZ: Control-volume balance explorer. Show a small square control volume with arrows for inflow and outflow, an interior source term, and an accumulating quantity u. Let the reader change inflow, outflow, and source, and update both a local balance equation and a storage meter. Include modes for heat, solute, and fluid mass so the same geometry is visibly reused across domains. -->
 
+Use the controls to see the same balance law operate across several physical
+interpretations.
+
+```{ojs}
+//| echo: false
+{
+  const W = 620, H = 300;
+  let inflow = 6;
+  let outflow = 4;
+  let source = 1;
+  let mode = "heat";
+
+  const MODES = {
+    heat: { store: "thermal energy", fluxIn: "heat in", fluxOut: "heat out", source: "heater", units: "kJ/s" },
+    solute: { store: "solute mass", fluxIn: "solute in", fluxOut: "solute out", source: "reaction source", units: "kg/s" },
+    fluid: { store: "fluid mass", fluxIn: "mass in", fluxOut: "mass out", source: "injection", units: "kg/s" }
+  };
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const arrowWidth = v => 2 + 2.2 * Math.abs(v);
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 680px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+  function sliderRow(labelText, min, max, value) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = "0.5";
+    input.value = String(value);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric: tabular-nums; min-width:3.6rem;";
+    controls.append(label, input, out);
+    return { input, out };
+  }
+  const inRow = sliderRow("Inflow", 0, 10, inflow);
+  const outRow = sliderRow("Outflow", 0, 10, outflow);
+  const srcRow = sliderRow("Source", -4, 4, source);
+
+  const modeRow = document.createElement("div");
+  modeRow.style.cssText = "display:flex; gap:0.5rem; align-items:center; margin-bottom:0.65rem;";
+  const modeLabel = document.createElement("span");
+  modeLabel.textContent = "Mode";
+  const select = document.createElement("select");
+  select.style.cssText = "padding:0.35rem 0.5rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+  [["heat","Heat"],["solute","Solute"],["fluid","Fluid mass"]].forEach(([v,l]) => {
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = l;
+    select.appendChild(opt);
+  });
+  select.value = mode;
+  modeRow.append(modeLabel, select);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label) {
+    const box = document.createElement("div");
+    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
+    k.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
+    box.append(k, v);
+    readout.appendChild(box);
+    return v;
+  }
+  const eqBox = card("Balance");
+  const rateBox = card("∂u/∂t");
+  const stateBox = card("Interpretation");
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:white; border:1px solid #e5e7eb; border-radius:10px;";
+
+  const square = svgEl("rect");
+  square.setAttribute("x", "200");
+  square.setAttribute("y", "70");
+  square.setAttribute("width", "160");
+  square.setAttribute("height", "120");
+  square.setAttribute("fill", "#f8fafc");
+  square.setAttribute("stroke", "#6b7280");
+  square.setAttribute("stroke-width", "2");
+  svg.appendChild(square);
+
+  const barBg = svgEl("rect");
+  barBg.setAttribute("x", "470");
+  barBg.setAttribute("y", "70");
+  barBg.setAttribute("width", "42");
+  barBg.setAttribute("height", "120");
+  barBg.setAttribute("fill", "#f3f4f6");
+  barBg.setAttribute("stroke", "#9ca3af");
+  barBg.setAttribute("stroke-width", "1.5");
+  svg.appendChild(barBg);
+
+  const barFill = svgEl("rect");
+  svg.appendChild(barFill);
+
+  const labels = {};
+  ["center","store","bar","in","out","src"].forEach(k => {
+    labels[k] = svgEl("text");
+    labels[k].setAttribute("font-size", "13");
+    labels[k].setAttribute("fill", "#374151");
+    svg.appendChild(labels[k]);
+  });
+  labels.center.setAttribute("x", "280");
+  labels.center.setAttribute("y", "135");
+  labels.center.setAttribute("text-anchor", "middle");
+  labels.center.setAttribute("font-weight", "700");
+
+  labels.store.setAttribute("x", "280");
+  labels.store.setAttribute("y", "155");
+  labels.store.setAttribute("text-anchor", "middle");
+  labels.store.setAttribute("font-size", "12");
+  labels.store.setAttribute("fill", "#6b7280");
+
+  labels.bar.setAttribute("x", "491");
+  labels.bar.setAttribute("y", "206");
+  labels.bar.setAttribute("text-anchor", "middle");
+  labels.bar.setAttribute("font-size", "12");
+  labels.bar.setAttribute("fill", "#6b7280");
+
+  function makeArrow(color) {
+    const g = svgEl("g");
+    const line = svgEl("line");
+    const tip1 = svgEl("line");
+    const tip2 = svgEl("line");
+    [line, tip1, tip2].forEach(n => {
+      n.setAttribute("stroke", color);
+      n.setAttribute("stroke-linecap", "round");
+      g.appendChild(n);
+    });
+    svg.appendChild(g);
+    return { g, line, tip1, tip2 };
+  }
+  const inArrow = makeArrow("#2563eb");
+  const outArrow = makeArrow("#f59e0b");
+  const srcArrow = makeArrow("#7c3aed");
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function setArrow(obj, x1, y1, x2, y2, width) {
+    obj.line.setAttribute("x1", x1);
+    obj.line.setAttribute("y1", y1);
+    obj.line.setAttribute("x2", x2);
+    obj.line.setAttribute("y2", y2);
+    obj.line.setAttribute("stroke-width", width);
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    const bx = x2 - 12 * ux, by = y2 - 12 * uy;
+    obj.tip1.setAttribute("x1", x2);
+    obj.tip1.setAttribute("y1", y2);
+    obj.tip1.setAttribute("x2", bx - 6 * uy);
+    obj.tip1.setAttribute("y2", by + 6 * ux);
+    obj.tip1.setAttribute("stroke-width", width);
+    obj.tip2.setAttribute("x1", x2);
+    obj.tip2.setAttribute("y1", y2);
+    obj.tip2.setAttribute("x2", bx + 6 * uy);
+    obj.tip2.setAttribute("y2", by - 6 * ux);
+    obj.tip2.setAttribute("stroke-width", width);
+  }
+
+  function redraw() {
+    inflow = parseFloat(inRow.input.value);
+    outflow = parseFloat(outRow.input.value);
+    source = parseFloat(srcRow.input.value);
+    mode = select.value;
+
+    inRow.out.textContent = inflow.toFixed(1);
+    outRow.out.textContent = outflow.toFixed(1);
+    srcRow.out.textContent = source.toFixed(1);
+
+    const acc = inflow - outflow + source;
+    const m = MODES[mode];
+
+    labels.center.textContent = "control volume";
+    labels.store.textContent = m.store;
+    labels.bar.textContent = "storage";
+    labels.in.setAttribute("x", "115");
+    labels.in.setAttribute("y", "120");
+    labels.in.setAttribute("text-anchor", "middle");
+    labels.in.textContent = m.fluxIn;
+    labels.out.setAttribute("x", "445");
+    labels.out.setAttribute("y", "120");
+    labels.out.setAttribute("text-anchor", "middle");
+    labels.out.textContent = m.fluxOut;
+    labels.src.setAttribute("x", "280");
+    labels.src.setAttribute("y", "48");
+    labels.src.setAttribute("text-anchor", "middle");
+    labels.src.textContent = m.source;
+
+    setArrow(inArrow, 80, 130, 198, 130, arrowWidth(inflow));
+    setArrow(outArrow, 362, 130, 440, 130, arrowWidth(outflow));
+    if (source >= 0) {
+      setArrow(srcArrow, 280, 30, 280, 68, arrowWidth(source));
+    } else {
+      setArrow(srcArrow, 280, 68, 280, 30, arrowWidth(source));
+    }
+
+    const fillH = 25 + 95 * clamp((acc + 10) / 20, 0, 1);
+    barFill.setAttribute("x", "470");
+    barFill.setAttribute("y", 190 - fillH);
+    barFill.setAttribute("width", "42");
+    barFill.setAttribute("height", fillH);
+    barFill.setAttribute("fill", acc >= 0 ? "rgba(245,158,11,0.65)" : "rgba(239,68,68,0.65)");
+
+    eqBox.textContent = `${inflow.toFixed(1)} - ${outflow.toFixed(1)} + ${source.toFixed(1)}`;
+    rateBox.textContent = `${acc >= 0 ? "+" : ""}${acc.toFixed(1)} ${m.units}`;
+    rateBox.style.color = acc >= 0 ? "#b45309" : "#b91c1c";
+    stateBox.textContent = acc > 0 ? "storage rises" : acc < 0 ? "storage falls" : "balanced";
+    caption.textContent = `In one-dimensional bookkeeping form, the local balance reads accumulation = inflow − outflow + source. The same geometry applies across heat, solute, and mass transport.`;
+  }
+
+  [inRow.input, outRow.input, srcRow.input].forEach(el => el.addEventListener("input", redraw));
+  select.addEventListener("change", redraw);
+
+  container.append(controls, modeRow, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ## Constitutive laws
 
 A balance law tells you what must be accounted for. It does not say how the

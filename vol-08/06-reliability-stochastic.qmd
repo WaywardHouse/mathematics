@@ -163,6 +163,176 @@ matters for every maintenance and safety decision.
 
 <!-- VIZ: Reliability curve explorer. Show survival function R(t), cumulative failure F(t), and hazard rate on linked panels. Provide sliders for the Weibull shape parameter beta and scale eta. At beta=1 the model is exponential (constant hazard). Let the reader drag beta above 1 to see wear-out (increasing hazard) and below 1 to see infant mortality (decreasing hazard). Overlay a maintenance-interval marker so the operational implication is visible: the optimal scheduled-replacement point shifts as beta changes. -->
 
+The explorer below links survival, cumulative failure, and hazard at the same
+time marker.
+
+```{ojs}
+//| echo: false
+{
+  const W = 760, H = 250;
+  let beta = 1.4;
+  let eta = 120;
+  let tm = 90;
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 820px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.7rem;";
+  function sliderRow(labelText, min, max, step, value) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = String(step);
+    input.value = String(value);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric: tabular-nums; min-width:4.2rem;";
+    controls.append(label, input, out);
+    return { input, out };
+  }
+  const betaRow = sliderRow("Weibull shape β", 0.4, 3, 0.1, beta);
+  const etaRow = sliderRow("Scale η", 40, 220, 5, eta);
+  const tmRow = sliderRow("Maintenance marker tₘ", 10, 220, 5, tm);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label) {
+    const box = document.createElement("div");
+    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
+    k.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
+    box.append(k, v);
+    readout.appendChild(box);
+    return v;
+  }
+  const regimeBox = card("Behaviour");
+  const rBox = card("R(tₘ)");
+  const fBox = card("F(tₘ)");
+  const hBox = card("λ(tₘ)");
+
+  const board = document.createElement("div");
+  board.style.cssText = "display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.75rem;";
+
+  function makePanel(title) {
+    const panel = document.createElement("div");
+    panel.style.cssText = "background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:0.6rem;";
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:0.8rem; color:#6b7280; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.4rem;";
+    h.textContent = title;
+    const svg = svgEl("svg");
+    svg.setAttribute("viewBox", `0 0 ${W / 3 - 20} ${H}`);
+    svg.setAttribute("width", "100%");
+    svg.style.display = "block";
+    panel.append(h, svg);
+    board.appendChild(panel);
+    return svg;
+  }
+
+  const svgR = makePanel("Reliability R(t)");
+  const svgF = makePanel("Failure F(t)");
+  const svgH = makePanel("Hazard λ(t)");
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function drawCurve(svg, fn, yMax, color, markerValue) {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const w = W / 3 - 20, h = H;
+    const left = 34, right = 14, top = 10, bottom = 26;
+    const plotW = w - left - right, plotH = h - top - bottom;
+    const sx = t => left + plotW * t / 220;
+    const sy = y => top + plotH * (1 - y / yMax);
+
+    for (let i = 0; i <= 4; i++) {
+      const gy = yMax * i / 4;
+      const line = svgEl("line");
+      line.setAttribute("x1", sx(0));
+      line.setAttribute("x2", sx(220));
+      line.setAttribute("y1", sy(gy));
+      line.setAttribute("y2", sy(gy));
+      line.setAttribute("stroke", "#f3f4f6");
+      svg.appendChild(line);
+    }
+    const xAxis = svgEl("line");
+    xAxis.setAttribute("x1", sx(0)); xAxis.setAttribute("x2", sx(220));
+    xAxis.setAttribute("y1", sy(0)); xAxis.setAttribute("y2", sy(0));
+    xAxis.setAttribute("stroke", "#6b7280");
+    svg.appendChild(xAxis);
+    const yAxis = svgEl("line");
+    yAxis.setAttribute("x1", sx(0)); yAxis.setAttribute("x2", sx(0));
+    yAxis.setAttribute("y1", sy(0)); yAxis.setAttribute("y2", sy(yMax));
+    yAxis.setAttribute("stroke", "#6b7280");
+    svg.appendChild(yAxis);
+
+    const pts = [];
+    for (let t = 0; t <= 220; t += 2) pts.push(`${sx(t)},${sy(fn(t))}`);
+    const curve = svgEl("polyline");
+    curve.setAttribute("points", pts.join(" "));
+    curve.setAttribute("fill", "none");
+    curve.setAttribute("stroke", color);
+    curve.setAttribute("stroke-width", "2.4");
+    svg.appendChild(curve);
+
+    const mark = svgEl("line");
+    mark.setAttribute("x1", sx(tm)); mark.setAttribute("x2", sx(tm));
+    mark.setAttribute("y1", sy(0)); mark.setAttribute("y2", sy(yMax));
+    mark.setAttribute("stroke", "#7c3aed");
+    mark.setAttribute("stroke-dasharray", "5 4");
+    svg.appendChild(mark);
+
+    const dot = svgEl("circle");
+    dot.setAttribute("cx", sx(tm));
+    dot.setAttribute("cy", sy(markerValue));
+    dot.setAttribute("r", "4.3");
+    dot.setAttribute("fill", "#7c3aed");
+    svg.appendChild(dot);
+  }
+
+  function redraw() {
+    beta = parseFloat(betaRow.input.value);
+    eta = parseFloat(etaRow.input.value);
+    tm = parseFloat(tmRow.input.value);
+    betaRow.out.textContent = beta.toFixed(1);
+    etaRow.out.textContent = eta.toFixed(0);
+    tmRow.out.textContent = tm.toFixed(0);
+
+    const R = t => Math.exp(-Math.pow(t / eta, beta));
+    const F = t => 1 - R(t);
+    const Hfn = t => beta === 1 && t === 0 ? 1 / eta : (beta / eta) * Math.pow(Math.max(t, 1e-6) / eta, beta - 1);
+    const hMax = Math.max(0.03, ...Array.from({ length: 111 }, (_, i) => Hfn(2 * i)));
+
+    drawCurve(svgR, R, 1, "#2563eb", R(tm));
+    drawCurve(svgF, F, 1, "#f59e0b", F(tm));
+    drawCurve(svgH, Hfn, hMax, "#ef4444", Hfn(tm));
+
+    regimeBox.textContent = beta < 1 ? "infant mortality" : beta > 1 ? "wear-out" : "constant hazard";
+    regimeBox.style.color = beta < 1 ? "#b45309" : beta > 1 ? "#b91c1c" : "#2563eb";
+    rBox.textContent = R(tm).toFixed(3);
+    fBox.textContent = F(tm).toFixed(3);
+    hBox.textContent = Hfn(tm).toFixed(4);
+    caption.textContent = beta < 1
+      ? "β < 1 means the hazard falls with age: weak units fail early, and survivors become safer. That pushes scheduled replacement later and makes screening attractive."
+      : beta > 1
+        ? "β > 1 means the hazard rises with age: wear-out dominates, so delaying replacement becomes increasingly costly."
+        : "β = 1 gives the exponential model: the hazard stays flat, so age alone does not make immediate failure more or less likely.";
+  }
+
+  [betaRow.input, etaRow.input, tmRow.input].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, readout, board, caption);
+  redraw();
+  return container;
+}
+```
+
 ## Queueing as accumulation under uncertainty
 
 Instead of asking when a unit fails, ask what happens when random arrivals

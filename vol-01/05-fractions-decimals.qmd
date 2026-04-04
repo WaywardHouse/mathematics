@@ -591,11 +591,11 @@ The total cost is $120. What does each pay?
 Check the fractions sum to 1 first — to make sure everyone's share is accounted for:
 $$\frac{4}{12} + \frac{5}{12} + \frac{3}{12} = \frac{12}{12} = 1 \checkmark$$
 
-Friend A: $\frac{1}{3} \times 120 = $40$
+Friend A: $\frac{1}{3} \times 120 = 40$
 
-Friend B: $\frac{5}{12} \times 120 = $50$
+Friend B: $\frac{5}{12} \times 120 = 50$
 
-Friend C: $\frac{1}{4} \times 120 = $30$
+Friend C: $\frac{1}{4} \times 120 = 30$
 
 Total: $120. Check.
 

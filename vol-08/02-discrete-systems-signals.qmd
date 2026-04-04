@@ -133,6 +133,310 @@ stability rules derived later in this chapter apply to them.
 
 <!-- VIZ: Sampling and aliasing explorer. Show a continuous sine wave with adjustable frequency f and a sampling comb with adjustable sampling frequency f_s. Simultaneously display the sampled points, the reconstructed lower-frequency apparent wave, and a readout comparing true frequency to aliased frequency. Let the reader drag f past the Nyquist limit and watch the apparent discrete-time behaviour change. -->
 
+Use the controls to compare the real continuous oscillation with what the
+sampler can actually preserve.
+
+```{ojs}
+//| echo: false
+{
+  const width = 640;
+  const height = 340;
+  const pad = { top: 24, right: 18, bottom: 48, left: 48 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+
+  const BLUE = "#2563eb";
+  const AMBER = "#f59e0b";
+  const RED = "#ef4444";
+  const GREEN = "#059669";
+  const GREY = "#6b7280";
+  const GRID = "#d1d5db";
+  const BG = "#f8fafc";
+
+  const duration = 1;
+  const nCurve = 900;
+
+  const wrapFreq = (f, fs) => {
+    const wrapped = ((f % fs) + fs) % fs;
+    return wrapped <= fs / 2 ? wrapped : fs - wrapped;
+  };
+
+  const makeSvg = (tag) => document.createElementNS("http://www.w3.org/2000/svg", tag);
+
+  const xScale = t => pad.left + (t / duration) * plotW;
+  const yScale = y => pad.top + plotH * (0.5 - 0.42 * y);
+
+  function linePath(points) {
+    return points.map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(p.t).toFixed(2)} ${yScale(p.y).toFixed(2)}`).join(" ");
+  }
+
+  function samplesFor(f, fs) {
+    const count = Math.floor(duration * fs) + 1;
+    const pts = [];
+    for (let n = 0; n < count; n += 1) {
+      const t = n / fs;
+      pts.push({ t, y: Math.sin(2 * Math.PI * f * t) });
+    }
+    return pts;
+  }
+
+  function curveFor(f) {
+    const pts = [];
+    for (let i = 0; i <= nCurve; i += 1) {
+      const t = (i / nCurve) * duration;
+      pts.push({ t, y: Math.sin(2 * Math.PI * f * t) });
+    }
+    return pts;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 680px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display: grid; grid-template-columns: auto 1fr auto; gap: 0.5rem 0.75rem; align-items: center; margin-bottom: 0.75rem;";
+
+  const fLabel = document.createElement("label");
+  fLabel.textContent = "True frequency f (Hz)";
+  const fSlider = document.createElement("input");
+  fSlider.type = "range";
+  fSlider.min = "1";
+  fSlider.max = "20";
+  fSlider.step = "0.1";
+  fSlider.value = "3";
+  const fValue = document.createElement("span");
+  fValue.style.cssText = "font-variant-numeric: tabular-nums; min-width: 4.5rem;";
+
+  const fsLabel = document.createElement("label");
+  fsLabel.textContent = "Sampling frequency f_s (Hz)";
+  const fsSlider = document.createElement("input");
+  fsSlider.type = "range";
+  fsSlider.min = "4";
+  fsSlider.max = "40";
+  fsSlider.step = "1";
+  fsSlider.value = "12";
+  const fsValue = document.createElement("span");
+  fsValue.style.cssText = "font-variant-numeric: tabular-nums; min-width: 4.5rem;";
+
+  controls.append(fLabel, fSlider, fValue, fsLabel, fsSlider, fsValue);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem;";
+
+  const cards = Array.from({ length: 5 }, () => {
+    const card = document.createElement("div");
+    card.style.cssText = "background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.55rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size: 0.76rem; color: #6b7280; margin-bottom: 0.15rem;";
+    const v = document.createElement("div");
+    v.style.cssText = "font-size: 0.96rem; font-variant-numeric: tabular-nums;";
+    card.append(k, v);
+    readout.append(card);
+    return { card, key: k, value: v };
+  });
+
+  const [trueCard, sampleCard, nyquistCard, apparentCard, statusCard] = cards;
+  trueCard.key.textContent = "True f";
+  sampleCard.key.textContent = "Sampling f_s";
+  nyquistCard.key.textContent = "Nyquist";
+  apparentCard.key.textContent = "Apparent f";
+  statusCard.key.textContent = "Status";
+
+  const svg = makeSvg("svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display: block; background: white; border: 1px solid #e5e7eb; border-radius: 10px;";
+
+  const bg = makeSvg("rect");
+  bg.setAttribute("x", "0");
+  bg.setAttribute("y", "0");
+  bg.setAttribute("width", width);
+  bg.setAttribute("height", height);
+  bg.setAttribute("fill", BG);
+  svg.appendChild(bg);
+
+  const gridGroup = makeSvg("g");
+  svg.appendChild(gridGroup);
+  for (let i = 0; i <= 10; i += 1) {
+    const x = pad.left + (i / 10) * plotW;
+    const line = makeSvg("line");
+    line.setAttribute("x1", x);
+    line.setAttribute("x2", x);
+    line.setAttribute("y1", pad.top);
+    line.setAttribute("y2", pad.top + plotH);
+    line.setAttribute("stroke", GRID);
+    line.setAttribute("stroke-width", "1");
+    line.setAttribute("opacity", "0.7");
+    gridGroup.appendChild(line);
+  }
+  [-1, -0.5, 0, 0.5, 1].forEach(v => {
+    const y = yScale(v);
+    const line = makeSvg("line");
+    line.setAttribute("x1", pad.left);
+    line.setAttribute("x2", pad.left + plotW);
+    line.setAttribute("y1", y);
+    line.setAttribute("y2", y);
+    line.setAttribute("stroke", GRID);
+    line.setAttribute("stroke-width", v === 0 ? "1.5" : "1");
+    line.setAttribute("opacity", v === 0 ? "1" : "0.7");
+    gridGroup.appendChild(line);
+  });
+
+  const sampleComb = makeSvg("g");
+  const apparentPath = makeSvg("path");
+  const truePath = makeSvg("path");
+  const pointGroup = makeSvg("g");
+  svg.append(sampleComb, apparentPath, truePath, pointGroup);
+
+  truePath.setAttribute("fill", "none");
+  truePath.setAttribute("stroke", BLUE);
+  truePath.setAttribute("stroke-width", "3");
+
+  apparentPath.setAttribute("fill", "none");
+  apparentPath.setAttribute("stroke-width", "2.5");
+  apparentPath.setAttribute("stroke-dasharray", "7 5");
+
+  const xAxis = makeSvg("line");
+  xAxis.setAttribute("x1", pad.left);
+  xAxis.setAttribute("x2", pad.left + plotW);
+  xAxis.setAttribute("y1", pad.top + plotH);
+  xAxis.setAttribute("y2", pad.top + plotH);
+  xAxis.setAttribute("stroke", GREY);
+  xAxis.setAttribute("stroke-width", "1.5");
+  svg.appendChild(xAxis);
+
+  const yAxis = makeSvg("line");
+  yAxis.setAttribute("x1", pad.left);
+  yAxis.setAttribute("x2", pad.left);
+  yAxis.setAttribute("y1", pad.top);
+  yAxis.setAttribute("y2", pad.top + plotH);
+  yAxis.setAttribute("stroke", GREY);
+  yAxis.setAttribute("stroke-width", "1.5");
+  svg.appendChild(yAxis);
+
+  const axisLabels = [
+    { x: width / 2, y: height - 10, text: "time (s)", anchor: "middle" },
+    { x: 16, y: pad.top + plotH / 2, text: "signal", anchor: "middle", rotate: true }
+  ];
+  axisLabels.forEach(({ x, y, text, anchor, rotate }) => {
+    const label = makeSvg("text");
+    label.setAttribute("x", x);
+    label.setAttribute("y", y);
+    label.setAttribute("fill", GREY);
+    label.setAttribute("font-size", "13");
+    label.setAttribute("text-anchor", anchor);
+    if (rotate) label.setAttribute("transform", `rotate(-90 ${x} ${y})`);
+    label.textContent = text;
+    svg.appendChild(label);
+  });
+
+  for (let i = 0; i <= 10; i += 1) {
+    const x = pad.left + (i / 10) * plotW;
+    const tick = makeSvg("text");
+    tick.setAttribute("x", x);
+    tick.setAttribute("y", pad.top + plotH + 18);
+    tick.setAttribute("fill", GREY);
+    tick.setAttribute("font-size", "12");
+    tick.setAttribute("text-anchor", "middle");
+    tick.textContent = (i / 10).toFixed(1);
+    svg.appendChild(tick);
+  }
+
+  [-1, 0, 1].forEach(v => {
+    const tick = makeSvg("text");
+    tick.setAttribute("x", pad.left - 10);
+    tick.setAttribute("y", yScale(v) + 4);
+    tick.setAttribute("fill", GREY);
+    tick.setAttribute("font-size", "12");
+    tick.setAttribute("text-anchor", "end");
+    tick.textContent = String(v);
+    svg.appendChild(tick);
+  });
+
+  const legend = document.createElement("div");
+  legend.style.cssText = "display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.55rem; font-size: 0.9rem;";
+  const legendItem = (color, dash, text) => {
+    const item = document.createElement("div");
+    item.style.cssText = "display: inline-flex; align-items: center; gap: 0.45rem;";
+    const swatch = document.createElement("span");
+    swatch.style.cssText = `display:inline-block; width:1.6rem; height:0; border-top:3px ${dash ? "dashed" : "solid"} ${color};`;
+    const label = document.createElement("span");
+    label.textContent = text;
+    item.append(swatch, label);
+    return item;
+  };
+  legend.append(
+    legendItem(BLUE, false, "true continuous wave"),
+    legendItem(RED, true, "apparent aliased wave"),
+    legendItem(AMBER, false, "sampled values")
+  );
+
+  const note = document.createElement("p");
+  note.style.cssText = "font-size: 0.9rem; color: #374151; margin: 0.55rem 0 0 0;";
+
+  function render() {
+    const f = parseFloat(fSlider.value);
+    const fs = parseFloat(fsSlider.value);
+    const nyquist = fs / 2;
+    const apparent = wrapFreq(f, fs);
+    const aliased = f > nyquist + 1e-9;
+
+    fValue.textContent = `${f.toFixed(1)} Hz`;
+    fsValue.textContent = `${fs.toFixed(0)} Hz`;
+
+    trueCard.value.textContent = `${f.toFixed(1)} Hz`;
+    sampleCard.value.textContent = `${fs.toFixed(0)} Hz`;
+    nyquistCard.value.textContent = `${nyquist.toFixed(1)} Hz`;
+    apparentCard.value.textContent = `${apparent.toFixed(1)} Hz`;
+    statusCard.value.textContent = aliased ? "Aliasing" : "Safe";
+    statusCard.value.style.color = aliased ? RED : GREEN;
+
+    const truePts = curveFor(f);
+    const apparentPts = curveFor(apparent);
+    const samplePts = samplesFor(f, fs);
+
+    truePath.setAttribute("d", linePath(truePts));
+    apparentPath.setAttribute("d", linePath(apparentPts));
+    apparentPath.setAttribute("stroke", aliased ? RED : BLUE);
+    apparentPath.setAttribute("opacity", aliased ? "0.95" : "0.45");
+
+    sampleComb.replaceChildren();
+    pointGroup.replaceChildren();
+    samplePts.forEach(pt => {
+      const x = xScale(pt.t);
+      const stem = makeSvg("line");
+      stem.setAttribute("x1", x);
+      stem.setAttribute("x2", x);
+      stem.setAttribute("y1", yScale(0));
+      stem.setAttribute("y2", yScale(pt.y));
+      stem.setAttribute("stroke", AMBER);
+      stem.setAttribute("stroke-width", "1.5");
+      stem.setAttribute("opacity", "0.65");
+      sampleComb.appendChild(stem);
+
+      const circle = makeSvg("circle");
+      circle.setAttribute("cx", x);
+      circle.setAttribute("cy", yScale(pt.y));
+      circle.setAttribute("r", "4");
+      circle.setAttribute("fill", AMBER);
+      circle.setAttribute("stroke", "#92400e");
+      circle.setAttribute("stroke-width", "1");
+      pointGroup.appendChild(circle);
+    });
+
+    note.textContent = aliased
+      ? `Because f = ${f.toFixed(1)} Hz is above the Nyquist limit ${nyquist.toFixed(1)} Hz, the sampled data can masquerade as a ${apparent.toFixed(1)} Hz signal.`
+      : `Because f = ${f.toFixed(1)} Hz stays below the Nyquist limit ${nyquist.toFixed(1)} Hz, the sampled data preserves the correct frequency.`;
+  }
+
+  fSlider.addEventListener("input", render);
+  fsSlider.addEventListener("input", render);
+
+  container.append(controls, readout, svg, legend, note);
+  render();
+  return container;
+}
+```
+
 ## Why sampling can lie to you
 
 Suppose the continuous signal is

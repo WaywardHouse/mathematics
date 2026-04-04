@@ -144,6 +144,273 @@ $$\mathbf{A}\mathbf{B} = \begin{pmatrix} 4 & 9 \\ 6 & 3 \end{pmatrix}$$
 
 <!-- VIZ: Matrix transformation explorer. Display a 2×2 matrix A whose four entries are each controlled by a slider (range −3 to 3, step 0.1; initial values forming a horizontal stretch: top row [2, 0.5], bottom row [0.3, 1]). The left panel shows the standard unit square, four corner dots, and a handful of evenly spaced sample vectors radiating from the origin, all in the input xy-plane. The right panel shows their images under A in real time: the transformed unit square (parallelogram) and the transformed vectors. As the reader adjusts entries, both panels update simultaneously. Annotate the right panel live with: det(A) (coloured green when positive, red when negative or zero); the two column vectors of A drawn as orange (#f97316) and blue (#3b82f6) arrows from the origin (labelled "col 1" and "col 2") — these are where e₁ and e₂ land. When det ≈ 0, overlay the label "singular — all vectors collapse to a line" in red. Include a preset selector: "Identity", "Horizontal stretch", "Rotation 45°", "Shear", "Reflection y-axis", "Singular" — each sets the sliders to canonical values. Series note for the viz-artist: the column vectors drawn here are the visual vocabulary that reappears in the eigenvalue chapter; at that point invariant directions under A will be highlighted. Use the same orange/blue palette for column-vector arrows throughout the linear algebra section. -->
 
+The explorer below turns the columns of a matrix into visible motions of the
+plane.
+
+```{ojs}
+//| echo: false
+{
+  const LIMIT = 3.2;
+  let A = { a11: 2, a12: 0.5, a21: 0.3, a22: 1 };
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const PRESETS = {
+    "Horizontal stretch": [2, 0.5, 0.3, 1],
+    "Identity": [1, 0, 0, 1],
+    "Rotation 45°": [0.7, -0.7, 0.7, 0.7],
+    "Shear": [1, 1.2, 0, 1],
+    "Reflection y-axis": [-1, 0, 0, 1],
+    "Singular": [1, 2, 0.5, 1]
+  };
+
+  function matVec(m, v) {
+    return [m.a11 * v[0] + m.a12 * v[1], m.a21 * v[0] + m.a22 * v[1]];
+  }
+
+  function det(m) {
+    return m.a11 * m.a22 - m.a12 * m.a21;
+  }
+
+  function makeMapper() {
+    const left = 32, top = 18, size = 280;
+    return (x, y) => [left + size * (x + LIMIT) / (2 * LIMIT), top + size * (LIMIT - y) / (2 * LIMIT)];
+  }
+
+  const rays = [[1,0],[0,1],[1,1],[1,-1],[-1,1]];
+  const square = [[0,0],[1,0],[1,1],[0,1]];
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 980px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.45rem 0.7rem; align-items:center; margin-bottom:0.75rem;";
+  function sliderRow(labelText, key) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = "-3";
+    input.max = "3";
+    input.step = "0.1";
+    input.value = String(A[key]);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric: tabular-nums; min-width:3.3rem;";
+    controls.append(label, input, out);
+    return { input, out, key };
+  }
+  const rows = [
+    sliderRow("a11", "a11"),
+    sliderRow("a12", "a12"),
+    sliderRow("a21", "a21"),
+    sliderRow("a22", "a22")
+  ];
+
+  const presetRow = document.createElement("div");
+  presetRow.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.65rem;";
+  const presetLabel = document.createElement("span");
+  presetLabel.textContent = "Preset";
+  const preset = document.createElement("select");
+  preset.style.cssText = "padding:0.35rem 0.5rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+  Object.keys(PRESETS).forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    preset.appendChild(opt);
+  });
+  preset.value = "Horizontal stretch";
+  presetRow.append(presetLabel, preset);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label) {
+    const box = document.createElement("div");
+    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
+    k.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
+    box.append(k, v);
+    readout.appendChild(box);
+    return v;
+  }
+  const detBox = card("det(A)");
+  const col1Box = card("col 1");
+  const col2Box = card("col 2");
+
+  const panels = document.createElement("div");
+  panels.style.cssText = "display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.75rem;";
+
+  function makePanel(title) {
+    const panel = document.createElement("div");
+    panel.style.cssText = "background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:0.6rem;";
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:0.8rem; color:#6b7280; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.4rem;";
+    h.textContent = title;
+    const svg = svgEl("svg");
+    svg.setAttribute("viewBox", "0 0 420 330");
+    svg.setAttribute("width", "100%");
+    svg.style.display = "block";
+    panel.append(h, svg);
+    panels.appendChild(panel);
+    return svg;
+  }
+
+  const leftSvg = makePanel("Input plane");
+  const rightSvg = makePanel("Transformed plane");
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function drawAxes(svg, mapper) {
+    for (let i = -3; i <= 3; i++) {
+      const gx = svgEl("line");
+      gx.setAttribute("x1", mapper(i, -3)[0]); gx.setAttribute("y1", mapper(i, -3)[1]);
+      gx.setAttribute("x2", mapper(i, 3)[0]); gx.setAttribute("y2", mapper(i, 3)[1]);
+      gx.setAttribute("stroke", "#f3f4f6");
+      svg.appendChild(gx);
+      const gy = svgEl("line");
+      gy.setAttribute("x1", mapper(-3, i)[0]); gy.setAttribute("y1", mapper(-3, i)[1]);
+      gy.setAttribute("x2", mapper(3, i)[0]); gy.setAttribute("y2", mapper(3, i)[1]);
+      gy.setAttribute("stroke", "#f3f4f6");
+      svg.appendChild(gy);
+    }
+    const xAxis = svgEl("line");
+    xAxis.setAttribute("x1", mapper(-3, 0)[0]); xAxis.setAttribute("y1", mapper(-3, 0)[1]);
+    xAxis.setAttribute("x2", mapper(3, 0)[0]); xAxis.setAttribute("y2", mapper(3, 0)[1]);
+    xAxis.setAttribute("stroke", "#6b7280");
+    xAxis.setAttribute("stroke-width", "1.5");
+    svg.appendChild(xAxis);
+    const yAxis = svgEl("line");
+    yAxis.setAttribute("x1", mapper(0, -3)[0]); yAxis.setAttribute("y1", mapper(0, -3)[1]);
+    yAxis.setAttribute("x2", mapper(0, 3)[0]); yAxis.setAttribute("y2", mapper(0, 3)[1]);
+    yAxis.setAttribute("stroke", "#6b7280");
+    yAxis.setAttribute("stroke-width", "1.5");
+    svg.appendChild(yAxis);
+  }
+
+  function drawArrow(svg, mapper, from, to, color, width = 2.6, labelText = "") {
+    const [x1, y1] = mapper(from[0], from[1]);
+    const [x2, y2] = mapper(to[0], to[1]);
+    const line = svgEl("line");
+    line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+    line.setAttribute("stroke", color);
+    line.setAttribute("stroke-width", width);
+    line.setAttribute("stroke-linecap", "round");
+    svg.appendChild(line);
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    const hx = x2 - 10 * ux, hy = y2 - 10 * uy;
+    const t1 = svgEl("line");
+    t1.setAttribute("x1", x2); t1.setAttribute("y1", y2);
+    t1.setAttribute("x2", hx - 5 * uy); t1.setAttribute("y2", hy + 5 * ux);
+    t1.setAttribute("stroke", color); t1.setAttribute("stroke-width", width);
+    svg.appendChild(t1);
+    const t2 = svgEl("line");
+    t2.setAttribute("x1", x2); t2.setAttribute("y1", y2);
+    t2.setAttribute("x2", hx + 5 * uy); t2.setAttribute("y2", hy - 5 * ux);
+    t2.setAttribute("stroke", color); t2.setAttribute("stroke-width", width);
+    svg.appendChild(t2);
+    if (labelText) {
+      const text = svgEl("text");
+      text.setAttribute("x", x2 + 8);
+      text.setAttribute("y", y2 - 6);
+      text.setAttribute("font-size", "12");
+      text.setAttribute("fill", color);
+      text.textContent = labelText;
+      svg.appendChild(text);
+    }
+  }
+
+  function drawPolygon(svg, mapper, pts, fill, stroke) {
+    const poly = svgEl("polygon");
+    poly.setAttribute("points", pts.map(([x, y]) => mapper(x, y).join(",")).join(" "));
+    poly.setAttribute("fill", fill);
+    poly.setAttribute("stroke", stroke);
+    poly.setAttribute("stroke-width", "2");
+    svg.appendChild(poly);
+  }
+
+  function redraw() {
+    rows.forEach(r => {
+      A[r.key] = parseFloat(r.input.value);
+      r.out.textContent = A[r.key].toFixed(1);
+    });
+    while (leftSvg.firstChild) leftSvg.removeChild(leftSvg.firstChild);
+    while (rightSvg.firstChild) rightSvg.removeChild(rightSvg.firstChild);
+    const map = makeMapper();
+
+    drawAxes(leftSvg, map);
+    drawAxes(rightSvg, map);
+    drawPolygon(leftSvg, map, square, "rgba(20,184,166,0.2)", "#0f766e");
+    drawPolygon(rightSvg, map, square.map(v => matVec(A, v)), "rgba(124,58,237,0.18)", "#6d28d9");
+
+    rays.forEach(v => {
+      drawArrow(leftSvg, map, [0, 0], v, "#94a3b8", 1.8);
+      drawArrow(rightSvg, map, [0, 0], matVec(A, v), "#94a3b8", 1.8);
+    });
+
+    drawArrow(leftSvg, map, [0, 0], [1, 0], "#f97316", 2.8, "e₁");
+    drawArrow(leftSvg, map, [0, 0], [0, 1], "#3b82f6", 2.8, "e₂");
+    drawArrow(rightSvg, map, [0, 0], [A.a11, A.a21], "#f97316", 3, "col 1");
+    drawArrow(rightSvg, map, [0, 0], [A.a12, A.a22], "#3b82f6", 3, "col 2");
+
+    square.forEach(v => {
+      const dot1 = svgEl("circle");
+      const [x1, y1] = map(v[0], v[1]);
+      dot1.setAttribute("cx", x1); dot1.setAttribute("cy", y1); dot1.setAttribute("r", "3.5");
+      dot1.setAttribute("fill", "#0f766e");
+      leftSvg.appendChild(dot1);
+      const dot2 = svgEl("circle");
+      const tv = matVec(A, v);
+      const [x2, y2] = map(tv[0], tv[1]);
+      dot2.setAttribute("cx", x2); dot2.setAttribute("cy", y2); dot2.setAttribute("r", "3.5");
+      dot2.setAttribute("fill", "#6d28d9");
+      rightSvg.appendChild(dot2);
+    });
+
+    const d = det(A);
+    detBox.textContent = d.toFixed(2);
+    detBox.style.color = d > 0.05 ? "#166534" : "#b91c1c";
+    col1Box.textContent = `(${A.a11.toFixed(1)}, ${A.a21.toFixed(1)})`;
+    col2Box.textContent = `(${A.a12.toFixed(1)}, ${A.a22.toFixed(1)})`;
+
+    if (Math.abs(d) < 0.15) {
+      const warn = svgEl("text");
+      warn.setAttribute("x", "210");
+      warn.setAttribute("y", "308");
+      warn.setAttribute("text-anchor", "middle");
+      warn.setAttribute("font-size", "14");
+      warn.setAttribute("font-weight", "700");
+      warn.setAttribute("fill", "#b91c1c");
+      warn.textContent = "singular — all vectors collapse to a line";
+      rightSvg.appendChild(warn);
+    }
+
+    caption.textContent = d > 0
+      ? "A positive determinant preserves orientation. The transformed unit square becomes a parallelogram whose signed area equals det(A)."
+      : d < 0
+        ? "A negative determinant flips orientation. The orange and blue column vectors still tell you exactly where e₁ and e₂ land."
+        : "When det(A) is zero, area collapses and the transformation is singular.";
+  }
+
+  preset.addEventListener("change", () => {
+    const vals = PRESETS[preset.value];
+    rows.forEach((r, i) => { r.input.value = String(vals[i]); });
+    redraw();
+  });
+  rows.forEach(r => r.input.addEventListener("input", redraw));
+
+  container.append(controls, presetRow, readout, panels, caption);
+  redraw();
+  return container;
+}
+```
+
 
 ---
 

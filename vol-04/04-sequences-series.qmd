@@ -827,7 +827,7 @@ the 12 annual totals.)*
 {
   const el = makeStepperHTML(5, [
     { op: "Compute year 1 earnings", eq: "E_1 = 18 \\times 1820 = \\$32{,}760", note: null },
-    { op: "Identify the series", eq: "a_1 = 32760,\\quad d = 1.50 \\times 1820 = 2730,\\quad n = 12", note: "Each year's earnings increase by $1.50 × 1820 = $2730 over the previous year." },
+    { op: "Identify the series", eq: "a_1 = 32760,\\quad d = 1.50 \\times 1820 = 2730,\\quad n = 12", note: "Each year's earnings increase by \\$1.50 × 1820 = \\$2730 over the previous year." },
     { op: "Apply the arithmetic series formula", eq: "S_{12} = \\frac{12}{2}\\bigl(2 \\times 32760 + 11 \\times 2730\\bigr)", note: null },
     { op: "Simplify", eq: "S_{12} = 6\\bigl(65520 + 30030\\bigr) = 6 \\times 95550", note: null },
     { op: "Compute", eq: "S_{12} = \\$573{,}300", note: null },

@@ -224,6 +224,220 @@ hit a vertex. This is why the simplex method only needs to visit vertices.
 
 <!-- VIZ: 2D LP explorer — sliders for two constraint RHS values, shaded feasible region updates live, optimal vertex highlighted, objective function contour shown -->
 
+Use the sliders to watch the feasible region change and see the optimum stay
+locked to a corner.
+
+```{ojs}
+//| echo: false
+{
+  const W = 700, H = 420;
+  const xMax = 8;
+  const yMax = 5;
+  let b1 = 8;
+  let b2 = 9;
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  function yFromC1(x) {
+    return b1 - 2 * x;
+  }
+
+  function yFromC2(x) {
+    return (b2 - x) / 3;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 760px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.7rem;";
+  function sliderRow(labelText, min, max, value) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = "0.5";
+    input.value = String(value);
+    const out = document.createElement("span");
+    out.style.cssText = "font-variant-numeric: tabular-nums; min-width:3.4rem;";
+    controls.append(label, input, out);
+    return { input, out };
+  }
+  const c1 = sliderRow("Cutting-hours RHS", 5, 11, b1);
+  const c2 = sliderRow("Finishing-hours RHS", 6, 12, b2);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
+  function card(label) {
+    const box = document.createElement("div");
+    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
+    k.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
+    box.append(k, v);
+    readout.appendChild(box);
+    return v;
+  }
+  const vertexBox = card("Optimal vertex");
+  const valueBox = card("Objective z");
+  const bindBox = card("Active constraints");
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:white; border:1px solid #e5e7eb; border-radius:10px;";
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  const left = 60, right = 24, top = 26, bottom = 42;
+  const plotW = W - left - right, plotH = H - top - bottom;
+  const sx = x => left + plotW * x / xMax;
+  const sy = y => top + plotH * (1 - y / yMax);
+
+  function feasible(pt) {
+    const [x, y] = pt;
+    return x >= -1e-9 && y >= -1e-9 && 2 * x + y <= b1 + 1e-9 && x + 3 * y <= b2 + 1e-9;
+  }
+
+  function sortPoly(pts) {
+    const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+    const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+    return pts.slice().sort((a, b) => Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx));
+  }
+
+  function redraw() {
+    b1 = parseFloat(c1.input.value);
+    b2 = parseFloat(c2.input.value);
+    c1.out.textContent = b1.toFixed(1);
+    c2.out.textContent = b2.toFixed(1);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    for (let x = 0; x <= xMax; x += 1) {
+      const line = svgEl("line");
+      line.setAttribute("x1", sx(x));
+      line.setAttribute("x2", sx(x));
+      line.setAttribute("y1", sy(0));
+      line.setAttribute("y2", sy(yMax));
+      line.setAttribute("stroke", "#f3f4f6");
+      svg.appendChild(line);
+    }
+    for (let y = 0; y <= yMax; y += 1) {
+      const line = svgEl("line");
+      line.setAttribute("x1", sx(0));
+      line.setAttribute("x2", sx(xMax));
+      line.setAttribute("y1", sy(y));
+      line.setAttribute("y2", sy(y));
+      line.setAttribute("stroke", "#f3f4f6");
+      svg.appendChild(line);
+    }
+
+    const axX = svgEl("line");
+    axX.setAttribute("x1", sx(0)); axX.setAttribute("x2", sx(xMax));
+    axX.setAttribute("y1", sy(0)); axX.setAttribute("y2", sy(0));
+    axX.setAttribute("stroke", "#6b7280"); axX.setAttribute("stroke-width", "1.5");
+    svg.appendChild(axX);
+    const axY = svgEl("line");
+    axY.setAttribute("x1", sx(0)); axY.setAttribute("x2", sx(0));
+    axY.setAttribute("y1", sy(0)); axY.setAttribute("y2", sy(yMax));
+    axY.setAttribute("stroke", "#6b7280"); axY.setAttribute("stroke-width", "1.5");
+    svg.appendChild(axY);
+
+    const intersection = [(3 * b1 - b2) / 5, (2 * b2 - b1) / 5];
+    const candidates = [[0, 0], [b1 / 2, 0], [0, b2 / 3], intersection];
+    const feasiblePts = candidates.filter(feasible);
+    const poly = sortPoly(feasiblePts);
+
+    const polyNode = svgEl("polygon");
+    polyNode.setAttribute("points", poly.map(([x, y]) => `${sx(x)},${sy(y)}`).join(" "));
+    polyNode.setAttribute("fill", "rgba(20,184,166,0.22)");
+    polyNode.setAttribute("stroke", "#0f766e");
+    polyNode.setAttribute("stroke-width", "2");
+    svg.appendChild(polyNode);
+
+    [
+      { fn: yFromC1, color: "#2563eb", x2: Math.min(xMax, b1 / 2), label: "2x₁ + x₂ = RHS" },
+      { fn: yFromC2, color: "#f59e0b", x2: Math.min(xMax, b2), label: "x₁ + 3x₂ = RHS" }
+    ].forEach(item => {
+      const line = svgEl("line");
+      line.setAttribute("x1", sx(0));
+      line.setAttribute("y1", sy(item.fn(0)));
+      line.setAttribute("x2", sx(item.x2));
+      line.setAttribute("y2", sy(item.fn(item.x2)));
+      line.setAttribute("stroke", item.color);
+      line.setAttribute("stroke-width", "2.5");
+      svg.appendChild(line);
+      const text = svgEl("text");
+      text.setAttribute("x", sx(item.x2) - 8);
+      text.setAttribute("y", sy(item.fn(item.x2)) - 8);
+      text.setAttribute("text-anchor", "end");
+      text.setAttribute("font-size", "12");
+      text.setAttribute("fill", item.color);
+      text.textContent = item.label;
+      svg.appendChild(text);
+    });
+
+    let best = feasiblePts[0];
+    let bestZ = -Infinity;
+    feasiblePts.forEach(pt => {
+      const z = 30 * pt[0] + 50 * pt[1];
+      if (z > bestZ) {
+        best = pt;
+        bestZ = z;
+      }
+    });
+
+    const zLine = svgEl("line");
+    zLine.setAttribute("x1", sx(0));
+    zLine.setAttribute("y1", sy(bestZ / 50));
+    zLine.setAttribute("x2", sx(bestZ / 30));
+    zLine.setAttribute("y2", sy(0));
+    zLine.setAttribute("stroke", "#7c3aed");
+    zLine.setAttribute("stroke-width", "2.2");
+    zLine.setAttribute("stroke-dasharray", "7 5");
+    svg.appendChild(zLine);
+
+    feasiblePts.forEach(([x, y]) => {
+      const dot = svgEl("circle");
+      dot.setAttribute("cx", sx(x));
+      dot.setAttribute("cy", sy(y));
+      dot.setAttribute("r", x === best[0] && y === best[1] ? "6.5" : "4");
+      dot.setAttribute("fill", x === best[0] && y === best[1] ? "#7c3aed" : "#0f766e");
+      svg.appendChild(dot);
+    });
+
+    const label = svgEl("text");
+    label.setAttribute("x", sx(best[0]) + 10);
+    label.setAttribute("y", sy(best[1]) - 10);
+    label.setAttribute("font-size", "12");
+    label.setAttribute("fill", "#6d28d9");
+    label.textContent = `best = (${best[0].toFixed(2)}, ${best[1].toFixed(2)})`;
+    svg.appendChild(label);
+
+    vertexBox.textContent = `(${best[0].toFixed(2)}, ${best[1].toFixed(2)})`;
+    valueBox.textContent = `${bestZ.toFixed(1)}`;
+    const active = [];
+    if (Math.abs(2 * best[0] + best[1] - b1) < 1e-6) active.push("cutting");
+    if (Math.abs(best[0] + 3 * best[1] - b2) < 1e-6) active.push("finishing");
+    if (Math.abs(best[0]) < 1e-6) active.push("x₁ = 0");
+    if (Math.abs(best[1]) < 1e-6) active.push("x₂ = 0");
+    bindBox.textContent = active.join(", ");
+    caption.textContent = "The shaded polygon is the feasible region. The dashed purple line is the objective contour at the best value. Sliding the right-hand sides changes the polygon, but the optimum still occurs at a vertex.";
+  }
+
+  [c1.input, c2.input].forEach(el => el.addEventListener("input", redraw));
+  container.append(controls, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 What the graphical method shows directly is what the simplex method does
 systematically: start at one vertex (here, the origin), check whether any
 neighbour is better, move to the best neighbour, and repeat. The graphical
@@ -878,4 +1092,3 @@ EDIT LOG (editor agent)
   gives c^Tx ≤ (A^Ty)^Tx." The chain was valid but the first step was opaque for a
   reader not accustomed to manipulating component-wise matrix inequalities.
 -->
-

@@ -172,6 +172,148 @@ this chapter is built from combinations of them.
 This means probability notation is not a collection of separate tricks. It is
 a small language for describing how events relate to each other.
 
+Use the visual below to treat the sample space as a real geometric object,
+not just a list of symbols.
+
+```{ojs}
+//| echo: false
+{
+  const W = 560, H = 250;
+  const rect = { x: 50, y: 34, w: 360, h: 150 };
+  let rx = 90;
+  let dragging = false;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ellipseArea = (a, b) => Math.PI * a * b;
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 620px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const intro = document.createElement("p");
+  intro.style.cssText = "font-size: 0.92rem; color: #374151; margin: 0 0 0.55rem 0;";
+  intro.textContent = "Drag the handle on the boundary of A to change its size inside the full sample space Ω.";
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.55rem;";
+  function card(label) {
+    const box = document.createElement("div");
+    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
+    k.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
+    box.append(k, v);
+    readout.appendChild(box);
+    return v;
+  }
+  const pABox = card("P(A)");
+  const pAcBox = card("P(A^c)");
+  const sumBox = card("Check");
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:white; border:1px solid #e5e7eb; border-radius:10px;";
+
+  const bg = svgEl("rect");
+  bg.setAttribute("x", "0");
+  bg.setAttribute("y", "0");
+  bg.setAttribute("width", W);
+  bg.setAttribute("height", H);
+  bg.setAttribute("fill", "#ffffff");
+  svg.appendChild(bg);
+
+  const omega = svgEl("rect");
+  omega.setAttribute("x", rect.x);
+  omega.setAttribute("y", rect.y);
+  omega.setAttribute("width", rect.w);
+  omega.setAttribute("height", rect.h);
+  omega.setAttribute("fill", "#f3f4f6");
+  omega.setAttribute("stroke", "#9ca3af");
+  omega.setAttribute("stroke-width", "2");
+  svg.appendChild(omega);
+
+  const omegaLabel = svgEl("text");
+  omegaLabel.setAttribute("x", rect.x + rect.w - 18);
+  omegaLabel.setAttribute("y", rect.y + 18);
+  omegaLabel.setAttribute("font-size", "16");
+  omegaLabel.setAttribute("font-weight", "700");
+  omegaLabel.setAttribute("fill", "#6b7280");
+  omegaLabel.textContent = "Ω";
+  svg.appendChild(omegaLabel);
+
+  const event = svgEl("ellipse");
+  event.setAttribute("fill", "rgba(37,99,235,0.35)");
+  event.setAttribute("stroke", "#2563eb");
+  event.setAttribute("stroke-width", "2");
+  svg.appendChild(event);
+
+  const aLabel = svgEl("text");
+  aLabel.setAttribute("font-size", "16");
+  aLabel.setAttribute("font-weight", "700");
+  aLabel.setAttribute("fill", "#1d4ed8");
+  aLabel.textContent = "A";
+  svg.appendChild(aLabel);
+
+  const handle = svgEl("circle");
+  handle.setAttribute("r", "6");
+  handle.setAttribute("fill", "#1d4ed8");
+  handle.style.cursor = "ew-resize";
+  svg.appendChild(handle);
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw() {
+    const ry = clamp(0.62 * rx, 28, 64);
+    const cx = rect.x + rect.w / 2;
+    const cy = rect.y + rect.h / 2;
+    event.setAttribute("cx", cx);
+    event.setAttribute("cy", cy);
+    event.setAttribute("rx", rx);
+    event.setAttribute("ry", ry);
+    aLabel.setAttribute("x", cx - 5);
+    aLabel.setAttribute("y", cy + 5);
+    handle.setAttribute("cx", cx + rx);
+    handle.setAttribute("cy", cy);
+
+    const pA = ellipseArea(rx, ry) / (rect.w * rect.h);
+    const pAc = 1 - pA;
+    pABox.textContent = pA.toFixed(2);
+    pAcBox.textContent = pAc.toFixed(2);
+    sumBox.textContent = `${pA.toFixed(2)} + ${pAc.toFixed(2)} = 1.00`;
+    caption.textContent = "The rectangle is the full sample space Ω. Event A is one region inside it. Its complement A^c is everything else.";
+  }
+
+  svg.addEventListener("pointerdown", e => {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const hx = parseFloat(handle.getAttribute("cx"));
+    const hy = parseFloat(handle.getAttribute("cy"));
+    if (Math.hypot(p.x - hx, p.y - hy) < 14) dragging = true;
+  });
+  svg.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    rx = clamp(p.x - (rect.x + rect.w / 2), 28, rect.w / 2 - 12);
+    redraw();
+  });
+  window.addEventListener("pointerup", () => { dragging = false; });
+
+  container.append(intro, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
+
 ## The rules
 
 ### Rule 1: Complement
@@ -237,6 +379,209 @@ of $\Omega$ where $B$ is true. Within that restricted space, how often
 does $A$ also happen? That fraction is $P(A \mid B)$.
 This means conditional probability is the same probability idea applied
 inside a smaller universe.
+
+The board below makes that “smaller universe” idea literal.
+
+```{ojs}
+//| echo: false
+{
+  const W = 600, H = 280;
+  const frame = { x: 40, y: 38, w: 420, h: 160 };
+  let bStart = 250;
+  let aStart = 150;
+  let conditioned = false;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 640px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.55rem;";
+  function makeSlider(labelText, min, max, value) {
+    const wrap = document.createElement("label");
+    wrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
+    const text = document.createElement("span");
+    text.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = "1";
+    input.value = String(value);
+    wrap.append(text, input);
+    controls.appendChild(wrap);
+    return input;
+  }
+  const aSlider = makeSlider("Shift A", 70, 230, aStart);
+  const bSlider = makeSlider("Shift B", 180, 320, bStart);
+
+  const buttonRow = document.createElement("div");
+  buttonRow.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.55rem;";
+  const toggle = document.createElement("button");
+  toggle.textContent = "Condition on B";
+  toggle.style.cssText = "padding:0.45rem 0.85rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; cursor:pointer; font:inherit;";
+  const reset = document.createElement("button");
+  reset.textContent = "Return to Ω";
+  reset.style.cssText = "padding:0.45rem 0.85rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; cursor:pointer; font:inherit;";
+  buttonRow.append(toggle, reset);
+
+  const readout = document.createElement("div");
+  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.55rem;";
+  function card(label) {
+    const box = document.createElement("div");
+    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
+    const k = document.createElement("div");
+    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
+    k.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
+    box.append(k, v);
+    readout.appendChild(box);
+    return v;
+  }
+  const pBBox = card("P(B)");
+  const pABBox = card("P(A∩B)");
+  const pCondBox = card("P(A|B)");
+
+  const svg = svgEl("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", "100%");
+  svg.style.cssText = "display:block; background:white; border:1px solid #e5e7eb; border-radius:10px;";
+
+  const bg = svgEl("rect");
+  bg.setAttribute("x", "0");
+  bg.setAttribute("y", "0");
+  bg.setAttribute("width", W);
+  bg.setAttribute("height", H);
+  bg.setAttribute("fill", "#ffffff");
+  svg.appendChild(bg);
+
+  const omega = svgEl("rect");
+  omega.setAttribute("fill", "#f3f4f6");
+  omega.setAttribute("stroke", "#9ca3af");
+  omega.setAttribute("stroke-width", "2");
+  svg.appendChild(omega);
+
+  const rectA = svgEl("rect");
+  rectA.setAttribute("fill", "rgba(37,99,235,0.35)");
+  rectA.setAttribute("stroke", "#2563eb");
+  rectA.setAttribute("stroke-width", "2");
+  svg.appendChild(rectA);
+
+  const rectB = svgEl("rect");
+  rectB.setAttribute("fill", "rgba(245,158,11,0.28)");
+  rectB.setAttribute("stroke", "#d97706");
+  rectB.setAttribute("stroke-width", "2");
+  svg.appendChild(rectB);
+
+  const overlap = svgEl("rect");
+  overlap.setAttribute("fill", "rgba(20,184,166,0.55)");
+  overlap.setAttribute("stroke", "#0f766e");
+  overlap.setAttribute("stroke-width", "1.5");
+  svg.appendChild(overlap);
+
+  const omegaLabel = svgEl("text");
+  omegaLabel.setAttribute("font-size", "16");
+  omegaLabel.setAttribute("font-weight", "700");
+  omegaLabel.setAttribute("fill", "#6b7280");
+  omegaLabel.textContent = "Ω";
+  svg.appendChild(omegaLabel);
+
+  const aLabel = svgEl("text");
+  aLabel.setAttribute("font-size", "15");
+  aLabel.setAttribute("font-weight", "700");
+  aLabel.setAttribute("fill", "#1d4ed8");
+  aLabel.textContent = "A";
+  svg.appendChild(aLabel);
+
+  const bLabel = svgEl("text");
+  bLabel.setAttribute("font-size", "15");
+  bLabel.setAttribute("font-weight", "700");
+  bLabel.setAttribute("fill", "#b45309");
+  bLabel.textContent = "B";
+  svg.appendChild(bLabel);
+
+  const caption = document.createElement("p");
+  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
+
+  function redraw() {
+    aStart = parseFloat(aSlider.value);
+    bStart = parseFloat(bSlider.value);
+    const aWidth = 170;
+    const bWidth = 170;
+    const ax = aStart;
+    const bx = bStart;
+    const overlapX = Math.max(ax, bx);
+    const overlapW = Math.max(0, Math.min(ax + aWidth, bx + bWidth) - overlapX);
+
+    const viewX = conditioned ? bx : frame.x;
+    const viewW = conditioned ? bWidth : frame.w;
+    const scale = frame.w / viewW;
+
+    omega.setAttribute("x", frame.x);
+    omega.setAttribute("y", frame.y);
+    omega.setAttribute("width", frame.w);
+    omega.setAttribute("height", frame.h);
+    omega.setAttribute("opacity", conditioned ? "0.18" : "1");
+
+    const projectX = x => frame.x + (x - viewX) * scale;
+    const projectW = w => w * scale;
+
+    rectA.setAttribute("x", projectX(ax));
+    rectA.setAttribute("y", frame.y + 22);
+    rectA.setAttribute("width", projectW(aWidth));
+    rectA.setAttribute("height", frame.h - 44);
+    rectA.setAttribute("opacity", conditioned ? "0.25" : "1");
+
+    rectB.setAttribute("x", projectX(bx));
+    rectB.setAttribute("y", frame.y + 14);
+    rectB.setAttribute("width", projectW(bWidth));
+    rectB.setAttribute("height", frame.h - 28);
+    rectB.setAttribute("opacity", "1");
+
+    overlap.setAttribute("x", projectX(overlapX));
+    overlap.setAttribute("y", frame.y + 22);
+    overlap.setAttribute("width", projectW(overlapW));
+    overlap.setAttribute("height", frame.h - 44);
+    overlap.setAttribute("opacity", overlapW > 0 ? "1" : "0");
+
+    omegaLabel.setAttribute("x", frame.x + frame.w - 18);
+    omegaLabel.setAttribute("y", frame.y + 18);
+    omegaLabel.setAttribute("opacity", conditioned ? "0" : "1");
+    aLabel.setAttribute("x", projectX(ax) + 12);
+    aLabel.setAttribute("y", frame.y + 38);
+    bLabel.setAttribute("x", projectX(bx) + 12);
+    bLabel.setAttribute("y", frame.y + 30);
+
+    const pB = bWidth / frame.w;
+    const pAB = overlapW / frame.w;
+    const pCond = overlapW / bWidth;
+    pBBox.textContent = pB.toFixed(2);
+    pABBox.textContent = pAB.toFixed(2);
+    pCondBox.textContent = `${pAB.toFixed(2)} / ${pB.toFixed(2)} = ${pCond.toFixed(2)}`;
+    caption.textContent = conditioned
+      ? "Conditioning on B means treating B as the whole surviving universe. The overlap A∩B becomes the fraction of that new universe where A still happens."
+      : "Before conditioning, Ω is the whole universe. A∩B is just the overlap where both events happen.";
+
+    toggle.disabled = conditioned;
+    reset.disabled = !conditioned;
+  }
+
+  aSlider.addEventListener("input", redraw);
+  bSlider.addEventListener("input", redraw);
+  toggle.addEventListener("click", () => { conditioned = true; redraw(); });
+  reset.addEventListener("click", () => { conditioned = false; redraw(); });
+
+  container.append(controls, buttonRow, readout, svg, caption);
+  redraw();
+  return container;
+}
+```
 
 A concrete picture makes this clearer than any formula. Imagine a group of
 1000 people:
