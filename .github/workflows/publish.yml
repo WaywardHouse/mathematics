@@ -8,6 +8,7 @@
 
 name: Publish Maths Book
 on:
+  workflow_dispatch:
   push:
     branches: [main]
 
