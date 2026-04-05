@@ -155,17 +155,6 @@ format:
     callout-appearance: simple
     code-fold: true
 
-  pdf:
-    documentclass: scrbook
-    geometry:
-      - top=25mm
-      - bottom=25mm
-      - left=30mm
-      - right=25mm
-    fontfamily: libertinus
-    colorlinks: true
-
-
 execute:
   freeze: auto
   echo: false
