@@ -8,7 +8,6 @@ project:
 book:
   title: "Wayward House Mathematics"
   subtitle: "A series for people who want to understand, not just pass"
-  author: "Paul Hobson"
   date: last-modified
   search: true
   page-navigation: false
