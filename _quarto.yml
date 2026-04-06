@@ -144,10 +144,8 @@ book:
 
 format:
   html:
-    css:
-      - assets/css/quarto-wayward.css
+    css: _extensions/wayward-book/wayward-book.css
     include-in-header: _extensions/wayward-book/head.html
-    include-after-body: assets/includes/quarto-body.html
     smooth-scroll: true
     toc: true
     toc-depth: 3
