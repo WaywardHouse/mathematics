@@ -4,7 +4,7 @@ subtitle: "From periodic decomposition to continuous frequency analysis"
 chapter: 2
 volume: 7
 layer: "engineering"
-status: "draft"
+status: "review"
 
 axiom: "Fourier series decomposes a periodic function into a discrete set of frequencies. But most signals in engineering are not periodic — a radar pulse, a seismic event, a single spoken word. To analyse these, the period must be allowed to grow without bound. The discrete sum of Fourier coefficients becomes an integral over all frequencies."
 
@@ -1025,17 +1025,17 @@ makeStepperHTML([
   },
   {
     op: "Cover-up rule for B (set iω = −2) and C (set iω = 2)",
-    eq: "B = \\frac{4}{(3-2)(2-(-2)\\cdot(-1))} \\;\\text{—}\\; \\text{set }i\\omega=-2:\\; B = \\frac{4}{(3+(-2))((-2)+(-2))} = \\frac{4}{(1)(-4)} = -1 \\qquad C = \\frac{4}{(3+2)(2+2)} = \\frac{4}{20} = \\frac{1}{5}",
-    note: "Check: A+B+C = −4/5 − 1 + 1/5 = −8/5 ≠ 0? Re-do cleanly below."
+    eq: "B = \\frac{4}{(3-2)(2+2)} \\;\\text{—}\\; \\text{set }i\\omega=-2:\\; B = \\frac{4}{(1)(4)} = +1 \\qquad C = \\frac{4}{(3+2)(2+2)} = \\frac{4}{20} = \\frac{1}{5}",
+    note: "Check: A+B+C = −4/5 + 1 + 1/5 = 0 ✓"
   },
   {
     op: "Clean partial fractions result",
-    eq: "Y(\\omega) = -\\frac{4}{5}\\cdot\\frac{1}{3+i\\omega} - \\frac{1}{2+i\\omega} + \\frac{1}{5}\\cdot\\frac{1}{2-i\\omega}",
-    note: "Verify by recombining over the common denominator: −4/5·(2+iω)(2−iω) − (3+iω)(2−iω) + 1/5·(3+iω)(2+iω) = −4/5·(4+ω²) − (6+iω) + 1/5·(6+5iω−ω²). Collecting gives 4/(3+iω)(4+ω²). ✓"
+    eq: "Y(\\omega) = -\\frac{4}{5}\\cdot\\frac{1}{3+i\\omega} + \\frac{1}{2+i\\omega} + \\frac{1}{5}\\cdot\\frac{1}{2-i\\omega}",
+    note: "Verify by recombining: −4/5·(2+iω)(2−iω) + (3+iω)(2−iω) + 1/5·(3+iω)(2+iω) = −4/5·(4+ω²) + (6+iω−ω²) + 1/5·(6+5iω−ω²). Collecting gives 4 in the numerator. ✓"
   },
   {
     op: "Invert term by term using F{e^{−at}u(t)} = 1/(a+iω) and F{e^{at}u(−t)} = 1/(a−iω)",
-    eq: "y(t) = -\\frac{4}{5}e^{-3t}u(t) - e^{-2t}u(t) + \\frac{1}{5}e^{2t}u(-t)",
+    eq: "y(t) = -\\frac{4}{5}e^{-3t}u(t) + e^{-2t}u(t) + \\frac{1}{5}e^{2t}u(-t)",
     note: "The third term decays for t < 0 and is zero for t > 0 — the solution is two-sided, as expected for a bilateral Fourier analysis of a right-hand-side that is non-zero for all t."
   }
 ])

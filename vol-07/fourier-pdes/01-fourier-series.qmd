@@ -4,7 +4,7 @@ subtitle: "Every periodic signal is a sum of pure frequencies"
 chapter: 1
 volume: 7
 layer: "engineering"
-status: "draft"
+status: "review"
 
 axiom: "Periodic functions repeat. If you know one period you know everything. The question is whether there is a systematic way to break any periodic function into the simplest possible pieces — and there is: sines and cosines, one for each frequency."
 
@@ -50,9 +50,6 @@ notation_introduced:
   - symbol: "c_n"
     reads_as: "complex Fourier coefficient c-n"
     notation_weight: 2
-  - symbol: "\\langle f, g \\rangle"
-    reads_as: "inner product of f and g"
-    notation_weight: 3
 
 exercises:
   type: puzzle
