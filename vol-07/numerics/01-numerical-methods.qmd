@@ -4,7 +4,7 @@ subtitle: "When the exact answer isn't the point"
 chapter: 1
 volume: 7
 layer: "engineering"
-status: "draft"
+status: "review"
 
 axiom: |
   You can write down the equation. You cannot always solve it in closed form.
@@ -14,14 +14,18 @@ rewrite: |
   approximation with a controllable error. The method is the answer.
 
 opens_to:
-  - id: vol7-numerics-02
-    label: Numerical linear algebra
+  - id: lin_alg
+    label: Linear algebra
     volume: 7
-    relationship: enables
-  - id: vol7-numerics-03
-    label: Numerical ODEs and PDEs
+    relationship: enriches
+  - id: odes
+    label: Ordinary differential equations
     volume: 7
-    relationship: enables
+    relationship: enriches
+  - id: pdes
+    label: Partial differential equations
+    volume: 7
+    relationship: enriches
 
 prerequisite_ids:
   - limits

@@ -4,7 +4,7 @@ subtitle: "Solving systems that can't be solved by hand"
 chapter: 2
 volume: 7
 layer: "engineering"
-status: "draft"
+status: "review"
 
 axiom: |
   Gaussian elimination works in theory. On a computer, rounding errors
