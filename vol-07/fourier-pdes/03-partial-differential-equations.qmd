@@ -4,7 +4,7 @@ subtitle: "Heat, waves, and equilibrium in space and time"
 chapter: 3
 volume: 7
 layer: "engineering"
-status: "draft"
+status: "review"
 
 axiom: "An ordinary differential equation describes a quantity varying with one variable. But heat spreads through a solid in space AND time simultaneously. A guitar string deflects along its length AND vibrates in time. The gravitational potential varies in all three spatial directions. Each of these requires derivatives with respect to more than one independent variable."
 
@@ -44,7 +44,7 @@ notation_introduced:
     meaning: "∂²u/∂x² + ∂²u/∂y² (in 2D) — the sum of second spatial derivatives"
   - symbol: "\\lambda"
     reads_as: "lambda — separation constant"
-    meaning: "The eigenvalue linking the spatial ODE to the temporal ODE in separation of variables"
+    notation_weight: 3
 
 exercises:
   type: puzzle
@@ -94,7 +94,7 @@ A general linear second-order PDE in two variables has the form:
 
 $$A\,u_{xx} + B\,u_{xy} + C\,u_{yy} + D\,u_x + E\,u_y + F\,u = G$$
 
-The **discriminant** $\Delta = B^2 - 4AC$ classifies its type:
+The **discriminant** $\Delta = B^2 - 4AC$ classifies its type. (Note: This classification applies to PDEs in two independent variables. For PDEs in three or more variables, use the eigenvalues of the coefficient matrix instead.)
 
 | $\Delta < 0$ | Elliptic | Laplace, Poisson equations |
 | $\Delta = 0$ | Parabolic | Heat equation |
@@ -600,7 +600,7 @@ frequencies.
 
 ### D'Alembert's solution
 
-There is an elegant alternative form of the wave equation solution. D'Alembert's solution:
+There is an elegant alternative form of the wave equation solution. This can be derived by changing variables to $\xi = x-ct$ and $\eta = x+ct$, which converts the wave equation into a form that separates completely. D'Alembert's solution is:
 
 $$u(x,t) = \frac{1}{2}\left[f(x+ct) + f(x-ct)\right] + \frac{1}{2c}\int_{x-ct}^{x+ct} g(s)\,ds$$
 
@@ -637,9 +637,8 @@ $$Y_n(y) = \sinh\!\left(\frac{n\pi(b-y)}{a}\right)$$
 
 (sinh chosen to satisfy $Y_n(b) = 0$; $Y_n(0) = \sinh(n\pi b/a) \neq 0$).
 
-This means the sign in the ODE decides the family of functions you get:
-$Y''+\lambda Y=0$ produces oscillatory sine and cosine terms, while
-$Y''-\lambda Y=0$ produces exponential or hyperbolic behaviour.
+In the Laplace equation, the $Y$ equation carries the opposite sign from the heat and wave equations (both of which give $Y'' + \lambda Y = 0$) because the second $x$-derivative is a boundary condition on both sides rather than an initial condition on time. This sign flip means $Y''-\lambda Y=0$ produces exponential or hyperbolic behaviour instead of oscillatory sine and cosine terms.
+The key insight: the choice of constant determines the entire family of solutions, and the Laplace boundary geometry demands the hyperbolic family.
 
 <!-- STUDENT: The switch to hyperbolic sinh here — as opposed to the sine and cosine of the heat and wave equations — happens without explanation. An engineering student new to PDEs will wonder: why does the Laplace equation produce sinh where the other equations produced sin? A one-sentence explanation of why the $Y$ equation has the opposite sign ($Y'' - \lambda_n Y = 0$ rather than $Y'' + \lambda_n Y = 0$) and therefore produces real exponential/hyperbolic solutions rather than oscillatory ones would make this feel like insight rather than a surprising formula to memorise. -->
 
@@ -921,7 +920,7 @@ makeStepperHTML([
 
 ### Exercise 6: Non-homogeneous boundary conditions
 
-When the boundary conditions are non-zero — as when one end of a rod is held at a fixed nonzero temperature — separation of variables cannot be applied directly because the eigenfunctions $\sin(n\pi x/L)$ all vanish at the boundaries. The fix is to subtract a **steady-state solution** $v(x)$ that satisfies the boundary conditions and $v_{xx} = 0$, so that the remainder $w = u - v$ has homogeneous boundary conditions and the standard series method applies. The final answer is $u = v + w$: steady state plus decaying transient.
+When the boundary conditions are non-zero — as when one end of a rod is held at a fixed nonzero temperature — separation of variables cannot be applied directly because the eigenfunctions $\sin(n\pi x/L)$ all vanish at the boundaries. The method is to find the **steady-state solution** $v(x)$ (which satisfies $v_{xx} = 0$ and the boundary conditions), then solve for the remainder $w = u - v$ with homogeneous boundary conditions using the standard series method. The final answer is $u = v + w$: steady state plus decaying transient.
 
 Solve $u_t = u_{xx}$ on $0 < x < 1$, $t > 0$, with $u(0,t) = 0$, $u(1,t) = 1$, and $u(x,0) = 0$.
 

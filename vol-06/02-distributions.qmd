@@ -771,7 +771,12 @@ function makeStepperHTML(exerciseNum, steps) {
       opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
       opCell.textContent = s.op;
       const eqCell = document.createElement("span");
-      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      if (typeof katex !== 'undefined') {
+        eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      } else {
+        eqCell.textContent = s.eq;
+        eqCell.style.fontFamily = "monospace";
+      }
       row.appendChild(opCell);
       row.appendChild(eqCell);
       if (s.note) {

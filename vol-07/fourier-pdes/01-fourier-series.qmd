@@ -46,13 +46,13 @@ destinations:
 notation_introduced:
   - symbol: "a_n, b_n"
     reads_as: "Fourier coefficients a-n and b-n"
-    meaning: "Amplitudes of the cosine and sine components at frequency nπ/L"
+    notation_weight: 2
   - symbol: "c_n"
     reads_as: "complex Fourier coefficient c-n"
-    meaning: "Complex amplitude of the e^{inπx/L} component; cₙ = (aₙ − ibₙ)/2"
+    notation_weight: 2
   - symbol: "\\langle f, g \\rangle"
     reads_as: "inner product of f and g"
-    meaning: "∫_{-L}^{L} f(x)g(x) dx — measures how much two functions overlap"
+    notation_weight: 3
 
 exercises:
   type: puzzle
