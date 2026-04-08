@@ -53,6 +53,7 @@ book:
     - index.qmd
     - map/how-to-use.qmd
     - part: "Volume 1 — Numbers and operations"
+      number-offset: 0
       chapters:
         - vol-01/index.qmd
         - vol-01/01-number-line.qmd
@@ -62,6 +63,7 @@ book:
         - vol-01/05-fractions-decimals.qmd
         - vol-01/06-statistics-probability.qmd
     - part: "Volume 2 — Patterns and algebra"
+      number-offset: 9
       chapters:
         - vol-02/index.qmd
         - vol-02/01-linear-equations.qmd
@@ -69,6 +71,7 @@ book:
         - vol-02/03-patterns-sequences.qmd
         - vol-02/04-graphing-relations.qmd
     - part: "Volume 3 — Shape and measure"
+      number-offset: 14
       chapters:
         - vol-03/index.qmd
         - vol-03/01-geometry-measurement.qmd
@@ -76,6 +79,7 @@ book:
         - vol-03/03-polynomials-factoring.qmd
         - vol-03/04-functions-relations.qmd
     - part: "Volume 4 — Functions and change"
+      number-offset: 19
       chapters:
         - vol-04/index.qmd
         - vol-04/01-exponents-logarithms.qmd
@@ -83,6 +87,7 @@ book:
         - vol-04/03-systems-matrices.qmd
         - vol-04/04-sequences-series.qmd
     - part: "Volume 5 — Analysis and proof"
+      number-offset: 04
       chapters:
         - vol-05/index.qmd
         - vol-05/01-limits-continuity.qmd
@@ -90,6 +95,7 @@ book:
         - vol-05/03-integral-calculus.qmd
         - vol-05/04-proof-reasoning.qmd
     - part: "Volume 6 — Probability and data"
+      number-offset: 09
       chapters:
         - vol-06/index.qmd
         - vol-06/01-probability-theory.qmd
@@ -97,6 +103,7 @@ book:
         - vol-06/03-statistical-inference.qmd
         - vol-06/04-data-analysis.qmd
     - part: "Volume 7 — Engineering mathematics: ODEs"
+      number-offset: 34
       chapters:
         - vol-07/index.qmd
         - vol-07/odes/01-first-order.qmd
@@ -104,34 +111,40 @@ book:
         - vol-07/odes/03-systems-phase-plane.qmd
         - vol-07/odes/04-laplace-transforms.qmd
     - part: "Volume 7 — Linear algebra and vector calculus"
+      number-offset: 39
       chapters:
         - vol-07/linear-algebra/01-matrices-systems.qmd
         - vol-07/linear-algebra/02-eigenvalues.qmd
         - vol-07/linear-algebra/03-vector-differential.qmd
         - vol-07/linear-algebra/04-vector-integral.qmd
     - part: "Volume 7 — Fourier analysis and PDEs"
+      number-offset: 43
       chapters:
         - vol-07/fourier-pdes/01-fourier-series.qmd
         - vol-07/fourier-pdes/02-fourier-transforms.qmd
         - vol-07/fourier-pdes/03-partial-differential-equations.qmd
     - part: "Volume 7 — Complex analysis"
+      number-offset: 46
       chapters:
         - vol-07/complex-analysis/01-complex-functions.qmd
         - vol-07/complex-analysis/02-complex-integration.qmd
         - vol-07/complex-analysis/03-series-residues.qmd
         - vol-07/complex-analysis/04-conformal-mapping.qmd
     - part: "Volume 7 — Numerical methods"
+      number-offset: 50
       chapters:
         - vol-07/numerics/01-numerical-methods.qmd
         - vol-07/numerics/02-numerical-linear-algebra.qmd
         - vol-07/numerics/03-numerical-odes-pdes.qmd
     - part: "Volume 7 — Optimisation and probability"
+      number-offset: 53
       chapters:
         - vol-07/optimisation/01-linear-programming.qmd
         - vol-07/optimisation/02-graphs-networks.qmd
         - vol-07/probability/01-probability-theory.qmd
         - vol-07/probability/02-mathematical-statistics.qmd
     - part: "Volume 8 — Upper-year engineering mathematics"
+      number-offset: 57
       chapters:
         - vol-08/index.qmd
         - vol-08/01-control-feedback.qmd

@@ -4,7 +4,7 @@ subtitle: "Converting differential equations to algebra"
 chapter: 4
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: "You can solve constant-coefficient linear ODEs by the characteristic equation and undetermined coefficients. Those methods struggle with discontinuous forcing — a switch thrown at t=3, or a hammer blow at t=5."
 
@@ -15,10 +15,6 @@ prerequisite_ids:
   - complex_seed
 
 opens_to:
-  - id: fourier_series
-    label: "Fourier series"
-    volume: 7
-    relationship: motivates
   - id: complex_analysis
     label: "Complex analysis"
     volume: 7
@@ -45,19 +41,19 @@ destinations:
 notation_introduced:
   - symbol: "\\mathcal{L}\\{f(t)\\}"
     reads_as: "the Laplace transform of f"
-    meaning: "$F(s) = \\int_0^\\infty e^{-st}f(t)\\,dt$"
+    notation_weight: 3
   - symbol: "F(s)"
     reads_as: "F of s"
-    meaning: "The Laplace transform — a function of the complex variable s"
+    notation_weight: 2
   - symbol: "\\mathcal{L}^{-1}\\{F(s)\\}"
     reads_as: "inverse Laplace transform"
-    meaning: "The function f(t) whose Laplace transform is F(s)"
+    notation_weight: 3
   - symbol: "u(t-a)"
     reads_as: "Heaviside step at a"
-    meaning: "0 for t < a, 1 for t ≥ a — models a switch thrown at t=a"
+    notation_weight: 2
   - symbol: "\\delta(t-a)"
     reads_as: "Dirac delta at a"
-    meaning: "Idealised impulse at t=a — infinite spike with unit area"
+    notation_weight: 3
 
 exercises:
   type: puzzle
@@ -152,11 +148,11 @@ $$I = \left[-\frac{e^{-st}\cos(\omega t)}{\omega}\right]_0^\infty - \int_0^\inft
 
 Applying IBP again to $\int e^{-st}\cos(\omega t)\,dt$ by symmetry (set $u = e^{-st}$, $dv = \cos(\omega t)\,dt$, $v = \sin(\omega t)/\omega$) returns the original integral $I$ with a coefficient. After two applications the integral $I$ reappears on the right:
 
-$$I = \frac{\omega}{s^2} - \frac{\omega^2}{s^2}I$$
+$$I = \frac{1}{\omega} - \frac{s^2}{\omega^2}I$$
 
 Solving for $I$:
 
-$$I\left(1 + \frac{\omega^2}{s^2}\right) = \frac{\omega}{s^2} \implies I = \frac{\omega}{s^2 + \omega^2}$$
+$$I\left(1 + \frac{s^2}{\omega^2}\right) = \frac{1}{\omega} \implies I = \frac{\omega}{s^2 + \omega^2}$$
 
 Similarly, integrating $e^{-st}\cos(\omega t)$ by parts (or using the derivative
 relation) gives $\mathcal{L}\{\cos(\omega t)\} = \dfrac{s}{s^2 + \omega^2}$.

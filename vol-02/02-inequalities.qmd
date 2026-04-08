@@ -18,15 +18,15 @@ rewrite: |
   the constraint — not just one, but all of them.
 
 opens_to:
-  - id: "v2c3-patterns"
+  - id: "patterns"
     label: "Patterns and sequences"
     volume: 2
     relationship: "enriches"
-  - id: "v7-optimisation"
+  - id: "optimisation"
     label: "Optimisation and graphs"
     volume: 7
     relationship: "enables"
-  - id: "v4-lin-alg"
+  - id: "lin_alg"
     label: "Applied linear algebra"
     volume: 4
     relationship: "motivates"
@@ -142,10 +142,9 @@ so you'd write $w < 50$.
 
 This means the boundary may or may not be included.
 
-A **compound inequality** combines two inequalities into one statement.
-$8 \leq n \leq 20$ reads "n is at least 8 and at most 20" — both
-conditions must hold at once. This is the password length rule:
-any whole number from 8 to 20 satisfies it.
+A **compound inequality** combines two conditions into one statement using the notation $a < x < b$. This reads: "x is between a and b" — meaning x has to be bigger than a *and* smaller than b at the same time. Both conditions must be true for the same value.
+
+For example: $8 \leq n \leq 20$ reads "n is at least 8 and at most 20." A password with length $n$ must satisfy both: it can't be 7 characters (too short) and it can't be 21 characters (too long). It must be 8, 9, 10... up to 20. Pick any of those lengths and both conditions are satisfied.
 
 This means one value must satisfy both sides at the same time.
 
@@ -169,22 +168,121 @@ Here's why, shown directly. Start with something you know is true:
 
 $$3 < 5$$
 
-Three is less than five. Yes. Now multiply both sides by $-1$:
+Three is less than five. Now think about what happens when you multiply both numbers by $-1$. On a number line, multiplying by $-1$ flips every point across zero — to the opposite side. The number 3 becomes $-3$ (flipped to the left), and the number 5 becomes $-5$ (flipped further left). But since 5 was further right than 3, after flipping, $-5$ is now further left than $-3$.
 
-$$-3 \quad \text{and} \quad -5$$
-
-Which of these is smaller? $-5$ is. It's further left on the number
-line. So the relationship has flipped:
+So the left-right order has reversed:
 
 $$-3 > -5$$
 
-The original said "3 is less than 5." After multiplying by $-1$,
-the true statement is "$-3$ is greater than $-5$."
+The original said "3 is less than 5." After multiplying by $-1$, it becomes "$-3$ is greater than $-5$." The smaller number on the right is now the smaller number on the left.
 
-This isn't a rule someone invented. It's what actually happens on the
-number line when you negate both sides. Multiplying by $-1$ reflects
-every number across zero — what was to the left of zero ends up to the
-right, and the ordering reverses.
+This isn't a rule someone invented. It's a consequence of how negatives work on the number line.
+
+```{ojs}
+//| echo: false
+{
+  const k = -1.5;
+  const points = [3, 5];
+
+  const W = 560, H = 250;
+  const PAD = 40;
+  const AXIS_Y1 = 80, AXIS_Y2 = 200;
+  const domainMin = -8, domainMax = 8;
+  const scale = (v) => PAD + (v - domainMin) / (domainMax - domainMin) * (W - 2 * PAD);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // Helper: draw number line
+  function drawNumberLine(svg, y, label, domain, isReflected) {
+    // Axis line
+    svg.append("line")
+      .attr("x1", PAD).attr("y1", y)
+      .attr("x2", W - PAD).attr("y2", y)
+      .attr("stroke", "#9ca3af").attr("stroke-width", 2);
+
+    // Arrows
+    svg.append("polygon")
+      .attr("points", `${W - PAD},${y} ${W - PAD - 8},${y - 4} ${W - PAD - 8},${y + 4}`)
+      .attr("fill", "#9ca3af");
+    svg.append("polygon")
+      .attr("points", `${PAD},${y} ${PAD + 8},${y - 4} ${PAD + 8},${y + 4}`)
+      .attr("fill", "#9ca3af");
+
+    // Ticks and labels
+    for (let v = Math.ceil(domain.min); v <= Math.floor(domain.max); v += 2) {
+      const x = scale(v);
+      svg.append("line")
+        .attr("x1", x).attr("y1", y - 5)
+        .attr("x2", x).attr("y2", y + 5)
+        .attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+      svg.append("text")
+        .attr("x", x).attr("y", y + 18)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "11px").attr("fill", "#6b7280")
+        .text(v);
+    }
+
+    // Label
+    svg.append("text")
+      .attr("x", 16).attr("y", y - 15)
+      .attr("font-size", "12px").attr("fill", "#374151").attr("font-weight", "600")
+      .text(label);
+  }
+
+  // Draw original number line
+  drawNumberLine(svg, AXIS_Y1, "Original: x", { min: domainMin, max: domainMax }, false);
+
+  // Draw reflected number line
+  drawNumberLine(svg, AXIS_Y2, "After ×(-1.5): x' = -1.5x", { min: domainMin, max: domainMax }, true);
+
+  // Draw points and arrows
+  const colors = ["#0284c7", "#dc2626"];
+  points.forEach((p, i) => {
+    const x1 = scale(p);
+    const reflected = -1.5 * p;
+    const x2 = scale(reflected);
+
+    // Original point
+    svg.append("circle")
+      .attr("cx", x1).attr("cy", AXIS_Y1)
+      .attr("r", 6).attr("fill", colors[i]).attr("stroke", colors[i]).attr("stroke-width", 2);
+    svg.append("text")
+      .attr("x", x1).attr("y", AXIS_Y1 - 20)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "13px").attr("fill", colors[i]).attr("font-weight", "600")
+      .text(p);
+
+    // Reflected point
+    svg.append("circle")
+      .attr("cx", x2).attr("cy", AXIS_Y2)
+      .attr("r", 6).attr("fill", colors[i]).attr("stroke", colors[i]).attr("stroke-width", 2);
+    svg.append("text")
+      .attr("x", x2).attr("y", AXIS_Y2 - 20)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "13px").attr("fill", colors[i]).attr("font-weight", "600")
+      .text(reflected.toFixed(1));
+
+    // Arrow connecting them
+    const arrowX = (x1 + x2) / 2 - 20;
+    svg.append("path")
+      .attr("d", `M ${x1} ${AXIS_Y1 + 12} Q ${(x1 + x2) / 2} ${120} ${x2} ${AXIS_Y2 - 12}`)
+      .attr("fill", "none").attr("stroke", colors[i]).attr("stroke-width", 1.5)
+      .attr("stroke-dasharray", "4,4").attr("opacity", 0.5);
+  });
+
+  // Sign reversal note
+  svg.append("text")
+    .attr("x", W / 2).attr("y", H - 10)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "11px").attr("fill", "#6b7280")
+    .text("Multiplying by negative k flips all points across zero — ordering reverses");
+
+  return svg.node();
+}
+```
 
 ::: {.callout-warning appearance="simple"}
 **The sign-flip rule**
@@ -210,10 +308,10 @@ Divide both sides by 2 (dividing by a *positive* number — no flip needed):
 
 $$x < 5$$
 
-The solution is every number less than 5. Not just one number: all of them.
+The solution is every number less than 5. Not just one number: all of them. This includes 4, 3, 0, $-10$, 4.5, 4.99, and infinitely many others — anything you can name that's less than 5 works.
 
-This means the answer to an inequality is usually a set of numbers,
-not one number.
+This means the answer to an inequality is usually an infinite set of numbers,
+not one single answer.
 
 Now compare with one that triggers the flip:
 
@@ -266,7 +364,24 @@ For $x > -3$: draw an open circle at $-3$, shade to the right.
 For a compound inequality like $-2 < x \leq 4$: open circle at $-2$,
 closed circle at $4$, shade the segment between them.
 
-**Interactive: Number line inequality explorer.** Use the slider to set the boundary value. Choose the inequality direction and whether the boundary is included. The shaded region and circle type update live.
+### Writing the solution as a set
+
+Sometimes instead of a number line, we write the solution as a **set** — a list of all the numbers that work.
+
+We use curly braces $\{\,\}$ to show a set. For example, if $n$ must be a whole number from 8 to 23, we write:
+
+$$n \in \{8, 9, 10, 11, \ldots, 23\}$$
+
+The symbol $\in$ means "is a member of" — so this reads: "$n$ is a member of the set 8, 9, 10, ..., 23."
+
+If the solution is all real numbers (any decimal or integer) in a range, we sometimes write it using **interval notation** with parentheses or brackets:
+- $(a, b)$ means all numbers strictly between $a$ and $b$ (not including $a$ or $b$)
+- $[a, b]$ means all numbers from $a$ to $b$, including both endpoints
+- $(a, b]$ means all numbers from $a$ to $b$, not including $a$ but including $b$
+
+For now, you'll mostly use number lines and inequality notation. Set notation will become important when solutions must be whole numbers.
+
+**Try it: Number line inequality explorer.** Use the slider to set the boundary value. Choose the inequality direction and whether the boundary is included. The shaded region and circle type update live.
 
 ```{ojs}
 //| echo: false
@@ -437,6 +552,139 @@ Check: $8 \times 6 = 48 \leq 50$. ✓ Seven boxes: $8 \times 7 = 56 > 50$. ✗
 
 This means safety limits are naturally written as inequalities.
 
+```{ojs}
+//| echo: false
+viewof budgetCount = Inputs.range([0, 10], { label: "Items purchased", step: 1, value: 4 })
+```
+
+```{ojs}
+//| echo: false
+{
+  const itemsCount = budgetCount;
+  const itemPrice = 8;
+  const alreadySpent = 47;
+  const budgetTotal = 120;
+
+  const currentSpend = alreadySpent + itemsCount * itemPrice;
+  const percentUsed = Math.min(100, (currentSpend / budgetTotal) * 100);
+
+  const W = 560, H = 280;
+  const PAD = 40;
+  const BUDGET_Y = 60;
+  const SHELF_Y = 170;
+  const BOX_SIZE = 24;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // --- BUDGET TRACKER ---
+
+  // Title
+  svg.append("text")
+    .attr("x", 16).attr("y", BUDGET_Y - 20)
+    .attr("font-size", "13px").attr("fill", "#1f2937").attr("font-weight", "600")
+    .text("Budget Tracker");
+
+  // Background bar
+  const barWidth = W - 2 * PAD - 100;
+  svg.append("rect")
+    .attr("x", PAD).attr("y", BUDGET_Y)
+    .attr("width", barWidth).attr("height", 24)
+    .attr("fill", "#e5e7eb").attr("rx", 4);
+
+  // Fill bar
+  const fillColor = percentUsed > 100 ? "#dc2626" : percentUsed > 85 ? "#f59e0b" : "#10b981";
+  svg.append("rect")
+    .attr("x", PAD).attr("y", BUDGET_Y)
+    .attr("width", Math.min(barWidth, (percentUsed / 100) * barWidth)).attr("height", 24)
+    .attr("fill", fillColor).attr("rx", 4).attr("opacity", 0.8);
+
+  // Budget label
+  svg.append("text")
+    .attr("x", PAD + barWidth + 12).attr("y", BUDGET_Y + 16)
+    .attr("font-size", "12px").attr("fill", "#374151").attr("font-weight", "500")
+    .text(`$${currentSpend}/$${budgetTotal}`);
+
+  // Spend breakdown
+  svg.append("text")
+    .attr("x", PAD).attr("y", BUDGET_Y + 45)
+    .attr("font-size", "11px").attr("fill", "#6b7280")
+    .text(`Already spent: $${alreadySpent}  +  ${itemsCount} items × $${itemPrice} = $${itemsCount * itemPrice}  =  $${currentSpend}`);
+
+  const statusText = percentUsed > 100
+    ? `⚠ Over budget by $${Math.round(currentSpend - budgetTotal)}`
+    : percentUsed > 85
+    ? `Near limit (${Math.round(percentUsed)}%)`
+    : `Safe (${Math.round(percentUsed)}%)`;
+
+  svg.append("text")
+    .attr("x", PAD).attr("y", BUDGET_Y + 62)
+    .attr("font-size", "11px").attr("fill", fillColor).attr("font-weight", "500")
+    .text(statusText);
+
+  // --- SHELF GAUGE ---
+
+  const shelfCapacity = 50;
+  const boxWeight = 8;
+  const currentWeight = itemsCount * boxWeight;
+
+  // Title
+  svg.append("text")
+    .attr("x", 16).attr("y", SHELF_Y - 20)
+    .attr("font-size", "13px").attr("fill", "#1f2937").attr("font-weight", "600")
+    .text("Shelf Load Gauge");
+
+  // Background shelf
+  const shelfWidth = W - 2 * PAD;
+  svg.append("rect")
+    .attr("x", PAD).attr("y", SHELF_Y)
+    .attr("width", shelfWidth).attr("height", 40)
+    .attr("fill", "#f3f4f6").attr("rx", 4).attr("stroke", "#9ca3af").attr("stroke-width", 1.5);
+
+  // Boxes stacking (visual representation)
+  const maxBoxes = Math.floor(shelfCapacity / boxWeight);
+  const boxesPerRow = 6;
+
+  for (let i = 0; i < itemsCount && i < maxBoxes; i++) {
+    const row = Math.floor(i / boxesPerRow);
+    const col = i % boxesPerRow;
+    const boxX = PAD + 12 + col * (BOX_SIZE + 4);
+    const boxY = SHELF_Y + 32 - (row * (BOX_SIZE + 4));
+
+    const boxColor = i < maxBoxes ? "#3b82f6" : "#dc2626";
+    svg.append("rect")
+      .attr("x", boxX).attr("y", boxY)
+      .attr("width", BOX_SIZE).attr("height", BOX_SIZE)
+      .attr("fill", boxColor).attr("opacity", 0.7).attr("rx", 2);
+    svg.append("text")
+      .attr("x", boxX + BOX_SIZE / 2).attr("y", boxY + BOX_SIZE / 2 + 3)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "9px").attr("fill", "#fff").attr("font-weight", "600")
+      .text("8kg");
+  }
+
+  // Load label
+  const loadStatus = currentWeight > shelfCapacity
+    ? `⚠ OVERLOADED: ${currentWeight} kg > ${shelfCapacity} kg limit`
+    : `${currentWeight}/${shelfCapacity} kg  (${Math.round((currentWeight / shelfCapacity) * 100)}%)`;
+
+  const loadColor = currentWeight > shelfCapacity ? "#dc2626" : "#10b981";
+  svg.append("text")
+    .attr("x", PAD).attr("y", SHELF_Y + 65)
+    .attr("font-size", "11px").attr("fill", loadColor).attr("font-weight", "500")
+    .text(loadStatus);
+
+  svg.append("text")
+    .attr("x", PAD).attr("y", SHELF_Y + 82)
+    .attr("font-size", "10px").attr("fill", "#6b7280")
+    .text(`Safe capacity: 6 boxes (48 kg)  |  Current: ${itemsCount} box${itemsCount === 1 ? "" : "es"} (${currentWeight} kg)`);
+
+  return svg.node();
+}
+```
+
 ---
 
 **Example 3 — Password validation.** A website requires passwords to
@@ -457,6 +705,155 @@ at once: `8 <= n && n <= 20` (or the equivalent in whatever language
 you're using). The mathematics and the code are the same structure.
 
 This means inequalities are a direct way to describe allowed ranges.
+
+```{ojs}
+//| echo: false
+{
+  const W = 560, H = 300;
+  const PAD = 50;
+  const LINE_Y = [80, 160, 240];
+  const domainMin = 0, domainMax = 30;
+  const scale = (v) => PAD + (v - domainMin) / (domainMax - domainMin) * (W - 2 * PAD);
+  const TICK_H = 6;
+
+  const a = 8;  // Lower bound
+  const b = 20; // Upper bound
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // Draw three number lines
+  const lineLabels = [
+    `n ≥ ${a}  (at least 8 characters)`,
+    `n ≤ ${b}  (at most 20 characters)`,
+    `${a} ≤ n ≤ ${b}  (both conditions satisfied)`
+  ];
+
+  const lineConfigs = [
+    { min: domainMin, max: domainMax, boundary: a, inclusive: true, shadedLeft: false, label: lineLabels[0] },
+    { min: domainMin, max: domainMax, boundary: b, inclusive: true, shadedLeft: true, label: lineLabels[1] },
+    { min: domainMin, max: domainMax, boundary_low: a, boundary_high: b, inclusive: true, compound: true, label: lineLabels[2] }
+  ];
+
+  function drawLine(svg, idx, config) {
+    const y = LINE_Y[idx];
+
+    // Axis
+    svg.append("line")
+      .attr("x1", PAD).attr("y1", y)
+      .attr("x2", W - PAD).attr("y2", y)
+      .attr("stroke", "#9ca3af").attr("stroke-width", 2);
+
+    // Arrows
+    svg.append("polygon")
+      .attr("points", `${W - PAD},${y} ${W - PAD - 8},${y - 4} ${W - PAD - 8},${y + 4}`)
+      .attr("fill", "#9ca3af");
+    svg.append("polygon")
+      .attr("points", `${PAD},${y} ${PAD + 8},${y - 4} ${PAD + 8},${y + 4}`)
+      .attr("fill", "#9ca3af");
+
+    // Ticks
+    for (let v = 0; v <= 30; v += 5) {
+      const x = scale(v);
+      svg.append("line")
+        .attr("x1", x).attr("y1", y - TICK_H / 2)
+        .attr("x2", x).attr("y2", y + TICK_H / 2)
+        .attr("stroke", "#9ca3af").attr("stroke-width", 1);
+      svg.append("text")
+        .attr("x", x).attr("y", y + 18)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "10px").attr("fill", "#6b7280")
+        .text(v);
+    }
+
+    // Shading and markers
+    const shadeColor = idx === 2 ? "#10b981" : "#0d9488";
+    if (config.compound) {
+      // Compound: shade between a and b
+      const xa = scale(a), xb = scale(b);
+      svg.append("rect")
+        .attr("x", xa).attr("y", y - 5)
+        .attr("width", xb - xa).attr("height", 10)
+        .attr("fill", shadeColor).attr("opacity", 0.3);
+
+      // Boundaries
+      svg.append("circle")
+        .attr("cx", xa).attr("cy", y)
+        .attr("r", 5).attr("fill", shadeColor).attr("stroke", shadeColor).attr("stroke-width", 2);
+      svg.append("circle")
+        .attr("cx", xb).attr("cy", y)
+        .attr("r", 5).attr("fill", shadeColor).attr("stroke", shadeColor).attr("stroke-width", 2);
+    } else {
+      const bx = scale(config.boundary);
+      if (config.shadedLeft) {
+        // Shade left
+        svg.append("rect")
+          .attr("x", PAD).attr("y", y - 5)
+          .attr("width", bx - PAD).attr("height", 10)
+          .attr("fill", shadeColor).attr("opacity", 0.25);
+      } else {
+        // Shade right
+        svg.append("rect")
+          .attr("x", bx).attr("y", y - 5)
+          .attr("width", W - PAD - bx).attr("height", 10)
+          .attr("fill", shadeColor).attr("opacity", 0.25);
+      }
+
+      // Boundary circle
+      if (config.inclusive) {
+        svg.append("circle")
+          .attr("cx", bx).attr("cy", y)
+          .attr("r", 5).attr("fill", shadeColor).attr("stroke", shadeColor).attr("stroke-width", 2);
+      } else {
+        svg.append("circle")
+          .attr("cx", bx).attr("cy", y)
+          .attr("r", 5).attr("fill", "#fff").attr("stroke", shadeColor).attr("stroke-width", 2);
+      }
+    }
+
+    // Label
+    svg.append("text")
+      .attr("x", 16).attr("y", y + 3)
+      .attr("font-size", "11px").attr("fill", "#374151").attr("font-weight", "500")
+      .text(config.label);
+  }
+
+  lineConfigs.forEach((config, idx) => drawLine(svg, idx, config));
+
+  // Title
+  svg.append("text")
+    .attr("x", W / 2).attr("y", 25)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "13px").attr("fill", "#1f2937").attr("font-weight", "600")
+    .text("Compound Inequality: Password Length Validation");
+
+  return svg.node();
+}
+```
+
+---
+
+**Example 3b — Solving a compound inequality.** A recipe requires between 1.5 and 3 cups of flour. You're using a scale that measures in grams. You know that 1 cup of flour ≈ 120 grams. How many grams should you measure?
+
+Let $g$ = grams of flour.
+
+In cups, the requirement is: $1.5 \leq \dfrac{g}{120} \leq 3$
+
+To solve, do the same operation to *all three parts* of the compound inequality:
+
+Multiply all three parts by 120:
+
+$$1.5 \times 120 \leq g \leq 3 \times 120$$
+
+$$180 \leq g \leq 360$$
+
+So you should measure between 180 and 360 grams. Exactly 180 grams is acceptable (the lower boundary is included). Exactly 360 grams is acceptable (the upper boundary is included).
+
+Check: $180 / 120 = 1.5$ ✓ and $360 / 120 = 3$ ✓
+
+This means solving a compound inequality requires the same steps on each part — keep all three pieces balanced.
 
 ---
 

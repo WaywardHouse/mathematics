@@ -4,7 +4,7 @@ subtitle: "When the rate of change depends on the state"
 chapter: 1
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: "You know how to differentiate and integrate. An ODE is an equation that relates a function to its own derivative — you are solving for the function itself, not a number."
 
@@ -45,19 +45,19 @@ destinations:
 notation_introduced:
   - symbol: "y'"
     reads_as: "y prime"
-    meaning: "Derivative of y with respect to x (or t)"
+    notation_weight: 1
   - symbol: "\\frac{dy}{dx}"
     reads_as: "dy by dx"
-    meaning: "Leibniz notation for the derivative"
+    notation_weight: 1
   - symbol: "y(x_0) = y_0"
     reads_as: "initial condition"
-    meaning: "The value of y at the starting point x₀"
+    notation_weight: 1
   - symbol: "\\mu(x)"
     reads_as: "mu of x"
-    meaning: "Integrating factor: $\\mu = e^{\\int P(x)\\,dx}$"
+    notation_weight: 3
   - symbol: "C"
     reads_as: "C"
-    meaning: "Arbitrary constant of integration — absorbed into the general solution"
+    notation_weight: 1
 
 exercises:
   type: puzzle

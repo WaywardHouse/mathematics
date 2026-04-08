@@ -29,7 +29,7 @@ opens_to:
     label: "Functions and relations"
     volume: 3
     relationship: "motivates"
-  - id: "v7-odes"
+  - id: "odes"
     label: "Differential equations"
     volume: 7
     relationship: "motivates"
@@ -79,8 +79,14 @@ notation_introduced:
     reads_as: "the unknown"
     notation_weight: 1
   - symbol: "="
-    reads_as: "both sides describe the same amount"
+    reads_as: "both sides are equal, or have the same value"
     notation_weight: 1
+  - symbol: "3x"
+    reads_as: "three times the unknown, or coefficient times unknown"
+    notation_weight: 2
+  - symbol: "coefficient"
+    reads_as: "the number multiplying the unknown in an expression like 3x"
+    notation_weight: 2
 
 exercises:
   type: "puzzle"
@@ -116,27 +122,469 @@ way.
 
 $$3x + 7 = 22$$
 
-Read it as: three of something, plus seven, gives twenty-two. The $x$ is
-the placeholder — a name for the gap in your knowledge. The equals sign
-means both sides describe the same amount.
+*Interactive: What the notation $3x$ means.* Click or drag the arrow to toggle between the expanded form and the shorthand. The $3x$ is just a compact way to write three copies of the same unknown.
 
-This means an equation is a balance between two expressions.
+```{ojs}
+//| echo: false
+viewof coeffToggle = Inputs.toggle({
+  label: "Show compact form (3x)",
+  value: false
+})
+```
 
-Peel away what's around the unknown until it stands alone. Three of
-something plus seven is twenty-two, so three of something is fifteen,
-so the something is five. Check: $3 \times 5 + 7 = 22$. Yes.
+```{ojs}
+//| echo: false
+{
+  const showCompact = coeffToggle;
+  const W = 560;
+  const H = 140;
 
-That move — isolating the unknown — is what this chapter is about.
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
 
-This means solving is the process of getting the unknown by itself.
+  // Left panel: expanded form (always shown, opacity changes)
+  const leftX = 40;
+  const boxSize = 40;
+  const boxStroke = "#0d9488";
+  const boxFill = "#0d9488";
 
-The concept stays this simple. What gets harder is the notation
-accumulating, and equations appearing inside larger problems where it
-isn't obvious that's what they are.
+  // Boxes for x + x + x
+  const opacity = showCompact ? 0.2 : 1;
+  const y = 50;
+
+  for (let i = 0; i < 3; i++) {
+    const x = leftX + i * (boxSize + 15);
+    svg.append("rect")
+      .attr("x", x).attr("y", y)
+      .attr("width", boxSize).attr("height", boxSize)
+      .attr("rx", 4)
+      .attr("fill", boxFill).attr("opacity", opacity * 0.15)
+      .attr("stroke", boxStroke).attr("stroke-width", 2)
+      .attr("opacity", showCompact ? 0.1 : 1);
+
+    svg.append("text")
+      .attr("x", x + boxSize / 2).attr("y", y + 28)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "16px").attr("fill", boxStroke).attr("font-weight", "700")
+      .attr("opacity", showCompact ? 0.3 : 1)
+      .text("x");
+
+    if (i < 2) {
+      svg.append("text")
+        .attr("x", leftX + (i + 1) * (boxSize + 15) - 8).attr("y", y + 28)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "18px").attr("fill", "#6b7280")
+        .attr("opacity", showCompact ? 0.3 : 1)
+        .text("+");
+    }
+  }
+
+  svg.append("text")
+    .attr("x", leftX).attr("y", y - 12)
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .attr("opacity", showCompact ? 0.4 : 1)
+    .text("expanded: three copies");
+
+  // Center: transition arrow
+  const centerX = W / 2;
+  svg.append("line")
+    .attr("x1", centerX - 30).attr("y1", y + boxSize / 2)
+    .attr("x2", centerX + 30).attr("y2", y + boxSize / 2)
+    .attr("stroke", "#0d9488").attr("stroke-width", 2.5);
+
+  svg.append("polygon")
+    .attr("points", `${centerX + 30},${y + boxSize / 2} ${centerX + 23},${y + boxSize / 2 - 4} ${centerX + 23},${y + boxSize / 2 + 4}`)
+    .attr("fill", "#0d9488");
+
+  // Right panel: compact form (always shown, opacity changes)
+  const rightX = W - 140;
+  const compactOpacity = showCompact ? 1 : 0.2;
+
+  svg.append("text")
+    .attr("x", rightX).attr("y", y + 32)
+    .attr("font-size", "28px").attr("fill", "#0d9488").attr("font-weight", "700")
+    .attr("opacity", compactOpacity)
+    .text("3");
+
+  svg.append("text")
+    .attr("x", rightX + 32).attr("y", y + 32)
+    .attr("font-size", "28px").attr("fill", "#0d9488").attr("font-weight", "700")
+    .attr("opacity", compactOpacity)
+    .text("x");
+
+  svg.append("text")
+    .attr("x", rightX).attr("y", y - 12)
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .attr("opacity", showCompact ? 1 : 0.4)
+    .text("shorthand");
+
+  // Label for coefficient
+  svg.append("text")
+    .attr("x", rightX).attr("y", H - 20)
+    .attr("font-size", "11px").attr("fill", "#6b7280")
+    .attr("opacity", showCompact ? 1 : 0.5)
+    .text("The 3 is the coefficient (the count).");
+
+  return svg.node();
+}
+```
 
 ---
 
-**Interactive: Equation balance.** The scale below shows both sides of an equation. Choose an operation and a value. Apply it to both sides and watch the equation update — the balance holds because you're changing both sides equally.
+Read it as: three of something, plus seven, gives twenty-two. The $x$ is
+the placeholder — a name for the gap in your knowledge. The equals sign
+means both sides are equal, or have the same value.
+
+**What is $x$?** The letter $x$ is a placeholder — it marks the spot where a
+number belongs, but we don't know what that number is yet. In the sentence
+"three bags and 7 dollars cost 22 dollars," $x$ stands for "bags." We use $x$
+as a standard choice so everyone knows we're hunting for an unknown. Once we
+solve, we find what $x$ is — in this case, $x = 5$.
+
+---
+
+*Interactive: Finding the placeholder.* Drag the slider to try different values for the blank. When you fill the blank with the right number, both sides of the equation match.
+
+```{ojs}
+//| echo: false
+viewof placeholderVal = Inputs.range([0, 10], {
+  label: "Try a value for the blank:",
+  step: 1,
+  value: 5
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const val = Math.round(placeholderVal);
+  const result = 3 * val + 7;
+  const target = 22;
+  const isCorrect = result === target;
+
+  const W = 560;
+  const H = 200;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Left panel: English sentence
+  const leftX = 40;
+  const leftY = 50;
+  svg.append("text")
+    .attr("x", leftX).attr("y", leftY)
+    .attr("font-size", "15px").attr("fill", "#1f2937").attr("font-weight", "600")
+    .text("Three");
+
+  // Blank box with value
+  const blankX = leftX + 80;
+  const blankW = 50;
+  const blankH = 32;
+  svg.append("rect")
+    .attr("x", blankX).attr("y", leftY - 20)
+    .attr("width", blankW).attr("height", blankH)
+    .attr("rx", 4)
+    .attr("fill", "#0d9488").attr("opacity", 0.15)
+    .attr("stroke", "#0d9488").attr("stroke-width", 2);
+
+  svg.append("text")
+    .attr("x", blankX + blankW / 2).attr("y", leftY + 2)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "18px").attr("fill", "#0d9488").attr("font-weight", "700")
+    .text(val);
+
+  svg.append("text")
+    .attr("x", blankX + blankW + 8).attr("y", leftY)
+    .attr("font-size", "15px").attr("fill", "#1f2937")
+    .text("and $7 cost $22");
+
+  // Evaluation below
+  const evalY = leftY + 40;
+  const checkSymbol = isCorrect ? "✓" : "⚠";
+  const checkColor = isCorrect ? "#059669" : "#d97706";
+
+  svg.append("text")
+    .attr("x", leftX).attr("y", evalY)
+    .attr("font-size", "14px").attr("fill", "#6b7280")
+    .text("Equation check: 3 × ");
+
+  svg.append("text")
+    .attr("x", leftX + 150).attr("y", evalY)
+    .attr("font-size", "14px").attr("fill", "#0d9488").attr("font-weight", "700")
+    .text(val);
+
+  svg.append("text")
+    .attr("x", leftX + 185).attr("y", evalY)
+    .attr("font-size", "14px").attr("fill", "#6b7280")
+    .text("+ 7 =");
+
+  svg.append("text")
+    .attr("x", leftX + 245).attr("y", evalY)
+    .attr("font-size", "14px").attr("fill", isCorrect ? "#059669" : "#d97706").attr("font-weight", "700")
+    .text(result);
+
+  svg.append("text")
+    .attr("x", leftX + 280).attr("y", evalY)
+    .attr("font-size", "14px").attr("fill", "#6b7280")
+    .text("?");
+
+  // Status message
+  const statusY = evalY + 30;
+  if (isCorrect) {
+    svg.append("text")
+      .attr("x", leftX).attr("y", statusY)
+      .attr("font-size", "14px").attr("fill", "#059669").attr("font-weight", "700")
+      .text(checkSymbol + " This value works! x = " + val + " is the solution.");
+  } else {
+    const diff = Math.abs(result - target);
+    const direction = result < target ? "too low" : "too high";
+    svg.append("text")
+      .attr("x", leftX).attr("y", statusY)
+      .attr("font-size", "14px").attr("fill", "#d97706").attr("font-weight", "600")
+      .text(checkSymbol + " The result is " + result + " — " + direction + " by " + diff + ".");
+  }
+
+  // Right panel: Symbolic equation
+  const eqX = W - 180;
+  const eqY = 50;
+  svg.append("text")
+    .attr("x", eqX).attr("y", eqY)
+    .attr("font-size", "20px").attr("fill", "#1f2937").attr("font-weight", "700")
+    .text("3x + 7 = 22");
+
+  svg.append("text")
+    .attr("x", eqX).attr("y", eqY + 28)
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .text("(symbolic form)");
+
+  // Divider line
+  svg.append("line")
+    .attr("x1", W / 2).attr("y1", 20)
+    .attr("x2", W / 2).attr("y2", H - 20)
+    .attr("stroke", "#e5e7eb").attr("stroke-width", 1);
+
+  return svg.node();
+}
+```
+
+---
+
+An equation is a balance — two expressions in equilibrium.
+
+## Undoing operations
+
+Before we solve equations, let's understand the pattern of *undoing*.
+
+- Addition is undone by subtraction. If something was added, subtract it.
+- Subtraction is undone by addition. If something was subtracted, add it.
+- Multiplication is undone by division. If something was multiplied, divide.
+- Division is undone by multiplication. If something was divided, multiply.
+
+Here's a concrete example. Suppose I start with a mystery number, add 7 to it,
+and get 15. To find the mystery number, I undo the +7 by subtracting:
+$15 - 7 = 8$. The starting number was 8.
+
+The same pattern applies to solving equations. When you see something like
+$3x + 7 = 22$, you undo the operations in reverse order: first undo the +7
+(by subtracting), then undo the multiplication by 3 (by dividing). You work
+backwards through the steps until $x$ stands alone.
+
+The concept stays this simple, but what gets harder is when notation
+accumulates and equations hide inside larger problems.
+
+---
+
+*Interactive: Undoing operations.* Pick an operation and a value. Watch what happens when you apply it and then undo it. The mystery number always comes back.
+
+```{ojs}
+//| echo: false
+viewof undoOp = Inputs.select(["+", "−", "×", "÷"], {
+  label: "Operation",
+  value: "+"
+})
+```
+
+```{ojs}
+//| echo: false
+viewof undoVal = Inputs.range([1, 20], {
+  label: "Value",
+  step: 1,
+  value: 5
+})
+```
+
+```{ojs}
+//| echo: false
+viewof undoStep = Inputs.range([0, 4], {
+  label: "Animation step",
+  step: 1,
+  value: 0
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const op = undoOp;
+  const val = Math.round(undoVal);
+  const step = Math.round(undoStep);
+
+  const mystery = 8;
+  let result, undoResult, opName, undoOpName;
+
+  if (op === "+") {
+    result = mystery + val;
+    undoResult = result - val;
+    opName = `add ${val}`;
+    undoOpName = `subtract ${val}`;
+  } else if (op === "−") {
+    result = mystery - val;
+    undoResult = result + val;
+    opName = `subtract ${val}`;
+    undoOpName = `add ${val}`;
+  } else if (op === "×") {
+    result = mystery * val;
+    undoResult = result / val;
+    opName = `multiply by ${val}`;
+    undoOpName = `divide by ${val}`;
+  } else if (op === "÷") {
+    result = mystery / val;
+    undoResult = result * val;
+    opName = `divide by ${val}`;
+    undoOpName = `multiply by ${val}`;
+  }
+
+  const W = 560;
+  const H = 320;
+  const STEP_H = 70;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Title
+  svg.append("text")
+    .attr("x", W / 2).attr("y", 24)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "14px").attr("fill", "#6b7280").attr("font-weight", "600")
+    .text("Start → Apply → Undo → Back to start");
+
+  // Step boxes
+  const steps = [
+    { title: "Mystery number", val: mystery, label: mystery.toString() },
+    { title: `Apply: ${opName}`, val: result, label: result % 1 === 0 ? result.toString() : result.toFixed(2) },
+    { title: "Mystery number recovered", val: undoResult, label: undoResult % 1 === 0 ? undoResult.toString() : undoResult.toFixed(2) }
+  ];
+
+  const boxW = 140;
+  const boxH = 60;
+  const boxSpacing = (W - 60) / 3;
+  const startX = 30;
+
+  for (let i = 0; i < Math.min(step + 1, 3); i++) {
+    const x = startX + i * boxSpacing;
+    const y = 80;
+
+    // Box
+    svg.append("rect")
+      .attr("x", x).attr("y", y)
+      .attr("width", boxW).attr("height", boxH)
+      .attr("rx", 6)
+      .attr("fill", i === step ? "#0d9488" : "#e5e7eb")
+      .attr("opacity", i === step ? 0.15 : 0.3)
+      .attr("stroke", i === step ? "#0d9488" : "#d1d5db")
+      .attr("stroke-width", 2);
+
+    // Title
+    svg.append("text")
+      .attr("x", x + boxW / 2).attr("y", y + 16)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "11px").attr("fill", "#6b7280")
+      .text(steps[i].title);
+
+    // Value
+    svg.append("text")
+      .attr("x", x + boxW / 2).attr("y", y + 44)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "22px").attr("fill", i === step ? "#0d9488" : "#1f2937").attr("font-weight", "700")
+      .text(steps[i].label);
+
+    // Arrow between boxes (except after last)
+    if (i < 2) {
+      const arrowX = x + boxW + 20;
+      const arrowY = y + boxH / 2;
+      svg.append("line")
+        .attr("x1", arrowX).attr("y1", arrowY)
+        .attr("x2", arrowX + 25).attr("y2", arrowY)
+        .attr("stroke", i < step ? "#0d9488" : "#d1d5db")
+        .attr("stroke-width", 2);
+      svg.append("polygon")
+        .attr("points", `${arrowX + 25},${arrowY} ${arrowX + 20},${arrowY - 3} ${arrowX + 20},${arrowY + 3}`)
+        .attr("fill", i < step ? "#0d9488" : "#d1d5db");
+    }
+  }
+
+  // Annotation
+  const noteY = 180;
+  if (step === 0) {
+    svg.append("text")
+      .attr("x", 30).attr("y", noteY)
+      .attr("font-size", "13px").attr("fill", "#475569").attr("font-weight", "600")
+      .text("Start with a mystery number: 8");
+  } else if (step === 1) {
+    svg.append("text")
+      .attr("x", 30).attr("y", noteY)
+      .attr("font-size", "13px").attr("fill", "#475569")
+      .text(`We ${opName}: 8 ${op === "+" ? "+" : op === "−" ? "−" : op === "×" ? "×" : "÷"} ${val} = ${result % 1 === 0 ? result : result.toFixed(2)}`);
+  } else if (step === 2) {
+    svg.append("text")
+      .attr("x", 30).attr("y", noteY)
+      .attr("font-size", "13px").attr("fill", "#0d9488").attr("font-weight", "700")
+      .text(`Now undo: ${undoOpName}`);
+    svg.append("text")
+      .attr("x", 30).attr("y", noteY + 22)
+      .attr("font-size", "13px").attr("fill", "#6b7280")
+      .text(`${result % 1 === 0 ? result : result.toFixed(2)} ${op === "+" ? "−" : op === "−" ? "+" : op === "×" ? "÷" : "×"} ${val} = ${undoResult}`);
+  }
+
+  // Final message
+  if (step === 2) {
+    svg.append("rect")
+      .attr("x", 30).attr("y", 240)
+      .attr("width", W - 60).attr("height", 60)
+      .attr("rx", 6)
+      .attr("fill", "#0d9488").attr("opacity", 0.12)
+      .attr("stroke", "#0d9488").attr("stroke-width", 1.5);
+
+    svg.append("text")
+      .attr("x", W / 2).attr("y", 260)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "13px").attr("fill", "#0d9488").attr("font-weight", "700")
+      .text("✓ The mystery number is recovered!");
+
+    svg.append("text")
+      .attr("x", W / 2).attr("y", 282)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px").attr("fill", "#6b7280")
+      .text("This is how solving works: undo the operations in reverse order.");
+  }
+
+  return svg.node();
+}
+```
+
+---
+
+---
+
+**Interactive: Equation balance.** Try a few operations below. Watch both
+sides of the equation change together. The balance holds because you're doing
+the same thing to both sides. Why do you think that matters?
 
 ```{ojs}
 //| echo: false
@@ -324,10 +772,15 @@ viewof balanceVal = Inputs.range([-10, 10], {
 
 ## The method
 
-The rule is: whatever you do to one side of the equals sign, do to the
-other. The equation is a balance. You can add weight to both sides,
-remove weight from both sides, or multiply both sides by the same
-amount — as long as you do the same thing to both, the balance holds.
+Why do we apply operations to both sides? Think about the balance scale
+from before. If two sides are balanced and equal in weight, and you add
+weight to only one side, the balance tips — they're no longer equal. But if
+you add the *same* weight to *both* sides, the balance holds.
+
+An equation is the same idea. The equals sign says both sides are the same
+amount. If you change one side without changing the other, they're no longer
+the same — you've broken the equation. Doing the same operation to both sides
+keeps the equation true.
 
 This means we are not guessing the answer. We are changing the equation
 without breaking it.
@@ -346,21 +799,23 @@ $$x = 5$$
 
 That's it. Two operations, one unknown, done.
 
-Here, 3 is the coefficient of $x$. This means it is the number
-multiplying the unknown.
+In the equation $3x = 15$, the number 3 multiplies the unknown $x$. That
+multiplying number is called the **coefficient**. So "3 is the coefficient of $x$."
 
 ::: {.callout-note appearance="simple"}
-**Why this works**
+**Why we can trust this method**
 
-The equals sign is a statement that two things are the same amount.
-If you change one side without changing the other, they're no longer
-the same amount — you've broken the equation. Doing the same thing
-to both sides preserves the equality. That's the whole method.
+The equals sign is a contract: both sides promised to be the same.
+When you do the same operation to both sides, you keep that promise intact.
+You're not guessing or bending the rules — you're following the logic
+that makes an equation an equation.
 :::
 
 ---
 
-**Interactive: Equation solver.** Set the coefficients $a$, $b$, and $c$ in the equation $ax + b = c$. The solution steps update live with your numbers.
+**Interactive: Equation solver.** Set the coefficients $a$, $b$, and $c$ in the
+equation $ax + b = c$. The solution steps update live with your numbers. Try
+setting $a = 0$. What happens? Why can't we solve if $a = 0$?
 
 ```{ojs}
 //| echo: false
@@ -523,6 +978,115 @@ Let $h$ = hours worked.
 
 $$20 + 13h = 85$$
 
+*Interactive: The path to $85.* The bar shows your savings growing. The teal segment is money already saved; each white segment is one hour of work at $13.
+
+```{ojs}
+//| echo: false
+viewof savingsStep = Inputs.range([0, 6], {
+  label: "Hours worked",
+  step: 1,
+  value: 5
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const hours = Math.round(savingsStep);
+  const saved = 20;
+  const rate = 13;
+  const total = saved + hours * rate;
+  const goal = 85;
+  const percent = Math.min((total / goal) * 100, 100);
+
+  const W = 560;
+  const H = 140;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Label
+  svg.append("text")
+    .attr("x", 20).attr("y", 24)
+    .attr("font-size", "13px").attr("fill", "#6b7280")
+    .text("Already saved: $20 | Earn: $13/hour | Goal: $85");
+
+  // Progress bar background
+  const barX = 20;
+  const barY = 45;
+  const barW = W - 40;
+  const barH = 30;
+
+  svg.append("rect")
+    .attr("x", barX).attr("y", barY)
+    .attr("width", barW).attr("height", barH)
+    .attr("rx", 4)
+    .attr("fill", "#f3f4f6")
+    .attr("stroke", "#d1d5db")
+    .attr("stroke-width", 1);
+
+  // Already saved segment (teal)
+  const savedPercent = (saved / goal) * 100;
+  svg.append("rect")
+    .attr("x", barX).attr("y", barY)
+    .attr("width", (savedPercent / 100) * barW).attr("height", barH)
+    .attr("rx", 4)
+    .attr("fill", "#0d9488")
+    .attr("opacity", 0.4);
+
+  // Earned from working segment
+  if (hours > 0) {
+    const earnedPercent = (hours * rate / goal) * 100;
+    svg.append("rect")
+      .attr("x", barX + (savedPercent / 100) * barW).attr("y", barY)
+      .attr("width", (earnedPercent / 100) * barW).attr("height", barH)
+      .attr("rx", hours === 0 ? 4 : 0)
+      .attr("fill", "#2563eb")
+      .attr("opacity", 0.5);
+  }
+
+  // Current amount label
+  const labelX = barX + (percent / 100) * barW;
+  svg.append("text")
+    .attr("x", labelX).attr("y", barY + barH / 2 + 5)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "14px").attr("fill", "#1f2937").attr("font-weight", "700")
+    .text(`$${total}`);
+
+  // Goal marker line
+  svg.append("line")
+    .attr("x1", barX + barW).attr("y1", barY - 8)
+    .attr("x2", barX + barW).attr("y2", barY + barH + 8)
+    .attr("stroke", "#6b7280").attr("stroke-width", 2);
+
+  svg.append("text")
+    .attr("x", barX + barW).attr("y", barY - 12)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "11px").attr("fill", "#6b7280")
+    .text("Goal: $85");
+
+  // Status
+  const statusY = barY + barH + 30;
+  if (total >= goal) {
+    svg.append("text")
+      .attr("x", 20).attr("y", statusY)
+      .attr("font-size", "14px").attr("fill", "#059669").attr("font-weight", "700")
+      .text(`✓ You reach the goal in ${hours} hour${hours === 1 ? "" : "s"}!`);
+  } else {
+    const needed = goal - total;
+    const hoursNeeded = Math.ceil(needed / rate);
+    svg.append("text")
+      .attr("x", 20).attr("y", statusY)
+      .attr("font-size", "14px").attr("fill", "#6b7280")
+      .text(`You have $${total}. Need $${needed} more (${hoursNeeded} more hour${hoursNeeded === 1 ? "" : "s"}).`);
+  }
+
+  return svg.node();
+}
+```
+
 Subtract 20 from both sides — to clear the fixed amount already saved:
 
 $$13h = 65$$
@@ -533,8 +1097,8 @@ $$h = 5$$
 
 Five hours. Check: $20 + 13 \times 5 = 20 + 65 = 85$. Yes.
 
-This means the fixed amount you already have becomes the constant term,
-and the hourly pay becomes the coefficient of the unknown.
+Notice: the money you already have is the constant term, and the hourly
+pay is the coefficient.
 
 ---
 
@@ -549,6 +1113,183 @@ Service A costs: $8 + 2f$
 
 Service B costs: $18$
 
+*Interactive: Where the lines meet.* Each point on the line shows the cost at that number of films. The intersection is the break-even point.
+
+```{ojs}
+//| echo: false
+viewof filmSlider = Inputs.range([0, 10], {
+  label: "Films rented per month",
+  step: 1,
+  value: 5
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const films = Math.round(filmSlider);
+  const costA = 8 + 2 * films;
+  const costB = 18;
+  const isBreakEven = Math.abs(costA - costB) < 0.01;
+
+  const W = 560;
+  const H = 300;
+  const ML = 50, MR = 40, MT = 30, MB = 50;
+  const graphW = W - ML - MR;
+  const graphH = H - MT - MB;
+
+  const maxFilms = 10;
+  const maxCost = 40;
+
+  const xScale = (f) => ML + (f / maxFilms) * graphW;
+  const yScale = (c) => H - MB - (c / maxCost) * graphH;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Axes
+  svg.append("line")
+    .attr("x1", ML).attr("y1", H - MB)
+    .attr("x2", W - MR).attr("y2", H - MB)
+    .attr("stroke", "#d1d5db").attr("stroke-width", 2);
+
+  svg.append("line")
+    .attr("x1", ML).attr("y1", MT)
+    .attr("x2", ML).attr("y2", H - MB)
+    .attr("stroke", "#d1d5db").attr("stroke-width", 2);
+
+  // Axis labels
+  svg.append("text")
+    .attr("x", W / 2).attr("y", H - 10)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .text("Films rented per month");
+
+  svg.append("text")
+    .attr("x", 20).attr("y", MT + 14)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .text("Cost ($)");
+
+  // Grid and tick marks
+  for (let f = 0; f <= maxFilms; f += 2) {
+    const x = xScale(f);
+    svg.append("line")
+      .attr("x1", x).attr("y1", H - MB - 4)
+      .attr("x2", x).attr("y2", H - MB + 4)
+      .attr("stroke", "#d1d5db");
+    svg.append("text")
+      .attr("x", x).attr("y", H - MB + 18)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "11px").attr("fill", "#6b7280")
+      .text(f);
+  }
+
+  for (let c = 0; c <= maxCost; c += 10) {
+    const y = yScale(c);
+    svg.append("line")
+      .attr("x1", ML - 4).attr("y1", y)
+      .attr("x2", ML + 4).attr("y2", y)
+      .attr("stroke", "#d1d5db");
+    svg.append("text")
+      .attr("x", ML - 10).attr("y", y + 4)
+      .attr("text-anchor", "end")
+      .attr("font-size", "11px").attr("fill", "#6b7280")
+      .text("$" + c);
+  }
+
+  // Service A line (8 + 2f)
+  const points_A = [];
+  for (let f = 0; f <= maxFilms; f += 0.1) {
+    const c = 8 + 2 * f;
+    if (c <= maxCost) {
+      points_A.push([xScale(f), yScale(c)]);
+    }
+  }
+
+  svg.append("path")
+    .attr("d", `M ${points_A.map(p => p.join(",")).join(" L ")}`)
+    .attr("stroke", "#2563eb").attr("stroke-width", 3)
+    .attr("fill", "none");
+
+  svg.append("text")
+    .attr("x", xScale(8) - 20).attr("y", yScale(8 + 2 * 8) - 8)
+    .attr("font-size", "12px").attr("fill", "#2563eb").attr("font-weight", "700")
+    .text("Service A: $8 + $2f");
+
+  // Service B line (18)
+  svg.append("line")
+    .attr("x1", xScale(0)).attr("y1", yScale(18))
+    .attr("x2", xScale(maxFilms)).attr("y2", yScale(18))
+    .attr("stroke", "#d97706").attr("stroke-width", 3)
+    .attr("opacity", 0.7);
+
+  svg.append("text")
+    .attr("x", xScale(8.5)).attr("y", yScale(18) - 12)
+    .attr("font-size", "12px").attr("fill", "#d97706").attr("font-weight", "700")
+    .text("Service B: $18");
+
+  // Current position marker
+  const x_current = xScale(films);
+  const y_a = yScale(costA);
+  const y_b = yScale(costB);
+
+  // Vertical line from x-axis
+  svg.append("line")
+    .attr("x1", x_current).attr("y1", H - MB)
+    .attr("x2", x_current).attr("y2", Math.min(y_a, y_b) - 10)
+    .attr("stroke", "#6b7280").attr("stroke-width", 1).attr("stroke-dasharray", "4,4");
+
+  // Point on Service A
+  svg.append("circle")
+    .attr("cx", x_current).attr("cy", y_a)
+    .attr("r", 6)
+    .attr("fill", "#2563eb").attr("stroke", "#1e3a8a").attr("stroke-width", 2);
+
+  svg.append("text")
+    .attr("x", x_current - 30).attr("y", y_a - 8)
+    .attr("font-size", "11px").attr("fill", "#2563eb").attr("font-weight", "700")
+    .text(`$${costA}`);
+
+  // Point on Service B
+  svg.append("circle")
+    .attr("cx", x_current).attr("cy", y_b)
+    .attr("r", 6)
+    .attr("fill", "#d97706").attr("stroke", "#b45309").attr("stroke-width", 2);
+
+  svg.append("text")
+    .attr("x", x_current + 30).attr("y", y_b - 8)
+    .attr("font-size", "11px").attr("fill", "#d97706").attr("font-weight", "700")
+    .text(`$${costB}`);
+
+  // Break-even highlight
+  if (isBreakEven) {
+    svg.append("circle")
+      .attr("cx", x_current).attr("cy", y_b)
+      .attr("r", 12)
+      .attr("fill", "none")
+      .attr("stroke", "#0d9488").attr("stroke-width", 3);
+
+    svg.append("text")
+      .attr("x", W / 2).attr("y", MT + 20)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "13px").attr("fill", "#0d9488").attr("font-weight", "700")
+      .text(`✓ Break-even at ${films} films, $${costB}`);
+  } else {
+    const cheaper = costA < costB ? "A" : "B";
+    svg.append("text")
+      .attr("x", W / 2).attr("y", MT + 20)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "13px").attr("fill", "#475569")
+      .text(`At ${films} films, Service ${cheaper} is cheaper.`);
+  }
+
+  return svg.node();
+}
+```
+
 They're equal when:
 
 $$8 + 2f = 18$$
@@ -560,7 +1301,7 @@ $$f = 5$$
 At 5 films per month they cost the same. Above 5 films, Service B
 is cheaper.
 
-This means the solution tells us the break-even point.
+The solution is the break-even point — where both services cost exactly the same.
 
 ---
 
@@ -572,6 +1313,133 @@ water do you add?
 The amount of real juice stays fixed at $0.60 \times 1 = 0.6$ litres.
 After adding $w$ litres of water, the total volume is $1 + w$ litres,
 and you want the juice fraction to be 20%:
+
+*Interactive: Mixing juice and water.* The juice amount is fixed at 0.6 L. Add water with the slider to dilute it to 20%.
+
+```{ojs}
+//| echo: false
+viewof waterSlider = Inputs.range([0, 4], {
+  label: "Water added (litres)",
+  step: 0.1,
+  value: 2
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const water = Math.round(waterSlider * 10) / 10;
+  const juice = 0.6;
+  const total = 1 + water;
+  const concentration = (juice / total) * 100;
+  const target = 20;
+  const isSolution = Math.abs(concentration - target) < 1;
+
+  const W = 560;
+  const H = 220;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Container: juice + water
+  const containerX = 40;
+  const containerY = 50;
+  const containerW = 120;
+  const containerH = 100;
+
+  // Juice portion
+  const juiceHeight = (juice / total) * containerH;
+  svg.append("rect")
+    .attr("x", containerX).attr("y", containerY + containerH - juiceHeight)
+    .attr("width", containerW).attr("height", juiceHeight)
+    .attr("fill", "#d97706").attr("opacity", 0.7);
+
+  // Water portion
+  const waterHeight = containerH - juiceHeight;
+  svg.append("rect")
+    .attr("x", containerX).attr("y", containerY)
+    .attr("width", containerW).attr("height", waterHeight)
+    .attr("fill", "#3b82f6").attr("opacity", 0.5);
+
+  // Container outline
+  svg.append("rect")
+    .attr("x", containerX).attr("y", containerY)
+    .attr("width", containerW).attr("height", containerH)
+    .attr("fill", "none").attr("stroke", "#1f2937").attr("stroke-width", 2);
+
+  // Labels
+  svg.append("text")
+    .attr("x", containerX + containerW / 2).attr("y", containerY + containerH + 20)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px").attr("fill", "#6b7280")
+    .text(`${total.toFixed(1)} L total`);
+
+  // Juice label
+  svg.append("text")
+    .attr("x", containerX + containerW + 10).attr("y", containerY + containerH - juiceHeight / 2 + 5)
+    .attr("font-size", "11px").attr("fill", "#b45309").attr("font-weight", "600")
+    .text(`Juice: 0.6 L (fixed)`);
+
+  // Water label
+  if (water > 0) {
+    svg.append("text")
+      .attr("x", containerX + containerW + 10).attr("y", containerY + waterHeight / 2 + 5)
+      .attr("font-size", "11px").attr("fill", "#1e40af").attr("font-weight", "600")
+      .text(`Water: ${water.toFixed(1)} L`);
+  }
+
+  // Concentration display
+  const concX = containerX + containerW + 180;
+  const concY = containerY + 30;
+
+  svg.append("rect")
+    .attr("x", concX - 50).attr("y", concY)
+    .attr("width", 110).attr("height", 60)
+    .attr("rx", 6)
+    .attr("fill", isSolution ? "#0d9488" : "#e5e7eb")
+    .attr("opacity", 0.15)
+    .attr("stroke", isSolution ? "#0d9488" : "#d1d5db")
+    .attr("stroke-width", 2);
+
+  svg.append("text")
+    .attr("x", concX).attr("y", concY + 18)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "14px").attr("fill", "#6b7280")
+    .text("Concentration");
+
+  const concPercent = concentration.toFixed(1);
+  svg.append("text")
+    .attr("x", concX).attr("y", concY + 48)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "24px").attr("fill", isSolution ? "#0d9488" : "#1f2937").attr("font-weight", "700")
+    .text(`${concPercent}%`);
+
+  // Status
+  const statusY = containerY + containerH + 50;
+  if (isSolution) {
+    svg.append("text")
+      .attr("x", 40).attr("y", statusY)
+      .attr("font-size", "13px").attr("fill", "#0d9488").attr("font-weight", "700")
+      .text(`✓ At ${water.toFixed(1)} L water, the drink is ${target}% juice.`);
+  } else {
+    const diff = Math.abs(concentration - target);
+    const direction = concentration > target ? "too strong" : "too weak";
+    svg.append("text")
+      .attr("x", 40).attr("y", statusY)
+      .attr("font-size", "13px").attr("fill", "#d97706")
+      .text(`The mixture is ${direction}: ${concPercent}% juice (need ${target}%).`);
+  }
+
+  svg.append("text")
+    .attr("x", 40).attr("y", statusY + 22)
+    .attr("font-size", "11px").attr("fill", "#6b7280").attr("font-style", "italic")
+    .text("The juice amount (0.6 L) never changes — only the total volume matters.");
+
+  return svg.node();
+}
+```
 
 $$\frac{0.6}{1 + w} = 0.2$$
 
@@ -593,12 +1461,13 @@ $$w = 2$$
 
 Add 2 litres of water.
 
-This means the amount of juice does not change, only the total volume does.
+Key insight: the amount of juice stays fixed. Only the total volume changes.
 
 ## Where this goes
 
 This chapter turns a verbal relationship into algebra and solves for the
-missing value. The next chapters keep the same idea but widen it.
+missing value. The next chapters use the same machinery but ask different
+questions.
 
 Inequalities ask which values *satisfy* a relationship rather than
 pinning down one exact answer, and graphing shows what happens when

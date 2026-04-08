@@ -4,7 +4,7 @@ subtitle: "Organising equations so machines — and humans — can solve them"
 chapter: 1
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: "A system of linear equations is a geometric object: n equations in n unknowns is n hyperplanes in n-dimensional space. The solution is their intersection. Gaussian elimination is the systematic procedure that finds it — or reveals there is none."
 
@@ -40,28 +40,28 @@ destinations:
 notation_introduced:
   - symbol: "\\mathbf{A}"
     reads_as: "bold A"
-    meaning: "An m×n matrix — a rectangular array of numbers with m rows and n columns"
+    notation_weight: 2
   - symbol: "a_{ij}"
     reads_as: "a sub i j"
-    meaning: "Element in row i, column j of matrix A"
+    notation_weight: 1
   - symbol: "\\mathbf{A}^T"
     reads_as: "A transpose"
-    meaning: "Matrix with rows and columns of A swapped: (Aᵀ)ᵢⱼ = Aⱼᵢ"
+    notation_weight: 2
   - symbol: "\\mathbf{I}_n"
     reads_as: "identity matrix of order n"
-    meaning: "Square matrix with 1s on the diagonal and 0s elsewhere"
+    notation_weight: 2
   - symbol: "\\mathbf{A}\\mathbf{x} = \\mathbf{b}"
     reads_as: "A x equals b"
-    meaning: "A system of linear equations in matrix form"
+    notation_weight: 3
   - symbol: "[\\mathbf{A}|\\mathbf{b}]"
     reads_as: "augmented matrix"
-    meaning: "A with the column b appended — the working object for Gaussian elimination"
+    notation_weight: 2
   - symbol: "\\text{rank}(\\mathbf{A})"
     reads_as: "rank of A"
-    meaning: "Number of linearly independent rows (or columns) of A"
+    notation_weight: 3
   - symbol: "\\mathbf{L}\\mathbf{U}"
     reads_as: "L U factorisation"
-    meaning: "Decomposition of A into a lower triangular matrix L and upper triangular matrix U"
+    notation_weight: 2
 
 exercises:
   type: puzzle
@@ -1137,7 +1137,7 @@ makeStepperHTML([
     note: "Multiplier m₂₁ = −2/8 = −1/4; add (1/4)R₁ to R₂."
   },
   {
-    op: "Eliminate column 2: R₃ ← R₃ + (3/6.5)R₂",
+    op: "Eliminate column 2: R₃ ← R₃ - (−6/13)R₂",
     eq: "\\left(\\begin{array}{rrr|r} 8 & -2 & 0 & 16 \\\\ 0 & 6.5 & -3 & 4 \\\\ 0 & 0 & 3.615 & -4.154 \\end{array}\\right)",
     note: "Multiplier m₃₂ = −3/6.5 = −6/13; subtracting that multiple zeros the (3,2) entry."
   },
@@ -1164,7 +1164,7 @@ makeStepperHTML([
 
 A redundant structure gives three equilibrium equations in four unknown member forces $F_1, F_2, F_3, F_4$:
 
-$$\begin{aligned} F_1 + 2F_2 - F_3 + F_4 &= 10 \\ 2F_1 + 4F_2 + F_3 - F_4 &= 8 \\ F_1 + 2F_2 + 3F_3 - 3F_4 &= -2 \end{aligned}$$
+$$\begin{aligned} F_1 + 2F_2 - F_3 + F_4 &= 10 \\ 2F_1 + 4F_2 + F_3 - F_4 &= 8 \\ F_1 + 2F_2 + 3F_3 - 3F_4 &= -16 \end{aligned}$$
 
 Row-reduce to RREF. Identify the free variable(s) and write the general solution.
 

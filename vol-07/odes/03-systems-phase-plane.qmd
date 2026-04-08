@@ -4,7 +4,7 @@ subtitle: "The geometry of dynamical systems"
 chapter: 3
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: "A single second-order ODE describes one coordinate evolving in time. Many real systems involve multiple coupled quantities — position and velocity, predator and prey, charge and current."
 
@@ -42,19 +42,15 @@ destinations:
 notation_introduced:
   - symbol: "\\mathbf{x}"
     reads_as: "bold x"
-    meaning: "State vector $(x_1, x_2, \\ldots)^T$"
     notation_weight: 3
   - symbol: "A"
     reads_as: "A"
-    meaning: "System matrix (coefficient matrix of the linear system)"
     notation_weight: 2
   - symbol: "\\lambda"
     reads_as: "lambda"
-    meaning: "Eigenvalue of A — determines growth/decay/oscillation"
     notation_weight: 3
   - symbol: "J"
     reads_as: "Jacobian"
-    meaning: "Matrix of partial derivatives of f — used for linearisation"
     notation_weight: 3
 
 exercises:

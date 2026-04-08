@@ -263,13 +263,78 @@ Factor in pairs:
 
 $$x(2x + 1) + 3(2x + 1) = (x + 3)(2x + 1)$$
 
-Both terms contain the factor $(2x + 1)$, so it can be pulled out — the
-same distributive law used in expanding, run backwards.
+Here's the key insight: because you chose the two numbers (1 and 6) to multiply to $a \cdot c$ and add to $b$, they *must* create a common factor when you split the middle term. It's not a guess or a lucky accident — the strategy guarantees it. Both terms contain the factor $(2x + 1)$, so it can be pulled out — the same distributive law used in expanding, run backwards.
 
 This means grouping turns a harder trinomial into a familiar
 common-factor problem.
 
 Check by expanding: $(x + 3)(2x + 1) = 2x^2 + x + 6x + 3 = 2x^2 + 7x + 3$. Yes.
+
+**Try it yourself:** Factoring a trinomial means finding two numbers that multiply to $c$ and add to $b$. The example below shows $x^2 - 5x + 6$: we need two numbers that multiply to 6 and add to −5. Those are −2 and −3. Try changing the sliders to explore other trinomials:
+
+```{ojs}
+//| echo: false
+{
+  let content = '<div style="font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #f8f9fa; border-radius: 8px;">';
+  content += '<div style="margin-bottom: 20px;"><label style="font-weight: 600; font-size: 14px; color: #1f2937;">Target product (c): <input type="range" min="1" max="24" value="6" id="productSlider" style="vertical-align: middle;"> <span id="productValue">6</span></label></div>';
+  content += '<div style="margin-bottom: 20px;"><label style="font-weight: 600; font-size: 14px; color: #1f2937;">Target sum (b): <input type="range" min="-15" max="15" value="5" id="sumSlider" style="vertical-align: middle;"> <span id="sumValue">5</span></label></div>';
+  content += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 8px; margin-top: 20px;" id="factorGrid"></div>';
+  content += '<div style="margin-top: 20px; padding: 12px; background: #dbeafe; border-radius: 4px; border-left: 4px solid #2563eb;"><div style="font-size: 13px; color: #1e40af;"><span id="feedback"></span></div></div>';
+  content += '</div>';
+
+  const div = document.createElement('div');
+  div.innerHTML = content;
+
+  const productSlider = div.querySelector('#productSlider');
+  const sumSlider = div.querySelector('#sumSlider');
+  const productValue = div.querySelector('#productValue');
+  const sumValue = div.querySelector('#sumValue');
+  const feedback = div.querySelector('#feedback');
+  const factorGrid = div.querySelector('#factorGrid');
+
+  function updateDisplay() {
+    const product = parseInt(productSlider.value);
+    const sum = parseInt(sumSlider.value);
+    productValue.textContent = product;
+    sumValue.textContent = sum;
+
+    let html = '';
+    for (let i = 1; i <= 12; i++) {
+      if (product % i === 0) {
+        const j = product / i;
+        if (i <= j) {
+          const match = (i + j === sum);
+          const color = match ? '#10b981' : '#e5e7eb';
+          const textColor = match ? '#fff' : '#374151';
+          html += `<div style="padding: 10px; border-radius: 4px; background: ${color}; color: ${textColor}; text-align: center; font-weight: 600;">${i}×${j}</div>`;
+        }
+      }
+    }
+    factorGrid.innerHTML = html;
+
+    let found = false;
+    for (let i = 1; i <= product / 2; i++) {
+      if (product % i === 0) {
+        const other = product / i;
+        if (i + other === sum) {
+          feedback.textContent = 'Found it! The numbers are ' + i + ' and ' + other + '.';
+          found = true;
+          break;
+        }
+      }
+    }
+    if (!found) {
+      feedback.textContent = '(No pair of factors found yet)';
+    }
+  }
+
+  productSlider.addEventListener('input', updateDisplay);
+  sumSlider.addEventListener('input', updateDisplay);
+  updateDisplay();
+
+  return div;
+}
+```
 
 ### Part c: Solving quadratic equations
 
@@ -302,18 +367,131 @@ $$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
 Read it: *x equals negative b, plus or minus the square root of b-squared
 minus four-a-c, all over two-a.*
 
-The $\pm$ sign means there are two candidate answers — one where you add
-the square root term, one where you subtract it (whether there are two,
-one, or no real answers depends on the discriminant — that's the next
-section).
+Before you plug in numbers, notice the piece under the square root: $b^2 - 4ac$. This single expression answers a crucial question: *How many solutions does this quadratic have?* The piece under the square root is called the **discriminant**, often written $\Delta$ (delta). It literally *discriminates* between different cases.
 
-The piece under the square root — $b^2 - 4ac$ — is called the
-**discriminant**, often written $\Delta$ (delta). It tells you how many
-solutions exist before you do any arithmetic:
+The $\pm$ sign means there are two candidate answers — one where you add the square root term, one where you subtract it. But whether you get two, one, or zero real solutions depends entirely on whether $b^2 - 4ac$ is positive, zero, or negative:
+
+Discriminant ($\Delta = b^2 - 4ac$) tells you how many solutions exist before you do any arithmetic:
 
 - $\Delta > 0$: two real solutions (the parabola crosses the x-axis twice)
 - $\Delta = 0$: one solution (the parabola just touches the x-axis at one point)
 - $\Delta < 0$: no real solutions (the parabola doesn't reach the x-axis)
+
+**Visualize the three cases:** The discriminant tells the whole story about how many times a parabola meets the x-axis:
+
+```{ojs}
+//| echo: false
+{
+  const width = 900, height = 300;
+  const margin = { top: 30, right: 30, bottom: 40, left: 50 };
+  const w = (width - 2 * margin.left - margin.right) / 3;
+  const h = height - margin.top - margin.bottom;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", [0, 0, width, height])
+    .attr("width", width)
+    .attr("height", height);
+
+  // Case 1: Δ > 0 (two roots)
+  {
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear().domain([-3, 3]).range([0, w]);
+    const y = d3.scaleLinear().domain([-2, 4]).range([h, 0]);
+
+    // Axes
+    g.append("line").attr("x1", 0).attr("x2", w).attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+    g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", 0).attr("y2", h).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+
+    // Parabola: y = x² - 2
+    const points = [];
+    for (let px = -3; px <= 3; px += 0.1) {
+      points.push([x(px), y(px * px - 2)]);
+    }
+    g.append("path")
+      .attr("d", d3.line()(points))
+      .attr("fill", "none").attr("stroke", "#2563eb").attr("stroke-width", 2);
+
+    // Roots at x = -√2, √2
+    const r1 = -Math.sqrt(2), r2 = Math.sqrt(2);
+    g.append("circle").attr("cx", x(r1)).attr("cy", y(0)).attr("r", 5).attr("fill", "#ef4444").attr("stroke", "#fff").attr("stroke-width", 1.5);
+    g.append("circle").attr("cx", x(r2)).attr("cy", y(0)).attr("r", 5).attr("fill", "#ef4444").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+    // Vertex
+    g.append("circle").attr("cx", x(0)).attr("cy", y(-2)).attr("r", 4).attr("fill", "#f59e0b").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+    // Labels
+    g.append("text").attr("x", w/2).attr("y", -10).attr("text-anchor", "middle").attr("font-weight", "600").attr("font-size", "13px").attr("fill", "#1f2937")
+      .text("Δ > 0: Two roots");
+  }
+
+  // Case 2: Δ = 0 (one root)
+  {
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left + w + margin.right},${margin.top})`);
+
+    const x = d3.scaleLinear().domain([-3, 3]).range([0, w]);
+    const y = d3.scaleLinear().domain([-2, 4]).range([h, 0]);
+
+    // Axes
+    g.append("line").attr("x1", 0).attr("x2", w).attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+    g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", 0).attr("y2", h).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+
+    // Parabola: y = x²
+    const points = [];
+    for (let px = -3; px <= 3; px += 0.1) {
+      points.push([x(px), y(px * px)]);
+    }
+    g.append("path")
+      .attr("d", d3.line()(points))
+      .attr("fill", "none").attr("stroke", "#2563eb").attr("stroke-width", 2);
+
+    // Single root at x = 0
+    g.append("circle").attr("cx", x(0)).attr("cy", y(0)).attr("r", 5).attr("fill", "#ef4444").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+    // Vertex (same point)
+    g.append("circle").attr("cx", x(0)).attr("cy", y(0)).attr("r", 4).attr("fill", "#f59e0b").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+    // Labels
+    g.append("text").attr("x", w/2).attr("y", -10).attr("text-anchor", "middle").attr("font-weight", "600").attr("font-size", "13px").attr("fill", "#1f2937")
+      .text("Δ = 0: One root");
+  }
+
+  // Case 3: Δ < 0 (no roots)
+  {
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left + 2 * (w + margin.right)},${margin.top})`);
+
+    const x = d3.scaleLinear().domain([-3, 3]).range([0, w]);
+    const y = d3.scaleLinear().domain([-2, 4]).range([h, 0]);
+
+    // Axes
+    g.append("line").attr("x1", 0).attr("x2", w).attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+    g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", 0).attr("y2", h).attr("stroke", "#d1d5db").attr("stroke-width", 1);
+
+    // Parabola: y = x² + 1
+    const points = [];
+    for (let px = -3; px <= 3; px += 0.1) {
+      points.push([x(px), y(px * px + 1)]);
+    }
+    g.append("path")
+      .attr("d", d3.line()(points))
+      .attr("fill", "none").attr("stroke", "#2563eb").attr("stroke-width", 2);
+
+    // Vertex at (0, 1)
+    g.append("circle").attr("cx", x(0)).attr("cy", y(1)).attr("r", 4).attr("fill", "#f59e0b").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+    // Labels
+    g.append("text").attr("x", w/2).attr("y", -10).attr("text-anchor", "middle").attr("font-weight", "600").attr("font-size", "13px").attr("fill", "#1f2937")
+      .text("Δ < 0: No real roots");
+  }
+
+  return svg.node();
+}
+```
+
+This single number — the discriminant — immediately tells you three distinct possibilities, each with different real-world meaning. If you're throwing a ball, no real roots means it doesn't fall. If you're pricing a good, no real roots in the constraint equations means there's no break-even point.
 
 ### Part d: Reading the graph
 
@@ -327,13 +505,13 @@ Factoring gives you the roots. The roots are the x-intercepts of the graph.
 This means solving the equation and reading x-intercepts are the same task.
 
 The **vertex** is the turning point — the very top of a downward parabola
-(the maximum) or the very bottom of an upward one (the minimum). The
-x-coordinate of the vertex is:
+(the maximum) or the very bottom of an upward one (the minimum). Because a parabola is symmetric, the vertex always sits exactly halfway between the two roots. For $y = x^2 - 5x + 6$ with roots at $x = 2$ and $x = 3$, the vertex lands at $x = 2.5$ — right in the middle.
+
+This halfway-point idea gives us a formula. The x-coordinate of the vertex is:
 
 $$x_v = -\frac{b}{2a}$$
 
-Read it: *negative b over two a.* Substitute this back into the equation
-to find the y-coordinate — the maximum or minimum value itself.
+Read it: *negative b over two a.* This formula computes that midpoint directly, without needing to find the roots first. Substitute this x-value back into the equation to find the y-coordinate — the maximum or minimum value itself.
 
 For $y = x^2 - 5x + 6$: $x_v = -(-5)/(2 \cdot 1) = 5/2 = 2.5$. Then
 $y = (2.5)^2 - 5(2.5) + 6 = 6.25 - 12.5 + 6 = -0.25$. The vertex is
@@ -798,7 +976,12 @@ function makeStepperHTML(exerciseNum, steps) {
       opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
       opCell.textContent = s.op;
       const eqCell = document.createElement("span");
-      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      if (typeof katex !== 'undefined') {
+        eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      } else {
+        eqCell.textContent = s.eq;
+        eqCell.style.fontFamily = "monospace";
+      }
       row.appendChild(opCell);
       row.appendChild(eqCell);
       if (s.note) {

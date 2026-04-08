@@ -4,7 +4,7 @@ subtitle: "Green's, Stokes', and the Divergence theorem"
 chapter: 4
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: |
   You can differentiate vector fields — you know gradient, divergence, and
@@ -24,8 +24,8 @@ prerequisite_ids:
   - vector_calc
 
 opens_to:
-  - id: fourier_pdes
-    label: "Fourier series and PDEs"
+  - id: pdes
+    label: "Partial differential equations"
     volume: 7
     relationship: enables
   - id: complex_analysis
@@ -50,16 +50,16 @@ destinations:
 notation_introduced:
   - symbol: "\\int_C \\mathbf{F} \\cdot d\\mathbf{r}"
     reads_as: "line integral of F along C"
-    meaning: "Work done by field F along curve C"
+    notation_weight: 3
   - symbol: "\\oint_C \\mathbf{F} \\cdot d\\mathbf{r}"
     reads_as: "line integral of F around closed curve C"
-    meaning: "Work done by field F around a closed loop"
+    notation_weight: 3
   - symbol: "\\iint_S \\mathbf{F} \\cdot d\\mathbf{S}"
     reads_as: "surface integral of F over S"
-    meaning: "Flux of field F through surface S"
+    notation_weight: 3
   - symbol: "\\oiint_{\\partial V} \\mathbf{F} \\cdot d\\mathbf{S}"
     reads_as: "closed surface integral over boundary of V"
-    meaning: "Total outward flux of F through a closed surface"
+    notation_weight: 3
 
 exercises:
   type: puzzle

@@ -4,7 +4,7 @@ subtitle: "Oscillation, damping, and resonance"
 chapter: 2
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: "You can solve first-order ODEs by separation or integrating factor. Many physical systems — every spring, every circuit with inductance, every oscillating structure — are governed by second-order equations."
 
@@ -45,19 +45,34 @@ destinations:
 notation_introduced:
   - symbol: "y''"
     reads_as: "y double-prime"
-    meaning: "Second derivative of y with respect to x"
+    notation_weight: 1
+  - symbol: "r"
+    reads_as: "r"
+    notation_weight: 3
+  - symbol: "\\Delta"
+    reads_as: "Delta"
+    notation_weight: 2
   - symbol: "\\omega_0"
     reads_as: "omega-zero"
-    meaning: "Natural (undamped) frequency: $\\omega_0 = \\sqrt{k/m}$"
+    notation_weight: 3
+  - symbol: "\\omega"
+    reads_as: "omega"
+    notation_weight: 2
   - symbol: "\\zeta"
     reads_as: "zeta"
-    meaning: "Damping ratio: $\\zeta = c/(2\\sqrt{km})$"
+    notation_weight: 3
+  - symbol: "\\alpha, \\beta"
+    reads_as: "alpha, beta"
+    notation_weight: 2
+  - symbol: "Q"
+    reads_as: "Q"
+    notation_weight: 2
   - symbol: "y_c"
     reads_as: "y-c"
-    meaning: "Complementary (homogeneous) solution"
+    notation_weight: 2
   - symbol: "y_p"
     reads_as: "y-p"
-    meaning: "Particular solution"
+    notation_weight: 2
 
 exercises:
   type: puzzle

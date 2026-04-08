@@ -115,6 +115,237 @@ as $\Delta t$ shrinks toward zero. The ratio itself is never evaluated at
 $\Delta t = 0$ — that would be $0/0$ — but it heads steadily toward a
 definite value.
 
+```{ojs}
+//| echo: false
+d3_speedometer = require("d3@7")
+katex_speedometer = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+viewof deltaT = Inputs.range(
+  [0.01, 10],
+  {
+    step: 0.01,
+    value: 5,
+    label: "Δt (seconds):",
+    scale: "log"
+  }
+)
+```
+
+```{ojs}
+//| echo: false
+{
+  const width = 700;
+  const height = 480;
+  const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  // Container
+  const container = d3_speedometer.create("div");
+  container.style.cssText = "font-family:inherit; max-width:700px;";
+
+  // TOP PANEL: Position curve
+  const svg1 = d3_speedometer.create("svg")
+    .attr("width", width)
+    .attr("height", 260)
+    .style("border-bottom", "1px solid #e5e7eb")
+    .style("margin-bottom", "1rem");
+
+  const g1 = svg1.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Scales for top panel
+  const tDom = [0, 10];
+  const sDom = [0, 100];
+  const tScale = d3_speedometer.scaleLinear().domain(tDom).range([0, innerW]);
+  const sScale = d3_speedometer.scaleLinear().domain(sDom).range([innerH - 60, 0]);
+
+  // Axes
+  g1.append("g")
+    .attr("transform", `translate(0,${innerH - 60})`)
+    .call(d3_speedometer.axisBottom(tScale).ticks(5))
+    .append("text")
+    .attr("x", innerW / 2).attr("y", 35)
+    .attr("fill", "#374151").attr("text-anchor", "middle")
+    .style("font-size", "13px").text("time t (seconds)");
+
+  g1.append("g")
+    .call(d3_speedometer.axisLeft(sScale).ticks(5))
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -(innerH - 60) / 2).attr("y", -45)
+    .attr("fill", "#374151").attr("text-anchor", "middle")
+    .style("font-size", "13px").text("position s(t) (metres)");
+
+  // Grid
+  g1.append("g")
+    .selectAll("line.grid")
+    .data(sScale.ticks(5))
+    .join("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", d => sScale(d)).attr("y2", d => sScale(d))
+    .attr("stroke", "#f3f4f6").attr("stroke-width", 1);
+
+  // Motion equation: s(t) = 40t + 0.5t²
+  const pts = d3_speedometer.range(0, 10, 0.05).map(t => [t, 40 * t + 0.5 * t * t]);
+  const line1 = d3_speedometer.line()
+    .x(d => tScale(d[0]))
+    .y(d => sScale(d[1]));
+
+  g1.append("path")
+    .datum(pts)
+    .attr("d", line1)
+    .attr("fill", "none")
+    .attr("stroke", "#2563eb")
+    .attr("stroke-width", 2.5);
+
+  // Reference point t=2
+  const t_ref = 2;
+  const s_t = 40 * t_ref + 0.5 * t_ref * t_ref; // s(2) = 80 + 2 = 82
+  const t_next = t_ref + deltaT;
+  const s_t_next = 40 * t_next + 0.5 * t_next * t_next;
+
+  // Highlight interval [t, t+Δt]
+  if (deltaT < 9.5) {
+    const x1 = tScale(t_ref);
+    const x2 = tScale(t_next);
+    g1.append("rect")
+      .attr("x", x1)
+      .attr("y", 0)
+      .attr("width", Math.max(1, x2 - x1))
+      .attr("height", innerH - 60)
+      .attr("fill", "#fef08a")
+      .attr("opacity", 0.25);
+
+    // Vertical dashed lines
+    [x1, x2].forEach(x => {
+      g1.append("line")
+        .attr("x1", x).attr("x2", x)
+        .attr("y1", 0).attr("y2", innerH - 60)
+        .attr("stroke", "#d4af37").attr("stroke-width", 1.5)
+        .attr("stroke-dasharray", "4,4");
+    });
+  }
+
+  // Dots at endpoints
+  const dot1 = g1.append("circle")
+    .attr("cx", tScale(t_ref)).attr("cy", sScale(s_t))
+    .attr("r", 5).attr("fill", "#2563eb");
+
+  const dot2 = g1.append("circle")
+    .attr("cx", tScale(t_next)).attr("cy", sScale(s_t_next))
+    .attr("r", 5).attr("fill", "#2563eb");
+
+  // Labels for endpoints
+  g1.append("text")
+    .attr("x", tScale(t_ref)).attr("y", sScale(s_t) - 12)
+    .attr("fill", "#1f2937").attr("font-size", "11px")
+    .attr("text-anchor", "middle")
+    .text(`(${t_ref}, ${s_t.toFixed(1)})`);
+
+  g1.append("text")
+    .attr("x", tScale(t_next)).attr("y", sScale(s_t_next) - 12)
+    .attr("fill", "#1f2937").attr("font-size", "11px")
+    .attr("text-anchor", "middle")
+    .text(`(${t_next.toFixed(2)}, ${s_t_next.toFixed(1)})`);
+
+  // BOTTOM PANEL: Velocity ratio approaching limit
+  const svg2 = d3_speedometer.create("svg")
+    .attr("width", width)
+    .attr("height", 200);
+
+  const g2 = svg2.append("g")
+    .attr("transform", `translate(${margin.left},20)`);
+
+  // Horizontal scale for velocity (km/h)
+  const vDom = [70, 100];
+  const barH = 100;
+  const vScale = d3_speedometer.scaleLinear().domain(vDom).range([0, innerW]);
+
+  // Axis for bottom panel
+  g2.append("g")
+    .attr("transform", `translate(0,${barH})`)
+    .call(d3_speedometer.axisBottom(vScale).ticks(6))
+    .append("text")
+    .attr("x", innerW / 2).attr("y", 35)
+    .attr("fill", "#374151").attr("text-anchor", "middle")
+    .style("font-size", "13px").text("average velocity (km/h)");
+
+  // Grid for velocity scale
+  g2.append("g")
+    .selectAll("line.vgrid")
+    .data(vScale.ticks(6))
+    .join("line")
+    .attr("x1", d => vScale(d)).attr("x2", d => vScale(d))
+    .attr("y1", 0).attr("y2", barH)
+    .attr("stroke", "#f3f4f6").attr("stroke-width", 1);
+
+  // Limit line (teal, horizontal)
+  g2.append("line")
+    .attr("x1", vScale(84)).attr("x2", vScale(84))
+    .attr("y1", 0).attr("y2", barH)
+    .attr("stroke", "#0d9488").attr("stroke-width", 3)
+    .attr("stroke-dasharray", "6,4");
+
+  g2.append("text")
+    .attr("x", vScale(84)).attr("y", -8)
+    .attr("fill", "#0d9488").attr("font-size", "12px")
+    .attr("font-weight", "600").attr("text-anchor", "middle")
+    .text("instantaneous speed = 84 km/h");
+
+  // Compute current average velocity
+  const delta_s = s_t_next - s_t; // metres
+  const delta_s_km = delta_s / 1000; // convert to km
+  const avg_velocity = delta_s_km / (deltaT / 3600); // divide by time in hours
+
+  // Clamped velocity for display (some jitter near limit expected)
+  const displayVelocity = Math.max(vDom[0], Math.min(vDom[1], avg_velocity));
+
+  // Bar showing current ratio
+  g2.append("rect")
+    .attr("x", vScale(vDom[0]))
+    .attr("y", barH * 0.35)
+    .attr("width", vScale(displayVelocity) - vScale(vDom[0]))
+    .attr("height", barH * 0.3)
+    .attr("fill", "#d97706").attr("opacity", 0.7);
+
+  // Marker dot at current value
+  g2.append("circle")
+    .attr("cx", vScale(displayVelocity))
+    .attr("cy", barH * 0.5)
+    .attr("r", 6).attr("fill", "#d97706");
+
+  // Current value readout
+  g2.append("text")
+    .attr("x", innerW / 2).attr("y", barH + 60)
+    .attr("fill", "#374151").attr("font-size", "14px")
+    .attr("font-weight", "500").attr("text-anchor", "middle")
+    .text(`Δs/Δt = ${avg_velocity.toFixed(2)} km/h`);
+
+  g2.append("text")
+    .attr("x", innerW / 2).attr("y", barH + 85)
+    .attr("fill", "#6b7280").attr("font-size", "12px")
+    .attr("text-anchor", "middle")
+    .text(`(over interval Δt = ${deltaT.toFixed(3)}s)`);
+
+  // Convergence message
+  if (deltaT < 0.2) {
+    g2.append("text")
+      .attr("x", innerW / 2).attr("y", 10)
+      .attr("fill", "#0d9488").attr("font-size", "12px")
+      .attr("font-weight", "600").attr("text-anchor", "middle")
+      .text("✓ Ratio converges to limit");
+  }
+
+  container.appendChild(svg1);
+  container.appendChild(svg2);
+  return container;
+}
+```
+
 **The temperature probe.** A weather sensor is mounted on a boundary between
 two air masses — one at 18°C and one at 12°C. On the warm side, readings
 approach 18°C. On the cold side, readings approach 12°C. The sensor itself
@@ -159,7 +390,7 @@ different questions, and calculus keeps them separate on purpose.
 ### One-sided limits
 
 Sometimes the approach from the left and the approach from the right give
-different values. Two separate notations handle this.
+different values. Two separate notations handle this. Think of the minus sign as pointing left on a number line, and the plus sign as pointing right.
 
 $$\lim_{x \to a^-} f(x)$$
 
@@ -182,6 +413,295 @@ $$\lim_{x \to a} f(x) = L \iff \lim_{x \to a^-} f(x) = \lim_{x \to a^+} f(x) = L
 
 If $L_1 \neq L_2$, the two-sided limit does not exist.
 :::
+
+```{ojs}
+//| echo: false
+d3_onesided = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+viewof approachDir = Inputs.radio(
+  [
+    { label: "Approach from left", value: "left" },
+    { label: "Approach from right", value: "right" },
+    { label: "Two-sided approach", value: "both" }
+  ],
+  { value: "left" }
+)
+```
+
+```{ojs}
+//| echo: false
+{
+  const width = 700;
+  const height = 450;
+  const margin = { top: 40, right: 30, bottom: 60, left: 60 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const svg = d3_onesided.create("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .style("font-family", "inherit");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Scales
+  const xDom = [0, 4];
+  const yDom = [0, 4];
+  const xScale = d3_onesided.scaleLinear().domain(xDom).range([0, innerW]);
+  const yScale = d3_onesided.scaleLinear().domain(yDom).range([innerH, 0]);
+
+  // Axes
+  g.append("g")
+    .attr("transform", `translate(0,${innerH})`)
+    .call(d3_onesided.axisBottom(xScale).ticks(8))
+    .append("text")
+    .attr("x", innerW / 2).attr("y", 45)
+    .attr("fill", "#374151").attr("text-anchor", "middle")
+    .style("font-size", "13px").text("x");
+
+  g.append("g")
+    .call(d3_onesided.axisLeft(yScale).ticks(8))
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -50)
+    .attr("fill", "#374151").attr("text-anchor", "middle")
+    .style("font-size", "13px").text("f(x)");
+
+  // Grid
+  g.append("g")
+    .selectAll("line.grid")
+    .data(yScale.ticks(8))
+    .join("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", d => yScale(d)).attr("y2", d => yScale(d))
+    .attr("stroke", "#f3f4f6").attr("stroke-width", 1);
+
+  // Piecewise function:
+  // f(x) = x+1 for x < 2
+  // f(2) = 3 (the "wrong" value, shown as a filled dot)
+  // f(x) = x-1 for x > 2
+  const line = d3_onesided.line()
+    .x(d => xScale(d[0]))
+    .y(d => yScale(d[1]));
+
+  // Left segment: x in [0, 2) with f(x) = x+1
+  const leftPts = d3_onesided.range(0, 1.98, 0.02).map(x => [x, x + 1]);
+  g.append("path")
+    .datum(leftPts)
+    .attr("d", line)
+    .attr("fill", "none")
+    .attr("stroke", "#2563eb")
+    .attr("stroke-width", 2.5);
+
+  // Right segment: x in (2, 4] with f(x) = x-1
+  const rightPts = d3_onesided.range(2.02, 4.01, 0.02).map(x => [x, x - 1]);
+  g.append("path")
+    .datum(rightPts)
+    .attr("fill", "none")
+    .attr("stroke", "#d97706")
+    .attr("stroke-width", 2.5);
+
+  // Open circle at (2, 3) showing the jump discontinuity
+  g.append("circle")
+    .attr("cx", xScale(2)).attr("cy", yScale(3))
+    .attr("r", 5)
+    .attr("fill", "white")
+    .attr("stroke", "#e5e7eb")
+    .attr("stroke-width", 2);
+
+  // Limit values as dashed lines
+  const leftLimitX = xScale(2);
+  const leftLimitY = yScale(3);
+  const rightLimitX = xScale(2);
+  const rightLimitY = yScale(1);
+
+  // Left limit dashed line (blue)
+  g.append("line")
+    .attr("x1", 0).attr("x2", leftLimitX)
+    .attr("y1", leftLimitY).attr("y2", leftLimitY)
+    .attr("stroke", "#2563eb").attr("stroke-width", 2)
+    .attr("stroke-dasharray", "5,5").attr("opacity", 0.6);
+
+  // Right limit dashed line (orange)
+  g.append("line")
+    .attr("x1", 0).attr("x2", rightLimitX)
+    .attr("y1", rightLimitY).attr("y2", rightLimitY)
+    .attr("stroke", "#d97706").attr("stroke-width", 2)
+    .attr("stroke-dasharray", "5,5").attr("opacity", 0.6);
+
+  // Vertical dashed line at x=2
+  g.append("line")
+    .attr("x1", xScale(2)).attr("x2", xScale(2))
+    .attr("y1", 0).attr("y2", innerH)
+    .attr("stroke", "#d1d5db").attr("stroke-width", 1)
+    .attr("stroke-dasharray", "3,3");
+
+  // Animation state based on user selection
+  let pathLen = 0;
+  const animPath = [];
+
+  if (approachDir === "left") {
+    // Approach from left: x goes from 0 toward 2
+    for (let x = 0; x < 1.99; x += 0.02) {
+      animPath.push({ x: x, y: x + 1, label: "x < 2" });
+    }
+  } else if (approachDir === "right") {
+    // Approach from right: x goes from 4 toward 2
+    for (let x = 4; x > 2.01; x -= 0.02) {
+      animPath.push({ x: x, y: x - 1, label: "x > 2" });
+    }
+  } else if (approachDir === "both") {
+    // Both sides: show both paths (sequentially in animation concept)
+    // For static viz, show both simultaneously
+    const leftBothPath = [];
+    for (let x = 0; x < 1.99; x += 0.03) {
+      leftBothPath.push({ x: x, y: x + 1, label: "from left", dir: "left" });
+    }
+    const rightBothPath = [];
+    for (let x = 4; x > 2.01; x -= 0.03) {
+      rightBothPath.push({ x: x, y: x - 1, label: "from right", dir: "right" });
+    }
+
+    // Display both paths with arrows
+    const arrowSize = 8;
+    let lastLeftX = 0, lastLeftY = 1;
+    leftBothPath.slice(-3).forEach((pt, i) => {
+      const x = pt.x;
+      const y = pt.y;
+      if (i === 2) {
+        // Arrow pointing toward limit
+        g.append("line")
+          .attr("x1", xScale(lastLeftX)).attr("x2", xScale(x))
+          .attr("y1", yScale(lastLeftY)).attr("y2", yScale(y))
+          .attr("stroke", "#2563eb").attr("stroke-width", 2.5)
+          .attr("marker-end", "url(#arrowLeft)");
+      }
+      lastLeftX = x;
+      lastLeftY = y;
+    });
+
+    let lastRightX = 4, lastRightY = 3;
+    rightBothPath.slice(-3).forEach((pt, i) => {
+      const x = pt.x;
+      const y = pt.y;
+      if (i === 2) {
+        // Arrow pointing toward limit
+        g.append("line")
+          .attr("x1", xScale(lastRightX)).attr("x2", xScale(x))
+          .attr("y1", yScale(lastRightY)).attr("y2", yScale(y))
+          .attr("stroke", "#d97706").attr("stroke-width", 2.5)
+          .attr("marker-end", "url(#arrowRight)");
+      }
+      lastRightX = x;
+      lastRightY = y;
+    });
+  }
+
+  // Arrow markers for directing approach
+  svg.append("defs").append("marker")
+    .attr("id", "arrowLeft")
+    .attr("markerWidth", 10).attr("markerHeight", 10)
+    .attr("refX", 8).attr("refY", 3)
+    .attr("orient", "auto")
+    .append("polygon")
+    .attr("points", "0 0, 10 3, 0 6")
+    .attr("fill", "#2563eb");
+
+  svg.append("defs").append("marker")
+    .attr("id", "arrowRight")
+    .attr("markerWidth", 10).attr("markerHeight", 10)
+    .attr("refX", 8).attr("refY", 3)
+    .attr("orient", "auto")
+    .append("polygon")
+    .attr("points", "0 0, 10 3, 0 6")
+    .attr("fill", "#d97706");
+
+  // Animated glowing path and label
+  if (approachDir !== "both") {
+    const startTime = Date.now();
+    const animDuration = 2000; // 2 seconds for full traverse
+
+    function animate() {
+      const elapsed = (Date.now() - startTime) % animDuration;
+      const progress = elapsed / animDuration;
+      const idx = Math.min(Math.floor(progress * animPath.length), animPath.length - 1);
+      const pt = animPath[idx];
+
+      if (pt) {
+        // Trail of glowing points
+        for (let i = Math.max(0, idx - 5); i <= idx; i++) {
+          const prevPt = animPath[i];
+          const opac = 0.2 + 0.8 * (1 - (idx - i) / 10);
+          g.append("circle")
+            .attr("cx", xScale(prevPt.x)).attr("cy", yScale(prevPt.y))
+            .attr("r", 3)
+            .attr("fill", approachDir === "left" ? "#2563eb" : "#d97706")
+            .attr("opacity", opac);
+        }
+
+        // Main moving point
+        g.append("circle")
+          .attr("cx", xScale(pt.x)).attr("cy", yScale(pt.y))
+          .attr("r", 6)
+          .attr("fill", approachDir === "left" ? "#2563eb" : "#d97706")
+          .attr("opacity", 0.9);
+
+        // Current value label
+        const label = approachDir === "left"
+          ? `f(${pt.x.toFixed(2)}) = ${pt.y.toFixed(2)}`
+          : `f(${pt.x.toFixed(2)}) = ${pt.y.toFixed(2)}`;
+
+        g.append("text")
+          .attr("x", xScale(pt.x) + 15).attr("y", yScale(pt.y) - 10)
+          .attr("fill", "#374151").attr("font-size", "12px")
+          .attr("font-weight", "500")
+          .text(label);
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    animate();
+  }
+
+  // Limit value labels
+  g.append("text")
+    .attr("x", xScale(2) - 15).attr("y", yScale(3) - 8)
+    .attr("fill", "#2563eb").attr("font-size", "11px")
+    .attr("font-weight", "600")
+    .text("lim f(x) = 3");
+
+  g.append("text")
+    .attr("x", xScale(2) - 15).attr("y", yScale(1) + 15)
+    .attr("fill", "#d97706").attr("font-size", "11px")
+    .attr("font-weight", "600")
+    .text("lim f(x) = 1");
+
+  // Key observation box
+  if (approachDir !== "left" && approachDir !== "right") {
+    g.append("rect")
+      .attr("x", xScale(0.2)).attr("y", yScale(3.5))
+      .attr("width", innerW - xScale(0.4))
+      .attr("height", yScale(1.8) - yScale(3.5))
+      .attr("fill", "#fef3c7").attr("stroke", "#fcd34d")
+      .attr("stroke-width", 1.5).attr("rx", 4);
+
+    g.append("text")
+      .attr("x", xScale(0.3)).attr("y", yScale(3.3))
+      .attr("fill", "#92400e").attr("font-size", "12px")
+      .attr("font-weight", "600")
+      .text("Notice: left limit ≠ right limit ⟹ two-sided limit does not exist");
+  }
+
+  return svg;
+}
+```
 
 ### The limit versus the value — three cases
 
@@ -387,8 +907,7 @@ direct substitution is valid at every real number.
 This means polynomials are the simplest case: nearby behaviour and actual
 value already match.
 
-**When it fails:** If substitution gives $\frac{0}{0}$, $\frac{\infty}{\infty}$,
-or another indeterminate form, you need one of the other techniques.
+**When it fails:** If substitution produces an **indeterminate form** like $\frac{0}{0}$ or $\frac{\infty}{\infty}$, direct substitution cannot find the limit. An indeterminate form is not just undefined — it's a signal that both numerator and denominator are heading toward zero (or both toward infinity) at the same time. The limit might exist, but the raw substitution hides it. Algebraic techniques like factoring can reveal what the limit actually is.
 
 ---
 
@@ -494,14 +1013,14 @@ $$\lim_{x \to 3} f(x) \text{ does not exist}$$
 Note that $f(3) = 5$ is defined — but the two-sided limit still fails to
 exist because the one-sided limits disagree. The value at the point is
 irrelevant to whether the limit exists.
-This means a function can have a value at a point and still fail to have a
-two-sided limit there.
 
 ---
 
 ## Continuity
 
 With limits in hand, the definition of continuity is short.
+
+But first: notice that the three cases above show something important. In Case 2, the limit existed but the value was wrong. In Case 3, the limit existed but the value didn't exist. These aren't the same failure — that's why continuity requires three separate checks. The function must be defined, the limit must exist, and they must agree. Each condition can fail independently.
 
 ::: {.callout-note}
 **Definition.** A function $f$ is **continuous at $a$** if all three
@@ -700,11 +1219,7 @@ viewof selectedPanel = Inputs.radio(["Removable", "Jump", "Infinite"], {
 
 ## The epsilon-delta definition
 
-The techniques above let you *compute* limits. The epsilon-delta definition
-lets you *prove* they are correct. These are different activities, and most
-students — even in university calculus — use the techniques far more often
-than the proof machinery. But understanding the definition is what separates
-a practitioner from a mathematician.
+**Optional:** If you want to compute limits, the four techniques above are all you need. This section is for understanding the formal definition used in proofs — the threshold between computation and rigorous proof. Most students use the techniques far more often than this machinery, so do not feel obligated to memorize the epsilon-delta form. But understanding it is what separates a practitioner from a mathematician.
 
 Return to the speedometer. Suppose you want to estimate speed to within
 $\varepsilon = 0.01$ km/h. You need to take a time interval short enough
@@ -713,6 +1228,225 @@ lands within $0.01$ km/h of the true instantaneous speed. Different
 tolerance $\varepsilon$, different required $\delta$. The claim "the limit
 is $L$" means: *for every tolerance you name, I can find a window small
 enough to guarantee that accuracy.*
+
+```{ojs}
+//| echo: false
+d3_epsdelta = require("d3@7")
+katex_epsdelta = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+viewof epsilon = Inputs.range(
+  [0.1, 2.0],
+  {
+    step: 0.05,
+    value: 1.0,
+    label: "ε (output tolerance):"
+  }
+)
+```
+
+```{ojs}
+//| echo: false
+{
+  // Computed delta from epsilon
+  const delta = epsilon / 3;
+
+  const width = 700;
+  const height = 520;
+  const margin = { top: 50, right: 30, bottom: 70, left: 70 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const container = d3_epsdelta.create("div");
+  container.style.cssText = "font-family:inherit; max-width:700px;";
+
+  // TITLE
+  const titleDiv = document.createElement("div");
+  titleDiv.style.cssText = "margin-bottom:0.75rem; padding:0 1rem;";
+  const titleText = document.createElement("p");
+  titleText.style.cssText = "margin:0; font-size:14px; color:#374151; font-weight:500;";
+  titleText.textContent = "Finding δ such that |3x − 6| < ε for all x in the δ-window";
+  titleDiv.appendChild(titleText);
+  container.appendChild(titleDiv);
+
+  const svg = d3_epsdelta.create("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .style("border", "1px solid #e5e7eb")
+    .style("border-radius", "6px");
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Function: f(x) = 3x
+  // Limit point: x = 2, f(2) = 6
+  const x_a = 2;
+  const L = 6;
+
+  // Scales
+  const xDom = [0.5, 3.5];
+  const yDom = [0, 12];
+  const xScale = d3_epsdelta.scaleLinear().domain(xDom).range([0, innerW]);
+  const yScale = d3_epsdelta.scaleLinear().domain(yDom).range([innerH, 0]);
+
+  // Axes
+  g.append("g")
+    .attr("transform", `translate(0,${innerH})`)
+    .call(d3_epsdelta.axisBottom(xScale).ticks(6))
+    .append("text")
+    .attr("x", innerW / 2).attr("y", 45)
+    .attr("fill", "#374151").attr("text-anchor", "middle")
+    .style("font-size", "13px").text("x");
+
+  g.append("g")
+    .call(d3_epsdelta.axisLeft(yScale).ticks(6))
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerH / 2).attr("y", -55)
+    .attr("fill", "#374151").attr("text-anchor", "middle")
+    .style("font-size", "13px").text("f(x) = 3x");
+
+  // Grid
+  g.append("g")
+    .selectAll("line.grid")
+    .data(yScale.ticks(6))
+    .join("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", d => yScale(d)).attr("y2", d => yScale(d))
+    .attr("stroke", "#f3f4f6").attr("stroke-width", 1);
+
+  // EPSILON BAND (horizontal shaded region)
+  const eps_y_min = yScale(L + epsilon);
+  const eps_y_max = yScale(L - epsilon);
+  g.append("rect")
+    .attr("x", 0).attr("y", eps_y_min)
+    .attr("width", innerW).attr("height", eps_y_max - eps_y_min)
+    .attr("fill", "#fed7aa").attr("opacity", 0.4)
+    .attr("rx", 2);
+
+  // Epsilon band border lines
+  g.append("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", eps_y_min).attr("y2", eps_y_min)
+    .attr("stroke", "#fb923c").attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "4,4");
+
+  g.append("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", eps_y_max).attr("y2", eps_y_max)
+    .attr("stroke", "#fb923c").attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "4,4");
+
+  // Epsilon band label
+  g.append("text")
+    .attr("x", innerW + 12).attr("y", yScale(L) - 3)
+    .attr("fill", "#b45309").attr("font-size", "11px")
+    .attr("font-weight", "600")
+    .text(`ε = ${epsilon.toFixed(2)}`);
+
+  // DELTA WINDOW (vertical shaded region)
+  const delta_x_min = xScale(x_a - delta);
+  const delta_x_max = xScale(x_a + delta);
+  g.append("rect")
+    .attr("x", delta_x_min).attr("y", 0)
+    .attr("width", Math.max(1, delta_x_max - delta_x_min)).attr("height", innerH)
+    .attr("fill", "#bfdbfe").attr("opacity", 0.3)
+    .attr("rx", 2);
+
+  // Delta window border lines
+  g.append("line")
+    .attr("x1", delta_x_min).attr("x2", delta_x_min)
+    .attr("y1", 0).attr("y2", innerH)
+    .attr("stroke", "#3b82f6").attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "4,4");
+
+  g.append("line")
+    .attr("x1", delta_x_max).attr("x2", delta_x_max)
+    .attr("y1", 0).attr("y2", innerH)
+    .attr("stroke", "#3b82f6").attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "4,4");
+
+  // Delta window label
+  g.append("text")
+    .attr("x", xScale(x_a)).attr("y", innerH + 25)
+    .attr("fill", "#1e40af").attr("font-size", "11px")
+    .attr("font-weight", "600")
+    .attr("text-anchor", "middle")
+    .text(`δ = ${delta.toFixed(3)}`);
+
+  // CONFORMANCE REGION (where δ-window inputs map into ε-band)
+  // For f(x) = 3x, the region is x ∈ (2−δ, 2+δ) and f(x) ∈ (6−ε, 6+ε)
+  // We shade this region in teal
+  const conformX = d3_epsdelta.range(x_a - delta, x_a + delta, 0.02);
+  conformX.forEach((x) => {
+    const fx = 3 * x;
+    if (fx >= L - epsilon && fx <= L + epsilon && x !== x_a) {
+      g.append("circle")
+        .attr("cx", xScale(x)).attr("cy", yScale(fx))
+        .attr("r", 2.5)
+        .attr("fill", "#0d9488").attr("opacity", 0.8);
+    }
+  });
+
+  // THE FUNCTION CURVE: f(x) = 3x
+  const funcPts = d3_epsdelta.range(xDom[0], xDom[1], 0.05).map(x => [x, 3 * x]);
+  const line = d3_epsdelta.line()
+    .x(d => xScale(d[0]))
+    .y(d => yScale(d[1]));
+
+  g.append("path")
+    .datum(funcPts)
+    .attr("d", line)
+    .attr("fill", "none")
+    .attr("stroke", "#2563eb")
+    .attr("stroke-width", 2.5);
+
+  // KEY POINT: (2, 6)
+  g.append("circle")
+    .attr("cx", xScale(x_a)).attr("cy", yScale(L))
+    .attr("r", 6)
+    .attr("fill", "#2563eb")
+    .attr("stroke", "white")
+    .attr("stroke-width", 2);
+
+  // Point label
+  g.append("text")
+    .attr("x", xScale(x_a) - 20).attr("y", yScale(L) - 12)
+    .attr("fill", "#1f2937").attr("font-size", "12px")
+    .attr("font-weight", "600")
+    .text(`(2, 6)`);
+
+  // LEGEND / INTERPRETATION BOX
+  const infoBox = document.createElement("div");
+  infoBox.style.cssText = "margin-top:1.5rem; padding:1rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:13px; line-height:1.6;";
+
+  const computeDiv = document.createElement("div");
+  computeDiv.style.cssText = "margin-bottom:0.75rem; font-family:'Courier New', monospace;";
+  computeDiv.innerHTML = `<strong>δ = ε/3 = ${epsilon.toFixed(2)}/3 = ${delta.toFixed(3)}</strong>`;
+  infoBox.appendChild(computeDiv);
+
+  const explainDiv = document.createElement("div");
+  explainDiv.style.cssText = "color:#374151; margin-bottom:0.5rem;";
+  explainDiv.textContent = `For any ε you choose, we can find δ = ε/3 such that:`;
+  infoBox.appendChild(explainDiv);
+
+  const condDiv = document.createElement("div");
+  condDiv.style.cssText = "font-family:'Courier New', monospace; margin-bottom:0.5rem; color:#059669; font-weight:600;";
+  condDiv.innerHTML = `If |x − 2| &lt; ${delta.toFixed(3)}, then |3x − 6| &lt; ${epsilon.toFixed(2)}`;
+  infoBox.appendChild(condDiv);
+
+  const calloutDiv = document.createElement("div");
+  calloutDiv.style.cssText = "color:#6b7280; font-style:italic;";
+  calloutDiv.textContent = "No matter how small ε, you can always find a δ that works. That is what the limit definition says.";
+  infoBox.appendChild(calloutDiv);
+
+  container.appendChild(svg);
+  container.appendChild(infoBox);
+  return container;
+}
+```
 
 ::: {.callout-important}
 **Epsilon-delta definition of a limit.**

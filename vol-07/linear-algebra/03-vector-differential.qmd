@@ -4,7 +4,7 @@ subtitle: "Grad, div, curl — the calculus of fields"
 chapter: 3
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: |
   You know how to differentiate a function of one variable.
@@ -23,8 +23,8 @@ opens_to:
     label: "Vector integral calculus"
     volume: 7
     relationship: enables
-  - id: fourier_pdes
-    label: "Fourier series and PDEs"
+  - id: pdes
+    label: "Partial differential equations"
     volume: 7
     relationship: motivates
 
@@ -50,24 +50,19 @@ destinations:
 notation_introduced:
   - symbol: "\\nabla f"
     reads_as: "grad f"
-    meaning: "Gradient of scalar field f — a vector pointing in the direction of steepest increase"
     notation_weight: 4
   - symbol: "\\nabla \\cdot \\mathbf{F}"
     reads_as: "div F"
-    meaning: "Divergence of vector field F — a scalar measuring net outflow per unit volume"
     notation_weight: 4
   - symbol: "\\nabla \\times \\mathbf{F}"
     reads_as: "curl F"
-    meaning: "Curl of vector field F — a vector measuring rotation density"
     notation_weight: 4
   - symbol: "\\nabla^2 f"
     reads_as: "del squared f, or the Laplacian of f"
-    meaning: "Divergence of the gradient — measures how f differs from its local average"
     notation_weight: 3
   - symbol: "D_\\mathbf{u} f"
     reads_as: "directional derivative of f in the direction u"
-    meaning: "Rate of change of f as you move in direction u"
-    notation_weight: 2
+    notation_weight: 3
 
 exercises:
   type: puzzle

@@ -153,7 +153,9 @@ gave you a cola and sometimes gave you nothing, or randomly gave you two
 things, you wouldn't call it a reliable machine. A function is a reliable
 machine.
 
-This means the key restriction is consistency: one input, one output.
+This means the key restriction is consistency: one input, one output. This reliability is what makes functions useful for modelling the real world. When you know an input, you can be certain of the output — no guessing, no multiple answers.
+
+**Domain and range (preview):** When we look at the interactive below, you'll see labels for "domain" and "range." The **domain** is the set of all valid inputs — the x-values you're allowed to use. The **range** is the set of all possible outputs — the y-values the function can produce. Try different functions and input values to see how the domain and range change.
 
 ```{ojs}
 //| echo: false
@@ -395,13 +397,378 @@ This means evaluating a function is careful substitution followed by simplificat
 
 ### Part 2: Domain and range
 
-The **domain** of a function is the set of all valid inputs — the values
-of $x$ you're allowed to use.
+Back to the vending machine: the **domain** is the set of valid buttons you can press. The **range** is the set of drinks the machine can deliver.
 
-The **range** is the set of all possible outputs — every value $f(x)$ can
-produce when you run through the domain.
+More formally: the **domain** of a function is the set of all valid inputs — the values of $x$ you're allowed to use. The **range** is the set of all possible outputs — every value $f(x)$ can produce when you run through the domain.
 
-This means domain asks "what may go in?" and range asks "what can come out?"
+To phrase it the way the vending machine works: domain asks "which buttons work?" and range asks "which drinks are possible?"
+
+```{ojs}
+//| echo: false
+{
+  // Define the four functions with their properties
+  const FUNCTIONS = {
+    "2x + 1": {
+      label: "f(x) = 2x + 1",
+      fn: x => 2 * x + 1,
+      domain: [-6, 6],
+      domainInterval: "(-∞, ∞)",
+      rangeInterval: "(-∞, ∞)",
+      isRestricted: false
+    },
+    "x²": {
+      label: "f(x) = x²",
+      fn: x => x * x,
+      domain: [-6, 6],
+      domainInterval: "(-∞, ∞)",
+      rangeInterval: "[0, ∞)",
+      isRestricted: false,
+      minOutput: 0
+    },
+    "|x|": {
+      label: "f(x) = |x|",
+      fn: x => Math.abs(x),
+      domain: [-6, 6],
+      domainInterval: "(-∞, ∞)",
+      rangeInterval: "[0, ∞)",
+      isRestricted: false,
+      minOutput: 0
+    },
+    "√(x + 5)": {
+      label: "f(x) = √(x + 5)",
+      fn: x => (x >= -5) ? Math.sqrt(x + 5) : NaN,
+      domain: [-5, 6],
+      domainStart: -5,
+      domainInterval: "[-5, ∞)",
+      rangeInterval: "[0, ∞)",
+      isRestricted: true,
+      minOutput: 0
+    }
+  };
+
+  function svgEl(tag) {
+    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "max-width: 700px; margin: 1.25rem 0 1.5rem 0; font-family: inherit;";
+
+  // Controls
+  const controls = document.createElement("div");
+  controls.style.cssText = "display: grid; gap: 0.75rem; margin-bottom: 1rem;";
+
+  const funcWrap = document.createElement("label");
+  funcWrap.style.cssText = "display: grid; gap: 0.25rem; font-size: 0.9rem; color: #374151;";
+  funcWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Select function" }));
+  const funcSel = document.createElement("select");
+  funcSel.style.cssText = "padding: 0.35rem 0.55rem; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; font: inherit;";
+  Object.keys(FUNCTIONS).forEach(fn => {
+    const opt = document.createElement("option");
+    opt.value = fn;
+    opt.textContent = FUNCTIONS[fn].label;
+    funcSel.appendChild(opt);
+  });
+  funcSel.value = "2x + 1";
+  funcWrap.appendChild(funcSel);
+  controls.appendChild(funcWrap);
+
+  const xWrap = document.createElement("label");
+  xWrap.style.cssText = "display: grid; gap: 0.25rem; font-size: 0.9rem; color: #374151;";
+  xWrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Input x" }));
+  const xSlider = document.createElement("input");
+  xSlider.type = "range";
+  xSlider.min = "-6";
+  xSlider.max = "6";
+  xSlider.step = "0.25";
+  xSlider.value = "0";
+  const xVal = document.createElement("span");
+  xVal.style.cssText = "font-variant-numeric: tabular-nums; color: #6b7280;";
+  xWrap.append(xSlider, xVal);
+  controls.appendChild(xWrap);
+
+  // Machine visualization
+  const machineContainer = document.createElement("div");
+  machineContainer.style.cssText = "background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;";
+
+  const machineLabel = document.createElement("p");
+  machineLabel.style.cssText = "font-size: 0.9rem; color: #6b7280; margin: 0 0 0.75rem 0; font-weight: 500;";
+  machineLabel.textContent = "Function machine";
+
+  const machineSvg = svgEl("svg");
+  machineSvg.setAttribute("viewBox", "0 0 600 120");
+  machineSvg.setAttribute("width", "100%");
+  machineSvg.style.cssText = "display: block; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;";
+
+  const machineCaption = document.createElement("p");
+  machineCaption.style.cssText = "font-size: 0.85rem; color: #4b5563; margin: 0.5rem 0 0 0;";
+
+  machineContainer.append(machineLabel, machineSvg, machineCaption);
+
+  // Graph visualization
+  const graphContainer = document.createElement("div");
+  graphContainer.style.cssText = "background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;";
+
+  const graphLabel = document.createElement("p");
+  graphLabel.style.cssText = "font-size: 0.9rem; color: #6b7280; margin: 0 0 0.75rem 0; font-weight: 500;";
+  graphLabel.textContent = "Graph and domain/range";
+
+  const graphSvg = svgEl("svg");
+  graphSvg.setAttribute("viewBox", "0 0 580 360");
+  graphSvg.setAttribute("width", "100%");
+  graphSvg.style.cssText = "display: block; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;";
+
+  const graphCaption = document.createElement("p");
+  graphCaption.style.cssText = "font-size: 0.85rem; color: #4b5563; margin: 0.5rem 0 0 0;";
+
+  graphContainer.append(graphLabel, graphSvg, graphCaption);
+
+  function drawText(svg, x, y, text, fill = "#374151", size = 12, anchor = "middle", weight = "400") {
+    const t = svgEl("text");
+    t.setAttribute("x", x);
+    t.setAttribute("y", y);
+    t.setAttribute("fill", fill);
+    t.setAttribute("font-size", size);
+    t.setAttribute("text-anchor", anchor);
+    t.setAttribute("font-weight", weight);
+    t.textContent = text;
+    svg.appendChild(t);
+  }
+
+  function drawLine(svg, x1, y1, x2, y2, stroke = "#6b7280", width = "1.6", dasharray = null) {
+    const line = svgEl("line");
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+    line.setAttribute("stroke", stroke);
+    line.setAttribute("stroke-width", width);
+    if (dasharray) line.setAttribute("stroke-dasharray", dasharray);
+    svg.appendChild(line);
+  }
+
+  function redraw() {
+    const fnKey = funcSel.value;
+    const fnDef = FUNCTIONS[fnKey];
+    const x = parseFloat(xSlider.value);
+    const y = fnDef.fn(x);
+    const isValidInput = !isNaN(y);
+
+    xVal.textContent = x.toFixed(2);
+
+    // ===== MACHINE SVG =====
+    while (machineSvg.firstChild) machineSvg.removeChild(machineSvg.firstChild);
+
+    const m_inputX = 60, m_boxX = 180, m_outputX = 420;
+    const m_centerY = 60;
+
+    // Input label and line
+    drawLine(machineSvg, 20, m_centerY, m_inputX - 20, m_centerY, "#6b7280", "2");
+    const inDot = svgEl("circle");
+    inDot.setAttribute("cx", m_inputX);
+    inDot.setAttribute("cy", m_centerY);
+    inDot.setAttribute("r", "6");
+    inDot.setAttribute("fill", isValidInput ? "#d97706" : "#ef4444");
+    machineSvg.appendChild(inDot);
+    drawText(machineSvg, m_inputX, m_centerY + 25, x.toFixed(2), "#374151", 12, "middle", "500");
+    drawText(machineSvg, 20, m_centerY + 8, "Input x", "#6b7280", 11, "start");
+
+    // Function box
+    const boxW = 120, boxH = 50;
+    const box = svgEl("rect");
+    box.setAttribute("x", m_boxX - boxW / 2);
+    box.setAttribute("y", m_centerY - boxH / 2);
+    box.setAttribute("width", boxW);
+    box.setAttribute("height", boxH);
+    box.setAttribute("fill", "#2563eb");
+    box.setAttribute("fill-opacity", "0.1");
+    box.setAttribute("stroke", "#2563eb");
+    box.setAttribute("stroke-width", "2");
+    box.setAttribute("rx", "4");
+    machineSvg.appendChild(box);
+    drawText(machineSvg, m_boxX, m_centerY - 8, fnDef.label.split("=")[0].trim(), "#2563eb", 11, "middle", "600");
+    drawText(machineSvg, m_boxX, m_centerY + 8, fnDef.label.split("=")[1].trim(), "#2563eb", 11, "middle", "400");
+
+    // Arrow and status
+    if (isValidInput) {
+      drawLine(machineSvg, m_inputX + 20, m_centerY, m_boxX - boxW / 2 - 10, m_centerY, "#9ca3af", "1.5");
+      // Arrow head
+      const arrowHead = svgEl("polygon");
+      arrowHead.setAttribute("points", `${m_boxX - boxW / 2 - 10},${m_centerY} ${m_boxX - boxW / 2 - 15},${m_centerY - 3} ${m_boxX - boxW / 2 - 15},${m_centerY + 3}`);
+      arrowHead.setAttribute("fill", "#9ca3af");
+      machineSvg.appendChild(arrowHead);
+
+      // Output line
+      drawLine(machineSvg, m_boxX + boxW / 2 + 10, m_centerY, m_outputX - 20, m_centerY, "#9ca3af", "1.5");
+      // Output arrow head
+      const outArrow = svgEl("polygon");
+      outArrow.setAttribute("points", `${m_outputX - 20},${m_centerY} ${m_outputX - 25},${m_centerY - 3} ${m_outputX - 25},${m_centerY + 3}`);
+      outArrow.setAttribute("fill", "#9ca3af");
+      machineSvg.appendChild(outArrow);
+
+      // Output value
+      const outDot = svgEl("circle");
+      outDot.setAttribute("cx", m_outputX);
+      outDot.setAttribute("cy", m_centerY);
+      outDot.setAttribute("r", "6");
+      outDot.setAttribute("fill", "#059669");
+      machineSvg.appendChild(outDot);
+      drawText(machineSvg, m_outputX, m_centerY + 25, y.toFixed(2), "#374151", 12, "middle", "500");
+      drawText(machineSvg, 520, m_centerY + 8, "Output y", "#6b7280", 11, "start");
+    } else {
+      // Input blocked
+      drawLine(machineSvg, m_inputX + 20, m_centerY, m_boxX - boxW / 2 - 5, m_centerY, "#ef4444", "2");
+      drawText(machineSvg, m_boxX, m_centerY + 25, "undefined", "#ef4444", 11, "middle", "500");
+    }
+
+    machineCaption.textContent = isValidInput
+      ? `The input x = ${x.toFixed(2)} produces output y = ${y.toFixed(2)}.`
+      : `The input x = ${x.toFixed(2)} is outside the domain. The function is undefined.`;
+
+    // ===== GRAPH SVG =====
+    while (graphSvg.firstChild) graphSvg.removeChild(graphSvg.firstChild);
+
+    const gX0 = 40, gY0 = 320, gW = 480, gH = 260;
+    const gXScale = (v) => gX0 + (v + 6) / 12 * gW;
+    const gYScale = (v) => gY0 - (v + 2) / 10 * gH;
+
+    // Grid and axes
+    for (let i = -6; i <= 6; i += 2) {
+      drawLine(graphSvg, gXScale(i), gY0, gXScale(i), 40, "#f3f4f6", "1");
+      drawText(graphSvg, gXScale(i), gY0 + 20, i.toString(), "#9ca3af", 10, "middle");
+    }
+    for (let i = -2; i <= 8; i += 2) {
+      drawLine(graphSvg, gX0, gYScale(i), gX0 + gW, gYScale(i), "#f3f4f6", "1");
+      drawText(graphSvg, gX0 - 8, gYScale(i) + 4, i.toString(), "#9ca3af", 10, "end");
+    }
+
+    // Axes
+    drawLine(graphSvg, gX0, gY0, gX0 + gW, gY0, "#6b7280", "1.6"); // x-axis
+    drawLine(graphSvg, gX0, gY0, gX0, 40, "#6b7280", "1.6"); // y-axis
+
+    // Axis labels
+    drawText(graphSvg, gX0 + gW + 10, gY0 + 5, "x", "#374151", 13, "start", "500");
+    drawText(graphSvg, gX0 - 8, 30, "y", "#374151", 13, "end", "500");
+
+    // Draw function curve
+    const path = svgEl("path");
+    let pathD = "";
+    const step = 0.15;
+    let moved = false;
+    const [minX, maxX] = fnDef.domain;
+
+    for (let x_i = minX; x_i <= maxX; x_i += step) {
+      const y_i = fnDef.fn(x_i);
+      if (!isNaN(y_i)) {
+        const px = gXScale(x_i);
+        const py = gYScale(y_i);
+        pathD += moved ? ` L ${px} ${py}` : `M ${px} ${py}`;
+        moved = true;
+      } else {
+        moved = false;
+      }
+    }
+    path.setAttribute("d", pathD);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#2563eb");
+    path.setAttribute("stroke-width", "2.5");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    graphSvg.appendChild(path);
+
+    // Undefined region shading (for restricted domains)
+    if (fnDef.isRestricted && fnDef.domainStart !== undefined) {
+      const undefinedRect = svgEl("rect");
+      undefinedRect.setAttribute("x", gX0);
+      undefinedRect.setAttribute("y", 40);
+      undefinedRect.setAttribute("width", gXScale(fnDef.domainStart) - gX0);
+      undefinedRect.setAttribute("height", gH);
+      undefinedRect.setAttribute("fill", "#fecaca");
+      undefinedRect.setAttribute("fill-opacity", "0.15");
+      graphSvg.appendChild(undefinedRect);
+    }
+
+    // Domain highlighting (green on x-axis)
+    const domainLeft = fnDef.isRestricted ? fnDef.domainStart : -6;
+    const domainRight = 6;
+    const domainBar = svgEl("line");
+    domainBar.setAttribute("x1", gXScale(domainLeft));
+    domainBar.setAttribute("y1", gY0 + 6);
+    domainBar.setAttribute("x2", gXScale(domainRight));
+    domainBar.setAttribute("y2", gY0 + 6);
+    domainBar.setAttribute("stroke", "#059669");
+    domainBar.setAttribute("stroke-width", "3");
+    domainBar.setAttribute("stroke-linecap", "round");
+    graphSvg.appendChild(domainBar);
+
+    // Range highlighting (amber on y-axis)
+    let minY = Infinity, maxY = -Infinity;
+    for (let x_i = domainLeft; x_i <= domainRight; x_i += step) {
+      const y_i = fnDef.fn(x_i);
+      if (!isNaN(y_i)) {
+        minY = Math.min(minY, y_i);
+        maxY = Math.max(maxY, y_i);
+      }
+    }
+    if (minY !== Infinity) {
+      const rangeBar = svgEl("line");
+      rangeBar.setAttribute("x1", gX0 - 6);
+      rangeBar.setAttribute("y1", gYScale(minY));
+      rangeBar.setAttribute("x2", gX0 - 6);
+      rangeBar.setAttribute("y2", gYScale(maxY));
+      rangeBar.setAttribute("stroke", "#d97706");
+      rangeBar.setAttribute("stroke-width", "3");
+      rangeBar.setAttribute("stroke-linecap", "round");
+      graphSvg.appendChild(rangeBar);
+    }
+
+    // Current input-output point (amber)
+    if (isValidInput) {
+      const px = gXScale(x);
+      const py = gYScale(y);
+
+      // Dashed projections to axes
+      drawLine(graphSvg, px, py, px, gY0, "#9ca3af", "1.2", "4,3");
+      drawLine(graphSvg, px, py, gX0, py, "#9ca3af", "1.2", "4,3");
+
+      // Point
+      const dot = svgEl("circle");
+      dot.setAttribute("cx", px);
+      dot.setAttribute("cy", py);
+      dot.setAttribute("r", "6");
+      dot.setAttribute("fill", "#d97706");
+      dot.setAttribute("stroke", "#fff");
+      dot.setAttribute("stroke-width", "1.5");
+      graphSvg.appendChild(dot);
+    }
+
+    graphCaption.innerHTML = `<strong>Domain:</strong> ${fnDef.domainInterval} &nbsp; &nbsp; <strong>Range:</strong> ${fnDef.rangeInterval}`;
+  }
+
+  // Event listeners
+  [funcSel, xSlider].forEach(el => {
+    el.addEventListener("change", () => {
+      const fnDef = FUNCTIONS[funcSel.value];
+      const newX = Math.max(fnDef.domain[0], Math.min(fnDef.domain[1], parseFloat(xSlider.value)));
+      xSlider.value = newX;
+      redraw();
+    });
+    el.addEventListener("input", redraw);
+  });
+
+  container.append(controls, machineContainer, graphContainer);
+  redraw();
+  return container;
+}
+```
+
+**Interval notation:** We write sets of numbers using intervals. Here's the shorthand:
+- $[a, b]$ — includes both endpoints ($a \leq x \leq b$)
+- $(a, b)$ — excludes both endpoints ($a < x < b$)
+- $[a, \infty)$ — from $a$ upward, including $a$
+- $(-\infty, b)$ — everything below $b$, not including $b$
+- The symbol $\cup$ means "or" — union of two intervals
+
+For example, $(-\infty, 2) \cup (2, \infty)$ means "all numbers below 2, or all numbers above 2" — everything except 2.
 
 For $f(x) = 2x + 3$, any real number is a valid input and any real number
 is a possible output. The domain and range are both all real numbers,
@@ -418,9 +785,7 @@ interval or the second.
 **Square roots of negative numbers don't produce real outputs.** For
 $h(x) = \sqrt{x - 1}$, the expression under the root must be non-negative:
 $x - 1 \geq 0$, so $x \geq 1$. The domain is $[1, \infty)$. Why does the
-square root require this? No real number multiplied by itself gives a
-negative result — so the square root of a negative number doesn't land on
-the number line.
+square root require this? Consider: $2 \times 2 = 4$, and also $(-2) \times (-2) = 4$. Both positive and negative numbers squared give positive results. So there is no number, positive or negative, whose square is $-1$. Therefore $\sqrt{-1}$ has nowhere to land on the number line.
 
 Interval notation in brief:
 - $[a, b]$ — includes both endpoints ($a \leq x \leq b$)
@@ -436,6 +801,8 @@ not the algebra.
 This means a complete answer often needs both algebraic rules and real-world sense.
 
 ### Part 3: Composition
+
+Sometimes you want to apply one rule, then feed its output into another rule. That process is called **composition**.
 
 You can chain functions together. If $g$ converts one thing and $f$ converts
 another, you can run an input through $g$ first, then feed $g$'s output into
@@ -613,15 +980,9 @@ This means composition is not usually reversible by simply swapping the order.
 
 ### Part 4: Inverses
 
-The inverse of a function undoes it. If $f$ takes 5 to 13, then
-$f^{-1}$ — read as "f inverse" — takes 13 back to 5.
+**⚠️ Notation alert:** $f^{-1}(x)$ means "the inverse function," not $\dfrac{1}{f(x)}$. The superscript $-1$ on a function is not an exponent — it's notation for reversal.
 
-The notation $f^{-1}(x)$ does not mean $\dfrac{1}{f(x)}$. That's another
-thing that looks like it should mean one thing but means another. The
-superscript $-1$ on a function name means "the inverse function," not
-"one over."
-
-This means inverse notation is about undoing a function, not taking a reciprocal.
+The inverse of a function undoes it. If $f$ takes 5 to 13, then $f^{-1}$ — read as "f inverse" — takes 13 back to 5. Inverse notation is about undoing a function, not taking a reciprocal.
 
 Not every function has an inverse. For an inverse to exist, each output
 must have come from exactly one input — otherwise, when you try to go
@@ -1063,7 +1424,12 @@ function makeStepperHTML(exerciseNum, steps) {
       opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
       opCell.textContent = s.op;
       const eqCell = document.createElement("span");
-      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      if (typeof katex !== 'undefined') {
+        eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      } else {
+        eqCell.textContent = s.eq;
+        eqCell.style.fontFamily = "monospace";
+      }
       row.appendChild(opCell);
       row.appendChild(eqCell);
       if (s.note) {
@@ -1136,7 +1502,8 @@ makeStepperHTML(2, [
   { op: "For g(x): the expression under the root must be non-negative", eq: "x + 4 \\geq 0", note: null },
   { op: "Solve the inequality", eq: "x \\geq -4", note: null },
   { op: "Write domain of g in interval notation", eq: "[-4, \\infty)", note: null },
-  { op: "For h(x): the denominator cannot be zero", eq: "x^2 - 9 \\neq 0 \\implies x \\neq 3 \\text{ and } x \\neq -3", note: "Factor as (x-3)(x+3) to find the excluded values." },
+  { op: "For h(x): the denominator cannot be zero", eq: "x^2 - 9 \\neq 0", note: "Factor: $x^2 - 9 = (x - 3)(x + 3)$, so the denominator is zero when $x = 3$ or $x = -3$." },
+  { op: "Identify the excluded values", eq: "x \\neq 3 \\text{ and } x \\neq -3", note: null },
   { op: "Write domain of h in interval notation", eq: "(-\\infty, -3) \\cup (-3, 3) \\cup (3, \\infty)", note: null },
   { op: "For k(x): any real input is valid (squaring never causes division by zero or square roots of negatives)", eq: "(-\\infty, \\infty)", note: null },
   { op: "Check g at x = -4 (boundary)", eq: "g(-4) = \\sqrt{-4 + 4} = \\sqrt{0} = 0 \\checkmark", note: null }
@@ -1235,7 +1602,7 @@ makeStepperHTML(6, [
   { op: "Evaluate at t = 0 (6 am)", eq: "T(0) = 0.5(0)^2 + 2(0) + 15 = 15 \\text{ °C}", note: null },
   { op: "Evaluate at t = 3 (9 am)", eq: "T(3) = 0.5(9) + 2(3) + 15 = 4.5 + 6 + 15 = 25.5 \\text{ °C}", note: null },
   { op: "Evaluate at t = 6 (noon)", eq: "T(6) = 0.5(36) + 2(6) + 15 = 18 + 12 + 15 = 45 \\text{ °C}", note: null },
-  { op: "Assess whether T is one-to-one on [0, 6]", eq: "x_v = -\\frac{b}{2a} = -\\frac{2}{2 \\times 0.5} = -2", note: "The vertex of T(t) = 0.5t² + 2t + 15 is at t = −2, which is outside the domain [0, 6]. The parabola opens upward (a = 0.5 > 0) and its vertex is to the left of the domain, so T is strictly increasing on [0, 6] — each input gives a different output." },
+  { op: "Assess whether T is one-to-one on [0, 6]", eq: "T(0) = 15, \\; T(3) = 25.5, \\; T(6) = 45", note: "One-to-one means each output comes from exactly one input. Here, every temperature appears only once — no value of T repeats — so the function is one-to-one." },
   { op: "Check: T is increasing throughout", eq: "T(0) = 15 < T(3) = 25.5 < T(6) = 45 \\checkmark", note: null }
 ])
 ```

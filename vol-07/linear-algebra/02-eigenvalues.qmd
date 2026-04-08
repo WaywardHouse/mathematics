@@ -4,7 +4,7 @@ subtitle: "The natural modes of a system"
 chapter: 2
 volume: 7
 layer: "engineering"
-status: review
+status: final
 
 axiom: |
   You know how a matrix transforms vectors — it rotates and stretches space.
@@ -24,10 +24,6 @@ prerequisite_ids:
   - odes
 
 opens_to:
-  - id: odes_systems
-    label: "ODE systems and phase plane"
-    volume: 7
-    relationship: enriches
   - id: fourier_series
     label: "Fourier series"
     volume: 7
@@ -50,19 +46,15 @@ destinations:
 notation_introduced:
   - symbol: "\\lambda"
     reads_as: "lambda"
-    meaning: "Eigenvalue of matrix A"
     notation_weight: 2
   - symbol: "\\mathbf{x}"
     reads_as: "x (boldface)"
-    meaning: "Eigenvector corresponding to eigenvalue λ"
     notation_weight: 1
   - symbol: "\\det(A - \\lambda I)"
     reads_as: "determinant of A minus lambda I"
-    meaning: "Characteristic polynomial — set to zero to find eigenvalues"
     notation_weight: 3
   - symbol: "P, D"
     reads_as: "P and D"
-    meaning: "Diagonalisation: A = PDP⁻¹ where D is diagonal and P's columns are eigenvectors"
     notation_weight: 2
 
 exercises:
