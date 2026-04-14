@@ -80,6 +80,16 @@ notation_introduced:
     reads_as: "F evaluated from a to b — F(b) minus F(a)"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "definite integral"
+    means: "A total accumulated amount over an interval, often pictured as area under a curve."
+  - term: "indefinite integral / antiderivative"
+    means: "A family of functions whose derivative is the given function (plus a constant)."
+  - term: "Riemann sum"
+    means: "An approximation to total accumulation by adding many small “rate × width” slices."
+  - term: "Fundamental Theorem of Calculus"
+    means: "The bridge that says accumulation (definite integrals) and antiderivatives are two views of the same object."
+
 exercises:
   type: "puzzle"
   real_world_context: true

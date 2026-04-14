@@ -63,6 +63,18 @@ notation_introduced:
     reads_as: "L U factorisation"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "matrix"
+    means: "A rectangular array of numbers used to store and act on structured information."
+  - term: "linear system"
+    means: "A set of linear equations that must all hold at the same time."
+  - term: "augmented matrix"
+    means: "A compact way to write the coefficients and right-hand side of a system together: [A|b]."
+  - term: "Gaussian elimination"
+    means: "A systematic row-reduction procedure that solves the system (or shows no solution)."
+  - term: "rank"
+    means: "A count of independent information in a matrix; it predicts whether solutions are unique, none, or infinite."
+
 exercises:
   type: puzzle
   real_world_context: true

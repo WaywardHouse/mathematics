@@ -59,6 +59,18 @@ notation_introduced:
     reads_as: "complex exponential kernel"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "Fourier transform"
+    means: "A way to describe a non-periodic signal by how much of each frequency it contains."
+  - term: "spectrum"
+    means: "The frequency-domain picture of a signal: which frequencies are present and how strongly."
+  - term: "convolution"
+    means: "How linear systems combine an input with a response kernel; in frequency it becomes multiplication."
+  - term: "Dirac delta"
+    means: "An idealised impulse used to model an instantaneous event."
+  - term: "sinc"
+    means: "A bell-shaped oscillating function that appears as the transform of a box/window."
+
 exercises:
   type: puzzle
   real_world_context: true

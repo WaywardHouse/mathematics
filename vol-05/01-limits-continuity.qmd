@@ -76,6 +76,14 @@ notation_introduced:
     reads_as: "delta — the corresponding tolerance on x"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "limit"
+    means: "The value a function’s outputs get closer to as the input gets close to a point (even if the function is undefined or different at that point)."
+  - term: "continuity"
+    means: "A function is continuous at a point when its value matches the limit there: no jump, no hole, no mismatch."
+  - term: "$\\varepsilon$–$\\delta$ definition"
+    means: "A precise way to say “we can make the outputs as close as we want by taking the inputs close enough.”"
+
 exercises:
   type: "puzzle"
   real_world_context: true

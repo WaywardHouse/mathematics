@@ -98,6 +98,22 @@ notation_introduced:
     reads_as: "rho — the correlation coefficient, covariance normalised to [−1, 1]"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "sample space"
+    means: "The set of all possible outcomes for the process you’re modelling."
+  - term: "event"
+    means: "A set of outcomes you care about (for example: “rain tomorrow” or “more than 6 requests”)."
+  - term: "random variable"
+    means: "A rule that assigns a number to each outcome, so we can do arithmetic on uncertainty."
+  - term: "probability distribution"
+    means: "A complete description of how likely different outcomes/values are."
+  - term: "expected value"
+    means: "A long-run average: what you should get on average over many repeats."
+  - term: "variance / standard deviation"
+    means: "A measure of spread: how far values typically wander from the mean."
+  - term: "Central Limit Theorem (CLT)"
+    means: "A result that explains why sums/averages of many small random effects often look approximately normal."
+
 exercises:
   type: "puzzle"
   real_world_context: true

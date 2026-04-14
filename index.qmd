@@ -13,6 +13,11 @@ like it belongs to someone else. Each volume takes a set of tools,
 shows what they actually are, and points toward where they're used
 in the world.
 
+This is for readers who are capable and curious, but not yet fluent.
+If you're a non-core student (a math-curious geographer, an environmental
+scientist, a planner, a designer, a policy student with quantitative
+ambition), you're exactly who this is for.
+
 The series runs from the foundations of arithmetic through to
 upper-year engineering mathematics. You don't have to start at
 Volume 1. Start where you lost the thread.

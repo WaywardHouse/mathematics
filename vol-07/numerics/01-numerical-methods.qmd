@@ -85,6 +85,18 @@ notation_introduced:
     reads_as: "big-O of h to the p — the error shrinks as h to the power p as h → 0"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "numerical method"
+    means: "A systematic approximation procedure that produces an answer you can bound and trust."
+  - term: "iterate"
+    means: "One step of a repeated algorithm; xₙ is your current best guess."
+  - term: "error / truncation error"
+    means: "The gap between the true value and the approximation, often predictable in how it shrinks as h gets smaller."
+  - term: "convergence"
+    means: "As you refine the method (more iterations or smaller step size), the approximation approaches the true answer."
+  - term: "stability"
+    means: "Whether small errors stay small as the computation proceeds, or blow up."
+
 exercises:
   type: "puzzle"
   real_world_context: true

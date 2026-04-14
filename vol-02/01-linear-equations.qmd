@@ -88,6 +88,14 @@ notation_introduced:
     reads_as: "the number multiplying the unknown in an expression like 3x"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "equation"
+    means: "A statement that two expressions represent the same quantity, written with an equals sign."
+  - term: "unknown"
+    means: "The value you are solving for: the missing part of the relationship."
+  - term: "coefficient"
+    means: "The number that scales an unknown (for example, 3 is the coefficient in 3x)."
+
 exercises:
   type: "puzzle"
   real_world_context: true

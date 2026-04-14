@@ -57,6 +57,16 @@ notation_introduced:
     reads_as: "P and D"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "eigenvector"
+    means: "A direction a matrix sends back onto itself (it may stretch or flip it, but it doesn’t rotate it)."
+  - term: "eigenvalue"
+    means: "The scale factor a matrix applies to an eigenvector."
+  - term: "characteristic equation"
+    means: "The equation you solve to find eigenvalues, built from det(A − λI) = 0."
+  - term: "diagonalisation"
+    means: "Rewriting a matrix as PDP⁻¹ so its action becomes simple scaling in the eigenvector basis."
+
 exercises:
   type: puzzle
   real_world_context: true

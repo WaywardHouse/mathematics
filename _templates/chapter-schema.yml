@@ -93,6 +93,16 @@ chapter_onramp: ~       # [OPTIONAL] true | false
                         # section near the top if the chapter body does not
                         # already contain one. Set to false to opt out.
 
+definitions_introduced: # [OPTIONAL] Plain-language definitions introduced in this chapter.
+  - term: ""            # Term as used in the prose, e.g. "continuity"
+    means: ""           # One plain sentence. Keep it human; formal math stays in-body.
+
+definitions_box: ~      # [OPTIONAL] true | false
+                        # If definitions_introduced is present, the build will
+                        # surface a short "Definitions to keep handy" callout
+                        # near the top of the chapter by default.
+                        # Set to false to opt out for a specific chapter.
+
 notation_introduced:    # [OPTIONAL] List symbols introduced in this chapter.
   - symbol: ""          # The symbol as it appears on the page
     reads_as: ""        # How to say it in plain English

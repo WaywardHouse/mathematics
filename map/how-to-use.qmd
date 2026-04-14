@@ -56,6 +56,22 @@ If a piece of notation stops you:
 - Use the "Symbols to keep handy" box near the top of the chapter as a quick map of the notation that will repeat.
 - When a definition appears, read the sentence before it first. It should explain what problem the definition is solving before the formal statement shows up.
 
+## How to read definitions (without panic)
+
+A definition is not a trick sentence. It is a decision about language: "from now on, when we say this, we mean that."
+
+In this series, definitions are introduced in the same order each time:
+
+1. **Need** — what problem makes the definition necessary?
+2. **Plain language** — what is the idea in ordinary words?
+3. **Formal statement** — the definition as mathematics.
+4. **Read aloud** — how to say the symbols as a sentence.
+5. **Interpretation** — what the definition is tracking or measuring.
+
+If you ever feel lost, go back to the **Need** sentence. If you can answer "what is this definition for?", the rest usually unknots.
+
+When a chapter introduces several new terms, look for a short **Definitions to keep handy** box near the top. It is a plain-language glossary, not a replacement for the formal definitions.
+
 ## The destination fields
 
 Every chapter is tagged with the fields it serves:

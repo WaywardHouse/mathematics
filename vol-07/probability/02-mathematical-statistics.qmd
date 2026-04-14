@@ -77,6 +77,20 @@ notation_introduced:
     reads_as: "R-squared — the coefficient of determination"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "estimator"
+    means: "A rule that turns data into an estimate of an unknown quantity."
+  - term: "likelihood"
+    means: "A function that scores parameter values by how well they explain the observed data."
+  - term: "confidence interval"
+    means: "A range of plausible parameter values with a stated long-run coverage guarantee."
+  - term: "hypothesis test"
+    means: "A formal procedure for deciding whether data is compatible with a baseline claim."
+  - term: "p-value"
+    means: "If the null hypothesis were true, the probability of seeing a result at least this extreme."
+  - term: "regression"
+    means: "A model for how an output variable changes with one or more inputs, plus an error term."
+
 exercises:
   type: "puzzle"
   real_world_context: true

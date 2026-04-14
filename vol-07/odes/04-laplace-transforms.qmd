@@ -55,6 +55,18 @@ notation_introduced:
     reads_as: "Dirac delta at a"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "Laplace transform"
+    means: "A way to re-express a time function as an s-domain function so differentiation becomes algebra."
+  - term: "inverse Laplace transform"
+    means: "The operation that takes you back from the s-domain to the original time function."
+  - term: "Heaviside step"
+    means: "An idealised switch: it turns on at a specified time."
+  - term: "Dirac delta"
+    means: "An idealised impulse: an instantaneous “kick” with finite total area."
+  - term: "convolution"
+    means: "The mathematical operation that combines an input with a system’s impulse response to produce the output."
+
 exercises:
   type: puzzle
   real_world_context: true

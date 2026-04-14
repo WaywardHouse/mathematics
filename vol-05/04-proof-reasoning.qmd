@@ -85,6 +85,16 @@ notation_introduced:
     reads_as: "the natural numbers — the positive integers 1, 2, 3, …"
     notation_weight: 1
 
+definitions_introduced:
+  - term: "proof"
+    means: "An argument that shows something must be true in all cases, not just in the examples you tried."
+  - term: "theorem"
+    means: "A claim worth naming that has been proved."
+  - term: "contradiction"
+    means: "A proof method where you assume the opposite and show it leads to an impossibility."
+  - term: "induction"
+    means: "A proof method for statements about the natural numbers: base case plus a step that carries truth from n to n+1."
+
 exercises:
   type: "investigation"
   real_world_context: true

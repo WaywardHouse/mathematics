@@ -59,6 +59,18 @@ notation_introduced:
     reads_as: "C"
     notation_weight: 1
 
+definitions_introduced:
+  - term: "ordinary differential equation (ODE)"
+    means: "An equation that relates a function to its derivatives, so the “unknown” is a whole function, not a single number."
+  - term: "general solution"
+    means: "A family of solution curves that includes an arbitrary constant."
+  - term: "initial condition"
+    means: "A specific value like y(x0)=y0 that selects one curve from the family."
+  - term: "separable"
+    means: "A first-order ODE where all the y-stuff and x-stuff can be separated onto opposite sides and integrated."
+  - term: "integrating factor"
+    means: "A function you multiply a linear ODE by so the left-hand side becomes the derivative of a product."
+
 exercises:
   type: puzzle
   real_world_context: true

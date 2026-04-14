@@ -207,6 +207,14 @@ Implementation note for this repository: this box is generated automatically
 from `notation_introduced` (weights ≥ 2, capped for length). A chapter can opt
 out by setting `notation_box: false` in its front matter.
 
+#### Series convention: a definitions box when terms matter
+
+When a chapter introduces new formal vocabulary, add a short
+`definitions_introduced` list in the front matter. The build will surface a
+**Definitions to keep handy** callout near the top. Each definition should be
+one plain sentence: the goal is to lower intimidation and stabilize meaning
+before the formal statement appears in-body.
+
 ## Standard chapter edits
 
 Every chapter should be revised through the same editorial checklist.
