@@ -26,6 +26,7 @@ Every chapter opens with two or three concrete situations that share the same un
 After the opening:
 
 1. The notation is introduced and read in plain English beside it
+1. A short "Symbols to keep handy" box collects the repeated notation and reads it aloud
 2. The method is shown, stepped through, with a verification
 3. A brief explanation of why the method works
 4. Two to four worked examples from different fields
@@ -48,7 +49,11 @@ Exercises come in four types. The type is stated at the start of each exercise s
 
 Notation is a compression tool. It lets you write in three symbols what would otherwise take three sentences. This series introduces each symbol when it is first needed, reads it in plain English immediately beside it, and notes how heavy a lift it is — some symbols need one sentence, some need a whole section.
 
-If a piece of notation stops you, look for the plain-language reading in the same paragraph. It will be there.
+If a piece of notation stops you:
+
+- Look for the plain-language reading in the same paragraph. It will be there.
+- Use the "Symbols to keep handy" box near the top of the chapter as a quick map of the notation that will repeat.
+- When a definition appears, read the sentence before it first. It should explain what problem the definition is solving before the formal statement shows up.
 
 ## The destination fields
 

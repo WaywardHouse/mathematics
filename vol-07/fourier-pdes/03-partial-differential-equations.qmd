@@ -78,6 +78,28 @@ uofa_course: null
 
 A **partial differential equation (PDE)** involves an unknown function of two or more independent variables and its partial derivatives. The three classical PDEs of mathematical physics appear throughout engineering and science, and they are the focus of this chapter:
 
+::: {.callout-note appearance="simple"}
+**How to read the PDE symbols**
+
+- **Symbol:** $u_t$, $u_{xx}$
+- **Reads as:** "u sub t", "u sub x x"
+- **Means:** partial derivative with respect to $t$; second partial with respect to $x$
+- **Use when:** the dependent variable depends on both space and time
+- **Common misread:** subscripts here are derivatives, not multiplication by variables
+
+- **Symbol:** $\nabla^2 u$
+- **Reads as:** "Laplacian of u"
+- **Means:** sum of second spatial derivatives (diffusion/curvature operator)
+- **Use when:** steady-state fields and diffusion/wave models in higher dimensions
+- **Common misread:** $\nabla^2$ is not ordinary squaring
+
+- **Symbol:** $\lambda$
+- **Reads as:** "lambda"
+- **Means:** separation constant linking the spatial and temporal ODEs after you assume $u=X(x)T(t)$
+- **Use when:** separation of variables
+- **Common misread:** $\lambda$ becomes discrete once boundary conditions are applied (it turns into eigenvalues)
+:::
+
 | Equation | Name | Physics |
 |---|---|---|
 | $u_t = \alpha^2 u_{xx}$ | Heat equation (parabolic) | Heat conduction, diffusion |
@@ -87,6 +109,24 @@ A **partial differential equation (PDE)** involves an unknown function of two or
 Each represents a different physical situation. The heat equation describes irreversible processes that evolve toward equilibrium. The wave equation describes reversible oscillations that persist in time. The Laplace equation describes static equilibrium states with no time dependence at all.
 
 ---
+
+## What this chapter helps you do
+
+This chapter teaches you how to read a PDE as a physical bookkeeping law and how
+Fourier-mode thinking turns certain PDEs into solvable pieces. You will learn to:
+
+- recognise what a PDE is saying: which quantity is conserved or transported
+- classify second-order PDEs (elliptic/parabolic/hyperbolic) and connect the type to the physics
+- use separation of variables to split a PDE into ODEs linked by a separation constant
+- see why boundary conditions force discrete eigenvalues and produce Fourier series solutions
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- PDEs are not "harder ODEs"; they describe spatial coupling. Boundary conditions are part of the problem, not an afterthought.
+- The separation constant $\lambda$ is not arbitrary once boundary conditions are imposed. The boundary conditions quantise it into a discrete set of values.
+- A solution is usually an infinite series of modes. The physics often becomes clearer when you ask what each mode does.
+:::
 
 ## Classification of second-order PDEs
 
@@ -662,6 +702,26 @@ Regardless of which classical PDE applies, the separation-of-variables procedure
 4. **Apply initial conditions**: express $f(x)$ as a Fourier series in the eigenfunctions $\{X_n\}$ to determine the coefficients.
 
 The Fourier series computation in step 4 is identical to what was developed in the previous two chapters. PDEs give the Fourier series its deepest physical motivation.
+
+## Where this goes
+
+Analytic methods go surprisingly far, but most real geometries, forcing terms,
+and material properties break the assumptions that make separation of variables
+work cleanly. The next step is numerical methods: discretise the domain, turn
+derivatives into finite differences (or elements), and solve the resulting large
+linear systems.
+
+That is exactly why this chapter opens into the numerical methods chapter: the
+numerics are not "a different subject" so much as the continuation of the same
+physical bookkeeping when exact formulas run out.
+
+## What you can do now
+
+You can now read the three classical PDEs as three distinct physical regimes,
+classify a second-order PDE in two variables, and follow the separation-of-variables
+pipeline from PDE to eigenvalue problem to Fourier series solution. You should be
+able to explain why boundary conditions produce discrete modes and why the initial
+condition determines the coefficients.
 
 ---
 

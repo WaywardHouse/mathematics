@@ -88,9 +88,43 @@ Invert. Done.
 This chapter develops that mechanism from the integral definition through to impulse
 response and the convolution theorem.
 
+## What this chapter helps you do
+
+This chapter gives you a method for solving linear ODEs with switching, impulses,
+and messy forcing without splitting time into separate cases by hand. You will learn to:
+
+- take $\mathcal{L}\{\cdot\}$ of both sides and turn a differential equation into algebra in $s$
+- see how initial conditions enter automatically through the derivative rules
+- use shifting to represent "turn on at $t=a$" and "impulse at $t=a$"
+- solve for $Y(s)$, then invert using tables, partial fractions, and convolution
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- The transform is an integral: it only converges in a region of the complex plane. In most engineering work we operate in the half-plane where it converges and focus on the algebra.
+- Most mistakes happen at the derivative step: $\mathcal{L}\{y'\}=sY-y(0)$ and $\mathcal{L}\{y''\}=s^2Y-sy(0)-y'(0)$.
+- Shifts are structural: $u(t-a)$ and $e^{-as}$ are the "a switch happens at time a" pair.
+:::
+
 ## Definition and motivation
 
 The Laplace transform of a function $f(t)$ defined for $t \geq 0$ is
+
+::: {.callout-note appearance="simple"}
+**How to read the main symbols**
+
+- **Symbol:** $\mathcal{L}\{f(t)\}=F(s)$
+- **Reads as:** "the Laplace transform of f equals F of s"
+- **Means:** a change of representation: from a time function to an $s$-domain function
+- **Use when:** linear ODEs, signals, and systems where derivatives and switching are present
+- **Common misread:** $s$ is not "time"; it is the transform variable (often treated as real, but fundamentally complex)
+
+- **Symbol:** $\mathcal{L}^{-1}\{F(s)\}$
+- **Reads as:** "inverse Laplace transform of F"
+- **Means:** return from the $s$-domain to the original time function
+- **Use when:** you have solved algebraically for $Y(s)$ and need $y(t)$
+- **Common misread:** inversion is not "divide by L"; it is its own operation (often done by matching tables)
+:::
 
 $$\mathcal{L}\{f(t)\} = F(s) = \int_0^\infty e^{-st} f(t)\,dt$$
 
@@ -373,6 +407,22 @@ viewof ltS = Inputs.range([0.1, 5], {step: 0.1, value: 1, label: "s"})
 
 This is the mechanism that converts ODEs into algebra.
 
+::: {.callout-note appearance="simple"}
+**Derivative rules (the ones to memorise)**
+
+- **Symbol:** $\mathcal{L}\{y'\}=sY-y(0)$
+- **Reads as:** "Laplace of y-prime equals sY minus y of zero"
+- **Means:** differentiation becomes multiplication by $s$, plus an initial-value correction
+- **Use when:** solving initial value problems without appending constants afterward
+- **Common misread:** forgetting the boundary term is the #1 Laplace mistake
+
+- **Symbol:** $\mathcal{L}\{y''\}=s^2Y-sy(0)-y'(0)$
+- **Reads as:** "s-squared Y minus s y of zero minus y-prime of zero"
+- **Means:** second derivatives carry two initial conditions
+- **Use when:** second-order systems (springs, RLC circuits)
+- **Common misread:** swapping $y(0)$ and $y'(0)$
+:::
+
 **First derivative.** Integrate by parts with $u = f(t)$, $dv = e^{-st}\,dt$:
 
 $$\mathcal{L}\{f'(t)\} = \int_0^\infty e^{-st} f'(t)\,dt = \left[e^{-st}f(t)\right]_0^\infty + s\int_0^\infty e^{-st}f(t)\,dt$$
@@ -518,6 +568,22 @@ $$y(t) = -\frac{1}{5}e^{-t} + \frac{1}{5}\cos(2t) + \frac{2}{5}\sin(2t)$$
 
 Engineering systems are often forced by signals that switch on or off at a specific time.
 The Heaviside unit step function captures this:
+
+::: {.callout-note appearance="simple"}
+**Switching in time**
+
+- **Symbol:** $u(t-a)$
+- **Reads as:** "Heaviside step at a"
+- **Means:** the switch that turns something on at time $t=a$
+- **Use when:** modelling inputs that start at a specific time
+- **Common misread:** $u(t-a)$ is 0 before $a$ and 1 after; the value at $t=a$ is convention-dependent and usually irrelevant
+
+- **Symbol:** $e^{-as}$
+- **Reads as:** "e to the minus a s"
+- **Means:** the $s$-domain marker for a time shift by $a$
+- **Use when:** applying the second shifting theorem
+- **Common misread:** $e^{-as}$ does not mean "decay in time"; it encodes a delay
+:::
 
 $$u(t-a) = \begin{cases} 0 & t < a \\ 1 & t \geq a \end{cases}$$
 
@@ -724,6 +790,16 @@ but delivers a definite impulse — a large force for a very short time. The Dir
 function $\delta(t - a)$ is the mathematical idealisation: an infinitely concentrated
 spike at $t = a$ with unit area.
 
+::: {.callout-note appearance="simple"}
+**Impulses**
+
+- **Symbol:** $\delta(t-a)$
+- **Reads as:** "Dirac delta at a"
+- **Means:** an idealised impulse: all the input happens at one instant, with total area 1
+- **Use when:** modelling shocks/impacts/instantaneous injections
+- **Common misread:** $\delta$ is not an ordinary function; treat it through its defining property (it picks out values inside an integral)
+:::
+
 Formally, $\delta(t-a)$ is defined through its sifting property: for any continuous function $f$,
 
 $$\int_{-\infty}^\infty f(t)\,\delta(t-a)\,dt = f(a)$$
@@ -831,6 +907,14 @@ ODEs in the spatial variable — an approach that reuses everything developed he
   price process — effectively the Laplace transform of the risk-neutral density — with
   fast Fourier transform inversion.
 :::
+
+## What you can do now
+
+You can now translate a linear ODE with initial conditions into an algebraic
+equation for $Y(s)$, solve it, and invert back to time. You can encode switches
+and impulses using $u(t-a)$ and $\delta(t-a)$ and use shifting to avoid
+piecewise hand-solving. The next step is to see these ideas reappear as transfer
+functions, frequency response, and (later) complex analysis.
 
 ## Exercises
 

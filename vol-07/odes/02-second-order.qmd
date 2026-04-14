@@ -97,6 +97,24 @@ The engineers had missed a resonance condition. The wind's forcing frequency mat
 
 This chapter develops every tool needed to answer that question. By the end you will be able to look at any spring, circuit, or structure, write down its governing equation, and classify its response before solving it.
 
+## What this chapter helps you do
+
+This chapter gives you a fast way to read the behaviour of oscillating systems
+from the structure of a second-order ODE. You will learn to:
+
+- split solutions into complementary + particular parts ($y=y_c+y_p$)
+- use the characteristic equation to classify decay, oscillation, and resonance
+- connect the algebra of the roots to physical parameters (natural frequency, damping ratio, quality factor)
+- recognise when forcing creates a bounded steady-state response and when it creates growth
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- The behaviour comes from the roots of a quadratic, but the *meaning* comes from the model parameters. Keep translating back to the system.
+- Resonance is not a math curiosity; it is a design constraint. The mathematics is telling you when energy builds instead of dissipating.
+- When you write $y=y_c+y_p$, $y_p$ is not unique. Any valid particular solution works; the initial conditions are absorbed by $y_c$.
+:::
+
 ## Structure of the general equation
 
 A second-order linear ODE with constant coefficients has the form
@@ -104,6 +122,22 @@ A second-order linear ODE with constant coefficients has the form
 $$ay'' + by' + cy = f(x)$$
 
 where $a \neq 0$. The coefficients $a$, $b$, $c$ are constants; $f(x)$ is the **forcing function** (or input, or source term).
+
+::: {.callout-note appearance="simple"}
+**How to read the core symbols**
+
+- **Symbol:** $y''$
+- **Reads as:** "y double-prime"
+- **Means:** the second derivative (often acceleration when $y$ is position)
+- **Use when:** a system's dynamics depend on both position and velocity
+- **Common misread:** second order means you will need *two* initial conditions
+
+- **Symbol:** $y=y_c+y_p$
+- **Reads as:** "y equals y-sub-c plus y-sub-p"
+- **Means:** complementary (homogeneous) response + forced response
+- **Use when:** the equation is linear, so superposition applies
+- **Common misread:** $y_p$ is not the whole solution; it is only the forced part
+:::
 
 **Why second order?** Newton's second law says $F = ma$, where $a = \ddot{x}$ is the second derivative of position. Any system governed by Newton's second law — masses on springs, charges in circuits, beams under load — produces a second-order ODE. The second derivative is not an accident of notation; it encodes the physics.
 
@@ -124,6 +158,28 @@ $$\underbrace{ay'' + by' + cy = 0}_{\text{homogeneous: find } y_c} \quad + \quad
 :::
 
 ## Homogeneous equations: the characteristic equation
+
+::: {.callout-note appearance="simple"}
+**How to read the characteristic-equation symbols**
+
+- **Symbol:** $r$
+- **Reads as:** "r"
+- **Means:** the growth/decay (and possibly oscillation) behaviour in the trial solution $e^{rx}$
+- **Use when:** you turn $ay''+by'+cy=0$ into an algebraic quadratic
+- **Common misread:** $r$ is not "time" or a measured parameter; it is a root that encodes behaviour
+
+- **Symbol:** $\Delta=b^2-4ac$
+- **Reads as:** "Delta" (the discriminant)
+- **Means:** whether the roots are real, repeated, or complex
+- **Use when:** you want to classify the system without solving in detail
+- **Common misread:** the sign of $\Delta$ matters more than its magnitude
+
+- **Symbol:** $\alpha,\beta$ (when roots are $\alpha\pm i\beta$)
+- **Reads as:** "alpha, beta"
+- **Means:** $\alpha$ controls decay/growth; $\beta$ is the oscillation frequency
+- **Use when:** you rewrite complex exponentials into sines and cosines
+- **Common misread:** $\beta$ is not the same as the natural frequency $\omega_0$ unless the model is undamped
+:::
 
 Take the homogeneous equation
 
@@ -349,6 +405,28 @@ viewof smdK = Inputs.range([0.1, 20], {step: 0.1, value: 4, label: "k (stiffness
 ```
 
 ## The spring-mass-damper system
+
+::: {.callout-note appearance="simple"}
+**How to read the oscillation parameters**
+
+- **Symbol:** $\omega_0$
+- **Reads as:** "omega-zero" (natural frequency)
+- **Means:** the system's preferred oscillation rate in the undamped model
+- **Use when:** you compare forcing frequency to what the system naturally wants to do
+- **Common misread:** units matter; $\omega_0$ is radians per second, not cycles per second
+
+- **Symbol:** $\zeta$
+- **Reads as:** "zeta" (damping ratio)
+- **Means:** how strong damping is relative to critical damping
+- **Use when:** you classify overdamped/critical/underdamped behaviour
+- **Common misread:** small $\zeta$ does not mean "no effect"; it can still produce very large resonance peaks
+
+- **Symbol:** $Q=\dfrac{1}{2\zeta}$
+- **Reads as:** "Q" (quality factor)
+- **Means:** selectivity/sharpness of resonance (large Q means a sharp, tall peak)
+- **Use when:** you talk about filters and frequency response
+- **Common misread:** Q is not "quality" in the everyday sense; it is a ratio that measures amplification near resonance
+:::
 
 The physical archetype for every second-order linear ODE is a mass $m$ on a spring with stiffness $k$, connected to a dashpot (viscous damper) with damping coefficient $c$:
 
@@ -750,6 +828,14 @@ Three threads open from here:
 - A control systems engineer designing a PID controller must ensure the closed-loop characteristic equation has roots with negative real parts — the same stability condition as $\alpha < 0$ for the underdamped spring.
 - A physicist modelling a damped quantum harmonic oscillator writes down the same equation. The mathematics is unchanged; only the interpretation of $x$ differs.
 :::
+
+## What you can do now
+
+You can now classify a second-order linear system by its characteristic roots
+and predict whether it will decay smoothly, decay while oscillating, or respond
+dangerously to forcing. You can construct $y=y_c+y_p$, apply the standard
+forced-solution methods, and recognise why resonance is structurally different
+from the off-resonance case.
 
 ## Exercises
 

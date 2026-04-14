@@ -80,6 +80,24 @@ This chapter develops the language and tools for that. The central object is the
 
 ---
 
+## What this chapter helps you do
+
+This chapter teaches you how to read a coupled system as geometry. You will
+learn to:
+
+- rewrite higher-order equations as first-order systems
+- interpret trajectories in the phase plane as system behaviour over time
+- classify equilibria of linear systems using eigenvalues of a matrix
+- linearise a nonlinear system using the Jacobian, and use that linear model to predict local behaviour
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- The phase plane is not "a different problem" than the time plot; it is the same solution viewed in state space.
+- Eigenvalues are not abstract decoration here. Their signs and real/imag parts are the stability story.
+- Linearisation predicts local behaviour near an equilibrium. Far away, the nonlinear system can do something different.
+:::
+
 ## Systems of first-order ODEs
 
 ### From a single ODE to a system
@@ -159,6 +177,34 @@ The central question of phase plane analysis is: **what do trajectories do near 
 ---
 
 ## Linear systems and the eigenvalue method
+
+::: {.callout-note appearance="simple"}
+**How to read the main symbols**
+
+- **Symbol:** $\mathbf{x}(t)$
+- **Reads as:** "bold x of t"
+- **Means:** the system state (a vector of coupled quantities)
+- **Use when:** you want to describe multiple evolving variables at once
+- **Common misread:** $\mathbf{x}$ is not one number; it is a point in state space
+
+- **Symbol:** $\mathbf{x}' = A\mathbf{x}$
+- **Reads as:** "x prime equals A x"
+- **Means:** a linear system where the rate of change is a matrix acting on the state
+- **Use when:** you model coupled linear dynamics or a linearised nonlinear system
+- **Common misread:** matrix multiplication matters; $A\mathbf{x}$ is not componentwise multiplication
+
+- **Symbol:** $\lambda$
+- **Reads as:** "lambda" (an eigenvalue)
+- **Means:** growth/decay (real part) and rotation/oscillation (imag part) rates of trajectories
+- **Use when:** you classify stability of equilibria
+- **Common misread:** a positive real part means trajectories move away (instability) even if there is rotation
+
+- **Symbol:** $J$ (Jacobian)
+- **Reads as:** "J" (the Jacobian matrix)
+- **Means:** the matrix of partial derivatives that gives the best linear approximation near a point
+- **Use when:** you linearise a nonlinear system around an equilibrium
+- **Common misread:** $J$ depends on where you evaluate it; $J(x^*,y^*)$ is not the same everywhere
+:::
 
 ### The trial solution
 
@@ -834,6 +880,13 @@ The eigenvalues of $A$ are $\pm i$ and $\pm i\sqrt{3}$ — two pairs of purely i
 Every motion of the coupled system is a superposition of these two modes. If the initial conditions excite only one mode, that mode persists unchanged. If both are excited, the motion is a superposition — a beating pattern in which energy transfers back and forth between the two masses.
 
 ---
+
+## What you can do now
+
+You can now convert coupled dynamics into a state-space picture, classify
+equilibria of linear systems by eigenvalues, and use a Jacobian to linearise a
+nonlinear system near an equilibrium. In practice, this lets you predict
+stability and qualitative behaviour without needing a closed-form solution.
 
 ## Exercises
 

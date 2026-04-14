@@ -89,6 +89,24 @@ The Fourier series produces a discrete spectrum: a list of amplitudes at frequen
 
 The transition from series to transform is not just a mathematical technicality. It extends the analysis to any signal that decays to zero as $|t| \to \infty$ — a one-shot pulse, a finite-duration transient, or any square-integrable function. The series was restricted to functions that repeat forever. The transform has no such restriction.
 
+## What this chapter helps you do
+
+This chapter teaches you to move between time and frequency for signals that do
+not repeat forever. You will learn to:
+
+- understand the Fourier transform as the $L \to \infty$ limit of Fourier series
+- compute transforms from the definition in simple cases and from tables in practical cases
+- use properties (shifts, scaling, differentiation) to avoid re-integrating from scratch
+- use convolution as the "system response" operation, and multiplication as its frequency-domain shortcut
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- A short event in time spreads out in frequency; a narrow band of frequencies spreads out in time. This is the time-bandwidth tradeoff.
+- Keep conventions straight: where the $2\pi$ sits and the sign in the exponential.
+- When a function is not absolutely integrable (step, constant), the transform still exists in a distribution sense, but you should treat it as a limit/idealisation.
+:::
+
 ---
 
 ## From Fourier series to the Fourier integral
@@ -254,6 +272,22 @@ The inner bracket is the **Fourier transform** of $f$ evaluated at $\omega$.
 ---
 
 ## The Fourier transform
+
+::: {.callout-note appearance="simple"}
+**How to read the transform pair**
+
+- **Symbol:** $F(\omega)=\mathcal{F}\{f\}(\omega)=\int_{-\infty}^{\infty}f(t)e^{-i\omega t}\,dt$
+- **Reads as:** "F of omega is the Fourier transform of f"
+- **Means:** $F(\omega)$ measures how much of frequency $\omega$ is present in $f(t)$
+- **Use when:** frequency analysis, filtering, and linear time-invariant (LTI) systems
+- **Common misread:** $\omega$ is angular frequency (rad/s), not cycles per second
+
+- **Symbol:** $f(t)=\mathcal{F}^{-1}\{F\}(t)$
+- **Reads as:** "f is the inverse Fourier transform of F"
+- **Means:** you can reconstruct the original signal from its spectrum
+- **Use when:** you have modified $F(\omega)$ (filtering) and need the time-domain result
+- **Common misread:** inversion is not a separate guess; it is part of the same transform pair
+:::
 
 The **Fourier transform** of $f(t)$ is:
 
@@ -545,6 +579,16 @@ the domain where the calculation is easier.
 ---
 
 ## The convolution theorem in engineering
+
+::: {.callout-note appearance="simple"}
+**How to read convolution**
+
+- **Symbol:** $(f*h)(t)=\int_{-\infty}^{\infty}f(\tau)h(t-\tau)\,d\tau$
+- **Reads as:** "f convolved with h"
+- **Means:** output at time $t$ is a weighted sum of shifted copies of $h$, weighted by the input history
+- **Use when:** LTI systems (filters), where $h$ is the impulse response
+- **Common misread:** convolution is not ordinary multiplication; it mixes across time
+:::
 
 The convolution theorem is the most practically important property. A **linear time-invariant (LTI) system** is completely characterised by its **impulse response** $h(t)$: if you drive the system with input $f(t)$, the output is the convolution $y(t) = (f * h)(t)$.
 
@@ -852,6 +896,24 @@ In circuit analysis: the transfer function $H(s)$ in Laplace domain becomes $H(i
 <!-- STUDENT: This section assumes the reader has already met the Laplace transform — but Laplace transforms are not listed in this chapter's prerequisite_ids, only fourier_series. The connection is useful for those who know it, but the reader who hasn't seen $\mathcal{L}$ will find this section meaningless rather than clarifying. A brief orienting sentence ("The Laplace transform, which you may have seen in an ODE course, is related to the Fourier transform as follows") would help readers who arrive with the prerequisite but not both; alternatively, a more explicit flag that this section is for readers who have already met the Laplace transform would prevent others from feeling lost. -->
 
 ---
+
+## Where this goes
+
+This chapter is the bridge from periodic mode decomposition (Fourier series) to
+continuous spectral analysis. The next chapter in this block uses the transform
+as a solver tool: many PDEs become algebraic in $\omega$ after transforming in
+space or time, then you invert back.
+
+More broadly, the transform is the foundation for frequency-response thinking:
+LTI systems become multiplication by a transfer function, and filtering becomes
+"shape the spectrum, then invert."
+
+## What you can do now
+
+You can now compute Fourier transforms in basic cases, use the property table
+to avoid redoing integrals, and use convolution/multiplication to reason about
+LTI system behaviour. You should also be able to keep track of conventions and
+interpret $\omega$ as angular frequency.
 
 ## Exercises
 

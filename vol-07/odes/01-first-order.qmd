@@ -87,9 +87,49 @@ This chapter develops two techniques — separation of variables and the integra
 
 ---
 
+## What this chapter helps you do
+
+This chapter teaches you how to solve for a *function* when you are given a rule
+for its rate of change. You will learn to:
+
+- recognise when a first-order ODE is separable, and turn it into two integrals
+- recognise a first-order linear ODE, and use an integrating factor to make the left side a perfect derivative
+- use an initial condition $y(x_0)=y_0$ to select one curve from a family of solutions
+- check whether you should expect one solution or many (existence and uniqueness)
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- A general solution contains an arbitrary constant; an initial condition removes it.
+- Treating $\frac{dy}{dx}$ like a fraction is a notational convenience; it is valid in the separable method, but you still have to separate *correctly* before integrating.
+- When you integrate, keep track of the constant of integration and where it belongs.
+:::
+
 ## The ODE problem
 
 A function $y(x)$ satisfies an **ordinary differential equation** when substituting $y$ and its derivatives into the equation produces an identity. The simplest possible example:
+
+::: {.callout-note appearance="simple"}
+**How to read the ODE notation**
+
+- **Symbol:** $y'$ / $\dfrac{dy}{dx}$
+- **Reads as:** "y prime" / "d y by d x"
+- **Means:** the instantaneous rate of change of $y$ with respect to $x$
+- **Use when:** you are describing how a quantity evolves as the input changes
+- **Common misread:** $y'$ is not a separate variable; it is a derivative of $y(x)$
+
+- **Symbol:** $y(x_0)=y_0$
+- **Reads as:** "y of x-zero equals y-zero"
+- **Means:** an initial condition (the solution must pass through a specific point)
+- **Use when:** you need one specific solution curve, not a family
+- **Common misread:** the initial condition does not solve the ODE by itself; it selects among solutions
+
+- **Symbol:** $C$
+- **Reads as:** "C" (a constant)
+- **Means:** the arbitrary constant created by integration
+- **Use when:** you integrate and get a family of antiderivatives
+- **Common misread:** you cannot drop $C$ before using the initial condition
+:::
 
 $$y' = y$$
 
@@ -330,6 +370,16 @@ $$y' + P(x)\,y = Q(x)$$
 This is the **standard form** of a first-order linear ODE.
 
 ### The integrating factor
+
+::: {.callout-note appearance="simple"}
+**How to read the integrating factor**
+
+- **Symbol:** $\mu(x)$
+- **Reads as:** "mu of x"
+- **Means:** a helper function you choose so the left side becomes $\dfrac{d}{dx}[\mu(x)\,y]$
+- **Use when:** the ODE is in standard linear form $y' + P(x)\,y = Q(x)$
+- **Common misread:** $\mu$ is not mysterious physics; it is a bookkeeping choice that makes the product rule do the work
+:::
 
 The key idea: multiply both sides by a function $\mu(x)$, chosen so that the left side becomes the derivative of a product. If
 
@@ -602,6 +652,14 @@ satisfy $y' = y^{2/3}$ and $y(0) = 0$. There is not a unique solution through th
 **Engineering consequence.** When the theorem applies, you know that any reasonable numerical method converges to the same solution — there is no ambiguity about which solution you are approximating. When it fails, a numerical solver may track different solution branches depending on the step size or starting perturbation, and the results can be misleading. Check the theorem first.
 
 ---
+
+## What you can do now
+
+You can now look at a first-order ODE and decide which of two core methods
+applies: separation or integrating factor. You can produce a general solution,
+apply an initial condition to get a particular solution, and you know when it
+is worth checking existence and uniqueness before trusting an answer
+(especially a numerical one).
 
 ## Exercises
 

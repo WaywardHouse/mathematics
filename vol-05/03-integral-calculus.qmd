@@ -104,7 +104,45 @@ after an hour. You know the rate at each moment. You need the total.
 
 These are the same problem. This chapter builds the tool.
 
+## What this chapter helps you do
+
+This chapter is about turning rates into totals and thin slices into whole
+quantities. We begin with the geometric picture of accumulation and the
+Riemann-sum idea that builds area out of many small contributions. Then we
+use the Fundamental Theorem of Calculus to connect that picture to
+antiderivatives. After that, the main techniques become usable:
+integration rules, substitution, and area calculations. The goal is not only
+to compute an integral, but to understand what has accumulated and why the
+integral represents that total.
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+Students often blur two related but different ideas:
+
+- the **definite integral**, which gives a total over an interval
+- the **indefinite integral**, which gives a family of antiderivatives
+
+The Fundamental Theorem connects them, but they are not the same object.
+:::
+
 ## What the notation is saying
+
+::: {.callout-note appearance="simple"}
+**How to read integral notation**
+
+- **Symbol:** $\int_a^b f(x)\,dx$
+- **Reads as:** "the integral of $f(x)$ with respect to $x$, from $a$ to $b$"
+- **Means:** the total accumulated amount (often area) built from values of $f$ between $a$ and $b$
+- **Use when:** you want a total over an interval (distance from velocity, mass from density, probability from a PDF)
+- **Common misread:** the result is a *number*, not a function
+
+- **Symbol:** $\int f(x)\,dx$
+- **Reads as:** "the integral of $f(x)$ with respect to $x$"
+- **Means:** a family of functions whose derivative is $f(x)$ (an antiderivative), written with a $+C$
+- **Use when:** you are recovering a function from its rate of change
+- **Common misread:** forgetting the constant of integration
+:::
 
 The integral sign $\int$ is an elongated S — it stands for *sum*. The
 $dx$ at the end names the variable we are integrating with respect to.
@@ -840,6 +878,15 @@ integrate is the ability to solve differential equations.
   the length of the interval.
 
 ---
+
+## What you can do now
+
+You can now read an integral as accumulation rather than as a decorative
+symbol. You should be able to move between area, total change, and
+antiderivative language; use the Fundamental Theorem to evaluate definite
+integrals; and recognise when substitution is the right structural move.
+After computing an integral, the key habit is interpretive: say what total
+quantity it represents.
 
 ## Exercises
 

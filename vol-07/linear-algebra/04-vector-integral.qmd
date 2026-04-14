@@ -91,7 +91,48 @@ This is the deepest efficiency in classical calculus: boundary integrals
 and interior integrals are two faces of the same coin. Green's theorem,
 Stokes' theorem, and the Divergence theorem are the exchange rate.
 
+## What this chapter helps you do
+
+This chapter teaches you how to accumulate a field over curves, surfaces, and
+volumes, and how to swap a hard integral for an easier one by moving between a
+region and its boundary. You will learn to:
+
+- compute line and surface integrals as "total effect along/through"
+- recognise conservative fields and path independence
+- use Green's, Stokes', and the Divergence theorem as boundary/interior exchange rules
+- interpret what these integrals mean in flow, flux, circulation, and conservation
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- Orientation matters. The sign of a line or surface integral depends on the direction you traverse the curve and the choice of normal.
+- The theorems are bookkeeping laws: they tell you when two different-looking integrals are the same quantity.
+- When direct integration feels brutal, ask whether a theorem moves the work to a boundary (or to an interior) where the integrand is simpler.
+:::
+
 ## Line integrals
+
+::: {.callout-note appearance="simple"}
+**How to read the core symbols**
+
+- **Symbol:** $\int_C \mathbf{F}\cdot d\mathbf{r}$
+- **Reads as:** "line integral of F along C"
+- **Means:** total work/circulation of the field along a path
+- **Use when:** work done by a force field, circulation of a velocity field
+- **Common misread:** $d\mathbf{r}$ encodes direction along the curve; reversing direction flips the sign
+
+- **Symbol:** $\iint_S \mathbf{F}\cdot d\mathbf{S}$
+- **Reads as:** "surface integral of F over S"
+- **Means:** total flux through a surface
+- **Use when:** flow through a boundary, Gauss's law, mass/heat transfer
+- **Common misread:** $d\mathbf{S}$ includes the normal direction; changing orientation flips the sign
+
+- **Symbol:** $\oint_C(\cdot)$ / $\oiint_{\partial V}(\cdot)$
+- **Reads as:** "around the closed curve" / "over the closed surface"
+- **Means:** the boundary is closed (no endpoints / no edges)
+- **Use when:** circulation around a loop, flux out of a closed surface
+- **Common misread:** closed integrals are not automatically zero; they are zero only under specific conditions (e.g., conservative fields)
+:::
 
 A line integral accumulates the effect of a field along a curve. There
 are two kinds: integrals of scalar fields and integrals of vector fields.
@@ -972,6 +1013,13 @@ $$\oint_C \mathbf{E} \cdot d\mathbf{r} = \iint_S (\nabla \times \mathbf{E}) \cdo
 The EMF (voltage) around the circuit equals the negative rate of change
 of magnetic flux through it. This is the principle behind every
 transformer and generator ever built.
+
+## What you can do now
+
+You can now compute line and surface integrals as totals of work, circulation,
+and flux, and you can use Green's, Stokes', and the Divergence theorem to move
+between a region and its boundary. Most importantly, you can look at a problem
+and decide which side (boundary or interior) is simpler to integrate.
 
 ## Exercises
 

@@ -111,6 +111,29 @@ It is the difference between "this has always worked so far" and "this
 cannot fail." Most of the mathematics you have seen up to now has been the
 first kind. This chapter introduces the second.
 
+## What this chapter helps you do
+
+This chapter shows how mathematics moves from convincing examples to
+guaranteed arguments. We begin by separating pattern-spotting from proof.
+Then we lay out the logical parts of a proof and the notation that signals
+them. After that we work through four common proof methods, examine the ways
+arguments fail, and finish with examples that show proof as an active craft
+rather than a ritual. The aim is not to make proof feel easy on first
+contact. It is to make its purpose and structure legible.
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+When a proof feels hard, the problem is often orientation rather than algebra.
+Before pushing symbols around, ask:
+
+- What am I allowed to assume?
+- What exactly must be shown?
+- Which proof method fits that gap?
+
+Those three questions usually matter more than the first line of calculation.
+:::
+
 ## A pattern that lies to you
 
 Consider the expression $n^2 - n + 41$. Try a few values:
@@ -274,6 +297,28 @@ Everything in between is your work.
 ### The notation of logical structure
 
 Two symbols carry most of the logical load:
+
+::: {.callout-note appearance="simple"}
+**How to read the proof symbols**
+
+- **Symbol:** $P \Rightarrow Q$
+- **Reads as:** "P implies Q" or "if P, then Q"
+- **Means:** whenever P is true, Q must be true
+- **Use when:** you are proving a conditional statement
+- **Common misread:** the arrow has a direction; $P \Rightarrow Q$ does not mean $Q \Rightarrow P$
+
+- **Symbol:** $P \Leftrightarrow Q$
+- **Reads as:** "P if and only if Q"
+- **Means:** each one implies the other (two directions)
+- **Use when:** you are proving two statements are equivalent
+- **Common misread:** proving only one direction is not enough
+
+- **Symbol:** $\forall$ / $\exists$
+- **Reads as:** "for all" / "there exists"
+- **Means:** a claim about every object / at least one object
+- **Use when:** you need to be explicit about what your statement ranges over
+- **Common misread:** mixing up "for all" and "there exists" changes the statement completely
+:::
 
 $P \Rightarrow Q$ means **$P$ implies $Q$**: if $P$ is true, then $Q$
 must be true. Read it as "if $P$, then $Q$." The arrow shows direction —
@@ -794,6 +839,15 @@ a mathematical model, and the check is a proof. DO-178C (aviation
 software standard) and IEC 62304 (medical software) both recognise
 formal methods. The mathematical core is the logic introduced here.
 :::
+
+## What you can do now
+
+You should now be better able to separate evidence from proof, identify the
+hypothesis and conclusion of a statement, and choose among direct proof,
+contrapositive, contradiction, and induction with more intention. Just as
+important, you should be better able to diagnose why an argument fails. The
+next time you meet a theorem in calculus or algebra, you are no longer
+limited to accepting it on trust alone.
 
 ## Exercises
 

@@ -106,6 +106,24 @@ Three operators — gradient, divergence, curl — encode the geometry of how
 any field varies through space. Every major equation in physics is written
 in terms of them.
 
+## What this chapter helps you do
+
+This chapter gives you a vocabulary for how fields change in space. You will
+learn to:
+
+- treat a scalar or vector field as "a value at every point"
+- compute and interpret the gradient, divergence, and curl
+- recognise what each operator is measuring (steepest increase, net outflow, local rotation)
+- connect these operators to real map and flow questions (slope/aspect, sources/sinks, circulation)
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- $\nabla$ is an operator. It is not a vector you plug numbers into until you decide what it is acting on.
+- Grad/div/curl are three different questions about the same field. Do not treat them as interchangeable formulas.
+- Interpretation matters: after computing, say what the sign and direction mean physically.
+:::
+
 ## Vectors: dot and cross products
 
 A vector in three dimensions is a triple of numbers, written
@@ -149,6 +167,46 @@ $$\mathbf{u} \times \mathbf{v} = (0 \cdot 0 - 0 \cdot 1,\; 0 \cdot 0 - 1 \cdot 0
 This is correct: the right-hand rule applied to $\mathbf{i} \times \mathbf{j}$ gives $\mathbf{k}$, pointing out of the $xy$-plane.
 
 ## Scalar and vector fields
+
+::: {.callout-note appearance="simple"}
+**How to read the field operators**
+
+- **Symbol:** $\nabla$
+- **Reads as:** "nabla" or "del"
+- **Means:** a vector-derivative operator (you apply it to a field)
+- **Use when:** forming grad, div, curl, and the Laplacian
+- **Common misread:** $\nabla$ by itself is not "the gradient"; it becomes grad/div/curl depending on how it is combined and what it acts on
+
+- **Symbol:** $\nabla f$
+- **Reads as:** "grad f"
+- **Means:** the direction and rate of steepest increase of the scalar field $f$
+- **Use when:** slope/aspect, optimisation, potentials and forces
+- **Common misread:** $\nabla f$ is a vector field, not a number
+
+- **Symbol:** $\nabla \cdot \mathbf{F}$
+- **Reads as:** "div F"
+- **Means:** net outflow per unit volume (sources/sinks) of the vector field
+- **Use when:** incompressible flow, conservation laws, flux balance
+- **Common misread:** divergence is a scalar, not a vector
+
+- **Symbol:** $\nabla \times \mathbf{F}$
+- **Reads as:** "curl F"
+- **Means:** local rotation tendency of the vector field
+- **Use when:** vorticity, circulation, electromagnetism
+- **Common misread:** curl is a vector; a nonzero curl means "paddle-wheel spins", not "the arrows bend"
+
+- **Symbol:** $\nabla^2 f$
+- **Reads as:** "del squared f" or "Laplacian of f"
+- **Means:** divergence of the gradient (a scalar measure of how a field differs from its local average)
+- **Use when:** diffusion, heat, wave and potential equations
+- **Common misread:** $\nabla^2$ is not ordinary squaring
+
+- **Symbol:** $D_{\mathbf{u}}f$
+- **Reads as:** "directional derivative of f in the direction u"
+- **Means:** rate of change of $f$ if you move in direction $\mathbf{u}$
+- **Use when:** you care about change along a path or a physical direction
+- **Common misread:** $\mathbf{u}$ should be a unit vector if you want a true rate per unit distance
+:::
 
 A **scalar field** assigns a single number to each point in space:
 $f : \mathbb{R}^3 \to \mathbb{R}$. Examples:
@@ -693,6 +751,14 @@ this simplifies to $\nabla \cdot \mathbf{v} = 0$.
 
 The operators are the same in every case. The domain changes.
 :::
+
+## What you can do now
+
+You can now take a field and ask three different, precise questions about how
+it changes: steepest increase (gradient), net outflow (divergence), and local
+rotation (curl). You can compute these operators and, just as importantly,
+interpret their sign and direction in a concrete context (maps, fluids,
+electromagnetism, optimisation).
 
 ## Exercises
 

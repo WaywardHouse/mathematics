@@ -93,12 +93,52 @@ tells Google which web pages matter, tells a structural engineer where a
 building will sway, and tells a data scientist which direction in a dataset
 carries the most information.
 
+## What this chapter helps you do
+
+This chapter teaches you how to find and interpret the "natural modes" of a
+matrix. You will learn to:
+
+- recognise an eigenvalue problem as "find directions that only scale"
+- compute eigenvalues and eigenvectors from the characteristic equation
+- connect eigenvalues to behaviour: growth/decay, oscillation, dominant patterns, resonant frequencies
+- diagonalise a matrix when possible, and use that to simplify dynamics and powers
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- Eigenvectors are directions; eigenvalues are scaling factors. Keep the geometry in view.
+- The determinant condition $\det(A-\lambda I)=0$ is the "nontrivial solutions exist" condition, not a trick.
+- Not every matrix is diagonalisable. When eigenvectors are missing, the geometry changes.
+:::
+
 ## The eigenvalue problem
 
 Multiply a vector by a matrix and you generally get a new vector pointing in a
 completely different direction. But for certain special vectors, the matrix acts
 more simply — it only scales the vector, leaving its direction unchanged (or
 exactly reversed). These are **eigenvectors**.
+
+::: {.callout-note appearance="simple"}
+**How to read the main symbols**
+
+- **Symbol:** $A\mathbf{x}=\lambda\mathbf{x}$
+- **Reads as:** "A x equals lambda x"
+- **Means:** $\mathbf{x}$ is a direction that is not rotated by $A$, only scaled by $\lambda$
+- **Use when:** you want the system's natural directions/modes
+- **Common misread:** $\lambda$ is not chosen; it is constrained by the matrix
+
+- **Symbol:** $\det(A-\lambda I)=0$
+- **Reads as:** "determinant of A minus lambda I equals zero"
+- **Means:** values of $\lambda$ that make $(A-\lambda I)$ singular (so nonzero eigenvectors exist)
+- **Use when:** computing eigenvalues
+- **Common misread:** solving for $\lambda$ is only step one; you still must find eigenvectors
+
+- **Symbol:** $A=PDP^{-1}$
+- **Reads as:** "A equals P D P-inverse"
+- **Means:** diagonalisation (change to a basis of eigenvectors)
+- **Use when:** simplifying dynamics, powers of matrices, and decoupling systems
+- **Common misread:** diagonalisation requires enough independent eigenvectors; it is not always possible
+:::
 
 Formally: $\mathbf{x}$ is an eigenvector of $A$ with eigenvalue $\lambda$ if
 
@@ -773,6 +813,13 @@ use the same eigendecomposition under the hood.
 
 The matrix changes. The method does not.
 :::
+
+## What you can do now
+
+You can now identify eigenvalue problems, compute eigenvalues and eigenvectors
+in small cases, and interpret what they mean for a system's natural behaviour.
+You also know what diagonalisation is buying you: a change of basis that can
+turn a coupled system into independent modes when enough eigenvectors exist.
 
 ## Exercises
 

@@ -5,6 +5,9 @@ project:
     - _data/
     - assets/
 
+filters:
+  - filters/notation-box.lua
+
 book:
   title: "Wayward House Mathematics"
   subtitle: "A series for people who want to understand, not just pass"

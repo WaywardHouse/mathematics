@@ -83,6 +83,25 @@ The answer is integration. Multiply the function by each candidate sine or cosin
 
 ---
 
+## What this chapter helps you do
+
+This chapter teaches you how to decompose a periodic function into pure
+frequencies and compute how much of each frequency is present. You will learn to:
+
+- recognise when a function is periodic and choose a convenient interval for one period
+- write the Fourier series as a sum of sine/cosine modes
+- compute the coefficients $a_n$ and $b_n$ by integration (using orthogonality)
+- interpret what the coefficients mean: which harmonics are strong, which are absent
+- understand what convergence means near jumps (Gibbs phenomenon) without being surprised by it
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- The series is infinite. In practice you use partial sums: "first N modes."
+- Symmetry (even/odd) is free power: it can make half the coefficients exactly zero.
+- A Fourier series approximates discontinuities in a specific way: more terms improves the fit everywhere except at the jump itself, where the overshoot persists but squeezes into a smaller region.
+:::
+
 ## Periodic functions
 
 A function $f$ is **periodic with period $T$** if $f(x + T) = f(x)$ for all $x$. The smallest such $T > 0$ is called the **fundamental period**.
@@ -100,6 +119,22 @@ Familiar examples: $\sin(nx)$ and $\cos(nx)$ have period $2\pi/n$; the square wa
 ## The Fourier series
 
 For a function $f$ of period $2L$, the **Fourier series** is:
+
+::: {.callout-note appearance="simple"}
+**How to read the Fourier series notation**
+
+- **Symbol:** $\displaystyle f(x)=\frac{a_0}{2}+\sum_{n=1}^{\infty}\left[a_n\cos\!\left(\frac{n\pi x}{L}\right)+b_n\sin\!\left(\frac{n\pi x}{L}\right)\right]$
+- **Reads as:** "f equals a constant plus a sum of cosine and sine modes"
+- **Means:** each term is one pure frequency; the coefficients tell you how strong that frequency is
+- **Use when:** you need frequency content of a periodic signal or an initial condition for a PDE
+- **Common misread:** $n$ is an index (1,2,3,...) not a variable; $L$ sets the period ($2L$)
+
+- **Symbol:** $a_n, b_n$
+- **Reads as:** "a-sub-n, b-sub-n"
+- **Means:** cosine and sine amplitudes of the $n$th harmonic
+- **Use when:** reconstructing the signal from its modes
+- **Common misread:** the coefficients are found by integrals over one period; they are not chosen by guesswork
+:::
 
 $$f(x) = \frac{a_0}{2} + \sum_{n=1}^{\infty}\left[a_n\cos\!\left(\frac{n\pi x}{L}\right) + b_n\sin\!\left(\frac{n\pi x}{L}\right)\right]$$
 
@@ -831,6 +866,20 @@ has general solution $u(x,t) = \sum_{n=1}^{\infty} B_n\sin(n\pi x/L)\,e^{-\alpha
 The coefficients $B_n$ are exactly the Fourier sine coefficients of the initial temperature profile $u(x,0) = f(x)$. Higher-frequency modes (large $n$) decay exponentially faster — this is why sharp temperature gradients smooth out quickly while broad gradients persist. The Fourier series is not just a tool for computing the answer: it explains the physics.
 
 ---
+
+## Where this goes
+
+Fourier series is the prerequisite for two next steps in this volume.
+
+**Fourier transforms (next chapter).** Fourier series decomposes *periodic* signals into discrete frequencies. Fourier transforms extend the same idea to non-periodic signals, giving a continuous frequency spectrum. The computational tools (FFT, filtering, spectrum analysis) make more sense once the series picture is secure.
+
+**Partial differential equations (later in this block).** Separation of variables turns many PDEs into independent Fourier mode problems. Each sine/cosine mode evolves on its own, and the Fourier coefficients encode the initial condition.
+
+Complex analysis enriches both: the complex-exponential form of the series is a first encounter with exponentials as the natural language of oscillation, and it points toward contour-integral interpretations later.
+
+## What you can do now
+
+You can now take a periodic function, compute its Fourier coefficients, and build an approximation from the first few modes. You can use symmetry to simplify the computation, interpret coefficients as frequency content, and understand what convergence does near discontinuities (Gibbs phenomenon).
 
 ## Exercises
 

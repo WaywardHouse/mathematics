@@ -90,9 +90,50 @@ Before any of that, we need the language: matrices and the algebra of matrix ope
 
 ---
 
+## What this chapter helps you do
+
+This chapter turns "a pile of equations" into a single object you can reason
+about and solve systematically. You will learn to:
+
+- read and manipulate matrices as structured data, not as a wall of numbers
+- rewrite a linear system as $\mathbf{A}\mathbf{x}=\mathbf{b}$
+- solve systems reliably using Gaussian elimination (row reduction)
+- use rank to predict whether a solution is unique, nonexistent, or infinite
+- reuse work with LU factorisation when the same matrix is solved repeatedly
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+- Matrix notation hides bookkeeping, not meaning. Always keep track of what the entries represent (currents, forces, constraints).
+- Row operations change how the system is written, not what it *means*: they preserve the solution set.
+- Rank is a structural count of independent information. It tells you "how many constraints really exist" before you do much arithmetic.
+:::
+
 ## Matrices and operations
 
 A **matrix** is a rectangular array of numbers. The matrix $\mathbf{A}$ with $m$ rows and $n$ columns is called an $m \times n$ matrix:
+
+::: {.callout-note appearance="simple"}
+**How to read the core symbols**
+
+- **Symbol:** $\mathbf{A}$, $a_{ij}$
+- **Reads as:** "bold A", "a sub i j"
+- **Means:** a matrix and its entries (row i, column j)
+- **Use when:** you need to store or apply a structured collection of coefficients
+- **Common misread:** the first index is the row, the second is the column
+
+- **Symbol:** $\mathbf{A}^T$
+- **Reads as:** "A transpose"
+- **Means:** swap rows and columns
+- **Use when:** dot products, symmetry, least squares, and geometric interpretations
+- **Common misread:** transpose is not an inverse; it does not undo multiplication
+
+- **Symbol:** $\mathbf{I}_n$
+- **Reads as:** "identity matrix of order n"
+- **Means:** the matrix version of 1 (it leaves vectors unchanged)
+- **Use when:** describing inverses, solving, and factorisations
+- **Common misread:** $\mathbf{I}$ depends on size; $\mathbf{I}_3$ and $\mathbf{I}_4$ are different objects
+:::
 
 $$\mathbf{A} = \begin{pmatrix} a_{11} & a_{12} & \cdots & a_{1n} \\ a_{21} & a_{22} & \cdots & a_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ a_{m1} & a_{m2} & \cdots & a_{mn} \end{pmatrix}$$
 
@@ -418,6 +459,22 @@ plane.
 
 A **system of $m$ linear equations in $n$ unknowns** has the form
 
+::: {.callout-note appearance="simple"}
+**How to read $\mathbf{A}\mathbf{x}=\mathbf{b}$**
+
+- **Symbol:** $\mathbf{A}\mathbf{x}=\mathbf{b}$
+- **Reads as:** "A x equals b"
+- **Means:** a compact way to write many linear equations at once
+- **Use when:** coefficients and unknowns are easier to manage as structured objects (especially for large systems)
+- **Common misread:** $\mathbf{A}\mathbf{x}$ is matrix multiplication (a weighted sum of columns), not componentwise multiplication
+
+- **Symbol:** $[\mathbf{A}\,|\,\mathbf{b}]$
+- **Reads as:** "A augmented with b"
+- **Means:** the coefficient matrix with the right-hand side appended as an extra column
+- **Use when:** doing row operations (Gaussian elimination) without rewriting equations
+- **Common misread:** row operations act on the whole augmented matrix, including the $\mathbf{b}$ column
+:::
+
 $$\begin{aligned} a_{11}x_1 + a_{12}x_2 + \cdots + a_{1n}x_n &= b_1 \\ a_{21}x_1 + a_{22}x_2 + \cdots + a_{2n}x_n &= b_2 \\ &\vdots \\ a_{m1}x_1 + a_{m2}x_2 + \cdots + a_{mn}x_n &= b_m \end{aligned}$$
 
 In matrix notation this is $\mathbf{A}\mathbf{x} = \mathbf{b}$, where $\mathbf{A}$ is the $m \times n$ **coefficient matrix**, $\mathbf{x}$ is the $n \times 1$ vector of unknowns, and $\mathbf{b}$ is the $m \times 1$ right-hand side vector.
@@ -635,6 +692,16 @@ The solution $x_1 = \tfrac{11}{2}$, $x_2 = 0$, $x_3 = \tfrac{9}{2}$ is visible d
 ## Solution types and rank
 
 Not every system $\mathbf{A}\mathbf{x} = \mathbf{b}$ has a unique solution. Three outcomes are possible, and the row-reduced form reveals which one applies.
+
+::: {.callout-note appearance="simple"}
+**How to read rank**
+
+- **Symbol:** $\mathrm{rank}(\mathbf{A})$
+- **Reads as:** "rank of A"
+- **Means:** the number of independent rows/columns (the number of pivots after row reduction)
+- **Use when:** predicting whether constraints are independent and whether a solution is determined
+- **Common misread:** rank is not "how big the matrix is"; it is how much independent information it contains
+:::
 
 ### The three cases
 
@@ -994,6 +1061,13 @@ $$\begin{pmatrix} \cos\theta_1 & \cos\theta_2 & 0 \\ \sin\theta_1 & \sin\theta_2
 where $F_1, F_2$ are member forces, $R$ is a reaction force, and $\theta_1, \theta_2$ are member angles. Solving this gives the force in each member — positive values indicate tension, negative indicate compression. A member under too much compression will buckle; too much tension and it will yield. The linear system does not just find numbers: it tells the structural engineer which members to upsize.
 
 ---
+
+## What you can do now
+
+You can now compress a system into $\mathbf{A}\mathbf{x}=\mathbf{b}$, solve it
+reliably by row reduction, and use rank language to predict whether a model is
+determined, inconsistent, or underdetermined. You also have the practical
+engineering idea of LU: factor once, then solve many times.
 
 ## Exercises
 

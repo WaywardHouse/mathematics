@@ -103,6 +103,28 @@ You've already seen this pattern in another form. In the last chapter you
 watched sequences converge to numbers they never quite reached. A limit
 is that same idea applied to functions.
 
+## What this chapter helps you do
+
+This chapter gives you a precise way to talk about what a function is doing
+near a point, especially when direct substitution stops being reliable. We
+start with the intuitive idea of approach, then move into standard techniques
+for evaluating limits. After that, we separate the idea of a limit from the
+idea of continuity, so "what happens near the point" does not get confused
+with "what happens at the point." The final section shows how all of this is
+made fully precise with the $\varepsilon$-$\delta$ definition.
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+Students often collapse two different questions into one:
+
+- What value does $f(x)$ approach as $x$ gets close to $a$?
+- What value, if any, does the function actually have at $x = a$?
+
+Limits answer the first question. Continuity asks whether the two answers
+agree.
+:::
+
 ## The idea before the notation
 
 Three situations will make this concrete. Notice what they have in common.
@@ -137,6 +159,16 @@ ordinary evaluation becomes unreliable.
 
 ## What the notation is saying
 
+::: {.callout-note appearance="simple"}
+**How to read the main symbol**
+
+- **Symbol:** $\lim_{x \to a} f(x) = L$
+- **Reads as:** "the limit of $f(x)$ as $x$ approaches $a$ is $L$"
+- **Means:** when $x$ is close to $a$ (but not equal), the outputs $f(x)$ are close to $L$
+- **Use when:** direct substitution is unreliable (holes, jumps, asymptotes, boundaries)
+- **Common misread:** $\lim_{x \to a} f(x)$ is **not** automatically $f(a)$
+:::
+
 The symbol
 
 $$\lim_{x \to a} f(x) = L$$
@@ -160,6 +192,16 @@ different questions, and calculus keeps them separate on purpose.
 
 Sometimes the approach from the left and the approach from the right give
 different values. Two separate notations handle this.
+
+::: {.callout-note appearance="simple"}
+**One-sided limits**
+
+- **Symbol:** $\lim_{x \to a^-} f(x)$ / $\lim_{x \to a^+} f(x)$
+- **Reads as:** "limit from the left" / "limit from the right"
+- **Means:** you only allow $x$ to approach $a$ from one side of the number line
+- **Use when:** the function switches rule at a boundary, or has a jump
+- **Common misread:** a two-sided limit exists only if the left and right limits agree
+:::
 
 $$\lim_{x \to a^-} f(x)$$
 
@@ -927,6 +969,15 @@ series convergence. The concepts are one family, not two separate topics.
   $\to \infty$ is a limit question. Whether the filter "works" depends on
   whether that limit is zero.
 :::
+
+## What you can do now
+
+You should now be able to tell when a question is about nearby behaviour and
+when it is about the function's actual value. You can test whether a limit
+exists, choose an appropriate technique for evaluating it, and use the three
+continuity conditions without mixing them together. If the $\varepsilon$-$\delta$
+definition still feels more formal than intuitive, that is normal: its job is
+to make your existing picture of "getting arbitrarily close" exact.
 
 ## Exercises
 

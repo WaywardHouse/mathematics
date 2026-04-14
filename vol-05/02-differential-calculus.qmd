@@ -96,6 +96,26 @@ arbitrarily close to some point. The speedometer reading *is* a limit —
 the limit of average speeds over shorter and shorter time intervals. This
 chapter builds that limit into a systematic tool.
 
+## What this chapter helps you do
+
+This chapter turns the idea of a limit into a practical language of change.
+We begin with the derivative as a limit of average rates, then build the
+standard differentiation rules that make real calculations possible. After
+that, we use first and second derivatives to describe shape, motion, and
+optimisation. The central question throughout is simple: what does this
+derivative say about how the quantity is changing right now?
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+A derivative is not just the result of a rule. It is a rate. Whenever you
+differentiate, pause long enough to name:
+
+- what quantity is changing
+- what it is changing with respect to
+- what the sign and size of the derivative mean in context
+:::
+
 ## The limit definition of the derivative
 
 The derivative has a precise definition as a limit. Start with the
@@ -125,6 +145,22 @@ average change as the interval collapses to a point.
 ## What the notation is saying
 
 Two notations for the derivative are standard. You will need both.
+
+::: {.callout-note appearance="simple"}
+**How to read derivative notation**
+
+- **Symbol:** $f'(x)$
+- **Reads as:** "f prime of x"
+- **Means:** the instantaneous rate of change of $f$ at input $x$ (the tangent slope)
+- **Use when:** you're working with a named function and a single clear variable
+- **Common misread:** $f'(x)$ is a *new function* (it outputs a rate); it is not the same as $f(x)$
+
+- **Symbol:** $\dfrac{dy}{dx}$
+- **Reads as:** "d y by d x"
+- **Means:** the derivative of $y$ with respect to $x$ (what changes, and what it changes with respect to)
+- **Use when:** units or multiple variables matter
+- **Common misread:** it is not a literal fraction, but it behaves like one in many algebraic manipulations
+:::
 
 **Prime notation** (Newton): $f'(x)$, read *f prime of x*. Clean and
 fast to write. Used when there is no ambiguity about which variable
@@ -771,6 +807,15 @@ The entire Vol 7 ODE sequence begins here.
   direction of steepest descent. The chain rule — applied thousands of
   times through a deep network — is called backpropagation.
 :::
+
+## What you can do now
+
+You can now move among three connected views of differentiation: a limit of
+average change, the slope of a tangent line, and a computational tool for
+rates, turning points, and optimisation. You should be able to differentiate
+standard expressions, interpret the sign of a derivative in context, and use
+first and second derivatives to reason about local behaviour. The next chapter
+reverses the question: given a rate, recover the total accumulation.
 
 ## Exercises
 
