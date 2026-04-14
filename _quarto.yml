@@ -6,6 +6,7 @@ project:
     - assets/
 
 filters:
+  - filters/chapter-onramp.lua
   - filters/notation-box.lua
 
 book:

@@ -25,13 +25,14 @@ Every chapter opens with two or three concrete situations that share the same un
 
 After the opening:
 
-1. The notation is introduced and read in plain English beside it
-1. A short "Symbols to keep handy" box collects the repeated notation and reads it aloud
-2. The method is shown, stepped through, with a verification
-3. A brief explanation of why the method works
-4. Two to four worked examples from different fields
-5. Where the chapter leads — the specific topics it opens up
-6. Exercises
+1. A short "What this chapter helps you do" section tells you the main move and what to watch for
+2. A "Symbols to keep handy" box collects the repeated notation and reads it aloud
+3. The notation is introduced and read in plain English at the moment it is first needed
+4. The method is shown, stepped through, with a verification
+5. A brief explanation of why the method works
+6. Two to four worked examples from different fields
+7. Where the chapter leads — the specific topics it opens up
+8. Exercises
 
 ## The exercises
 

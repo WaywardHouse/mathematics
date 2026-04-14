@@ -155,7 +155,7 @@ local function find_insertion_point(blocks)
       end
       local txt = pandoc.utils.stringify(b.content):lower()
       if txt == "what this chapter helps you do" then
-        helps_you = i
+        helps_you = i + 1
         break
       end
     end
@@ -179,4 +179,3 @@ function Pandoc(doc)
   table.insert(doc.blocks, idx, box)
   return doc
 end
-

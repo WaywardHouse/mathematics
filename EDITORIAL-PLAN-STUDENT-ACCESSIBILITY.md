@@ -486,3 +486,14 @@ chapter:
 - Do I know why the method works, not only what steps to follow?
 - Do I know the mistake I am most likely to make?
 - Do I feel more able to continue than when I started?
+
+## Repository implementation notes (this codebase)
+
+This repository now supports two series-wide accessibility conventions at
+render time:
+
+- A generated **What this chapter helps you do** section is inserted near the
+  top of any chapter that has `axiom` + `rewrite` in front matter but does not
+  already include that section in the body (`chapter_onramp: false` opts out).
+- A generated **Symbols to keep handy** callout is inserted for chapters with
+  `notation_introduced` (`notation_box: false` opts out).

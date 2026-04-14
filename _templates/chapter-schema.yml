@@ -87,6 +87,12 @@ hook: ""                # [REQUIRED] The opening paragraph(s) of the chapter.
                         # Terse. Real-world first. No reassurance.
                         # This is the hardest field to write. Write it last.
 
+chapter_onramp: ~       # [OPTIONAL] true | false
+                        # When axiom + rewrite are present, the build will
+                        # insert a short "What this chapter helps you do"
+                        # section near the top if the chapter body does not
+                        # already contain one. Set to false to opt out.
+
 notation_introduced:    # [OPTIONAL] List symbols introduced in this chapter.
   - symbol: ""          # The symbol as it appears on the page
     reads_as: ""        # How to say it in plain English
