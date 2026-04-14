@@ -95,6 +95,12 @@ notation_introduced:    # [OPTIONAL] List symbols introduced in this chapter.
                         #   3 = needs a sidebar
                         #   5 = needs its own section
 
+notation_box: ~         # [OPTIONAL] true | false
+                        # When notation_introduced is present, the build will
+                        # surface a short "Symbols to keep handy" callout near
+                        # the top of the chapter by default.
+                        # Set this to false to opt out for a specific chapter.
+
 exercises:
   type: ""              # [REQUIRED] One of: puzzle | drill | investigation | project
                         #   puzzle      — convergent, satisfying, short
