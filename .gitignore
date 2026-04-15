@@ -8,6 +8,10 @@ __pycache__/
 .env
 
 **/*.quarto_ipynb
+
+# Quarto render artifacts from map pages (source is .qmd)
+map/wayfinding.html
+map/wayfinding_files/
 EDITORIAL_SUMMARY.md
 EDITORIAL_ROADMAP.md
 EDITORIAL_REVIEW_V2C1_EDITS.md
