@@ -865,8 +865,6 @@ A function satisfying Laplace's equation is **harmonic**. So: the real and imagi
 
 Conversely, given a harmonic $u$ on a **simply connected domain** — one with no holes, so that any closed loop inside it can be continuously shrunk to a point — there exists a **harmonic conjugate** $v$ (unique up to a constant) such that $f = u + iv$ is analytic. Finding $v$ from $u$ via the C-R equations is a standard technique.
 
-<!-- STUDENT: "Simply connected domain" is used twice in this chapter without definition. Engineers at this layer likely know it intuitively (no holes) but the term deserves at least a parenthetical: "a domain with no holes, so any closed loop in it can be shrunk to a point." It also appears in Chapter 2 — one clear definition in Chapter 1 would carry forward. -->
-
 ```{ojs}
 //| echo: false
 {

@@ -85,6 +85,15 @@ uofa_course: null
 
 An analytic function $w = f(z)$ is **conformal at $z_0$** if $f'(z_0) \neq 0$. At such a point, the mapping:
 
+::: {.callout-note appearance="simple"}
+**Conformal map, in words**
+
+Near $z_0$, an analytic map with $f'(z_0)\neq 0$ behaves like a very simple
+geometric move: **it rotates and scales** small shapes.
+
+So it can distort *sizes* and *positions*, but it does not shear angles.
+:::
+
 1. **Preserves angles** between curves (in both magnitude and orientation).
 2. **Scales uniformly**: all infinitesimal lengths at $z_0$ are multiplied by $|f'(z_0)|$.
 3. **Rotates uniformly**: all directions at $z_0$ are rotated by $\arg f'(z_0)$.

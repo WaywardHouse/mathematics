@@ -443,8 +443,6 @@ This converges in an **annulus** $r < |z - z_0| < R$ (with $r$ possibly 0 and $R
 
 The **principal part** consists of the negative-power terms $\sum_{n=1}^{\infty} c_{-n}(z-z_0)^{-n}$; the **analytic part** is the non-negative power series $\sum_{n=0}^{\infty}c_n(z-z_0)^n$. Whether the principal part is absent, has finitely many terms, or has infinitely many terms classifies the type of singularity at $z_0$ — which is the point of the next section.
 
-<!-- STUDENT: The terms "principal part" and "analytic part" are introduced here but their significance is not explained until the classification section two paragraphs later. A reader might wonder why the split matters. A forward pointer — "the number of terms in the principal part will classify the singularity" — would make this naming feel purposeful immediately. -->
-
 <!-- VIZ OPPORTUNITY 9: Laurent series convergence in an annulus. Rewritten per senior-designer brief. -->
 
 ```{ojs}
@@ -961,12 +959,12 @@ An **isolated singularity** of $f$ at $z_0$ is a point where $f$ is not analytic
 $$f(z) = \frac{c_{-m}}{(z-z_0)^m} + \cdots + \frac{c_{-1}}{z-z_0} + c_0 + c_1(z-z_0) + \cdots, \quad c_{-m} \neq 0$$
 $|f(z)| \to \infty$ as $z \to z_0$. A **simple pole** is a pole of order 1.
 
-**Essential singularity.** The principal part has infinitely many terms. The behaviour near $z_0$ has no limit — finite or infinite. Example: $e^{1/z}$ at $z = 0$. Approach the origin along the positive real axis and $e^{1/z} \to +\infty$; along the negative real axis, $e^{1/z} \to 0$; along the imaginary axis, $e^{1/z}$ spirals and oscillates. In any small neighbourhood of 0, the function takes every complex value (with at most one exception).
+**Essential singularity.** The principal part has infinitely many terms. The behaviour near $z_0$ has no limit — finite or infinite. Example: $e^{1/z}$ at $z = 0$. Approach the origin along the positive real axis and $e^{1/z} \to +\infty$; along the negative real axis, $e^{1/z} \to 0$; along the imaginary axis, $e^{1/z}$ spirals and oscillates.
+
+The takeaway for engineering work is simple: near an essential singularity, the function does not settle into any single kind of behaviour (not "tends to a value" and not "blows up like a fixed power"). It can do wildly different things depending on how you approach the point.
 
 <!-- VIZ: Singularity classification visualiser — domain colouring zoom. A function selector offers three functions, each with an isolated singularity at z = 0: "sin(z)/z (removable)", "1/z (simple pole)", "1/z² (order-2 pole)", "e^{1/z} (essential)". The main panel shows domain colouring (hue = arg f, brightness = log|f|) of the selected function over a square region. A zoom slider shrinks the viewport towards the origin: range 3 to 0.01 in log scale. A singularity-type label updates live. For the removable singularity, the domain colouring stays smooth and bounded as you zoom in — the function is extending continuously. For the pole, brightness intensifies (blossoms white) and the hue wheel winds once (simple) or twice (order 2) around the origin. For the essential singularity, zooming in reveals ever-finer multi-coloured oscillations with no limiting pattern — Picard's theorem made visible: every colour (every value) appears near the origin. An annotation panel below the plot states the singularity type and the number of hue-winding revolutions counted around a small circle. Series palette: consistent with Chapter 1 and 2 domain-colouring vocabulary. This is the most visually striking moment of the complex analysis section — essential singularities are genuinely extreme and should look it. -->
 
-
-<!-- STUDENT: Picard's theorem is cited but not introduced — the reader has not seen it before. For the purposes of this chapter, the claim "behaviour near an essential singularity is wild" is all that's needed; invoking a named theorem that appears nowhere else in the series may feel like a reference to unknown material. If Picard's theorem is not covered elsewhere, consider replacing it with a brief concrete illustration (e.g. noting that e^{1/z} oscillates arbitrarily fast near 0). -->
 
 ```{ojs}
 //| echo: false
@@ -1137,8 +1135,6 @@ $$\text{Res}[f, z_0] = c_{-1}$$
 
 **Why it matters.** Chapter 2 proved by direct parametrisation that $\oint_{|z-z_0|=r}(z-z_0)^n\,dz = 2\pi i$ when $n = -1$ and $= 0$ for every other integer $n$. (The same substitution $z = z_0 + re^{i\theta}$ works for all integers, not just $n = 0$ as computed there.) So when the Laurent series is integrated term by term around a small circle enclosing $z_0$, every term vanishes except the $c_{-1}$ term:
 $$\oint_C \sum_{n=-\infty}^{\infty} c_n(z-z_0)^n\,dz = c_{-1}\cdot 2\pi i$$
-
-<!-- STUDENT: This is the key conceptual step of the chapter, but it relies on the result from Chapter 2 (§ A fundamental example) that was proved only for n = 0. Here it is asserted for all integers n. A brief callback — "as shown in Chapter 2 for n = 0, and provable similarly for all integers n" — would connect the two chapters and confirm the reader isn't expected to prove this themselves. -->
 
 ```{ojs}
 //| echo: false
@@ -1407,8 +1403,6 @@ $$\text{Res}\!\left[\frac{p}{q}, z_0\right] = \frac{p(z_0)}{q'(z_0)}$$
 
 This is just L'Hôpital applied to the simple-pole limit. Quick check: $\text{Res}[1/(z^2-1),\,1]$ — here $p = 1$, $q = z^2-1$, $q'(z) = 2z$, so the residue is $1/(2\cdot 1) = 1/2$.
 
-<!-- STUDENT: Three residue-computation formulas are listed back-to-back without a worked example between them. The p/q′ formula in particular is not obvious — it comes from L'Hôpital applied to the simple-pole limit, but that derivation is omitted. Exercise 3 demonstrates it, but a quick illustration in the body (e.g. "for 1/(z²−1) at z=1: p(1)=1, q′(1)=2, residue=1/2") would help a reader who wants to understand rather than just memorise. -->
-
 **At a pole of order $m$:**
 $$\text{Res}[f, z_0] = \frac{1}{(m-1)!}\lim_{z \to z_0}\frac{d^{m-1}}{dz^{m-1}}\left[(z-z_0)^m f(z)\right]$$
 
@@ -1437,8 +1431,6 @@ Substitute $z = e^{i\theta}$: $\cos\theta = (z+z^{-1})/2$, $\sin\theta = (z-z^{-
 ### Type 2: improper integrals $\int_{-\infty}^{\infty} R(x)\,dx$
 
 Close the contour with a large semicircle in the upper (or lower) half-plane. The semicircular arc's contribution vanishes as the radius grows — but the condition depends on the form of the integrand. For a plain rational $R(x)$ with no oscillatory factor, the ML estimation lemma guarantees the arc vanishes when the degree of the denominator exceeds the degree of the numerator by at least **2**. When the integrand takes the form $e^{iax}R(x)$ with $a > 0$ (for example, $e^{ix}/(1+x^2)$, whose real part gives the hook integral), **Jordan's lemma** applies and degree excess of at least **1** suffices. The residue theorem then gives the real integral as $2\pi i$ times the sum of residues in the upper half-plane.
-
-<!-- STUDENT: "If R(x) → 0 fast enough" is vague. The engineer-prof already noted this: the precise condition is that the degree of the denominator exceeds the numerator's by at least 1. Without this, a reader applying the method to ∫ 1/(x+1) dx or similar won't know whether their problem qualifies. Even one sentence stating the condition explicitly would prevent misapplication. -->
 
 **Example.** $\displaystyle\int_{-\infty}^{\infty}\frac{dx}{1+x^2}$. Poles of $1/(1+z^2)$: $z = \pm i$. Only $z = i$ is in the upper half-plane. Residue: $1/(2i)$. Integral: $2\pi i \cdot 1/(2i) = \pi$.
 

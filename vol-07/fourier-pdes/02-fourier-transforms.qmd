@@ -123,7 +123,6 @@ not repeat forever. You will learn to:
 
 ## From Fourier series to the Fourier integral
 
-<!-- STUDENT: The derivation jumps immediately to the complex exponential form of the Fourier series ($c_n$, $e^{in\pi x/L}$) without referencing the previous chapter's notation ($a_n$, $b_n$). A student who just worked through chapter 1 in real form will need to hold both notations in mind simultaneously. A single sentence pointing back — "Using the complex Fourier series from the previous chapter" — or an explicit cross-reference would help orient. -->
 Consider a function $f$ of period $2L$ with Fourier series:
 
 This starts from the complex Fourier-series form introduced at the end of the
@@ -136,7 +135,6 @@ Define $\omega_n = n\pi/L$ and $\Delta\omega = \pi/L$ (the spacing between succe
 
 $$f(x) = \sum_{n=-\infty}^{\infty} \frac{\Delta\omega}{2\pi}\left[\int_{-L}^{L} f(t)\,e^{-i\omega_n t}\,dt\right]e^{i\omega_n x}$$
 
-<!-- STUDENT: The rewrite of $c_n$ into $(\Delta\omega/2\pi)[\cdots]$ is the key algebraic move but it happens in one line between the displayed equations with no prose. The reader has to check that $c_n = (1/2L)\int \cdots = (\Delta\omega/2\pi)\int \cdots$ (since $\Delta\omega = \pi/L$ so $1/2L = \Delta\omega/(2\pi)$). This is the heart of why the Fourier integral works and it's easy to lose the thread here. One sentence of arithmetic narration ("substituting $\Delta\omega = \pi/L$ turns the $1/2L$ prefactor into $\Delta\omega/2\pi$") would prevent the reader from feeling they've missed a step. -->
 The rewrite uses a single substitution: since $\Delta\omega = \pi/L$, the prefactor $1/(2L)$ in $c_n$ equals $\Delta\omega/(2\pi)$. Replacing it turns each coefficient into $(\Delta\omega/2\pi)\times[\text{integral}]$, and the whole sum becomes a Riemann sum with step size $\Delta\omega$ — ready to become an integral.
 
 Let $L \to \infty$: $\Delta\omega \to d\omega$, the sum becomes an integral, and we obtain the **Fourier integral representation**:
@@ -313,9 +311,7 @@ Together these are a **transform pair**: $f(t) \leftrightarrow F(\omega)$. Knowi
 
 **Conventions.** There are three common conventions for where the $2\pi$ factor sits and whether the sign in the exponent is $-i\omega t$ or $+i\omega t$. The one above is the **engineering convention** (also used by Kreyszig and Stroud). The physics convention places $1/\sqrt{2\pi}$ on both the forward and inverse transform. When using a reference or software tool, check which convention it follows.
 
-**Existence.** The Fourier transform is guaranteed to exist (as an ordinary integral) when $f$ is absolutely integrable: $\int_{-\infty}^{\infty}|f(t)|\,dt < \infty$. For the larger class of square-integrable functions ($\int|f|^2 < \infty$), it exists in the $L^2$ sense. Important special cases — the unit step, the delta function, the constant function — require the theory of distributions but yield well-defined transforms.
-
-<!-- STUDENT: "exists in the $L^2$ sense" and "theory of distributions" are introduced without any explanation. For an engineering reader who has never encountered functional analysis, these phrases are opaque. The important practical message — that most physical signals you'll encounter have a well-defined Fourier transform — is buried. Consider adding one sentence of practical guidance: "For engineering purposes, if the signal has finite energy or is physically realisable, the transform exists." The formal conditions can remain, but without any practical anchor the reader doesn't know which class their problems fall into. -->
+**Existence.** The Fourier transform is guaranteed to exist (as an ordinary integral) when $f$ is absolutely integrable: $\int_{-\infty}^{\infty}|f(t)|\,dt < \infty$. For the larger class of square-integrable functions ($\int|f|^2 < \infty$), it exists in the $L^2$ sense. Important special cases — the unit step, the delta function, the constant function — require the theory of distributions but yield well-defined transforms. For engineering purposes, if the signal is physically realisable and has finite energy (or decays reasonably fast), you can safely treat its transform as existing.
 
 ```{ojs}
 //| echo: false
@@ -547,7 +543,6 @@ also a Gaussian. The Gaussian is its own Fourier transform (up to scaling). It m
 
 ### Dirac delta
 
-<!-- STUDENT: The Dirac delta is introduced via its defining property ($\int \delta(t)\phi(t)dt = \phi(0)$) with no prior warning that this is not a function in the ordinary sense. A student who has only done calculus will be confused: "what does it mean to integrate something that is not a function?" Even one sentence — "the delta 'function' is not an ordinary function; it is defined entirely by what it does inside an integral" — would prevent the reader from spending several minutes trying to visualise a graph of $\delta(t)$. -->
 The Dirac delta is not an ordinary function — it has no well-defined value at any point, and you cannot draw its graph. It is defined entirely by what it does inside an integral: $\int_{-\infty}^{\infty}\delta(t)\phi(t)\,dt = \phi(0)$ for any smooth $\phi$. Its transform:
 
 $$\mathcal{F}\{\delta(t)\} = \int_{-\infty}^{\infty}\delta(t)\,e^{-i\omega t}\,dt = e^{0} = 1$$
@@ -585,8 +580,6 @@ where $(f*g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t-\tau)\,d\tau$ is the **convo
 This means total signal energy can be computed either in time or in frequency.
 In practice, Parseval lets you answer energy questions after transforming to
 the domain where the calculation is easier.
-
-<!-- STUDENT: Parseval's theorem is listed as a property alongside linearity and shifting, but it is qualitatively different — it is a global energy identity, not an operation rule. It is used in Exercise 5 to compute energy from the frequency domain, but the motivation ("why would you compute energy this way?") is absent from the properties list. A one-sentence note connecting it to energy before Exercise 5 uses it would help the reader understand why it's worth knowing, not just that it's true. -->
 
 ---
 
@@ -874,7 +867,13 @@ $$Y(\omega) = \frac{F(\omega)}{i\omega + 2}$$
 
 Now we need $F(\omega) = \mathcal{F}\{e^{-|t|}\} = \int_{-\infty}^{\infty}e^{-|t|}e^{-i\omega t}\,dt = \frac{2}{1+\omega^2}$.
 
-<!-- STUDENT: The integral $\int_{-\infty}^{\infty}e^{-|t|}e^{-i\omega t}\,dt = \frac{2}{1+\omega^2}$ is given without any working. This is the first time the reader sees a Fourier transform computed from the definition for an absolute-value function, and the split into $\int_{-\infty}^0 e^{t}e^{-i\omega t}dt + \int_0^{\infty}e^{-t}e^{-i\omega t}dt$ is not obvious. Even indicating "splitting at $t=0$ and evaluating each half" would anchor the result. -->
+To see this quickly, split at $t=0$:
+\[
+\int_{-\infty}^{\infty} e^{-|t|}e^{-i\omega t}\,dt
+=\int_{0}^{\infty} e^{-t}e^{-i\omega t}\,dt+\int_{0}^{\infty} e^{-t}e^{i\omega t}\,dt
+=\frac{1}{1+i\omega}+\frac{1}{1-i\omega}
+=\frac{2}{1+\omega^2}.
+\]
 So $Y(\omega) = \frac{2}{(1+\omega^2)(i\omega+2)}$.
 
 Write this in partial fractions:
@@ -891,8 +890,6 @@ $$y(t) = \frac{1}{5}\left(2e^{-2t} - e^{-|t|} + \operatorname{sgn}(t)e^{-|t|}\ri
 
 The Fourier transform has reduced the differential equation to algebra.
 
-<!-- STUDENT: "Partial fractions and the inverse transform give the solution" — the example stops here with the algebra unfinished. The reader has been walked through the forward-transform steps and then left with a fraction to invert and no hint of how to proceed. For a chapter whose worked example is supposed to show the method end-to-end, this feels incomplete. Exercise 3 does the inverse in full, but that requires the reader to already trust the method enough to attempt an exercise. A one-line indication of the inversion route (e.g. "decompose using partial fractions and match to known pairs from the table") would complete the pedagogical loop. -->
-
 ---
 
 ## Connection to the Laplace transform
@@ -904,8 +901,6 @@ The Laplace transform $\mathcal{L}\{f\}(s) = \int_0^{\infty}f(t)e^{-st}\,dt$ is 
 The Laplace transform is preferred for initial-value problems (ODEs with $t \geq 0$ and given initial conditions) because it handles them directly via $\mathcal{L}\{f'\} = sF(s) - f(0)$. The Fourier transform is preferred for steady-state and bilateral analysis (signals for all $t$).
 
 In circuit analysis: the transfer function $H(s)$ in Laplace domain becomes $H(i\omega)$, the Fourier domain transfer function, when you restrict to purely sinusoidal steady-state inputs.
-
-<!-- STUDENT: This section assumes the reader has already met the Laplace transform — but Laplace transforms are not listed in this chapter's prerequisite_ids, only fourier_series. The connection is useful for those who know it, but the reader who hasn't seen $\mathcal{L}$ will find this section meaningless rather than clarifying. A brief orienting sentence ("The Laplace transform, which you may have seen in an ODE course, is related to the Fourier transform as follows") would help readers who arrive with the prerequisite but not both; alternatively, a more explicit flag that this section is for readers who have already met the Laplace transform would prevent others from feeling lost. -->
 
 ---
 
