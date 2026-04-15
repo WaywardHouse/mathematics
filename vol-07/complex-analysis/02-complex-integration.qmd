@@ -915,6 +915,16 @@ This single result — that the integral of $1/z$ around the origin is $2\pi i$ 
 
 ## Cauchy's theorem
 
+::: {.callout-note appearance="simple"}
+**Cauchy's theorem, in words**
+
+If a function is analytic everywhere in a region, then there is no "source" or
+"vortex" hiding inside. Walking around a closed loop, all the little complex
+contributions cancel perfectly.
+
+So: **no singularities inside ⇒ closed-loop integral is zero.**
+:::
+
 **Cauchy-Goursat theorem.** If $f$ is analytic throughout a simply connected domain $D$ (no holes — defined in Chapter 1), then for every closed contour $C$ in $D$:
 
 $$\oint_C f(z)\,dz = 0$$
@@ -1148,6 +1158,16 @@ $$\oint_C f(z)\,dz = 0$$
 ---
 
 ## Cauchy's integral formula
+
+::: {.callout-note appearance="simple"}
+**Cauchy's integral formula, in words**
+
+For an analytic function, the boundary values are not just "related" to the
+interior. They **determine** the interior.
+
+So: **know $f$ on the loop ⇒ you can compute $f(z_0)$ inside** by a boundary
+integral.
+:::
 
 **Cauchy's integral formula.** Let $f$ be analytic in and on a simple closed contour $C$ (traversed counterclockwise). Then for any $z_0$ interior to $C$:
 
