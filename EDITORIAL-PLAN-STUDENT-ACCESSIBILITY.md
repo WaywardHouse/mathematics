@@ -164,6 +164,33 @@ Use this pattern whenever a chapter introduces a symbol or notation.
 - Common confusion:
   Name the thing students are likely to misread.
 
+### Theorem template (the "in words" bridge)
+
+For non-core learners, the intimidation spike is often not the algebra; it is
+the moment a theorem appears as a formal block before the reader knows what it
+is for. To lower that spike, major results should be introduced with a short
+bridge that says what the theorem is *really trading*.
+
+Use this pattern for key results (Green/Stokes/Divergence, substitution rules,
+comparison tests, transforms, stability conditions, etc.).
+
+- Need:
+  Name the practical problem ("direct evaluation is brutal", "we need a swap").
+- In words:
+  Give a one-sentence translation of what the theorem says.
+- Formal statement:
+  Present the theorem cleanly.
+- Read aloud:
+  If the theorem is symbol-dense, provide one spoken sentence for the core line.
+- How to use:
+  State the "recipe" step in plain language ("convert boundary to interior").
+- Common pitfall:
+  State the sign/orientation/conditions mistake students routinely make.
+
+Series convention: when a theorem is a boundary/interior trade, include a short
+recurring callout titled **“[Name] theorem, in words”** right before the formal
+statement.
+
 ### Example
 
 Instead of introducing

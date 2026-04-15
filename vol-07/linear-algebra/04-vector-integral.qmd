@@ -449,6 +449,22 @@ non-conservative forces.
 Green's theorem connects a line integral around a closed curve in the
 plane to a double integral over the enclosed region.
 
+It is the first clean example of the boundary/interior trade that drives this
+whole chapter. On the left, you are doing a line integral: you "walk the fence"
+and add up how much the field points along your direction of travel. On the
+right, you are doing an area integral: you add up what the field is doing
+*inside* the region.
+
+::: {.callout-note appearance="simple"}
+**Green's theorem, in words**
+
+- Left side: circulation around the boundary $\partial D$
+- Right side: total (2D) curl inside $D$
+
+So it says: **circulation around the edge equals the sum of all the little
+"swirl" inside.**
+:::
+
 **Statement.** Let $C$ be a positively oriented (anti-clockwise),
 piecewise smooth, simple closed curve in the $xy$-plane, and let $D$
 be the region it encloses. If $P(x, y)$ and $Q(x, y)$ have continuous
@@ -464,6 +480,10 @@ all these contributions, every interior edge is traversed twice —
 once in each direction by adjacent rectangles — so those contributions
 cancel exactly. What survives is only the contribution from the outer
 boundary of $D$, which is $C$.
+
+This is a good place to pause and notice the structure: the theorem is not a
+trick. It is the statement "interior edges cancel when you add loops together."
+Everything else is just taking the limit as the rectangles get small.
 
 For each tiny rectangle with width $\Delta x$ and height $\Delta y$,
 the line integral around its boundary approximates:
@@ -669,6 +689,16 @@ The Divergence theorem (Gauss's theorem) extends Green's theorem to
 three dimensions, relating the flux through a closed surface to the
 divergence integrated over the enclosed volume.
 
+::: {.callout-note appearance="simple"}
+**Divergence theorem, in words**
+
+- Left side: net flux *out* through the closed boundary $\partial V$
+- Right side: total "source strength" inside $V$ (divergence summed over volume)
+
+So it says: **everything that is created inside must leave through the
+boundary.**
+:::
+
 **Statement.** Let $V$ be a bounded region in $\mathbb{R}^3$ with
 piecewise smooth boundary $\partial V$ (oriented with outward normal).
 If $\mathbf{F}$ has continuous partial derivatives on an open set
@@ -850,6 +880,16 @@ Divergence theorem with $\mathbf{F} = \mathbf{E}$.
 Stokes' theorem is the 3D analogue of Green's theorem. It relates the
 line integral around a closed curve to the flux of the curl through any
 surface bounded by that curve.
+
+::: {.callout-note appearance="simple"}
+**Stokes' theorem, in words**
+
+- Left side: circulation around the boundary curve $\partial S$
+- Right side: total curl passing through the surface $S$
+
+So it says: **walking the edge and summing "along-the-edge flow" equals adding up
+all the little swirls through the surface.**
+:::
 
 **Statement.** Let $S$ be an oriented, piecewise smooth surface with
 boundary $\partial S$ — a closed curve. Let $\mathbf{F}$ have continuous

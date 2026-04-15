@@ -148,13 +148,33 @@ A general linear second-order PDE in two variables has the form:
 
 $$A\,u_{xx} + B\,u_{xy} + C\,u_{yy} + D\,u_x + E\,u_y + F\,u = G$$
 
-The **discriminant** $\Delta = B^2 - 4AC$ classifies its type. (Note: This classification applies to PDEs in two independent variables. For PDEs in three or more variables, use the eigenvalues of the coefficient matrix instead.)
+Here $A$, $B$, and $C$ are just the coefficients multiplying the **second**
+derivatives $u_{xx}$, $u_{xy}$, and $u_{yy}$. They matter because those terms
+control the basic "shape" of the PDE: whether it behaves more like diffusion,
+like a wave, or like a static equilibrium.
+
+The **discriminant**
+
+$$\Delta = B^2 - 4AC$$
+
+is the same algebraic pattern you see in the quadratic formula and in conic
+sections. That is not a coincidence: the second-derivative part of the PDE
+behaves like a quadratic form, and the sign of $\Delta$ tells you whether that
+quadratic form is elliptic / parabolic / hyperbolic.
+
+::: {.callout-note appearance="simple"}
+**Do not overapply the discriminant**
+
+This $\Delta = B^2 - 4AC$ test is for PDEs with **two independent variables**
+(like $x$ and $y$). In three (or more) independent variables, you classify the
+equation using the eigenvalues of the second-derivative coefficient matrix
+instead.
+:::
 
 | $\Delta < 0$ | Elliptic | Laplace, Poisson equations |
 | $\Delta = 0$ | Parabolic | Heat equation |
 | $\Delta > 0$ | Hyperbolic | Wave equation |
 
-<!-- STUDENT: The discriminant formula $\Delta = B^2 - 4AC$ will look familiar from the quadratic formula, but the connection is not made explicit and the variables $A$, $B$, $C$ here refer to coefficients of the PDE, not of a quadratic. A new reader needs to be reminded: these are the $A$, $B$, $C$ from the general form displayed just above. The math-prof review also notes that this formula applies only to two-variable PDEs, but the prose doesn't say this. When Exercise 5(c) presents a 3D PDE ($u_{xx}+u_{yy}+u_{zz}=\rho$), a student who has memorised "$\Delta = B^2-4AC$" will try to apply it and get confused. The caveat "for PDEs in two independent variables" needs to appear here, not just in the review comments. -->
 The classification determines which boundary and initial conditions are appropriate and which numerical methods apply. Elliptic equations need boundary conditions on a closed domain; parabolic and hyperbolic equations need initial conditions in time plus boundary conditions in space.
 
 ```{ojs}
@@ -375,7 +395,18 @@ The classification determines which boundary and initial conditions are appropri
 
 $$u(x,t) = X(x)\,T(t)$$
 
-<!-- STUDENT: "Each side can be written as a function of only one variable. Since one side depends only on $x$ and the other only on $t$, both sides must equal the same constant." This is the logical core of separation of variables — that a function of $x$ alone can equal a function of $t$ alone only if both are constant — but it is stated as a consequence without the reasoning. A student who has not seen this argument before needs one sentence of logic: "A function of $x$ alone cannot change as $t$ changes, and a function of $t$ alone cannot change as $x$ changes, so the only way they can be equal for all $x$ and $t$ is if both are the same constant." This is the single most important conceptual step and it is easy to miss. -->
+::: {.callout-note appearance="simple"}
+**Separation, in words**
+
+We are trying to build a complicated solution out of simple pieces:
+
+- $X(x)$ is the **shape in space**
+- $T(t)$ is the **strength in time**
+
+Boundary conditions decide which spatial shapes are allowed. Initial conditions
+decide how much of each allowed shape you start with.
+:::
+
 Substituting into the PDE, each side can be written as a function of only one variable. A function of $x$ alone cannot change as $t$ changes, and a function of $t$ alone cannot change as $x$ changes; the only way two such quantities can be equal for every $x$ and every $t$ is if both are the same constant. Call it the **separation constant** $-\lambda$.
 
 This splits the PDE into two ODEs, one in $x$ (the **eigenvalue problem**) and one in $t$. The boundary conditions restrict $\lambda$ to a discrete set of **eigenvalues** $\lambda_n$, each associated with an **eigenfunction** $X_n(x)$. The general solution is a superposition of all eigenfunction solutions:
@@ -425,13 +456,10 @@ The separation constant is written as $-\lambda$ (the negative sign is chosen so
 This means the sign choice is bookkeeping, not new physics: choosing $+\lambda$
 would force the useful solutions to have $\lambda < 0$ instead.
 
-<!-- STUDENT: The sign convention for $\lambda$ — writing $-\lambda$ rather than $\lambda$ — is a choice that makes the resulting ODE come out as $X'' + \lambda X = 0$ with positive $\lambda$. This is standard but a student will wonder: what goes wrong if I call the constant $\lambda$ without the negative sign? A one-sentence note ("if we called it $+\lambda$, we would need $\lambda < 0$ for decaying solutions — the same physics, just a notational choice") would prevent the reader from feeling this is arbitrary or that they have to memorise a sign. -->
-
 **Spatial ODE** with Dirichlet BCs $X(0) = X(L) = 0$:
 
 $$X'' + \lambda X = 0, \quad X(0) = 0, \quad X(L) = 0$$
 
-<!-- STUDENT: The step from the ODE $X'' + \lambda X = 0$ to "the only nontrivial solutions occur when $\lambda = n^2\pi^2/L^2$" is the eigenvalue problem — but the reasoning is not shown. Why can't $\lambda \leq 0$? (Because $\lambda < 0$ gives exponentials that can't satisfy both $X(0) = X(L) = 0$ unless $X \equiv 0$; $\lambda = 0$ gives $X = cx$ which also forces $X \equiv 0$.) This case analysis is the kind of step that an ODE course would work through, but a student who hasn't recently done boundary-value problems may not remember it. A two-sentence summary of why $\lambda$ must be positive and of the form $n^2\pi^2/L^2$ — or a reference to the ODE chapter — would prevent a large "where did this come from?" stumble. -->
 The cases $\lambda \leq 0$ produce only the trivial solution: $\lambda = 0$ gives $X'' = 0$ so $X = cx$, which satisfies $X(0) = 0$ only if $c = 0$; $\lambda < 0$ gives real exponential solutions $e^{\pm\sqrt{-\lambda}\,x}$ that cannot satisfy both boundary conditions simultaneously unless $X \equiv 0$. Only $\lambda > 0$ gives oscillatory solutions $\sin(\sqrt{\lambda}\,x)$ that can vanish at both endpoints. Imposing $X(L) = \sin(\sqrt{\lambda}\,L) = 0$ then forces $\sqrt{\lambda}\,L = n\pi$, so $\lambda = \lambda_n = n^2\pi^2/L^2$ for $n = 1, 2, 3, \ldots$, giving:
 
 $$X_n(x) = \sin\!\left(\frac{n\pi x}{L}\right)$$
@@ -658,7 +686,6 @@ There is an elegant alternative form of the wave equation solution. This can be 
 
 $$u(x,t) = \frac{1}{2}\left[f(x+ct) + f(x-ct)\right] + \frac{1}{2c}\int_{x-ct}^{x+ct} g(s)\,ds$$
 
-<!-- STUDENT: D'Alembert's solution is presented without any indication of how it was obtained — it just appears. Even a one-sentence framing ("this can be derived by changing variables to $\xi = x-ct$, $\eta = x+ct$, which converts the wave equation to $\partial^2 u / \partial\xi\partial\eta = 0$") would tell the reader this isn't magic. As presented, it reads like a second formula for the same answer that the student must simply accept. The travelling-wave interpretation ("two pulses moving in opposite directions") is excellent and concrete — but the origin of the formula needs a one-sentence anchor. -->
 This expresses the solution as two travelling waves — $f(x-ct)$ moving right at speed $c$, and $f(x+ct)$ moving left at speed $c$. For the initial velocity zero ($g = 0$), the initial displacement simply splits in two and propagates in opposite directions.
 
 ---
@@ -693,8 +720,6 @@ $$Y_n(y) = \sinh\!\left(\frac{n\pi(b-y)}{a}\right)$$
 
 In the Laplace equation, the $Y$ equation carries the opposite sign from the heat and wave equations (both of which give $Y'' + \lambda Y = 0$) because the second $x$-derivative is a boundary condition on both sides rather than an initial condition on time. This sign flip means $Y''-\lambda Y=0$ produces exponential or hyperbolic behaviour instead of oscillatory sine and cosine terms.
 The key insight: the choice of constant determines the entire family of solutions, and the Laplace boundary geometry demands the hyperbolic family.
-
-<!-- STUDENT: The switch to hyperbolic sinh here — as opposed to the sine and cosine of the heat and wave equations — happens without explanation. An engineering student new to PDEs will wonder: why does the Laplace equation produce sinh where the other equations produced sin? A one-sentence explanation of why the $Y$ equation has the opposite sign ($Y'' - \lambda_n Y = 0$ rather than $Y'' + \lambda_n Y = 0$) and therefore produces real exponential/hyperbolic solutions rather than oscillatory ones would make this feel like insight rather than a surprising formula to memorise. -->
 
 **General solution:**
 
@@ -999,8 +1024,6 @@ When the boundary conditions are non-zero — as when one end of a rod is held a
 Solve $u_t = u_{xx}$ on $0 < x < 1$, $t > 0$, with $u(0,t) = 0$, $u(1,t) = 1$, and $u(x,0) = 0$.
 
 *(Steady-state plus transient method.)*
-
-<!-- STUDENT: Exercise 6 introduces a method — "steady-state plus transient" — that has not been named or explained in the chapter body. The method (subtract the steady-state solution to get homogeneous BCs) is demonstrated step-by-step in the stepper, but a student trying to decide whether to attempt this exercise will not know what "steady-state plus transient" means before they click "Next step." A single sentence before the exercise prompt ("when the boundary conditions are non-zero, subtract a steady-state solution $v(x)$ satisfying the BCs and $v_{xx} = 0$; the remainder $w = u - v$ has homogeneous BCs") would let the reader understand the structure before being walked through it. -->
 
 ```{ojs}
 //| echo: false

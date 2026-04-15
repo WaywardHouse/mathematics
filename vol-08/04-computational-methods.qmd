@@ -109,6 +109,20 @@ sacrifices the physics can tolerate is what makes a simulation trustworthy.
 
 ## From equation to algebraic system
 
+::: {.callout-note appearance="simple"}
+**Discretisation is translation**
+
+If you have not seen this before, think of it as translating from
+"continuous language" into "spreadsheet language."
+
+- a field becomes a table of values
+- derivatives become differences, flux balances, or basis-function integrals
+- boundary conditions become constraints on a finite set of unknowns
+
+The point is not to throw away calculus. The point is to keep the physics while
+making the problem computable.
+:::
+
 Take the one-dimensional diffusion equation
 
 $$\frac{\partial u}{\partial t} = D\frac{\partial^2 u}{\partial x^2}$$
@@ -116,6 +130,10 @@ $$\frac{\partial u}{\partial t} = D\frac{\partial^2 u}{\partial x^2}$$
 defined on a grid with spatial spacing $\Delta x$ and time step $\Delta t$.
 The continuous field $u(x,t)$ becomes a table of approximate values $u_i^n$,
 read "u at grid point i and time level n."
+
+Here the indices are doing the organisational work:
+$i$ counts **where** you are on the grid, and $n$ counts **when** you are in
+the time-marching loop.
 
 Replace $\partial u/\partial t$ with a forward difference $(u_i^{n+1}-u_i^n)/\Delta t$ and $\partial^2 u/\partial x^2$ with a central difference $(u_{i+1}^n - 2u_i^n + u_{i-1}^n)/(\Delta x)^2$:
 

@@ -118,9 +118,7 @@ frequencies and compute how much of each frequency is present. You will learn to
 
 A function $f$ is **periodic with period $T$** if $f(x + T) = f(x)$ for all $x$. The smallest such $T > 0$ is called the **fundamental period**.
 
-We write $T = 2L$, which places one full period over the interval $[-L, L]$. This notation is standard in engineering texts and makes the coefficient formulas symmetric.
-
-<!-- STUDENT: Why does writing T = 2L "make the coefficient formulas symmetric"? This is stated as though it's obvious, but a first-time reader won't see the connection until they've seen the formulas. Either move this claim to after the formulas are presented, or drop it here — it reads as a promise the text hasn't yet kept. -->
+We often write $T = 2L$, which places one full period over the symmetric interval $[-L, L]$. That symmetry is why the coefficient integrals run from $-L$ to $L$ and why the modes appear as $\cos(n\pi x/L)$ and $\sin(n\pi x/L)$: the scaling makes each mode complete an integer number of half-waves over the interval.
 
 Familiar examples: $\sin(nx)$ and $\cos(nx)$ have period $2\pi/n$; the square wave (defined below) has the same period as the fundamental sine used to construct it.
 
@@ -172,16 +170,21 @@ $$\int_{-L}^{L}\sin\!\left(\frac{m\pi x}{L}\right)\sin\!\left(\frac{n\pi x}{L}\r
 
 $$\int_{-L}^{L}\cos\!\left(\frac{m\pi x}{L}\right)\sin\!\left(\frac{n\pi x}{L}\right)dx = 0 \qquad \text{for all } m, n$$
 
-<!-- STUDENT: "These follow from the product-to-sum identities for trigonometric functions, evaluated at period boundaries." This is a one-sentence hand-wave over the most load-bearing step in the chapter. A student who has never seen these identities won't be able to verify a single one of the three tables. Even a worked one-line example for the cos×cos case (using cos A cos B = ½[cos(A−B) + cos(A+B)] and then integrating) would close the gap. As it stands the orthogonality tables feel like they arrived by magic. -->
 These follow from the product-to-sum identities. Take the $m \neq n$ case of the cosine integral as an example: the identity $\cos A \cos B = \tfrac{1}{2}[\cos(A-B)+\cos(A+B)]$ turns the product into a sum of two cosines at frequencies $(m-n)\pi/L$ and $(m+n)\pi/L$. Integrating either of those over exactly one complete period gives zero — the positive and negative half-cycles cancel. When $m = n$ the first term becomes $\cos(0) = 1$, which integrates to $2L$, accounting for the factor of $L$ in the diagonal case. The sine-sine and cosine-sine cases follow by the same argument with the analogous identities.
 
 They mean that multiplying the Fourier series by $\cos(m\pi x/L)$ and integrating over $[-L, L]$ kills every term except the one with $n = m$ — which is exactly how $a_m$ is isolated.
 This means orthogonality is the filtering mechanism behind the coefficient
 formulas: integration keeps the matching frequency and cancels the rest.
 
-Think of the trigonometric functions as a set of directions in function space that are pairwise perpendicular. The Fourier coefficients are the projections of $f$ onto those directions.
+::: {.callout-note appearance="simple"}
+**Optional viewpoint: a dot product for functions**
 
-<!-- STUDENT: The analogy "directions in function space... projections" will land for a student who has done linear algebra with dot products, but this chapter's prerequisites list trig, sequences/series, and integral calculus — not linear algebra. The notation_introduced entry for ⟨f,g⟩ is in the front matter but is never actually used or explained in the body. Either briefly introduce the inner-product notation here (one sentence: "the inner product ⟨f,g⟩ = ∫fg dx plays the same role as the dot product for vectors") or drop the analogy entirely. As written, readers who haven't done linear algebra will find this confusing rather than illuminating. -->
+If you know dot products, you can treat integration as a dot product for functions:
+
+$$\langle f, g\rangle = \frac{1}{L}\int_{-L}^{L} f(x)\,g(x)\,dx.$$
+
+Then "orthogonal" means $\langle \cos(m\pi x/L), \cos(n\pi x/L)\rangle = 0$ when $m\neq n$, and the coefficient formulas are exactly "projection" formulas: $a_n = \langle f, \cos(n\pi x/L)\rangle$ and $b_n = \langle f, \sin(n\pi x/L)\rangle$.
+:::
 
 ---
 
@@ -213,7 +216,6 @@ $$b_n = \frac{1}{\pi}\int_{-\pi}^{\pi} f(x)\sin(nx)\,dx = \frac{2}{\pi}\int_{0}^
 
 $$= \frac{2}{\pi}\left[-\frac{\cos(nx)}{n}\right]_{0}^{\pi} = \frac{2}{n\pi}\left[1 - \cos(n\pi)\right] = \frac{2}{n\pi}\left[1 - (-1)^n\right]$$
 
-<!-- STUDENT: The step $\cos(n\pi) = (-1)^n$ is used silently. This is not hard once you've seen it, but a student who hasn't will stall here trying to figure out where $(-1)^n$ came from. One parenthetical — "since $\cos(n\pi) = (-1)^n$ for integer $n$" — at first use would prevent this. -->
 Here $\cos(n\pi) = (-1)^n$ for any integer $n$: the cosine alternates between $-1$ and $1$ at multiples of $\pi$. When $n$ is even, $\cos(n\pi) = 1$, so $b_n = 0$. When $n$ is odd, $\cos(n\pi) = -1$, so $b_n = 4/(n\pi)$.
 
 **Result:**
@@ -562,7 +564,7 @@ The Fourier series of a well-behaved periodic function converges in the followin
 
 **Gibbs phenomenon.** Near a jump discontinuity, the partial sums overshoot the true value by approximately $8.9\%$ of the jump height, regardless of how many terms are included. Adding more terms moves the overshoot closer to the discontinuity but does not reduce its size. This is not an error in the method — it is a fundamental property of Fourier partial sums near discontinuities. It appears in real systems as **ringing** — the ripple artefact you see in a sharply filtered audio signal or a steeply edge-enhanced image.
 
-<!-- STUDENT: "Adding more terms moves the overshoot closer to the discontinuity but does not reduce its size" — this is counterintuitive enough to deserve a brief pause. The reader's natural instinct is that more terms should make the approximation better everywhere. A one-sentence reassurance that the approximation IS better almost everywhere (the error shrinks except right at the jump) would help this land. The interactive viz addresses this, but readers without JavaScript or who read this linearly need some grounding before they see it. -->
+The important nuance is that the approximation *is* getting better almost everywhere: the mismatch away from the jump shrinks as you add modes. The stubborn overshoot survives only in a small neighbourhood that gets narrower as $N$ increases.
 
 For the square wave with a jump of magnitude 2, the Gibbs overshoot is approximately $2 \times 0.089 \approx 0.18$.
 
@@ -600,8 +602,6 @@ For heat problems, "insulated" means no heat flux through the boundary.
 Because heat flux is proportional to the temperature gradient, that gives the
 condition $u_x = 0$ at the endpoints.
 
-<!-- STUDENT: This is the right guidance, but it assumes the reader already knows what "insulated endpoints" means in terms of a derivative condition. First time this connection (insulated ↔ zero derivative) appears without explanation. The heat equation section in the PDE chapter makes this clearer; a forward pointer here, or one sentence of justification ("insulated means no heat flux, which means $u_x = 0$"), would help. -->
-
 ---
 
 ## Complex Fourier series
@@ -619,7 +619,10 @@ The relationship to the real coefficients: $c_0 = a_0/2$, $c_n = (a_n - ib_n)/2$
 This means the complex form does not introduce new information. It repackages
 the sine and cosine coefficients into a single symmetric sequence.
 
-<!-- STUDENT: The derivation of why $c_n = (a_n - ib_n)/2$ is not shown — it follows from Euler's formula substituting $\cos\theta = (e^{i\theta}+e^{-i\theta})/2$ and $\sin\theta = (e^{i\theta}-e^{-i\theta})/(2i)$, but a student who tries to check this will need to carry through the algebra themselves with no guide. One worked line showing the substitution into the $c_n$ integral would confirm the formula is not just asserted. -->
+To see the $c_n$ formula in one line, expand the exponential:
+$e^{-in\pi x/L}=\cos(n\pi x/L)-i\sin(n\pi x/L)$. Then
+
+$$c_n=\frac{1}{2L}\int_{-L}^{L} f(x)\cos\!\left(\frac{n\pi x}{L}\right)dx - \frac{i}{2L}\int_{-L}^{L} f(x)\sin\!\left(\frac{n\pi x}{L}\right)dx = \frac{a_n-ib_n}{2}.$$
 
 The complex form is more compact and connects directly to the Fourier transform: letting $L \to \infty$ (so the period grows without bound) turns the discrete sum into an integral — the subject of the next chapter.
 
@@ -863,8 +866,6 @@ The right side is the sum of squared amplitudes of each Fourier mode — the **p
 ### Signal analysis and filtering
 
 A microphone converts a sound wave into a voltage signal $f(t)$. To apply an equaliser (boost bass, cut treble), you compute the Fourier coefficients, multiply each $b_n$ by the desired gain at frequency $n$, and reconstruct. In practice this is done with the Fast Fourier Transform (FFT), which computes all $N$ Fourier coefficients in $O(N \log N)$ operations instead of $O(N^2)$.
-
-<!-- STUDENT: The FFT is introduced here as though the reader knows what it is. The chapter's prerequisite_ids are trig, sequences, and calculus — not algorithms or signal processing. "FFT" and $O(N \log N)$ notation will be opaque to a reader coming from those prerequisites alone. Either briefly say what the FFT is (a fast algorithm for computing the discrete version of the Fourier coefficients) or save this claim for the Fourier transforms chapter where it comes up again more naturally. -->
 The Fast Fourier Transform (FFT) is an algorithm that computes all $N$ discrete Fourier coefficients in $O(N \log N)$ arithmetic operations rather than the $O(N^2)$ operations needed by direct summation. For $N = 1024$ this is roughly a hundredfold speedup; for $N = 10^6$ the gap is enormous. The FFT is what makes real-time frequency analysis practical — a direct calculation would be too slow for audio, video, and communications applications.
 
 ### Heat equation initial conditions

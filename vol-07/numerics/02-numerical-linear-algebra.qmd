@@ -171,8 +171,6 @@ The $1 - 10000$ gives $-9999$, fine. But consider the right-hand side:
 $2 - 10000 \times 1 = -9998$. Back-substituting: $x_2 = -9998 / {-9999} \approx 1.0001$.
 Then $x_1 = (1 - 1 \times 1.0001)/0.0001 \approx -1$.
 
-<!-- STUDENT: The 2×2 naive elimination example claims the exact answer is x₁ ≈ 1, x₂ ≈ 1, but no verification is shown. Plugging x₁=1, x₂=1 back into the original system would take one line and would confirm this — without it, a reader who gets a different naive result has nothing to check against. -->
-
 The exact answer is $x_2 \approx 1$, $x_1 \approx 1$. Naive elimination gives
 $x_1 \approx -1$. That is not a small rounding error — that is the wrong sign
 with the wrong magnitude. The problem: dividing by the tiny pivot $0.0001$
@@ -381,8 +379,6 @@ are computed anyway and simply stored in the lower portion of the working
 array.
 
 ### Why LU earns its keep
-
-<!-- STUDENT: The O(n³) and O(n²) operation counts appear here and are used to motivate LU, but "operations" is undefined. Does it mean additions, multiplications, FLOPs? An engineering reader can accept it as a rough count without a formal definition, but a brief parenthetical — "(each elimination step touches every remaining row-column pair, giving roughly n³/3 arithmetic operations in total)" — would make the claim feel grounded rather than asserted. -->
 
 Solving $A\mathbf{x} = \mathbf{b}$ once costs $O(n^3)$ operations — where "operations" means floating-point additions and multiplications, roughly $n^3/3$ in total, because each elimination step touches every remaining row-column pair. This is unavoidable. But if you need to solve the same $A$ for multiple right-hand
 sides $\mathbf{b}_1, \mathbf{b}_2, \ldots$, the LU factorisation pays back:
@@ -682,8 +678,6 @@ $$|a_{ii}| > \sum_{j \neq i} |a_{ij}| \quad \text{for all } i$$
 This means each diagonal entry exceeds the sum of all off-diagonal entries in
 its row, in absolute value. FEM stiffness matrices and many physical systems
 (heat diffusion, network flow) naturally satisfy this condition.
-
-<!-- STUDENT: "Spectral radius of the iteration matrix" is the first mention of spectral radius in this chapter, and it is not defined. An engineering reader who has not studied eigenvalues in the context of iteration will not know what this means or how to compute it. If the term is unavoidable here, a brief gloss — "the spectral radius is the largest absolute eigenvalue of the matrix that multiplies the error at each step; when it is less than 1, the error shrinks" — would close the gap. Alternatively, the sentence can be reworded to say only "the error is guaranteed to shrink at each step" without introducing new terminology. -->
 
 When diagonal dominance holds, the error is guaranteed to shrink at each step
 and the iteration converges from any starting point. (For those familiar with

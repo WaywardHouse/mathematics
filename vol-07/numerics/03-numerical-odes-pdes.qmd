@@ -168,8 +168,6 @@ Exact solution: $y = e^{-2x}$. Let $h = 0.5$, $y_0 = 1$.
 |-----|--------|--------|--------------|------------------------|
 | 0   | 0.0    | 1.0000 | −2.0000      | 1 + 0.5(−2) = 0.0000   |
 
-<!-- STUDENT: The stability condition "$|1 + h\lambda| \leq 1$" introduces $\lambda$ (the eigenvalue / growth rate of the ODE) without defining it in this chapter. A reader who has just seen $y' = f(x,y)$ in general form will not immediately see that for $y' = -2y$ the relevant $\lambda$ is $-2$. One sentence connecting $\lambda$ to the ODE's coefficient — "for $y' = \lambda y$, $\lambda$ is the coefficient in front of $y$; here $\lambda = -2$" — would make the condition self-contained. -->
-
 That's the stability boundary. For an equation of the form $y' = \lambda y$ — where $\lambda$ is the coefficient multiplying $y$, here $\lambda = -2$ — forward Euler multiplies the solution by $(1 + h\lambda)$ at each step. Stability requires $|1 + h\lambda| \leq 1$, which for $\lambda = -2$ gives $h \leq 1$. With $h = 0.5$ we land exactly at the edge: the solution collapses to zero and stays there. For $h > 1$ the factor $(1 + h\lambda)$ exceeds 1 in magnitude, and the computed solution oscillates with growing amplitude — blowing up — even though the true solution decays smoothly to zero. Use $h = 0.2$ to see the method tracking the decay:
 
 | $n$ | $x_n$ | $y_n$ | $f = -2y_n$ | $y_{n+1}$ | Exact $e^{-2x}$ |
@@ -336,8 +334,6 @@ y_{n+1} = y_n + \tfrac{h}{6}(k_1 + 2k_2 + 2k_3 + k_4).
 $$
 
 $k_1$ is the slope at the left end. $k_2$ and $k_3$ are two estimates of the midpoint slope (the second corrects the first). $k_4$ is the slope at the right end. The weights $1, 2, 2, 1$ come from Simpson's rule: the interval has three evaluation points — left end, midpoint, right end — with Simpson weights $1, 4, 1$. RK4 has two independent midpoint estimates rather than one, so their weight is split, giving $1, 2, 2, 1$ after normalising to sum to $6$.
-
-<!-- STUDENT: The claim that RK4 weights come from Simpson's rule is stated but not explained. A reader who just studied the trapezoid and Simpson rules in Ch 1 would benefit from a one-sentence bridge: "In Simpson's rule the interval has three points — left, mid, right — with weights 1, 4, 1; RK4 has four points with the two midpoint estimates averaged, giving effective weights 1, 2, 2, 1 after normalising." Without this, the connection is asserted rather than shown. -->
 
 **Error.** Local error is $O(h^5)$; global error is $O(h^4)$. Halving $h$ divides the global error by 16. This is why RK4 is the default choice for non-stiff problems: it is usually accurate enough with step sizes that are not punishingly small.
 
@@ -572,8 +568,6 @@ $$
 \frac{u_j^{n+1} - u_j^n}{\Delta t} = \frac{\alpha}{2} \left[ \frac{u_{j+1}^n - 2u_j^n + u_{j-1}^n}{(\Delta x)^2} + \frac{u_{j+1}^{n+1} - 2u_j^{n+1} + u_{j-1}^{n+1}}{(\Delta x)^2} \right].
 $$
 
-<!-- STUDENT: "Thomas algorithm" is mentioned as the solver for the tridiagonal system but never defined or described. This is the first time the term appears in the chapter. The BVP section below describes the same tridiagonal structure and also names the Thomas algorithm. A reader who doesn't know what it is will encounter the term twice with no explanation. Even "the Thomas algorithm is a simplified form of Gaussian elimination that exploits the tridiagonal structure to solve in O(N) operations rather than O(N³)" would be enough. -->
-
 The unknowns at time level $n+1$ appear on both sides. Collecting them gives a tridiagonal linear system to solve at each time step — implicit, but only marginally more expensive than FTCS because tridiagonal systems have a special structure: each equation involves only its immediate neighbours, so a forward sweep followed by back-substitution solves the whole system in $O(N)$ operations. This procedure is called the **Thomas algorithm** — Gaussian elimination stripped down to exploit the tridiagonal sparsity pattern. The method is unconditionally stable: any $r$ is admissible, so you can take large time steps without blowup. The global error is $O((\Delta t)^2 + (\Delta x)^2)$ — second order in both.
 
 ### Boundary-value problems: tridiagonal systems from central differences
@@ -773,10 +767,7 @@ steps:
     note: ~
 -->
 
-<!-- MATH-PROF: Exercise 5 asks about Δt = 0.04 (r = 0.32, still stable), but the stepper introduces Δt = 0.07 (not mentioned in the question) to manufacture an unstable case. Either the question should ask for a Δt that gives r > 0.5 (e.g., "now choose Δt = 0.07"), or the stepper should answer the question as posed and explain that r = 0.32 is stable. The current mismatch will confuse students. -->
-
-<!-- STUDENT: The exercise asks about Δt = 0.04 but the stepper's third step introduces Δt = 0.07 with no warning. A student working through the stepper will wonder where 0.07 came from — it is not in the question. Until this is fixed (either in the question or in the stepper), a student who does only what the question says will get a different answer sequence than the stepper shows. -->
-**Exercise 5.** Using the parameters from Exercise 4, verify analytically that the scheme is stable. Now choose $\Delta t = 0.04$ (with the same $\Delta x = 0.25$, $\alpha = 0.5$). Compute $r$ and explain what will happen if you run the scheme forward in time.
+**Exercise 5.** Using the parameters from Exercise 4, verify analytically that the scheme is stable. Now choose $\Delta t = 0.04$ (with the same $\Delta x = 0.25$, $\alpha = 0.5$). Compute $r$ and explain what you expect to happen if you run the scheme forward in time. Then, as a separate check, choose a larger $\Delta t$ that makes $r > 1/2$ (for these numbers, $\Delta t = 0.07$ works) and describe the instability you would expect.
 
 <!-- STEPPER
 exercise: 5
