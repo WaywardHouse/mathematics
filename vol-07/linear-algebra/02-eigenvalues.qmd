@@ -59,7 +59,7 @@ notation_introduced:
 
 definitions_introduced:
   - term: "eigenvector"
-    means: "A direction a matrix sends back onto itself (it may stretch or flip it, but it doesn’t rotate it)."
+    means: "A direction a matrix sends back onto itself (it may stretch or flip it, but it doesn't rotate it)."
   - term: "eigenvalue"
     means: "The scale factor a matrix applies to an eigenvector."
   - term: "characteristic equation"

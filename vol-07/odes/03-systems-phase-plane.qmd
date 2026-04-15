@@ -53,6 +53,18 @@ notation_introduced:
     reads_as: "Jacobian"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "state"
+    means: "The collection of variables that describe the system at one moment (position and velocity, predator and prey, etc.)."
+  - term: "phase plane"
+    means: "A picture where each point is a state and each solution is a curve."
+  - term: "equilibrium"
+    means: "A state where nothing changes (the derivatives are zero)."
+  - term: "linearisation"
+    means: "Approximating a nonlinear system near an equilibrium by a linear one."
+  - term: "Jacobian"
+    means: "The matrix of partial derivatives that controls the linearisation."
+
 exercises:
   type: puzzle
   real_world_context: true

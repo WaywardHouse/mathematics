@@ -76,6 +76,18 @@ notation_introduced:
     reads_as: "C sub p and C sub pk — process capability indices"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "reliability"
+    means: "How likely something is to keep working over time."
+  - term: "hazard rate"
+    means: "The instantaneous failure tendency, given survival so far."
+  - term: "Weibull model"
+    means: "A flexible lifetime model that can capture early failures, random failures, or wear-out."
+  - term: "queue"
+    means: "A waiting line created when arrivals sometimes outpace service."
+  - term: "process capability"
+    means: "A way to compare typical variability to the allowed tolerance band."
+
 exercises:
   type: "project"
   real_world_context: true

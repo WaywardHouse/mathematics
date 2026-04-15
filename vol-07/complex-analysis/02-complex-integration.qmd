@@ -43,6 +43,18 @@ notation_introduced:
     reads_as: "M-L inequality"
     notation_weight: 1
 
+definitions_introduced:
+  - term: "contour"
+    means: "A path in the complex plane that you integrate along."
+  - term: "contour integral"
+    means: "An integral along a curve; in general the value depends on the path."
+  - term: "Cauchy's theorem"
+    means: "For analytic functions, integrals around closed loops vanish (under the right conditions)."
+  - term: "Cauchy's integral formula"
+    means: "A boundary integral that gives the value of an analytic function inside the loop."
+  - term: "simply connected"
+    means: "A region with no holes, so loops can be shrunk without crossing a singularity."
+
 exercises:
   type: puzzle
   real_world_context: true

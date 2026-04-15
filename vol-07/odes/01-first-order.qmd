@@ -61,7 +61,7 @@ notation_introduced:
 
 definitions_introduced:
   - term: "ordinary differential equation (ODE)"
-    means: "An equation that relates a function to its derivatives, so the “unknown” is a whole function, not a single number."
+    means: "An equation that relates a function to its derivatives, so the 'unknown' is a whole function, not a single number."
   - term: "general solution"
     means: "A family of solution curves that includes an arbitrary constant."
   - term: "initial condition"

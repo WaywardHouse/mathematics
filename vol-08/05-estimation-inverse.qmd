@@ -78,6 +78,18 @@ notation_introduced:
     reads_as: "K — the update weight; a scalar between 0 and 1 in the scalar case, a matrix (the Kalman gain) in the vector case"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "forward problem"
+    means: "Given the state, predict what the measurements should look like."
+  - term: "inverse problem"
+    means: "Given measurements, infer the state or parameters that produced them."
+  - term: "noise"
+    means: "The unavoidable randomness and error in measurements."
+  - term: "filtering"
+    means: "Updating an estimate as new data arrives, balancing what the model says with what the sensor says."
+  - term: "Kalman gain"
+    means: "The update weight that decides how much the estimate moves toward the new measurement."
+
 exercises:
   type: "project"
   real_world_context: true

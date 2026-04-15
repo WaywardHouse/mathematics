@@ -76,6 +76,18 @@ notation_introduced:
     reads_as: "the Fourier number — the ratio that controls stability of the heat equation scheme"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "time stepping"
+    means: "A way to solve an ODE by moving forward in small steps instead of finding a closed-form formula."
+  - term: "explicit vs implicit"
+    means: "Explicit uses only known information; implicit solves an equation each step but can be more stable."
+  - term: "local vs global error"
+    means: "Local is the error made in one step; global is the accumulated error after many steps."
+  - term: "stiffness"
+    means: "When a system has very fast and very slow scales together, forcing tiny steps unless you use a stable method."
+  - term: "finite difference"
+    means: "Replacing derivatives with difference quotients on a grid so a PDE becomes algebra."
+
 exercises:
   type: "puzzle"
   real_world_context: true

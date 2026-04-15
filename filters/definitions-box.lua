@@ -36,6 +36,27 @@ local function split_words_to_inlines(s)
   return inlines
 end
 
+local function markdown_to_inlines(s)
+  if s == nil then
+    return {}
+  end
+
+  -- Allow authors to use very lightweight Markdown (including $...$ math)
+  -- in definition terms/meanings without exposing raw backslashes.
+  local ok, parsed = pcall(pandoc.read, tostring(s), "markdown")
+  if not ok or parsed == nil or parsed.blocks == nil or #parsed.blocks == 0 then
+    return split_words_to_inlines(s)
+  end
+
+  local b = parsed.blocks[1]
+  if b.t == "Para" or b.t == "Plain" then
+    return b.content
+  end
+
+  -- Fallback: stringify block.
+  return split_words_to_inlines(pandoc.utils.stringify(b))
+end
+
 local function make_definitions_box(meta)
   local raw = meta.definitions_introduced
   if raw == nil or type(raw) ~= "table" then
@@ -75,17 +96,16 @@ local function make_definitions_box(meta)
   })
 
   local lead = pandoc.Para(split_words_to_inlines(
-    "These are the terms the chapter is building around. Treat them as ordinary language first; the formal versions will come with a reason to care."
+    "These are the words we keep coming back to. If one feels slippery, come back here and steady it before you push on."
   ))
 
   local items = {}
   for _, r in ipairs(rows) do
-    local inlines = {
-      pandoc.Strong(split_words_to_inlines(r.term)),
-      pandoc.Str(":"),
-      pandoc.Space(),
-    }
-    for _, inline in ipairs(split_words_to_inlines(r.means)) do
+    local inlines = {}
+    table.insert(inlines, pandoc.Strong(markdown_to_inlines(r.term)))
+    table.insert(inlines, pandoc.Str(":"))
+    table.insert(inlines, pandoc.Space())
+    for _, inline in ipairs(markdown_to_inlines(r.means)) do
       table.insert(inlines, inline)
     end
     table.insert(items, { pandoc.Para(inlines) })
@@ -136,4 +156,3 @@ function Pandoc(doc)
   table.insert(doc.blocks, idx, box)
   return doc
 end
-

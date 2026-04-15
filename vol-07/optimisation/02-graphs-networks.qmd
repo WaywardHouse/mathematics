@@ -68,6 +68,20 @@ notation_introduced:
     reads_as: "the adjacency matrix of the graph"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "graph"
+    means: "A set of nodes (vertices) with connections (edges) between them."
+  - term: "directed vs undirected"
+    means: "Directed edges have an arrow (u to v is not the same as v to u); undirected edges do not."
+  - term: "weighted graph"
+    means: "A graph where each edge has a number on it (distance, time, cost, capacity)."
+  - term: "shortest path"
+    means: "The route with the smallest total weight between two nodes."
+  - term: "minimum spanning tree (MST)"
+    means: "A cheapest set of edges that connects all nodes without cycles."
+  - term: "max flow"
+    means: "The largest amount you can push through a network without breaking any capacity limits."
+
 exercises:
   type: "puzzle"
   real_world_context: true

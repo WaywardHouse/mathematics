@@ -67,7 +67,7 @@ definitions_introduced:
   - term: "derivative"
     means: "The instantaneous rate of change of a function: how fast the output is changing per unit change in the input, right now."
   - term: "tangent line"
-    means: "The line that matches the curve’s direction at a point; its slope is the derivative there."
+    means: "The line that matches the curve's direction at a point; its slope is the derivative there."
   - term: "second derivative"
     means: "The rate of change of the rate of change: it measures curvature/acceleration effects."
 

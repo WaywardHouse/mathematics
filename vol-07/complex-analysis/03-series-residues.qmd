@@ -43,6 +43,18 @@ notation_introduced:
     reads_as: "residue theorem"
     meaning: "Contour integral equals 2πi times the sum of residues at all poles inside C"
 
+definitions_introduced:
+  - term: "Taylor series"
+    means: "A power series that represents an analytic function away from singularities."
+  - term: "Laurent series"
+    means: "A power series that can include negative powers, so it still works near a singularity."
+  - term: "singularity"
+    means: "A point where the function stops being analytic (it blows up or misbehaves)."
+  - term: "residue"
+    means: "A single coefficient that captures the local contribution of a singularity to a contour integral."
+  - term: "residue theorem"
+    means: "A rule that turns a contour integral into a sum of residues."
+
 exercises:
   type: puzzle
   real_world_context: true

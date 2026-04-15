@@ -68,6 +68,18 @@ notation_introduced:
     reads_as: "phi sub i — a basis or shape function"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "discretisation"
+    means: "Turning a continuous model into a finite computation (a grid, a mesh, and a finite set of unknowns)."
+  - term: "mesh / grid"
+    means: "A geometric partition of the domain that the computer can work with."
+  - term: "weak form"
+    means: "A rewritten form of the PDE designed to behave well under approximation (especially in finite elements)."
+  - term: "stencil"
+    means: "The local pattern of grid points used by a finite difference formula."
+  - term: "sparse system"
+    means: "A big linear system with mostly zeros, which needs special storage and solvers."
+
 exercises:
   type: "project"
   real_world_context: true

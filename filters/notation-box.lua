@@ -112,7 +112,7 @@ local function make_notation_box(meta)
   })
 
   local lead = pandoc.Para(split_words_to_inlines(
-    "These are the pieces of notation you'll see repeatedly. Read them in words first; the math gets easier once the symbols stop feeling like a wall."
+    "These are the bits of notation you'll see a lot. If a line of symbols feels like a fence, read it out loud once, then keep going."
   ))
 
   local items = {}

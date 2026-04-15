@@ -59,9 +59,9 @@ definitions_introduced:
   - term: "harmonic"
     means: "A frequency that is an integer multiple of the fundamental frequency."
   - term: "orthogonality"
-    means: "A cancellation property: different sine/cosine modes don’t overlap when you integrate over a full period."
+    means: "A cancellation property: different sine/cosine modes don't overlap when you integrate over a full period."
   - term: "Gibbs phenomenon"
-    means: "The characteristic overshoot near a jump discontinuity that doesn’t disappear, even as you add more terms."
+    means: "The characteristic overshoot near a jump discontinuity that doesn't disappear, even as you add more terms."
 
 exercises:
   type: puzzle

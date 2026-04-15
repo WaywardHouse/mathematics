@@ -74,6 +74,18 @@ notation_introduced:
     reads_as: "y-p"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "second-order ODE"
+    means: "A differential equation involving y and its second derivative y''."
+  - term: "characteristic equation"
+    means: "The quadratic you get by trying y = e^{rt}; its roots tell you the solution shape."
+  - term: "natural frequency"
+    means: "The rate an undamped system wants to oscillate at."
+  - term: "damping"
+    means: "A mechanism that bleeds energy away so oscillations shrink over time."
+  - term: "resonance"
+    means: "When forcing hits the system's natural rhythm and the response grows very large."
+
 exercises:
   type: puzzle
   real_world_context: true

@@ -86,6 +86,18 @@ notation_introduced:
     reads_as: "the eigenvalues of A minus B K — the closed-loop modes under state feedback"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "plant"
+    means: "The system you're trying to control (motor, drone, furnace, reactor)."
+  - term: "feedback"
+    means: "Using the measured output to decide what input to apply next."
+  - term: "open loop vs closed loop"
+    means: "Open loop does not look at the output; closed loop does, and corrects using the error."
+  - term: "stability"
+    means: "Whether the system settles down after a disturbance instead of blowing up or drifting away."
+  - term: "transfer function"
+    means: "An input-output description in the Laplace domain that turns dynamics into algebra."
+
 exercises:
   type: "project"
   real_world_context: true

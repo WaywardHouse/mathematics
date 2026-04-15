@@ -72,6 +72,18 @@ notation_introduced:
     reads_as: "rate of storage plus divergence of flux equals source"
     notation_weight: 4
 
+definitions_introduced:
+  - term: "field"
+    means: "A quantity defined everywhere in space (and sometimes time), like temperature, pressure, or concentration."
+  - term: "conservation law"
+    means: "A bookkeeping rule: change in storage equals what flows in/out plus what is produced inside."
+  - term: "flux"
+    means: "How much of something moves through an area per unit time, with a direction."
+  - term: "constitutive law"
+    means: "A material rule that links causes to responses (like flux to gradient)."
+  - term: "divergence"
+    means: "A measure of net outflow from a point (how much a flux field spreads out)."
+
 exercises:
   type: "project"
   real_world_context: true

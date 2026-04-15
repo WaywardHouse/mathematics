@@ -82,7 +82,7 @@ definitions_introduced:
   - term: "feasible region"
     means: "The set of all choices that satisfy the constraints."
   - term: "objective function"
-    means: "The thing you’re trying to maximise or minimise (profit, cost, time, etc.)."
+    means: "The thing you're trying to maximise or minimise (profit, cost, time, etc.)."
   - term: "slack variable"
     means: "A bookkeeping variable that turns an inequality into an equality by measuring unused resource."
 

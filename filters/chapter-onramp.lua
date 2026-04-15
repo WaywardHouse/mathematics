@@ -77,7 +77,7 @@ local function make_onramp(meta)
   local header = pandoc.Header(2, "What this chapter helps you do")
 
   local lead = pandoc.Para(text_to_inlines(
-    "This chapter is designed for capable, curious readers who want the idea and the meaning, not just the procedure. Here is the main move we are making."
+    "Here is the main move this chapter is making, in plain terms. You do not need to be fast. You just need to keep the thread."
   ))
 
   local coming = {
@@ -125,4 +125,3 @@ function Pandoc(doc)
   end
   return doc
 end
-

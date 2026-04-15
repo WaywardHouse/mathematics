@@ -64,6 +64,18 @@ notation_introduced:
     reads_as: "the Lagrangian"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "nonlinear optimisation"
+    means: "Finding the best design choice when the objective or constraints bend the space (they are not linear)."
+  - term: "local optimum"
+    means: "A best answer in a neighbourhood, not necessarily the best anywhere."
+  - term: "gradient"
+    means: "The direction of steepest local increase; stepping against it decreases the objective fastest locally."
+  - term: "constraint"
+    means: "A hard limit the solution must satisfy."
+  - term: "Lagrange multiplier"
+    means: "A bookkeeping number that tells you how much the objective would improve if you relaxed a constraint slightly."
+
 exercises:
   type: "project"
   real_world_context: true

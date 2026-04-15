@@ -75,6 +75,18 @@ notation_introduced:
     reads_as: "the iterate at step k — the approximate solution after k iterations"
     notation_weight: 1
 
+definitions_introduced:
+  - term: "floating-point rounding"
+    means: "Computers store numbers with limited precision, so arithmetic has tiny built-in errors."
+  - term: "pivoting"
+    means: "A row/column swap strategy that avoids dividing by tiny numbers and blowing up rounding error."
+  - term: "LU factorisation"
+    means: "A way to package elimination as A = LU so you can solve many right-hand sides efficiently."
+  - term: "condition number"
+    means: "A sensitivity score: how much small input errors can be amplified in the solution."
+  - term: "iterative method"
+    means: "A solver that improves an approximate solution step by step instead of finishing in one elimination pass."
+
 exercises:
   type: "puzzle"
   real_world_context: true

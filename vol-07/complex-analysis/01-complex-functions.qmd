@@ -48,6 +48,18 @@ notation_introduced:
     reads_as: "f of z equals u plus i v"
     notation_weight: 2
 
+definitions_introduced:
+  - term: "complex function"
+    means: "A rule that takes a complex number in and gives a complex number out."
+  - term: "complex differentiable"
+    means: "The derivative exists no matter which direction you approach from in the complex plane."
+  - term: "Cauchy-Riemann equations"
+    means: "The conditions on u(x,y) and v(x,y) that make f(z)=u+iv complex differentiable."
+  - term: "analytic"
+    means: "Complex differentiable throughout a region; this unlocks the big theorems."
+  - term: "harmonic"
+    means: "A function whose Laplacian is zero; it describes steady-state potentials."
+
 exercises:
   type: puzzle
   real_world_context: true

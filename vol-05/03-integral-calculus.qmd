@@ -86,7 +86,7 @@ definitions_introduced:
   - term: "indefinite integral / antiderivative"
     means: "A family of functions whose derivative is the given function (plus a constant)."
   - term: "Riemann sum"
-    means: "An approximation to total accumulation by adding many small “rate × width” slices."
+    means: "An approximation to total accumulation by adding many small rate x width slices."
   - term: "Fundamental Theorem of Calculus"
     means: "The bridge that says accumulation (definite integrals) and antiderivatives are two views of the same object."
 

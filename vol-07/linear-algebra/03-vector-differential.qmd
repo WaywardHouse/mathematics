@@ -64,6 +64,18 @@ notation_introduced:
     reads_as: "directional derivative of f in the direction u"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "scalar field"
+    means: "A number at every point in space (temperature, pressure, elevation)."
+  - term: "vector field"
+    means: "A vector at every point in space (wind velocity, fluid flow)."
+  - term: "gradient"
+    means: "A vector that points in the direction of steepest increase of a scalar field."
+  - term: "divergence"
+    means: "A measure of net outflow: sources are positive, sinks are negative."
+  - term: "curl"
+    means: "A measure of local rotation: whether a tiny paddle wheel would spin."
+
 exercises:
   type: puzzle
   real_world_context: true

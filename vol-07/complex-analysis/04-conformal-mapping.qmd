@@ -47,6 +47,16 @@ notation_introduced:
     reads_as: "Joukowski transformation"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "conformal map"
+    means: "A transformation that preserves angles (locally) even if it distorts sizes."
+  - term: "Mobius transformation"
+    means: "A fractional linear map (az+b)/(cz+d) that sends lines/circles to lines/circles."
+  - term: "Joukowski transform"
+    means: "A classic map that turns circles into airfoil-like shapes."
+  - term: "complex potential"
+    means: "A compact way to package potential and streamfunction together as one complex function."
+
 exercises:
   type: puzzle
   real_world_context: true

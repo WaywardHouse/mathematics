@@ -46,6 +46,20 @@ notation_introduced:
     reads_as: "lambda — separation constant"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "PDE (partial differential equation)"
+    means: "An equation for a function that depends on more than one independent variable (like space and time)."
+  - term: "heat equation"
+    means: "A diffusion model: it smooths things out over time."
+  - term: "wave equation"
+    means: "An oscillation model: it carries disturbances without smoothing them away."
+  - term: "Laplace equation"
+    means: "A steady-state equilibrium model: no time dependence, just spatial balance."
+  - term: "separation of variables"
+    means: "A guess of the form u(x,t)=X(x)T(t) that turns one PDE into two linked ODEs."
+  - term: "boundary conditions"
+    means: "Extra information at the edges that picks which solution modes are allowed."
+
 exercises:
   type: puzzle
   real_world_context: true

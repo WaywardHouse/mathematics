@@ -61,6 +61,16 @@ notation_introduced:
     reads_as: "closed surface integral over boundary of V"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "line integral"
+    means: "Accumulating a field's effect along a curve (work or circulation)."
+  - term: "flux"
+    means: "How much field passes through a surface (like flow through a net)."
+  - term: "conservative field"
+    means: "A field where the line integral depends only on endpoints, not the path."
+  - term: "Green / Stokes / Divergence"
+    means: "Theorems that trade a hard boundary integral for an easier interior integral (or vice versa)."
+
 exercises:
   type: puzzle
   real_world_context: true

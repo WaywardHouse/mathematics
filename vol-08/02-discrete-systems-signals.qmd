@@ -60,6 +60,18 @@ notation_introduced:
     reads_as: "y of n equals the weighted sum of present and past input samples"
     notation_weight: 3
 
+definitions_introduced:
+  - term: "sampling"
+    means: "Turning a continuous-time signal into a sequence of numbers taken at regular time intervals."
+  - term: "aliasing"
+    means: "When you sample too slowly and high-frequency content masquerades as a lower frequency."
+  - term: "LTI system"
+    means: "Linear time-invariant: superposition holds, and the rule does not change over time."
+  - term: "FIR filter"
+    means: "A filter where the output uses only a finite number of past input samples."
+  - term: "frequency response"
+    means: "How a system amplifies or attenuates each frequency component."
+
 exercises:
   type: "project"
   real_world_context: true

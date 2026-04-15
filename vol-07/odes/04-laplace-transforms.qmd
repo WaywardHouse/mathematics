@@ -63,9 +63,9 @@ definitions_introduced:
   - term: "Heaviside step"
     means: "An idealised switch: it turns on at a specified time."
   - term: "Dirac delta"
-    means: "An idealised impulse: an instantaneous “kick” with finite total area."
+    means: "An idealised impulse: an instantaneous 'kick' with finite total area."
   - term: "convolution"
-    means: "The mathematical operation that combines an input with a system’s impulse response to produce the output."
+    means: "The mathematical operation that combines an input with a system's impulse response to produce the output."
 
 exercises:
   type: puzzle
