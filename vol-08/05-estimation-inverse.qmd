@@ -235,15 +235,16 @@ or less strongly.
     return { truth, meas, prior, post, yScale, ymin, ymax };
   }
 
-  function pathFor(points, yScale) {
-    return points.map((p, idx) => `${idx === 0 ? "M" : "L"} ${xScale(p.i).toFixed(2)} ${yScale(p.y).toFixed(2)}`).join(" ");
-  }
-
-  const container = document.createElement("div");
-  container.style.cssText = "max-width: 700px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
-
-  const controls = document.createElement("div");
-  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+	  function pathFor(points, yScale) {
+	    return points.map((p, idx) => `${idx === 0 ? "M" : "L"} ${xScale(p.i).toFixed(2)} ${yScale(p.y).toFixed(2)}`).join(" ");
+	  }
+	
+	  const container = document.createElement("div");
+	  container.className = "wh-widget";
+	  container.style.maxWidth = "700px";
+	
+	  const controls = document.createElement("div");
+	  controls.className = "wh-controls-grid";
 
   const noiseLabel = document.createElement("label");
   noiseLabel.textContent = "Measurement noise";
@@ -251,10 +252,11 @@ or less strongly.
   noiseSlider.type = "range";
   noiseSlider.min = "0.2";
   noiseSlider.max = "3.0";
-  noiseSlider.step = "0.1";
-  noiseSlider.value = String(noise);
-  const noiseValue = document.createElement("span");
-  noiseValue.style.cssText = "font-variant-numeric: tabular-nums; min-width:4rem;";
+	  noiseSlider.step = "0.1";
+	  noiseSlider.value = String(noise);
+	  const noiseValue = document.createElement("span");
+	  noiseValue.className = "wh-num";
+	  noiseValue.style.minWidth = "4rem";
 
   const gainLabel = document.createElement("label");
   gainLabel.textContent = "Update weight K";
@@ -262,37 +264,39 @@ or less strongly.
   gainSlider.type = "range";
   gainSlider.min = "0.05";
   gainSlider.max = "0.95";
-  gainSlider.step = "0.05";
-  gainSlider.value = String(gain);
-  const gainValue = document.createElement("span");
-  gainValue.style.cssText = "font-variant-numeric: tabular-nums; min-width:4rem;";
+	  gainSlider.step = "0.05";
+	  gainSlider.value = String(gain);
+	  const gainValue = document.createElement("span");
+	  gainValue.className = "wh-num";
+	  gainValue.style.minWidth = "4rem";
 
-  controls.append(noiseLabel, noiseSlider, noiseValue, gainLabel, gainSlider, gainValue);
-
-  const readout = document.createElement("div");
-  readout.style.cssText = "display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0.5rem; margin-bottom:0.75rem;";
-  function makeCard(keyText) {
-    const card = document.createElement("div");
-    card.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.55rem 0.65rem;";
-    const key = document.createElement("div");
-    key.style.cssText = "font-size:0.76rem; color:#6b7280; margin-bottom:0.15rem;";
-    key.textContent = keyText;
-    const value = document.createElement("div");
-    value.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
-    card.append(key, value);
-    readout.append(card);
-    return value;
-  }
-  const truthCard = makeCard("Current truth");
-  const measCard = makeCard("Measurement");
-  const priorCard = makeCard("Prior");
-  const postCard = makeCard("Updated estimate");
-  const innovationCard = makeCard("Innovation");
-
-  const svg = makeSvg("svg");
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("width", "100%");
-  svg.style.cssText = "display:block; background:white; border:1px solid #e5e7eb; border-radius:10px;";
+	  controls.append(noiseLabel, noiseSlider, noiseValue, gainLabel, gainSlider, gainValue);
+	
+	  const readout = document.createElement("div");
+	  readout.className = "wh-readout-grid-6";
+	  function makeCard(keyText) {
+	    const card = document.createElement("div");
+	    card.className = "wh-card";
+	    const key = document.createElement("div");
+	    key.className = "wh-card-k";
+	    key.textContent = keyText;
+	    const value = document.createElement("div");
+	    value.className = "wh-card-v";
+	    card.append(key, value);
+	    readout.append(card);
+	    return value;
+	  }
+	  const truthCard = makeCard("Current truth");
+	  const measCard = makeCard("Measurement");
+	  const priorCard = makeCard("Prior");
+	  const postCard = makeCard("Updated estimate");
+	  const innovationCard = makeCard("Innovation");
+	  const regimeCard = makeCard("Regime");
+	
+	  const svg = makeSvg("svg");
+	  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+	  svg.setAttribute("width", "100%");
+	  svg.classList.add("wh-board");
 
   const bg = makeSvg("rect");
   bg.setAttribute("x", "0");
@@ -343,11 +347,12 @@ or less strongly.
   yAxis.setAttribute("stroke-width", "1.5");
   svg.appendChild(yAxis);
 
-  const note = document.createElement("p");
-  note.style.cssText = "font-size:0.9rem; color:#374151; margin:0.55rem 0 0 0;";
-
-  const legend = document.createElement("div");
-  legend.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.55rem; font-size:0.9rem;";
+	  const note = document.createElement("p");
+	  note.className = "wh-caption";
+	  note.style.color = "#374151";
+	
+	  const legend = document.createElement("div");
+	  legend.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.55rem; font-size:0.9rem; color:#374151;";
   function legendItem(color, dash, text, dot = false) {
     const item = document.createElement("div");
     item.style.cssText = "display:inline-flex; align-items:center; gap:0.45rem;";
@@ -369,11 +374,11 @@ or less strongly.
     legendItem(GREEN, false, "updated estimate")
   );
 
-  function render() {
-    noise = parseFloat(noiseSlider.value);
-    gain = parseFloat(gainSlider.value);
-    noiseValue.textContent = noise.toFixed(1);
-    gainValue.textContent = gain.toFixed(2);
+	  function render() {
+	    noise = parseFloat(noiseSlider.value);
+	    gain = parseFloat(gainSlider.value);
+	    noiseValue.textContent = noise.toFixed(1);
+	    gainValue.textContent = gain.toFixed(2);
 
     const { truth, meas, prior, post, yScale, ymin, ymax } = buildSeries(noise, gain);
 
@@ -435,17 +440,24 @@ or less strongly.
     measCard.textContent = meas[last].y.toFixed(2);
     priorCard.textContent = prior[last].y.toFixed(2);
     postCard.textContent = post[last].y.toFixed(2);
-    innovationCard.textContent = post[last].innovation >= 0
-      ? `+${post[last].innovation.toFixed(2)}`
-      : post[last].innovation.toFixed(2);
-    innovationCard.style.color = Math.abs(post[last].innovation) > noise ? RED : GREY;
+	    innovationCard.textContent = post[last].innovation >= 0
+	      ? `+${post[last].innovation.toFixed(2)}`
+	      : post[last].innovation.toFixed(2);
+	    innovationCard.style.color = Math.abs(post[last].innovation) > noise ? RED : GREY;
 
-    note.textContent = gain > 0.7
-      ? "High K makes the estimate chase the measurements closely, which improves responsiveness but also passes more sensor noise into the estimate."
-      : gain < 0.3
-        ? "Low K makes the estimate trust the prior strongly, which smooths noise but can lag behind real changes in the hidden state."
-        : "Intermediate K balances responsiveness against noise suppression: the estimate moves toward the data without fully inheriting measurement jitter.";
-  }
+	    // Simple qualitative guide: when K is high while noise is high, the estimate chases noise.
+	    // When K is low while noise is low, the estimate ignores good data and lags.
+	    const twitchy = gain > 0.65 && noise > 1.6;
+	    const sluggish = gain < 0.25 && noise < 1.0;
+	    regimeCard.textContent = twitchy ? "twitchy (chases noise)" : sluggish ? "sluggish (lags)" : "balanced";
+	    regimeCard.style.color = twitchy ? RED : sluggish ? AMBER : GREEN;
+	
+	    note.textContent = gain > 0.7
+	      ? "High K makes the estimate chase the measurements closely, which improves responsiveness but also passes more sensor noise into the estimate."
+	      : gain < 0.3
+	        ? "Low K makes the estimate trust the prior strongly, which smooths noise but can lag behind real changes in the hidden state."
+	        : "Intermediate K balances responsiveness against noise suppression: the estimate moves toward the data without fully inheriting measurement jitter.";
+	  }
 
   noiseSlider.addEventListener("input", render);
   gainSlider.addEventListener("input", render);

@@ -240,13 +240,14 @@ with a move that has to stay inside the feasible set.
     return { x: px, y: yProj };
   }
 
-  function sx(v) { return 50 + (v - xMin) / (xMax - xMin) * 620; }
-  function sy(v) { return 370 - (v - yMin) / (yMax - yMin) * 320; }
-
-  const container = document.createElement("div");
-  container.style.cssText = "max-width:760px; margin:1rem 0 1.25rem 0; font-family:inherit;";
-  const controls = document.createElement("div");
-  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
+	  function sx(v) { return 50 + (v - xMin) / (xMax - xMin) * 620; }
+	  function sy(v) { return 370 - (v - yMin) / (yMax - yMin) * 320; }
+	
+	  const container = document.createElement("div");
+	  container.className = "wh-widget";
+	  container.style.maxWidth = "760px";
+	  const controls = document.createElement("div");
+	  controls.className = "wh-controls-grid";
 
   function sliderRow(labelText, min, max, value, step) {
     const label = document.createElement("label");
@@ -255,21 +256,22 @@ with a move that has to stay inside the feasible set.
     input.type = "range";
     input.min = String(min);
     input.max = String(max);
-    input.step = String(step);
-    input.value = String(value);
-    const out = document.createElement("span");
-    out.style.cssText = "font-variant-numeric:tabular-nums; min-width:4rem;";
-    controls.append(label, input, out);
-    return { input, out };
-  }
+	    input.step = String(step);
+	    input.value = String(value);
+	    const out = document.createElement("span");
+	    out.className = "wh-num";
+	    out.style.minWidth = "4rem";
+	    controls.append(label, input, out);
+	    return { input, out };
+	  }
 
-  const xRow = sliderRow("Point x", -2.5, 2.5, x, 0.05);
-  const yRow = sliderRow("Point y", -2.2, 2.5, y, 0.05);
-  const modeWrap = document.createElement("label");
-  modeWrap.style.cssText = "display:flex; gap:0.5rem; align-items:center; margin-top:0.25rem;";
-  const modeBox = document.createElement("input");
-  modeBox.type = "checkbox";
-  modeBox.checked = constrained;
+	  const xRow = sliderRow("Point x", -2.5, 2.5, x, 0.05);
+	  const yRow = sliderRow("Point y", -2.2, 2.5, y, 0.05);
+	  const modeWrap = document.createElement("label");
+	  modeWrap.style.cssText = "display:flex; gap:0.5rem; align-items:center; margin-top:0.25rem; color:#374151;";
+	  const modeBox = document.createElement("input");
+	  modeBox.type = "checkbox";
+	  modeBox.checked = constrained;
   const modeText = document.createElement("span");
   modeText.textContent = "Constrained step";
   modeWrap.append(modeBox, modeText);
@@ -281,27 +283,39 @@ with a move that has to stay inside the feasible set.
   stepBtn.textContent = "Take descent step";
   const resetBtn = document.createElement("button");
   resetBtn.textContent = "Reset point";
-  actions.append(stepBtn, resetBtn);
-
-  const readout = document.createElement("div");
-  readout.style.cssText = "display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; color:#334155; font-size:0.95rem;";
-  const pointBox = document.createElement("span");
-  const fBox = document.createElement("span");
-  const gradBox = document.createElement("span");
-  const feasBox = document.createElement("span");
-  readout.append(pointBox, fBox, gradBox, feasBox);
-
-  const svg = svgEl("svg");
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.style.width = "100%";
-  svg.style.height = "auto";
-  svg.style.border = "1px solid #e2e8f0";
-  svg.style.background = "#fff";
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", "Nonlinear optimisation contour map with feasible region and gradient direction");
-
-  const caption = document.createElement("p");
-  caption.style.cssText = "margin:0.65rem 0 0 0; color:#475569;";
+	  actions.append(stepBtn, resetBtn);
+	
+	  const readout = document.createElement("div");
+	  readout.className = "wh-readout";
+	  function miniCard(label) {
+	    const box = document.createElement("div");
+	    box.className = "wh-card";
+	    const k = document.createElement("div");
+	    k.className = "wh-card-k";
+	    k.textContent = label;
+	    const v = document.createElement("div");
+	    v.className = "wh-card-v";
+	    box.append(k, v);
+	    readout.appendChild(box);
+	    return v;
+	  }
+	  const pointBox = miniCard("Point");
+	  const fBox = miniCard("Objective f");
+	  const gradBox = miniCard("Gradient ‖∇f‖");
+	  const feasBox = miniCard("Feasibility");
+	  const modeBoxOut = miniCard("Step mode");
+	
+	  const svg = svgEl("svg");
+	  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+	  svg.style.width = "100%";
+	  svg.style.height = "auto";
+	  svg.classList.add("wh-board");
+	  svg.setAttribute("role", "img");
+	  svg.setAttribute("aria-label", "Nonlinear optimisation contour map with feasible region and gradient direction");
+	
+	  const caption = document.createElement("p");
+	  caption.className = "wh-caption";
+	  caption.style.color = "#475569";
 
   container.append(controls, actions, readout, svg, caption);
 
@@ -362,8 +376,8 @@ with a move that has to stay inside the feasible set.
     patch.setAttribute("stroke-width", "2");
     svg.appendChild(patch);
 
-    const g = grad(x, y);
-    const gLen = Math.hypot(g.gx, g.gy) || 1;
+	    const g = grad(x, y);
+	    const gLen = Math.hypot(g.gx, g.gy) || 1;
     const scale = 0.55 / gLen;
     const x2 = x + g.gx * scale;
     const y2 = y + g.gy * scale;
@@ -390,14 +404,18 @@ with a move that has to stay inside the feasible set.
     pt.setAttribute("fill", feasible(x, y) ? "#1d4ed8" : "#b91c1c");
     svg.appendChild(pt);
 
-    pointBox.textContent = `point = (${x.toFixed(2)}, ${y.toFixed(2)})`;
-    fBox.textContent = `f(x,y) = ${f(x, y).toFixed(3)}`;
-    gradBox.textContent = `|∇f| = ${gLen.toFixed(3)}`;
-    feasBox.textContent = feasible(x, y) ? "feasible" : "outside feasible set";
-    caption.textContent = constrained
-      ? "The green region is feasible. In constrained mode, a descent step is clipped back to that region, so improvement must respect the geometry of the constraint."
-      : "In unconstrained mode, the step follows the negative gradient directly, even if that would leave the feasible region.";
-  }
+	    pointBox.textContent = `(${x.toFixed(2)}, ${y.toFixed(2)})`;
+	    fBox.textContent = f(x, y).toFixed(3);
+	    gradBox.textContent = gLen.toFixed(2);
+	    const ok = feasible(x, y);
+	    feasBox.textContent = ok ? "inside" : "outside";
+	    feasBox.style.color = ok ? "#059669" : "#ef4444";
+	    modeBoxOut.textContent = constrained ? "constrained" : "free";
+	    modeBoxOut.style.color = constrained ? "#0f766e" : "#334155";
+	    caption.textContent = constrained
+	      ? "The green region is feasible. In constrained mode, a descent step is clipped back to that region, so improvement must respect the geometry of the constraint."
+	      : "In unconstrained mode, the step follows the negative gradient directly, even if that would leave the feasible region.";
+	  }
 
   [xRow.input, yRow.input, modeBox].forEach(el => el.addEventListener("input", redraw));
   stepBtn.addEventListener("click", () => {
