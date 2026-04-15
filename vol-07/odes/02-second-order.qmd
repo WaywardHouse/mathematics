@@ -15,16 +15,12 @@ prerequisite_ids:
   - int_calc
 
 opens_to:
-  - id: odes
-    label: "Systems and phase plane"
-    volume: 7
-    relationship: enables
   - id: laplace
     label: "Laplace transforms"
     volume: 7
-    relationship: motivates
-  - id: fourier_series
-    label: "Fourier series"
+    relationship: enables
+  - id: pdes
+    label: "Partial differential equations"
     volume: 7
     relationship: motivates
 

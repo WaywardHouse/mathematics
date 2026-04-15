@@ -15,10 +15,10 @@ prerequisite_ids:
   - diff_calc
 
 opens_to:
-  - id: complex_analysis
-    label: "Complex integration and residues"
+  - id: vector_integral
+    label: "Vector integral calculus"
     volume: 7
-    relationship: enables
+    relationship: enriches
 
 destinations:
   - field: eng

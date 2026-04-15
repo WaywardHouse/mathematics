@@ -15,9 +15,9 @@ rewrite: |
   is always at a vertex. The simplex method walks the vertices efficiently.
 
 opens_to:
-  - id: vol7-optimisation-02
-    label: "Graphs and networks"
-    volume: 7
+  - id: nonlinear_optim
+    label: "Nonlinear optimisation for design and operations"
+    volume: 8
     relationship: enables
 
 prerequisite_ids:

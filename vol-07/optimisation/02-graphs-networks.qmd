@@ -16,10 +16,10 @@ rewrite: |
   algorithm with a clean correctness proof.
 
 opens_to:
-  - id: prob_stats
-    label: "Probability and mathematical statistics"
-    volume: 7
-    relationship: motivates
+  - id: nonlinear_optim
+    label: "Nonlinear optimisation for design and operations"
+    volume: 8
+    relationship: enables
 
 prerequisite_ids:
   - optimisation

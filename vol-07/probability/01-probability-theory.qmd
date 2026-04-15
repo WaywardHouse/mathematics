@@ -16,9 +16,13 @@ rewrite: |
   let you reason about sums, means, and rare events.
 
 opens_to:
-  - id: vol7-probability-02
-    label: "Mathematical statistics"
-    volume: 7
+  - id: estimation_inverse
+    label: "Estimation, inverse problems, and filtering"
+    volume: 8
+    relationship: enables
+  - id: reliability
+    label: "Reliability, stochastic systems, and quality"
+    volume: 8
     relationship: enables
 
 prerequisite_ids:
