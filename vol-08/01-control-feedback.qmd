@@ -228,16 +228,15 @@ closedLoopViz = {
   const BLUE = "#2563eb", GREEN = "#059669", RED = "#ef4444", AMBER = "#f59e0b";
   const GREY_DASH = "#9ca3af";
 
-  const container = d3.create("div")
-    .style("font-family", "sans-serif")
-    .style("max-width", W + "px");
+	  const container = d3.create("div")
+	    .attr("class", "wh-widget")
+	    .style("max-width", W + "px");
 
   // K slider
-  const sliderRow = container.append("div")
-    .style("display", "flex")
-    .style("align-items", "center")
-    .style("gap", "0.75rem")
-    .style("margin-bottom", "0.5rem");
+	  const sliderRow = container.append("div")
+	    .attr("class", "wh-controls")
+	    .style("align-items", "center")
+	    .style("margin-bottom", "0.5rem");
 
   sliderRow.append("label")
     .style("font-size", "0.9rem")
@@ -252,16 +251,18 @@ closedLoopViz = {
     .attr("value", 2)
     .style("flex", "1");
 
-  const kLabel = sliderRow.append("span")
-    .style("font-weight", "bold")
-    .style("min-width", "2.5rem");
+	  const kLabel = sliderRow.append("span")
+	    .attr("class", "wh-num")
+	    .style("font-weight", "bold")
+	    .style("min-width", "2.5rem");
 
   // Main SVG
-  const svg = container.append("svg")
-    .attr("width", W)
-    .attr("height", H)
-    .attr("viewBox", `0 0 ${W} ${H}`)
-    .attr("aria-label", "Closed-loop feedback explorer");
+	  const svg = container.append("svg")
+	    .attr("width", W)
+	    .attr("height", H)
+	    .attr("viewBox", `0 0 ${W} ${H}`)
+	    .classed("wh-board", true)
+	    .attr("aria-label", "Closed-loop feedback explorer");
 
   // ---- Block diagram (top half, y 0-210) ----
   const BD = svg.append("g").attr("transform", "translate(0,0)");
@@ -617,14 +618,15 @@ gainTradeoffViz = {
   const BLUE = "#2563eb", RED = "#ef4444", AMBER = "#f59e0b";
   const ML = 55, MR = 20, panelH = 130, gap = 30;
 
-  const container = d3.create("div")
-    .style("font-family", "sans-serif")
-    .style("max-width", W + "px");
+	  const container = d3.create("div")
+	    .attr("class", "wh-widget")
+	    .style("max-width", W + "px");
 
-  const svg = container.append("svg")
-    .attr("width", W).attr("height", H)
-    .attr("viewBox", `0 0 ${W} ${H}`)
-    .attr("aria-label", "Proportional gain tradeoff chart");
+	  const svg = container.append("svg")
+	    .attr("width", W).attr("height", H)
+	    .attr("viewBox", `0 0 ${W} ${H}`)
+	    .classed("wh-board", true)
+	    .attr("aria-label", "Proportional gain tradeoff chart");
 
   const innerW = W - ML - MR;
   const Kmax = 20;
@@ -805,13 +807,15 @@ stateFeedbackViz = {
   const W = 640, PH = 280;
   const BLUE = "#2563eb", GREEN = "#059669", RED = "#ef4444", AMBER = "#f59e0b";
 
-  const container = d3.create("div")
-    .style("font-family", "sans-serif")
-    .style("max-width", W + "px");
+	  const container = d3.create("div")
+	    .attr("class", "wh-widget")
+	    .style("max-width", W + "px");
 
   // Sliders
-  const sliderDiv = container.append("div")
-    .style("display", "flex").style("gap", "1.5rem").style("margin-bottom", "0.5rem");
+	  const sliderDiv = container.append("div")
+	    .attr("class", "wh-controls")
+	    .style("gap", "1.5rem")
+	    .style("margin-bottom", "0.5rem");
 
   function makeSlider(parent, label, min, max, step, val) {
     const wrap = parent.append("div").style("flex", "1");
@@ -827,10 +831,11 @@ stateFeedbackViz = {
   const s1 = makeSlider(sliderDiv, "k₁:", 0, 6, 0.1, 3);
   const s2 = makeSlider(sliderDiv, "k₂:", 0, 6, 0.1, 2);
 
-  const svg = container.append("svg")
-    .attr("width", W).attr("height", PH)
-    .attr("viewBox", `0 0 ${W} ${PH}`)
-    .attr("aria-label", "State feedback phase portrait");
+	  const svg = container.append("svg")
+	    .attr("width", W).attr("height", PH)
+	    .attr("viewBox", `0 0 ${W} ${PH}`)
+	    .classed("wh-board", true)
+	    .attr("aria-label", "State feedback phase portrait");
 
   const panW = W / 2 - 20;
 
