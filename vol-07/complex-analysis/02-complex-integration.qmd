@@ -2132,12 +2132,12 @@ makeStepperHTML([
     op: "Compute the arc length L",
     eq: "C \\text{ is a semicircle of radius } 2 \\implies L = \\pi\\cdot 2 = 2\\pi"
   },
-  {
-    op: "Apply the ML inequality",
-    eq: "\\left|\\oint_C \\frac{dz}{z^3}\\right| \\leq M\\cdot L = \\frac{1}{8}\\cdot 2\\pi = \\frac{\\pi}{4}",
-    note: "The actual value (by a direct computation or the residue theorem) is 0, since z^{−3} = d(−z^{−2}/2)/dz is analytic away from the origin and the origin is not enclosed."
-  }
-])
+	  {
+	    op: "Apply the ML inequality",
+	    eq: "\\left|\\oint_C \\frac{dz}{z^3}\\right| \\leq M\\cdot L = \\frac{1}{8}\\cdot 2\\pi = \\frac{\\pi}{4}",
+	    note: "The actual value (by a direct computation or the residue theorem) is 0, since z^{-3} has an antiderivative −1/(2z^2) that is analytic on and inside the contour (the origin is not enclosed)."
+	  }
+	])
 ```
 
 <!-- MATH-PROF REVIEW
