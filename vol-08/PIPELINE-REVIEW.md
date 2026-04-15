@@ -76,6 +76,20 @@ threads:
 
 ## Remaining work
 
-- normalise `opens_to` conventions across older Volume 7 chapters
-- write full draft prose for Volume 8 chapters
-- produce a dedicated Volume 8 senior-designer audit once chapter drafts exist
+This pipeline pass is now superseded by two concrete next steps:
+
+- **Prose polish pass (student accessibility):** keep the serious house voice,
+  but add a few more “in words / how to read this” bridges at intimidation
+  spikes (symbol bursts, boundary cases, stability conditions, constraint
+  geometry). The aim is a clear path for non-core readers to keep moving.
+- **Visual implementation pass:** implement and/or unify the systems-heavy
+  visuals using the dedicated senior-designer build queue in
+  `vol-08/SENIOR-DESIGNER-AUDIT.md` (linked-panel behaviour, consistent cards,
+  regime cues, mobile-friendly control stacking).
+
+Ongoing QA work:
+
+- rerender Volume 8 after each major change and keep the interactive UI style
+  consistent across chapters
+- periodically re-render the wayfinding map and verify `opens_to` targets stay
+  valid against `_data/topology.yml`

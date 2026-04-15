@@ -12,6 +12,10 @@ __pycache__/
 # Quarto render artifacts from map pages (source is .qmd)
 map/wayfinding.html
 map/wayfinding_files/
+
+# Quarto render artifacts (pipeline notes are authored as .md)
+vol-08/PIPELINE-REVIEW.html
+vol-08/PIPELINE-REVIEW_files/
 EDITORIAL_SUMMARY.md
 EDITORIAL_ROADMAP.md
 EDITORIAL_REVIEW_V2C1_EDITS.md
