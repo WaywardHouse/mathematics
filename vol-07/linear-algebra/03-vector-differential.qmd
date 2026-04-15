@@ -138,6 +138,14 @@ learn to:
 
 ## Vectors: dot and cross products
 
+::: {.callout-note appearance="simple"}
+**If vectors feel rusty**
+
+This section is a quick tune-up. You do not need to memorise it again.
+You just need the two operations (dot and cross) to feel familiar enough that
+the field operators later do not sound like nonsense.
+:::
+
 A vector in three dimensions is a triple of numbers, written
 $\mathbf{u} = (u_1, u_2, u_3)$ or in column form. Its magnitude is
 $|\mathbf{u}| = \sqrt{u_1^2 + u_2^2 + u_3^2}$.
@@ -179,6 +187,9 @@ $$\mathbf{u} \times \mathbf{v} = (0 \cdot 0 - 0 \cdot 1,\; 0 \cdot 0 - 1 \cdot 0
 This is correct: the right-hand rule applied to $\mathbf{i} \times \mathbf{j}$ gives $\mathbf{k}$, pointing out of the $xy$-plane.
 
 ## Scalar and vector fields
+
+Before we talk about grad, div, and curl, fix one idea: a field is just a
+function. The only difference is that the input is a point in space.
 
 ::: {.callout-note appearance="simple"}
 **How to read the field operators**

@@ -120,7 +120,16 @@ and messy forcing without splitting time into separate cases by hand. You will l
 
 ## Definition and motivation
 
-The Laplace transform of a function $f(t)$ defined for $t \geq 0$ is
+You can think of the Laplace transform as a translation tool.
+It takes a time story (a function of $t$) and rewrites it as an algebra story
+(a function of $s$) where derivatives and switching become easier to handle.
+
+The promise is not magic. It is bookkeeping you can trust:
+in the $s$-domain, differentiation turns into multiplication by $s$ (plus
+initial-condition terms), and a "switch at $t=a$" turns into an exponential
+factor.
+
+The Laplace transform of a function $f(t)$ defined for $t \geq 0$ is:
 
 ::: {.callout-note appearance="simple"}
 **How to read the main symbols**

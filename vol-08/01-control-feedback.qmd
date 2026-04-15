@@ -121,12 +121,31 @@ response are not side remarks — they are the point.
 
 ## The control problem
 
-Start with four signals.
+Most control problems look complicated because the diagram has a lot of boxes.
+The underlying idea is homely: compare what you want to what you have, then
+push in the direction that closes the gap.
+
+If you have ever adjusted a shower to keep the temperature steady, you have
+done control. You looked at the output (water temperature), compared it to the
+target, and changed the input (the tap) until the error was small.
+
+Start with four signals. They are just roles in the story:
 
 - $r(t)$ is the **reference**: what you want.
 - $y(t)$ is the **output**: what the system is actually doing.
 - $e(t) = r(t) - y(t)$ is the **error**.
 - $u(t)$ is the **control input** you apply to the plant.
+
+::: {.callout-note appearance="simple"}
+**Watch for this**
+
+The letters are not sacred. What matters is the job:
+
+- reference = target
+- output = reality
+- error = target minus reality
+- input = the shove you are allowed to apply
+:::
 
 The **plant** is the system being controlled: a motor, furnace, vehicle,
 converter, or biochemical process. In Laplace-transform language the plant is
@@ -143,6 +162,12 @@ no additional gain in the feedback path. The block-diagram algebra is:
 $$E(s) = R(s) - Y(s)$$
 $$U(s) = C(s)E(s)$$
 $$Y(s) = G(s)U(s)$$
+
+Read those as simple cause-and-effect:
+
+- error = target minus output
+- controller turns error into an input
+- plant turns input into an output
 
 Substitute in sequence:
 

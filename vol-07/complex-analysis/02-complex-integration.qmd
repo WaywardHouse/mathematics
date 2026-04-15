@@ -90,11 +90,25 @@ uofa_course: "MATH 311"
 
 ## Contours and contour integrals
 
+In real-variable calculus you integrate along a line segment. In complex
+analysis you integrate along a curve in the plane. The mental model is simple:
+you walk along a path and keep a running total. What changes is that the path
+can bend, loop, and circle around features of the function.
+
 A **contour** (or path) in the complex plane is a **piecewise smooth** curve $C$: $z = z(t)$, $a \leq t \leq b$, where $z(t) = x(t) + iy(t)$ and $z'(t)$ is piecewise continuous. Piecewise smooth means the curve can have finitely many corners, but no cusps or fractal wiggles — at each smooth piece the tangent direction is well-defined.
 
 The **contour integral** of $f$ along $C$ is:
 
 $$\int_C f(z)\,dz = \int_a^b f(z(t))\,z'(t)\,dt$$
+
+::: {.callout-note appearance="simple"}
+**How to read the core symbol**
+
+- **Symbol:** $\int_C f(z)\,dz$
+- **Reads as:** "integral of f along the contour C"
+- **Means:** add up the value of $f$ as you move along the path, accounting for the direction and speed you travel
+- **Common misread:** this is not "area under a curve"; it is a path-based accumulation
+:::
 
 This is a real line integral in disguise. Writing $f = u + iv$ and $dz = dx + idy$, multiply out the product:
 $$(u + iv)(dx + i\,dy) = u\,dx + iu\,dy + iv\,dx + i^2 v\,dy = (u\,dx - v\,dy) + i(v\,dx + u\,dy)$$

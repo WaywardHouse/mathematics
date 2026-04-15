@@ -126,15 +126,27 @@ The generic local balance law is
 
 $$\frac{\partial u}{\partial t} + \nabla \cdot \mathbf{q} = s$$
 
+::: {.callout-note appearance="simple"}
+**What this line is saying**
+
+Read it out loud as:
+"rate of storage + net outflow = source."
+
+If you remember only one thing, remember this: it is bookkeeping. It is not
+trying to be clever. It is trying to keep you honest about where stuff can go.
+:::
+
 where:
 
 - $\partial u/\partial t$ is the local rate of storage
 - $\nabla \cdot \mathbf{q}$ is the net outward flux
 - $s$ is a source term
 
-This one line is the template behind most continuum modelling. Change the
-meaning of $u$, $\mathbf{q}$, and $s$, and you get a different physical
-system. The bookkeeping structure stays the same.
+This one line is the template behind most continuum modelling. Change what $u$
+means (heat, mass, momentum), change what $\mathbf{q}$ means (heat flux, mass
+flux, stress transport), change what $s$ means (heater, reaction, injection),
+and you get a different physical system. The bookkeeping structure stays the
+same.
 This means the conservation architecture is reusable: once you understand the
 balance law, many different physical theories become variations on one pattern.
 

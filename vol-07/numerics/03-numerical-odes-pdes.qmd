@@ -99,17 +99,32 @@ uofa_course: null
 
 ## The setup: replacing dy/dx with Δy/Δx
 
-The initial-value problem has the form
+When you see an initial-value problem, you are being asked for a whole
+function, not a single number. You know how the system changes (the slope),
+and you know where it starts. The problem is: if we start here, where do we
+end up after we move forward?
+
+The standard form is:
 
 $$
 y' = f(x, y), \quad y(x_0) = y_0.
 $$
 
-Read this as: "the slope of $y$ at any point $(x, y)$ is given by the function $f$, and we know where we start." The question is: what is $y$ at some later $x$?
+::: {.callout-note appearance="simple"}
+**Read this as**
 
-If $f$ is simple enough, calculus gives you $y(x)$ directly. When it isn't, you fall back on the most basic approximation: the tangent-line step.
+- $y' = f(x,y)$: "the slope of the curve at the point $(x,y)$ is given by the rule $f$"
+- $y(x_0)=y_0$: "we start at the point $(x_0,y_0)$"
+:::
 
-The **step size** $h$ — a small positive number — is your control parameter. Smaller $h$ means more accuracy and more work. The methods below differ in how many function evaluations they use per step, and therefore in how quickly the error shrinks as $h$ decreases.
+If $f$ is simple enough, calculus gives you $y(x)$ directly. When it isn't, we
+do the most human thing you can do: take a small step using the slope you have
+right now, then repeat.
+
+The **step size** $h$ is how far you move each time. Smaller $h$ means you
+follow the curve more closely (better accuracy) but you have to take more
+steps (more computation). Different methods spend more work per step in order
+to reduce the error faster.
 
 ---
 
