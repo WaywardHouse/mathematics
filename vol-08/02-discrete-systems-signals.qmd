@@ -106,6 +106,17 @@ The physical time attached to sample $n$ is
 
 $$t_n = nT_s$$
 
+::: {.callout-note appearance="simple"}
+**How to read bracket notation**
+
+- $x[n]$ means "the value of $x$ at step $n$" (a sample).
+- $x[n+1]$ means "the next sample."
+- $x[n-3]$ means "three samples ago."
+
+The brackets are not multiplication, and they are not an exponent. They are
+just an index into a sequence.
+:::
+
 where $T_s$ is the **sampling period**. The sampling frequency is
 
 $$f_s = \frac{1}{T_s}$$
