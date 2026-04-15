@@ -179,28 +179,30 @@ interpretations.
     return document.createElementNS("http://www.w3.org/2000/svg", tag);
   }
 
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const arrowWidth = v => 2 + 2.2 * Math.abs(v);
-
-  const container = document.createElement("div");
-  container.style.cssText = "max-width: 680px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
-
-  const controls = document.createElement("div");
-  controls.style.cssText = "display:grid; grid-template-columns:auto 1fr auto; gap:0.5rem 0.75rem; align-items:center; margin-bottom:0.75rem;";
-  function sliderRow(labelText, min, max, value) {
-    const label = document.createElement("label");
-    label.textContent = labelText;
-    const input = document.createElement("input");
+	  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+	  const arrowWidth = v => 2 + 2.2 * Math.abs(v);
+	
+	  const container = document.createElement("div");
+	  container.className = "wh-widget";
+	  container.style.maxWidth = "680px";
+	
+	  const controls = document.createElement("div");
+	  controls.className = "wh-controls-grid";
+	  function sliderRow(labelText, min, max, value) {
+	    const label = document.createElement("label");
+	    label.textContent = labelText;
+	    const input = document.createElement("input");
     input.type = "range";
     input.min = String(min);
     input.max = String(max);
-    input.step = "0.5";
-    input.value = String(value);
-    const out = document.createElement("span");
-    out.style.cssText = "font-variant-numeric: tabular-nums; min-width:3.6rem;";
-    controls.append(label, input, out);
-    return { input, out };
-  }
+	    input.step = "0.5";
+	    input.value = String(value);
+	    const out = document.createElement("span");
+	    out.className = "wh-num";
+	    out.style.minWidth = "3.6rem";
+	    controls.append(label, input, out);
+	    return { input, out };
+	  }
   const inRow = sliderRow("Inflow", 0, 10, inflow);
   const outRow = sliderRow("Outflow", 0, 10, outflow);
   const srcRow = sliderRow("Source", -4, 4, source);
@@ -217,30 +219,30 @@ interpretations.
     select.appendChild(opt);
   });
   select.value = mode;
-  modeRow.append(modeLabel, select);
-
-  const readout = document.createElement("div");
-  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
-  function card(label) {
-    const box = document.createElement("div");
-    box.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;";
-    const k = document.createElement("div");
-    k.style.cssText = "font-size:0.76rem; color:#6b7280;";
-    k.textContent = label;
-    const v = document.createElement("div");
-    v.style.cssText = "font-size:0.96rem; font-variant-numeric: tabular-nums;";
-    box.append(k, v);
-    readout.appendChild(box);
-    return v;
-  }
+	  modeRow.append(modeLabel, select);
+	
+	  const readout = document.createElement("div");
+	  readout.className = "wh-readout";
+	  function card(label) {
+	    const box = document.createElement("div");
+	    box.className = "wh-card";
+	    const k = document.createElement("div");
+	    k.className = "wh-card-k";
+	    k.textContent = label;
+	    const v = document.createElement("div");
+	    v.className = "wh-card-v";
+	    box.append(k, v);
+	    readout.appendChild(box);
+	    return v;
+	  }
   const eqBox = card("Balance");
   const rateBox = card("∂u/∂t");
   const stateBox = card("Interpretation");
 
-  const svg = svgEl("svg");
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.setAttribute("width", "100%");
-  svg.style.cssText = "display:block; background:white; border:1px solid #e5e7eb; border-radius:10px;";
+	  const svg = svgEl("svg");
+	  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+	  svg.setAttribute("width", "100%");
+	  svg.classList.add("wh-board");
 
   const square = svgEl("rect");
   square.setAttribute("x", "200");

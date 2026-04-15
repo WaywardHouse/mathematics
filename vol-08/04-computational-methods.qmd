@@ -189,38 +189,39 @@ translated into three different computational languages.
     }
   };
 
-  function svgEl(tag) {
-    return document.createElementNS("http://www.w3.org/2000/svg", tag);
-  }
-
-  const container = document.createElement("div");
-  container.style.cssText = "max-width: 860px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
-
-  const controls = document.createElement("div");
-  controls.style.cssText = "display:flex; gap:0.6rem; align-items:center; margin-bottom:0.75rem;";
-  const label = document.createElement("span");
-  label.textContent = "Viewpoint";
-  const select = document.createElement("select");
-  select.style.cssText = "padding:0.35rem 0.5rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
+	  function svgEl(tag) {
+	    return document.createElementNS("http://www.w3.org/2000/svg", tag);
+	  }
+	
+	  const container = document.createElement("div");
+	  container.className = "wh-widget";
+	  container.style.maxWidth = "860px";
+	
+	  const controls = document.createElement("div");
+	  controls.className = "wh-controls";
+	  const label = document.createElement("span");
+	  label.textContent = "Viewpoint";
+	  const select = document.createElement("select");
+	  select.style.cssText = "padding:0.35rem 0.5rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; font:inherit;";
   [["fd","Finite difference"],["fv","Finite volume"],["fem","Finite element"]].forEach(([v,l]) => {
     const opt = document.createElement("option");
     opt.value = v; opt.textContent = l; select.appendChild(opt);
   });
   controls.append(label, select);
 
-  const panels = document.createElement("div");
-  panels.style.cssText = "display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.75rem;";
-
-  function makePanel(title) {
-    const panel = document.createElement("div");
-    panel.style.cssText = "background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:0.7rem;";
-    const h = document.createElement("div");
-    h.style.cssText = "font-size:0.82rem; color:#6b7280; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.03em;";
-    h.textContent = title;
-    panel.appendChild(h);
-    panels.appendChild(panel);
-    return panel;
-  }
+	  const panels = document.createElement("div");
+	  panels.className = "wh-panels-3";
+	
+	  function makePanel(title) {
+	    const panel = document.createElement("div");
+	    panel.className = "wh-panel";
+	    const h = document.createElement("div");
+	    h.className = "wh-panel-title";
+	    h.textContent = title;
+	    panel.appendChild(h);
+	    panels.appendChild(panel);
+	    return panel;
+	  }
 
   const pdePanel = makePanel("PDE");
   const gridPanel = makePanel("Geometry");
