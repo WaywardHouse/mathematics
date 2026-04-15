@@ -121,6 +121,21 @@ data deserves.
 Let $\mathbf{x}$ be the hidden state you care about and $\mathbf{y}$ the
 measured data you actually have. A simple measurement model is
 
+::: {.callout-note appearance="simple"}
+**Measurement model, in words**
+
+The line
+
+$$\mathbf{y} = H\mathbf{x} + \varepsilon$$
+
+says: *what you measure is a blurred/partial view of the true state, plus some
+messiness you do not control.*
+
+- $H$ is the measuring device as mathematics: it tells you what part of the
+  state you can see.
+- $\varepsilon$ is the noise and error you cannot avoid.
+:::
+
 $$\mathbf{y} = H\mathbf{x} + \varepsilon$$
 
 where $H$ maps the state into observation space and $\varepsilon$ represents
@@ -446,6 +461,17 @@ or less strongly.
 Suppose you have a prior estimate $\hat{x}^-$ and then receive a new
 measurement $y$. In the scalar case where the measurement directly observes the
 state ($H = 1$), a simple update rule is
+
+::: {.callout-note appearance="simple"}
+**Update step, in words**
+
+$$\hat{x}^+ = \hat{x}^- + K(y - \hat{x}^-)$$
+
+says: **start from your prior, then move partway toward the measurement.**
+
+$K$ is the knob: $K=0$ ignores the sensor, $K=1$ snaps to the sensor, and values
+in between compromise.
+:::
 
 $$\hat{x}^+ = \hat{x}^- + K(y - \hat{x}^-)$$
 

@@ -120,6 +120,18 @@ how objective and constraints bend the space.
 
 The simplest unconstrained update rule is gradient descent:
 
+::: {.callout-note appearance="simple"}
+**Gradient descent, in words**
+
+$$\mathbf{x}_{k+1} = \mathbf{x}_k - \alpha \nabla f(\mathbf{x}_k)$$
+
+says: "look at the local slope, then take a step downhill."
+
+- $\nabla f$ points uphill (steepest increase).
+- $-\nabla f$ points downhill (steepest local decrease).
+- $\alpha$ controls how big a step you dare take.
+:::
+
 $$\mathbf{x}_{k+1} = \mathbf{x}_k - \alpha \nabla f(\mathbf{x}_k)$$
 
 The negative gradient points in the direction of steepest local decrease.

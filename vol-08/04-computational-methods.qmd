@@ -370,6 +370,19 @@ the residual is zero. This relaxed condition is easier to satisfy on irregular
 meshes, which makes finite element methods especially useful on complicated
 geometries and in structural mechanics.
 
+::: {.callout-note appearance="simple"}
+**Weak form, in words**
+
+The "strong form" says: the PDE must be true at every point.
+
+The weak form says: if you test the PDE against a family of weight functions
+and integrate, the error averages to zero.
+
+That sounds abstract, but it is the practical reason finite elements work on
+curved geometry: the method enforces the governing law *in an integral sense*
+that is stable under approximation.
+:::
+
 These are not three unrelated subjects. They are three ways of answering the
 same question: how should a continuum law be turned into finite equations?
 

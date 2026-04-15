@@ -117,6 +117,16 @@ randomness accumulates into operational consequence.
 
 Let $T$ be a random lifetime. The **reliability function** is
 
+::: {.callout-note appearance="simple"}
+**Reliability, in words**
+
+$$R(t)=P(T>t)$$
+
+means: "what is the chance the thing is still working after time $t$?"
+
+It is a survival curve. At $t=0$ it is 1. As time increases, it falls toward 0.
+:::
+
 $$R(t) = P(T > t)$$
 
 This is the probability that the component or system survives beyond time $t$.
@@ -142,6 +152,15 @@ conditional on survival up to time $t$. Let $f(t) = F'(t)$ be the probability
 density of the lifetime. Since $R(t) = 1 - F(t)$, differentiating gives
 $R'(t) = -f(t)$. The hazard rate is then the density of failure conditional on
 having survived so far:
+
+::: {.callout-note appearance="simple"}
+**Hazard rate, in words**
+
+The hazard rate is not "probability of failure." It is the *instantaneous
+failure tendency right now*, **given that you have made it to time $t$**.
+
+It answers: "If it has survived so far, how risky is the next moment?"
+:::
 
 $$\lambda(t) = \frac{f(t)}{R(t)} = \frac{-R'(t)}{R(t)}$$
 

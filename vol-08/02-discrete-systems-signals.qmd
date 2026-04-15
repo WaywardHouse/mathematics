@@ -128,6 +128,20 @@ present output depends on present and past samples in a fixed way.
 
 One common form is a **finite impulse response** (FIR) filter:
 
+::: {.callout-note appearance="simple"}
+**FIR filter, in words**
+
+The rule
+
+$$y[n] = \sum_{k=0}^{M} b_k x[n-k]$$
+
+says: **to compute the next output, take a small window of recent input samples,
+weight them, and add them up.**
+
+It is a sliding weighted average (not necessarily with positive weights). The
+weights $b_k$ are the filter you are designing.
+:::
+
 $$y[n] = \sum_{k=0}^{M} b_k x[n-k]$$
 
 "Finite" here means the output depends on only a bounded window of $M+1$ past
@@ -530,6 +544,16 @@ if the sampling frequency is too low. The samples no longer carry enough
 information to tell you which continuous oscillation was actually present.
 This means aliasing is not a small numerical error. It is a structural loss of
 information created at the moment of sampling.
+
+::: {.callout-note appearance="simple"}
+**Nyquist limit, in words**
+
+Sampling does not "record everything." It can only resolve changes up to about
+half the sampling rate.
+
+So if you sample at $f_s$, frequencies above $f_s/2$ do not disappear — they
+show up disguised as lower frequencies.
+:::
 
 The **Nyquist–Shannon sampling theorem** states the safe condition:
 

@@ -545,6 +545,18 @@ $\rho$ is mass density (kg m$^{-3}$) and $c_p$ is specific heat capacity
 
 $$\rho c_p \frac{\partial T}{\partial t} + \frac{\partial q}{\partial x} = 0$$
 
+::: {.callout-note appearance="simple"}
+**Constitutive law, in words**
+
+The balance law is bookkeeping, but it is not complete by itself. You also need
+a material rule that says *how the flux responds to a driving difference.*
+
+For heat and diffusion, that rule is: **stuff flows from high to low.**
+
+That is why Fourier's and Fick's laws have a minus sign: the flux points down
+the gradient.
+:::
+
 Use Fourier's law in one dimension:
 
 $$q = -k\frac{\partial T}{\partial x}$$

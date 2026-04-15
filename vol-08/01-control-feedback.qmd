@@ -179,13 +179,41 @@ $$\bigl(1 + C(s)G(s)\bigr)Y(s) = C(s)G(s)R(s)$$
 
 So the closed-loop transfer function is
 
+::: {.callout-note appearance="simple"}
+**Closed loop, in words**
+
+The fraction
+
+$$T(s) = \frac{C(s)G(s)}{1 + C(s)G(s)}$$
+
+is not something you memorise. It is a story:
+
+- the **top** is "how strongly the controller and plant push the output"
+- the **bottom** is "the same push, plus the self-correction from feedback"
+
+As the loop gain $C(s)G(s)$ gets large (where the model is valid), $T(s)$ tends
+toward 1: the output tracks the reference. When the loop gain is small, $T(s)$
+looks like the open-loop behaviour.
+:::
+
 $$T(s) = \frac{Y(s)}{R(s)} = \frac{C(s)G(s)}{1 + C(s)G(s)}$$
 
 This means feedback does not merely add another block to the diagram. It
 changes the input-output law of the whole system.
 
-The equation $1 + C(s)G(s) = 0$ is the **characteristic equation** of the
-closed-loop system, and its roots are the **closed-loop poles**. They determine
+::: {.callout-note appearance="simple"}
+**Characteristic equation, in words**
+
+The equation
+
+$$1 + C(s)G(s) = 0$$
+
+is where feedback "decides" the system's natural behaviour. Its solutions are
+the closed-loop poles: they are the modes the system will naturally express
+after a disturbance.
+:::
+
+The roots of $1 + C(s)G(s) = 0$ are the **closed-loop poles**. They determine
 whether the response decays, oscillates, grows, or diverges.
 
 *Adjust the gain K below. Watch the step response, pole location, and error readouts change simultaneously.*
@@ -484,6 +512,17 @@ The same stability condition applies in state-space form — vectors and matrice
 instead of transfer functions, but the same underlying dynamics. A transfer
 function $G(s)$ and a state-space model $(A, B)$ are two descriptions of the
 same system.
+
+::: {.callout-note appearance="simple"}
+**Two different K's in this chapter**
+
+This chapter uses $K$ in two roles:
+
+- **scalar** $K$ in $C(s)=K$: a single proportional gain in a transfer-function loop
+- **row vector** $K$ in $u=-Kx$: state-feedback gains in a state-space loop
+
+Same letter, different job. When you see $K$ next, check which story you are in.
+:::
 
 Here $K$ is a row vector of gains — distinct from the scalar proportional gain
 used above. For a state-space model
