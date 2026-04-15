@@ -25,6 +25,25 @@ geophysics, remote sensing, and operations research. Those side doors are
 not distractions; they help the reader see the mathematics as a transferable
 way of thinking instead of a discipline-specific dialect.
 
+## How to read this volume (without getting spooked)
+
+You do not need to feel like an "upper-year engineering maths person" to use
+this volume. If you are a math-curious geographer, an environmental scientist,
+or a computing student who wants the machinery without the bravado, that is a
+perfect reason to be here.
+
+Two practical promises guide the editing:
+
+- **Symbols are treated as names first.** A symbol is usually just a label for
+  a quantity you already understand in words: a rate, a state, a cost, a risk.
+- **Every chapter carries a small “new language” guide.** Near the start you
+  will see a short list of *new symbols* (with how to read them aloud) and
+  *new definitions* (in plain language). When a page starts to feel dense, jump
+  back to those boxes and keep going.
+
+The goal is not to turn you into someone who already understands the maths.
+The goal is to give you a path through it.
+
 The pipeline for this volume is different too. The authoring job is not
 simply to continue adding topics. It is to test each chapter from several
 angles at once:

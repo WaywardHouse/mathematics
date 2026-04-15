@@ -431,6 +431,21 @@ directions leave the feasible surface. The Lagrangian is
 
 $$\mathcal{L}(\mathbf{x}, \lambda) = f(\mathbf{x}) + \lambda h(\mathbf{x})$$
 
+::: {.callout-note appearance="simple"}
+**The Lagrangian, in words**
+
+Think of $\mathcal{L}$ as "objective + a constraint-enforcement term".
+
+- $f(\mathbf{x})$ is the thing you are trying to make small (cost, error, mass, risk).
+- $h(\mathbf{x}) = 0$ is the rule you must obey.
+- $\lambda$ is a balancing knob the maths introduces so that "best" and "allowed"
+  can be true at the same time.
+
+At the solution, $\lambda$ is not a design choice you pick. It is the number
+that makes the optimality conditions work out, and it often has a real
+interpretation: how sensitive the objective is to relaxing the constraint.
+:::
+
 The stationary conditions are
 
 $$\nabla_{\mathbf{x}} \mathcal{L} = 0, \qquad h(\mathbf{x}) = 0$$

@@ -396,6 +396,23 @@ bound — the system is unstable and no finite long-run average exists. When
 $\rho < 1$ but is close to 1, the queue length grows sharply, even when mean
 demand still looks safely below capacity.
 
+::: {.callout-note appearance="simple"}
+**Traffic intensity $\rho$, in words**
+
+In the simplest queueing models,
+
+$$\rho = \frac{\lambda_a}{\mu}$$
+
+where:
+
+- $\lambda_a$ is the average arrival rate (jobs per hour, customers per minute, packets per second)
+- $\mu$ is the average service rate (how many jobs per hour one server can finish)
+
+So $\rho$ is a utilisation number. If $\rho = 0.8$, the server is busy about 80%
+of the time *on average*. The trouble is that "80% busy on average" can still
+mean long waits when variability and bursts are present.
+:::
+
 Variability matters even when average values look harmless. A system with
 average arrival rate only slightly below service rate can still produce long
 queues if the variability is large enough.
