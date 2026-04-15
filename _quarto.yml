@@ -162,7 +162,9 @@ book:
 
 format:
   html:
-    css: _extensions/wayward-book/wayward-book.css
+    css:
+      - _extensions/wayward-book/wayward-book.css
+      - assets/css/wh-widgets.css
     include-in-header: _extensions/wayward-book/head.html
     smooth-scroll: true
     toc: true

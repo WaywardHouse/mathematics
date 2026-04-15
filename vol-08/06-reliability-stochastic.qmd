@@ -430,36 +430,49 @@ rates. They are all stochastic consequences of uncertain events over time.
 
 ```{ojs}
 //| echo: false
-{
-  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
-  const container = document.createElement("div");
-  container.style.cssText = "max-width: 720px; margin: 1rem 0 1.25rem 0; font-family: inherit;";
-  const controls = document.createElement("div");
-  controls.style.cssText = "display:flex; gap:0.75rem; align-items:end; margin-bottom:0.75rem;";
-  const wrap = document.createElement("label");
-  wrap.style.cssText = "display:grid; gap:0.25rem; font-size:0.9rem; color:#374151;";
-  wrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Traffic intensity ρ" }));
-  const rho = document.createElement("input");
-  rho.type = "range"; rho.min = "0.1"; rho.max = "0.98"; rho.step = "0.01"; rho.value = "0.75";
-  const out = document.createElement("span");
-  out.style.cssText = "font-variant-numeric: tabular-nums; color:#6b7280;";
-  wrap.append(rho, out);
-  controls.appendChild(wrap);
-  const readout = document.createElement("div");
-  readout.style.cssText = "display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.65rem;";
-  function card(label){const box=document.createElement("div"); box.style.cssText="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 0.65rem;"; const k=document.createElement("div"); k.style.cssText="font-size:0.76rem; color:#6b7280;"; k.textContent=label; const v=document.createElement("div"); v.style.cssText="font-size:0.96rem; font-variant-numeric: tabular-nums;"; box.append(k,v); readout.appendChild(box); return v;}
-  const lqBox = card("Expected queue Lq");
-  const regimeBox = card("Regime");
-  const svg = svgEl("svg");
-  svg.setAttribute("viewBox", "0 0 680 240");
-  svg.setAttribute("width", "100%");
-  svg.style.cssText = "display:block; background:#fff; border:1px solid #e5e7eb; border-radius:10px;";
-  const caption = document.createElement("p");
-  caption.style.cssText = "font-size:0.9rem; color:#4b5563; margin:0.55rem 0 0 0;";
-  function redraw(){
-    while(svg.firstChild) svg.removeChild(svg.firstChild);
-    const r = parseFloat(rho.value);
-    out.textContent = r.toFixed(2);
+	{
+	  function svgEl(tag){return document.createElementNS("http://www.w3.org/2000/svg", tag);}
+	  const container = document.createElement("div");
+	  container.className = "wh-widget";
+	  container.style.maxWidth = "720px";
+	  const controls = document.createElement("div");
+	  controls.className = "wh-controls";
+	  const wrap = document.createElement("label");
+	  wrap.className = "wh-control";
+	  wrap.appendChild(Object.assign(document.createElement("span"), { textContent: "Traffic intensity ρ" }));
+	  const rho = document.createElement("input");
+	  rho.type = "range"; rho.min = "0.1"; rho.max = "0.98"; rho.step = "0.01"; rho.value = "0.75";
+	  const out = document.createElement("span");
+	  out.className = "wh-num";
+	  out.style.color = "#6b7280";
+	  wrap.append(rho, out);
+	  controls.appendChild(wrap);
+	  const readout = document.createElement("div");
+	  readout.className = "wh-readout";
+	  function card(label){
+	    const box = document.createElement("div");
+	    box.className = "wh-card";
+	    const k = document.createElement("div");
+	    k.className = "wh-card-k";
+	    k.textContent = label;
+	    const v = document.createElement("div");
+	    v.className = "wh-card-v";
+	    box.append(k, v);
+	    readout.appendChild(box);
+	    return v;
+	  }
+	  const lqBox = card("Expected queue Lq");
+	  const regimeBox = card("Regime");
+	  const svg = svgEl("svg");
+	  svg.setAttribute("viewBox", "0 0 680 240");
+	  svg.setAttribute("width", "100%");
+	  svg.classList.add("wh-board");
+	  const caption = document.createElement("p");
+	  caption.className = "wh-caption";
+	  function redraw(){
+	    while(svg.firstChild) svg.removeChild(svg.firstChild);
+	    const r = parseFloat(rho.value);
+	    out.textContent = r.toFixed(2);
     const lq = (r*r)/(1-r);
     const sx = x => 60 + 540 * (x - 0.1) / 0.88;
     const sy = y => 210 - 170 * y / 20;
