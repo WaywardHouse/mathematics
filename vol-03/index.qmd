@@ -19,3 +19,4 @@ This is the bridge where algebra stops being just letters on a page and starts b
 | 2 | Trigonometry | Relating angles to side lengths |
 | 3 | Polynomials and factoring | Deconstructing complex equations |
 | 4 | Functions and relations | Mapping inputs to outputs |
+| 5 | Boolean algebra and logic circuits | The algebra of true and false |

@@ -17,3 +17,5 @@ By the end of this volume, you will understand how to freeze a changing system p
 | 2 | Differential calculus | Measuring instantaneous change |
 | 3 | Integral calculus | Accumulating continuous amounts |
 | 4 | Proof and reasoning | Establishing absolute certainty |
+| 5 | Series expansions and numerical methods | Approximating functions and finding zeros |
+| 6 | Engineering integral applications | Centroids, second moments, and RMS values |

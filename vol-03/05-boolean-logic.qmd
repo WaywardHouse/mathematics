@@ -1,0 +1,962 @@
+---
+title: "Boolean algebra and logic circuits"
+subtitle: "The algebra of true and false"
+
+volume: 3
+chapter: 5
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You already know that algebra is about relationships between numbers.
+  But some relationships aren't about quantity — they're about truth.
+  A door is open or closed. A condition is met or it isn't.
+
+rewrite: |
+  Boolean algebra is a complete algebra for true/false values.
+  Every digital circuit, every programming conditional, every database
+  query obeys its rules. Understanding it means understanding the logic
+  inside every computer ever built.
+
+opens_to:
+  - id: "v4c3-systems-matrices"
+    label: "Systems and matrices"
+    volume: 4
+    relationship: "enriches"
+  - id: "numerics"
+    label: "Numerical methods"
+    volume: 7
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "func"
+  - "patterns"
+
+destinations:
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Every CPU instruction, every conditional branch, every bit operation runs on Boolean logic."
+    career_example: "Hardware engineer designing a digital circuit from a truth table"
+  - field: "eng"
+    label: "Engineering"
+    hook: "Programmable logic controllers (PLCs) in industrial automation use Boolean ladder logic directly."
+    career_example: "Electrical engineer programming safety interlocks in a factory"
+
+hook: |
+  A light switch is either up or down. A sensor reading is either above
+  threshold or it isn't. A login attempt either succeeds or fails.
+
+  Most of everyday life runs on two-valued decisions. Boolean algebra is
+  what happens when you take that observation seriously and build a
+  complete algebra from it — with its own operations, its own laws, and
+  its own connection to physical circuits.
+
+definitions_introduced:
+  - term: "Boolean variable"
+    means: "A quantity that takes exactly one of two values: 1 (true) or 0 (false)."
+  - term: "truth table"
+    means: "A table listing every possible combination of inputs and the corresponding output."
+  - term: "logic gate"
+    means: "A physical component that implements one Boolean operation — AND, OR, or NOT."
+
+notation_introduced:
+  - symbol: "A · B"
+    reads_as: "A AND B — true only when both A and B are true"
+    notation_weight: 2
+  - symbol: "A + B"
+    reads_as: "A OR B — true when at least one of A or B is true"
+    notation_weight: 2
+  - symbol: "Ā"
+    reads_as: "NOT A — the opposite of A"
+    notation_weight: 2
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: null
+  strand: "Computing and Logic"
+  outcome: null
+uofa_course: null
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+A light switch is either up or down. A sensor reading is either above
+threshold or it isn't. A login attempt either succeeds or fails.
+
+Most of everyday life runs on two-valued decisions. Boolean algebra is
+what happens when you take that observation seriously and build a
+complete algebra from it — with its own operations, its own laws, and
+its own connection to physical circuits.
+
+## Counting in different bases
+
+Before we get to logic, we need to understand how computers count. This
+matters because digital circuits don't just process true/false — they
+process numbers too, and those numbers are stored as patterns of on/off
+signals.
+
+You already count in base 10. The digit in each position tells you how
+many of that power of ten you have:
+
+$$423 = 4 \times 100 + 2 \times 10 + 3 \times 1$$
+
+Each column is ten times the one to its right. When you run out of
+digits (after 9), you carry into the next column.
+
+**Binary (base 2)** works exactly the same way, but with only two
+digits: 0 and 1. Each column is two times the one to its right.
+
+$$1011_2 = 1 \times 8 + 0 \times 4 + 1 \times 2 + 1 \times 1 = 11_{10}$$
+
+The subscript 2 means "this is a base-2 number." Why does any of this
+matter? Because every computer stores information as a sequence of
+switches — each switch is either on (1) or off (0). Binary is the
+natural language of electronics.
+
+**Converting decimal to binary** uses repeated division by 2. Divide,
+record the remainder, divide again. The remainders, read bottom to top,
+give you the binary number.
+
+Example: convert 13 to binary.
+
+$$13 \div 2 = 6 \text{ remainder } 1$$
+$$6 \div 2 = 3 \text{ remainder } 0$$
+$$3 \div 2 = 1 \text{ remainder } 1$$
+$$1 \div 2 = 0 \text{ remainder } 1$$
+
+Read the remainders bottom to top: $1101_2$. Check: $8 + 4 + 0 + 1 = 13$. Yes.
+
+<!-- VIZ: [Decimal-to-binary converter: user enters a decimal number 0–255 with a slider or input, and sees the binary representation update live as a row of lit/unlit bulbs or boxes, each labelled with its place value (128, 64, 32, 16, 8, 4, 2, 1). Clicking a bulb toggles it and updates the decimal. Lets users explore both directions of conversion.] -->
+
+**Hexadecimal (base 16)** groups binary digits into sets of four, giving
+a more compact notation. Since base 16 needs sixteen distinct digits and
+we only have ten numerals, we borrow letters: A=10, B=11, C=12, D=13,
+E=14, F=15.
+
+| Decimal | Binary | Hex |
+|---------|--------|-----|
+| 0 | 0000 | 0 |
+| 9 | 1001 | 9 |
+| 10 | 1010 | A |
+| 15 | 1111 | F |
+| 16 | 0001 0000 | 10 |
+| 255 | 1111 1111 | FF |
+
+Each hex digit represents exactly 4 binary digits (bits). So the
+memory address `0x2F` means $2 \times 16 + 15 = 47$ in decimal. Hex
+appears constantly in computing — colour codes (`#FF8800`), memory
+addresses, error codes — because it is a compact shorthand for binary.
+
+**Octal (base 8)** works the same way but groups bits in threes. It is
+less common today but appears in Unix file permissions.
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+viewof decimalInput = Inputs.range([0, 255], {
+  label: "Decimal number",
+  step: 1,
+  value: 42
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const n = Math.round(decimalInput);
+  const binary = n.toString(2).padStart(8, '0');
+  const hex = n.toString(16).toUpperCase();
+  const octal = n.toString(8);
+
+  const W = 560;
+  const H = 160;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  // Title
+  svg.append("text")
+    .attr("x", W / 2).attr("y", 22)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "13px").attr("fill", "#6b7280")
+    .text(`Decimal ${n} in other bases`);
+
+  // Binary bits as boxes
+  const bitW = 44;
+  const bitH = 40;
+  const bitStartX = (W - 8 * (bitW + 6)) / 2;
+  const bitY = 35;
+  const placeValues = [128, 64, 32, 16, 8, 4, 2, 1];
+
+  for (let i = 0; i < 8; i++) {
+    const bit = parseInt(binary[i]);
+    const x = bitStartX + i * (bitW + 6);
+
+    svg.append("rect")
+      .attr("x", x).attr("y", bitY)
+      .attr("width", bitW).attr("height", bitH)
+      .attr("rx", 5)
+      .attr("fill", bit ? "#0d9488" : "#f3f4f6")
+      .attr("stroke", bit ? "#0f766e" : "#d1d5db")
+      .attr("stroke-width", 2);
+
+    svg.append("text")
+      .attr("x", x + bitW / 2).attr("y", bitY + 26)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "18px")
+      .attr("font-weight", "700")
+      .attr("fill", bit ? "#ffffff" : "#9ca3af")
+      .text(bit);
+
+    svg.append("text")
+      .attr("x", x + bitW / 2).attr("y", bitY + bitH + 14)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px")
+      .attr("fill", "#9ca3af")
+      .text(placeValues[i]);
+  }
+
+  // Other bases
+  const baseY = 130;
+  const cols = [
+    { label: "Binary", val: `${binary}₂`, x: 80 },
+    { label: "Octal", val: `${octal}₈`, x: 240 },
+    { label: "Hex", val: `0x${hex}`, x: 400 }
+  ];
+
+  cols.forEach(c => {
+    svg.append("text")
+      .attr("x", c.x).attr("y", baseY - 4)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px").attr("fill", "#9ca3af")
+      .text(c.label);
+    svg.append("text")
+      .attr("x", c.x).attr("y", baseY + 16)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "15px").attr("fill", "#1f2937").attr("font-weight", "700")
+      .text(c.val);
+  });
+
+  return svg.node();
+}
+```
+
+---
+
+## What Boolean algebra is
+
+George Boole published his algebra in 1854. He wanted a mathematical
+language for logical reasoning — the same way ordinary algebra is a
+language for numerical reasoning. He gave variables two possible values:
+true and false. A **Boolean variable** is a quantity that takes exactly
+one of two values: 1 (true) or 0 (false).
+
+The connection to electronics came nearly a century later, when Claude
+Shannon showed that electrical circuits could implement Boole's algebra
+directly. An on/off switch is a Boolean variable. A circuit that lights
+up only when two switches are both on implements AND. Every chip ever
+made is a physical instance of Boolean algebra.
+
+## AND, OR, and NOT
+
+Three operations do everything. Before the symbols, here is what they
+mean in plain language:
+
+**AND** means "both conditions must hold." Your alarm sounds if the
+door is open AND the system is armed. One condition alone is not enough.
+
+**OR** means "at least one condition holds." The light comes on if you
+press switch A OR switch B — or both.
+
+**NOT** means "the opposite." If the door is NOT open, nothing happens.
+
+Now the notation. We write:
+
+- $A \cdot B$ — read as "A AND B" — true only when both $A$ and $B$ are 1
+- $A + B$ — read as "A OR B" — true when at least one of $A$ or $B$ is 1
+- $\bar{A}$ — read as "NOT A" or "A-bar" — the opposite of $A$
+
+The dot $\cdot$ for AND and plus $+$ for OR look like ordinary
+multiplication and addition — and in many ways they behave like them.
+But they are not the same operations.
+
+A **truth table** lists every possible combination of inputs and the
+output for each. With two variables $A$ and $B$, there are four
+combinations: 00, 01, 10, 11.
+
+**AND ($A \cdot B$):**
+
+| $A$ | $B$ | $A \cdot B$ |
+|-----|-----|-------------|
+| 0 | 0 | 0 |
+| 0 | 1 | 0 |
+| 1 | 0 | 0 |
+| 1 | 1 | 1 |
+
+Output is 1 only when both inputs are 1.
+
+**OR ($A + B$):**
+
+| $A$ | $B$ | $A + B$ |
+|-----|-----|---------|
+| 0 | 0 | 0 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 1 |
+
+Output is 0 only when both inputs are 0.
+
+**NOT ($\bar{A}$):**
+
+| $A$ | $\bar{A}$ |
+|-----|-----------|
+| 0 | 1 |
+| 1 | 0 |
+
+Output is always the opposite of the input.
+
+<!-- VIZ: [Interactive truth table builder: three panels side by side for AND, OR, NOT. Toggle buttons for A and B (labelled 0/1). Each panel shows the gate symbol (a D-shape for AND, a curved D for OR, a triangle with a bubble for NOT), the current input values highlighted, and the output lit up or dim. All three panels update simultaneously when A or B is toggled.] -->
+
+```{ojs}
+//| echo: false
+viewof inputA = Inputs.toggle({ label: "Input A", value: false })
+```
+
+```{ojs}
+//| echo: false
+viewof inputB = Inputs.toggle({ label: "Input B", value: false })
+```
+
+```{ojs}
+//| echo: false
+{
+  const A = inputA ? 1 : 0;
+  const B = inputB ? 1 : 0;
+  const AND_out = A & B;
+  const OR_out  = A | B;
+  const NOT_out = A ? 0 : 1;
+
+  const W = 560;
+  const H = 200;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family: inherit;`);
+
+  const gateColor = (out) => out ? "#0d9488" : "#d1d5db";
+  const textColor = (out) => out ? "#0f766e" : "#9ca3af";
+
+  // Helper: draw a gate panel
+  function drawGate(gx, gy, label, notation, a_val, b_val, out) {
+    const panelW = 155;
+    const panelH = 150;
+    // Panel background
+    svg.append("rect")
+      .attr("x", gx).attr("y", gy)
+      .attr("width", panelW).attr("height", panelH)
+      .attr("rx", 8)
+      .attr("fill", out ? "#f0fdfa" : "#f9fafb")
+      .attr("stroke", gateColor(out))
+      .attr("stroke-width", 2);
+
+    // Gate name
+    svg.append("text")
+      .attr("x", gx + panelW / 2).attr("y", gy + 22)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "14px").attr("fill", "#374151").attr("font-weight", "700")
+      .text(label);
+
+    // Notation
+    svg.append("text")
+      .attr("x", gx + panelW / 2).attr("y", gy + 42)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px").attr("fill", "#6b7280")
+      .text(notation);
+
+    // Inputs
+    if (b_val !== null) {
+      svg.append("text")
+        .attr("x", gx + 18).attr("y", gy + 76)
+        .attr("font-size", "13px").attr("fill", a_val ? "#0d9488" : "#9ca3af").attr("font-weight", "600")
+        .text(`A = ${a_val}`);
+      svg.append("text")
+        .attr("x", gx + 18).attr("y", gy + 96)
+        .attr("font-size", "13px").attr("fill", b_val ? "#0d9488" : "#9ca3af").attr("font-weight", "600")
+        .text(`B = ${b_val}`);
+    } else {
+      svg.append("text")
+        .attr("x", gx + 18).attr("y", gy + 86)
+        .attr("font-size", "13px").attr("fill", a_val ? "#0d9488" : "#9ca3af").attr("font-weight", "600")
+        .text(`A = ${a_val}`);
+    }
+
+    // Output indicator
+    svg.append("circle")
+      .attr("cx", gx + panelW / 2).attr("cy", gy + 125)
+      .attr("r", 14)
+      .attr("fill", gateColor(out))
+      .attr("opacity", out ? 0.9 : 0.3);
+
+    svg.append("text")
+      .attr("x", gx + panelW / 2).attr("y", gy + 130)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "14px").attr("fill", out ? "#ffffff" : "#9ca3af").attr("font-weight", "700")
+      .text(out);
+  }
+
+  drawGate(20,  25, "AND", "A · B", A, B, AND_out);
+  drawGate(200, 25, "OR",  "A + B", A, B, OR_out);
+  drawGate(380, 25, "NOT", "Ā",     A, null, NOT_out);
+
+  // Labels below output
+  const labels = [
+    { x: 20 + 155/2, text: out => out ? "Both inputs are 1" : "Not both inputs are 1", out: AND_out },
+    { x: 200 + 155/2, text: out => out ? "At least one input is 1" : "Both inputs are 0", out: OR_out },
+    { x: 380 + 155/2, text: out => out ? "A is 0, so NOT A is 1" : "A is 1, so NOT A is 0", out: NOT_out }
+  ];
+
+  return svg.node();
+}
+```
+
+---
+
+## Laws of Boolean algebra
+
+These laws are identities — they hold for all values of the variables.
+They let you simplify complex expressions, which matters when you're
+designing circuits: fewer operations means fewer gates, which means
+smaller, cheaper, faster hardware.
+
+**Commutative law** — order doesn't matter:
+
+$$A \cdot B = B \cdot A \qquad A + B = B + A$$
+
+This matches ordinary algebra. It means you can reorder AND and OR
+terms freely.
+
+**Associative law** — grouping doesn't matter:
+
+$$A \cdot (B \cdot C) = (A \cdot B) \cdot C \qquad A + (B + C) = (A + B) + C$$
+
+**Distributive law** — AND distributes over OR:
+
+$$A \cdot (B + C) = A \cdot B + A \cdot C$$
+
+This one also goes in the reverse direction: $A \cdot B + A \cdot C = A \cdot (B + C)$. It is how you factor Boolean expressions, exactly like factoring in ordinary algebra.
+
+**Identity laws** — the neutral elements:
+
+$$A \cdot 1 = A \qquad A + 0 = A$$
+
+Multiplying by 1 (always true) leaves $A$ unchanged. OR-ing with 0 (always false) leaves $A$ unchanged. The other cases are:
+
+$$A \cdot 0 = 0 \qquad A + 1 = 1$$
+
+AND-ing with 0 always gives 0. OR-ing with 1 always gives 1.
+
+**Complement laws** — a variable combined with its own opposite:
+
+$$A \cdot \bar{A} = 0 \qquad A + \bar{A} = 1$$
+
+This is where Boolean algebra differs sharply from ordinary algebra.
+$A \cdot \bar{A} = 0$ means "true AND false is always false" — no number satisfies $x \cdot (-x) = 0$ in ordinary algebra in the same way. $A + \bar{A} = 1$ means "true OR false is always true" — one of them is always 1.
+
+**Idempotent laws** — combining a variable with itself:
+
+$$A \cdot A = A \qquad A + A = A$$
+
+In ordinary arithmetic, $x \cdot x = x^2 \neq x$ in general. In Boolean algebra, since $A$ is either 0 or 1, AND-ing or OR-ing a value with itself just gives that value back.
+
+**Double negation** — two NOTs cancel:
+
+$$\bar{\bar{A}} = A$$
+
+Inverting twice returns the original. This should feel intuitive: "not not open" means "open."
+
+::: {.callout-note appearance="simple"}
+**Why these laws hold**
+
+There are only two values in Boolean algebra: 0 and 1. Every law can be verified by checking all possible input combinations — a finite job.
+For the complement law $A + \bar{A} = 1$: if $A = 1$ then $\bar{A} = 0$, so $1 + 0 = 1$. If $A = 0$ then $\bar{A} = 1$, so $0 + 1 = 1$. Both cases give 1. The law holds.
+This is why truth tables are the ultimate proof in Boolean algebra.
+:::
+
+## De Morgan's laws
+
+These two laws are the most practically useful in the whole subject.
+They let you convert between AND and OR by pushing a NOT inside
+(or pulling it outside) an expression.
+
+$$\overline{A \cdot B} = \bar{A} + \bar{B}$$
+
+Read as: "NOT (A AND B)" equals "(NOT A) OR (NOT B)."
+
+$$\overline{A + B} = \bar{A} \cdot \bar{B}$$
+
+Read as: "NOT (A OR B)" equals "(NOT A) AND (NOT B)."
+
+An everyday translation of the first law: "It is not the case that the door is open AND the alarm is armed" is the same as "the door is not open OR the alarm is not armed." Both mean the threatening situation isn't happening.
+
+**Verification by truth table:**
+
+| $A$ | $B$ | $A \cdot B$ | $\overline{A \cdot B}$ | $\bar{A}$ | $\bar{B}$ | $\bar{A} + \bar{B}$ |
+|-----|-----|-------------|----------------------|-----------|-----------|----------------------|
+| 0 | 0 | 0 | **1** | 1 | 1 | **1** |
+| 0 | 1 | 0 | **1** | 1 | 0 | **1** |
+| 1 | 0 | 0 | **1** | 0 | 1 | **1** |
+| 1 | 1 | 1 | **0** | 0 | 0 | **0** |
+
+The bold columns match in every row. The law holds.
+
+**Why De Morgan's laws matter in practice:** NAND and NOR gates are physically easier to manufacture than AND and OR gates. De Morgan's laws tell you how to rewrite any expression using only NAND (or only NOR), which is exactly what chip designers do.
+
+<!-- VIZ: [De Morgan's law visualiser: two rows showing A·B and A+B, with toggles for A and B. A third row shows the negated output. Buttons let the user flip between "NAND view" and "NOR view", animating how the bar moves inside vs. the operation flipping. Helps readers see the symmetry.] -->
+
+**Worked example — simplifying an expression using De Morgan's law:**
+
+Simplify $\overline{\bar{A} + B}$.
+
+Apply De Morgan's second law to the outer NOT:
+
+$$\overline{\bar{A} + B} = \overline{\bar{A}} \cdot \bar{B}$$
+
+Apply double negation ($\overline{\bar{A}} = A$):
+
+$$= A \cdot \bar{B}$$
+
+So $\overline{\bar{A} + B} = A \cdot \bar{B}$. The expression simplifies from three operations to two.
+
+## Karnaugh maps
+
+A Karnaugh map (K-map) is a grid layout of a truth table designed so that adjacent cells differ in exactly one variable. Grouping adjacent 1s reveals common factors in the Boolean expression — and the largest valid groups give the simplest expression.
+
+The idea: instead of manipulating symbols algebraically, you find patterns visually.
+
+**Two-variable K-map**
+
+For variables $A$ and $B$, the four cells are arranged as:
+
+|  | $B = 0$ | $B = 1$ |
+|--|---------|---------|
+| $A = 0$ | $m_0$ | $m_1$ |
+| $A = 1$ | $m_2$ | $m_3$ |
+
+Each cell $m_i$ holds the output value for that input combination. Groups of adjacent 1s (in sizes 1, 2, or 4) can be circled. A group of 2 adjacent cells means one variable drops out of the expression. A group of 4 means two variables drop out.
+
+**Three-variable K-map**
+
+With variables $A$, $B$, $C$, there are eight cells arranged in a $2 \times 4$ grid. The column order follows Gray code — each adjacent pair of columns differs in only one bit:
+
+|  | $BC=00$ | $BC=01$ | $BC=11$ | $BC=10$ |
+|--|---------|---------|---------|---------|
+| $A=0$ | | | | |
+| $A=1$ | | | | |
+
+The unusual column order (00, 01, 11, 10) is what makes adjacency work correctly. The left and right edges also wrap around — cells in the leftmost column are adjacent to cells in the rightmost column.
+
+**Rules for grouping:**
+
+1. Groups must be rectangular and contain $2^n$ cells (1, 2, 4, or 8).
+2. Every 1 must be covered by at least one group.
+3. Groups should be as large as possible.
+4. Use the fewest groups that cover all the 1s.
+5. Groups may overlap.
+
+Each group produces one product term. A variable appears in the term if it is constant across the group (0 means the variable is complemented, 1 means it appears as is). A variable that changes across a group drops out of that term.
+
+<!-- VIZ: [Interactive Karnaugh map: 3-variable K-map with toggle-able cells. User clicks cells to set them to 0 or 1. The tool automatically highlights the largest valid groups with coloured outlines and shows the resulting minimal SOP expression updating live below the grid. Lets users explore how different patterns produce different simplified expressions.] -->
+
+**Worked example — finding the minimal expression:**
+
+Truth table:
+
+| $A$ | $B$ | $C$ | Output |
+|-----|-----|-----|--------|
+| 0 | 0 | 0 | 0 |
+| 0 | 0 | 1 | 1 |
+| 0 | 1 | 0 | 0 |
+| 0 | 1 | 1 | 1 |
+| 1 | 0 | 0 | 0 |
+| 1 | 0 | 1 | 1 |
+| 1 | 1 | 0 | 1 |
+| 1 | 1 | 1 | 1 |
+
+Place the outputs in the K-map:
+
+|  | $BC=00$ | $BC=01$ | $BC=11$ | $BC=10$ |
+|--|---------|---------|---------|---------|
+| $A=0$ | 0 | **1** | **1** | 0 |
+| $A=1$ | 0 | **1** | **1** | **1** |
+
+Identify groups:
+
+- **Group 1:** The four cells with $C=1$ form a column pair $(BC=01$ and $BC=11$ for both rows): positions $(A=0,BC=01)$, $(A=0,BC=11)$, $(A=1,BC=01)$, $(A=1,BC=11)$. In these cells $A$ varies and $B$ varies, but $C=1$ throughout. So this group gives the term $C$.
+
+- **Group 2:** The two cells at $(A=1,BC=11)$ and $(A=1,BC=10)$: both have $A=1$ and $B=1$, with $C$ varying. This group gives the term $A \cdot B$.
+
+The minimal expression is:
+
+$$f = C + A \cdot B$$
+
+Check: When $C=1$, output is 1. When $A=1$ AND $B=1$, output is 1. Scanning the truth table — yes, this matches every row.
+
+## NAND and NOR as universal gates
+
+A **NAND gate** computes NOT (A AND B). A **NOR gate** computes NOT (A OR B).
+
+$$\text{NAND}(A, B) = \overline{A \cdot B} \qquad \text{NOR}(A, B) = \overline{A + B}$$
+
+Either gate alone is sufficient to implement any Boolean function. This is what "universal" means: you don't need AND, OR, and NOT as separate physical components — you need just one gate type.
+
+Why does this matter? Chip manufacturing favors uniformity. A factory optimized for a single gate type produces that gate faster, smaller, and cheaper. Almost all modern logic chips are built entirely from NAND gates.
+
+**Building NOT from NAND:**
+
+Connect both inputs of a NAND gate to the same signal $A$:
+
+$$\text{NAND}(A, A) = \overline{A \cdot A} = \bar{A}$$
+
+By the idempotent law, $A \cdot A = A$, so $\overline{A \cdot A} = \bar{A}$.
+
+**Building AND from NAND:**
+
+AND is NAND followed by NOT:
+
+$$A \cdot B = \overline{\overline{A \cdot B}} = \text{NOT}(\text{NAND}(A, B))$$
+
+Two NAND gates implement AND.
+
+**Building OR from NAND:**
+
+Apply De Morgan's law in reverse: $A + B = \overline{\bar{A} \cdot \bar{B}}$. So:
+
+1. Invert $A$ using a NAND gate: $\bar{A}$
+2. Invert $B$ using a NAND gate: $\bar{B}$
+3. NAND the results: $\overline{\bar{A} \cdot \bar{B}} = A + B$
+
+Three NAND gates implement OR.
+
+## Worked examples
+
+**Example 1 — Home security system.**
+
+A home security alarm sounds if: the door is open AND the system is
+armed, OR motion is detected AND the system is armed AND it is dark.
+
+Let:
+- $D$ = door open, $R$ = system armed, $M$ = motion detected, $K$ = dark
+
+The alarm condition is:
+
+$$\text{Alarm} = (D \cdot R) + (M \cdot R \cdot K)$$
+
+Simplify using the distributive law — $R$ is common to both terms:
+
+$$\text{Alarm} = R \cdot (D + M \cdot K)$$
+
+This form is simpler: first check whether the system is armed ($R$). Only then evaluate whether a triggering event has happened ($D + M \cdot K$). In a real PLC (programmable logic controller), this saves one gate and makes the logic easier to read.
+
+**Example 2 — Half-adder circuit.**
+
+A half-adder adds two single binary digits $A$ and $B$. The output
+has two parts: **Sum** (the ones digit) and **Carry** (the twos digit).
+
+| $A$ | $B$ | Sum | Carry |
+|-----|-----|-----|-------|
+| 0 | 0 | 0 | 0 |
+| 0 | 1 | 1 | 0 |
+| 1 | 0 | 1 | 0 |
+| 1 | 1 | 0 | 1 |
+
+The **Carry** output is 1 only when both inputs are 1:
+
+$$\text{Carry} = A \cdot B$$
+
+The **Sum** output is 1 when exactly one input is 1 — this is XOR (exclusive or):
+
+$$\text{Sum} = A \oplus B = (A + B) \cdot \overline{A \cdot B} = (A + B) \cdot (\bar{A} + \bar{B})$$
+
+The half-adder is built from one AND gate (for Carry) and one XOR gate
+(for Sum). Sixteen half-adders in sequence form the core of an 8-bit
+adder — the circuit that every processor uses to add numbers.
+
+<!-- VIZ: [Half-adder gate diagram: interactive circuit showing two input wires A and B, an AND gate producing Carry, and a XOR gate producing Sum. Toggle buttons for A and B cause the output wires to light up in teal when the output is 1 and dim when 0. Labels show the binary addition being performed.] -->
+
+## Where this goes
+
+This chapter gives you the core algebra for digital logic: a two-valued
+system with its own operations and laws. Two chapters follow naturally.
+
+Volume 4 covers systems of equations and matrices. Boolean algebra is a
+special case of a more general algebraic structure called a lattice, and
+the same ideas of combining simple operations to build complex ones
+reappear in linear algebra. When you meet matrix operations for the
+first time, the Boolean habit of tracking what operations commute (and
+which ones don't) will serve you well.
+
+In Volume 7, numerical methods deal with how computers actually compute.
+Floating-point arithmetic — the way computers store and combine
+non-integer numbers — is built on binary representations, and errors in
+that arithmetic trace back to the fact that binary can only approximate
+most decimal fractions. Understanding binary deeply makes floating-point
+errors less mysterious when you encounter them.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- A computing student designing a finite-state machine models every
+  state transition as a Boolean expression — the Karnaugh map is
+  standard practice for minimising that logic before coding it.
+- An electrical engineer programming safety interlocks on industrial
+  machinery writes Boolean ladder logic in exactly the notation from
+  this chapter: rungs of AND and OR conditions controlling outputs.
+- A web developer writing conditional rendering logic — "show the
+  button only if logged in AND has permission OR is admin" — is
+  writing a Boolean expression, whether or not they call it that.
+- A database analyst using SQL WHERE clauses combines AND, OR, NOT
+  to filter records — the same truth tables apply.
+:::
+
+## Exercises
+
+These are puzzles. Each has a definite answer, and the interesting part
+is the setup — deciding which operation to use and why.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.42rem 0.95rem; border:1px solid #2563eb; border-radius:5px; background:#2563eb; color:#ffffff; cursor:pointer; font-size:0.9em; font-weight:600; box-shadow:0 1px 2px rgba(37,99,235,0.18);";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.42rem 0.8rem; border:1px solid #cbd5e1; border-radius:5px; background:#f8fafc; cursor:pointer; font-size:0.9em; color:#475569; font-weight:500;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+1. Complete the truth table for the expression $f = A \cdot \bar{B} + \bar{A} \cdot B$
+   (this is XOR — exclusive or). What does this expression output, in plain
+   English?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  {
+    op: "Write the expression",
+    eq: "f = A \\cdot \\bar{B} + \\bar{A} \\cdot B"
+  },
+  {
+    op: "Evaluate for A=0, B=0",
+    eq: "f = 0 \\cdot 1 + 1 \\cdot 0 = 0 + 0 = 0",
+    note: "When both inputs are 0, neither term is 1."
+  },
+  {
+    op: "Evaluate for A=0, B=1",
+    eq: "f = 0 \\cdot 0 + 1 \\cdot 1 = 0 + 1 = 1"
+  },
+  {
+    op: "Evaluate for A=1, B=0",
+    eq: "f = 1 \\cdot 1 + 0 \\cdot 0 = 1 + 0 = 1"
+  },
+  {
+    op: "Evaluate for A=1, B=1",
+    eq: "f = 1 \\cdot 0 + 0 \\cdot 1 = 0 + 0 = 0",
+    note: "Both terms are 0 because each term requires one input to be 0."
+  },
+  {
+    op: "Check",
+    eq: "\\text{Output is 1 exactly when } A \\neq B \\text{ — true when inputs differ}"
+  }
+])
+```
+
+2. Use Boolean algebra laws to simplify: $f = A \cdot B + A \cdot \bar{B}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  {
+    op: "Write the expression",
+    eq: "f = A \\cdot B + A \\cdot \\bar{B}"
+  },
+  {
+    op: "Factor out A (distributive law)",
+    eq: "f = A \\cdot (B + \\bar{B})",
+    note: "A is common to both terms: A·B + A·B̄ = A·(B + B̄)."
+  },
+  {
+    op: "Apply complement law",
+    eq: "B + \\bar{B} = 1"
+  },
+  {
+    op: "Apply identity law",
+    eq: "f = A \\cdot 1 = A"
+  },
+  {
+    op: "Check",
+    eq: "\\text{When } A=0: 0·B + 0·\\bar{B} = 0 = A. \\text{ When } A=1: 1·B + 1·\\bar{B} = B + \\bar{B} = 1 = A. \\checkmark"
+  }
+])
+```
+
+3. Apply De Morgan's law to write $\overline{A \cdot B \cdot C}$ as a sum of
+   complements. Then verify your answer using a truth table for the
+   case $A=1, B=1, C=0$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  {
+    op: "Write the expression",
+    eq: "\\overline{A \\cdot B \\cdot C}"
+  },
+  {
+    op: "Apply De Morgan's law (first application)",
+    eq: "\\overline{A \\cdot B \\cdot C} = \\overline{(A \\cdot B) \\cdot C} = \\overline{A \\cdot B} + \\bar{C}",
+    note: "Treat A·B as a single variable and apply De Morgan's."
+  },
+  {
+    op: "Apply De Morgan's law again to the first term",
+    eq: "\\overline{A \\cdot B} + \\bar{C} = \\bar{A} + \\bar{B} + \\bar{C}"
+  },
+  {
+    op: "Check with A=1, B=1, C=0",
+    eq: "\\overline{1 \\cdot 1 \\cdot 0} = \\overline{0} = 1 \\quad \\text{and} \\quad \\bar{1} + \\bar{1} + \\bar{0} = 0 + 0 + 1 = 1 \\checkmark"
+  }
+])
+```
+
+4. A bicycle lock opens if button A AND button B are pressed, OR if
+   the override code C is entered. Write the Boolean expression. Then
+   use a K-map to confirm no simplification is possible.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  {
+    op: "Write the expression",
+    eq: "f = A \\cdot B + C"
+  },
+  {
+    op: "Build the truth table (8 rows for A, B, C)",
+    eq: "\\begin{array}{ccc|c} A & B & C & f \\\\ \\hline 0&0&0&0 \\\\ 0&0&1&1 \\\\ 0&1&0&0 \\\\ 0&1&1&1 \\\\ 1&0&0&0 \\\\ 1&0&1&1 \\\\ 1&1&0&1 \\\\ 1&1&1&1 \\end{array}",
+    note: "f is 1 when C=1 (four rows) or when A=B=1 (two extra rows)."
+  },
+  {
+    op: "Place in K-map and check for adjacent 1-groups larger than already found",
+    eq: "\\text{Group 1: C=1 (all four cells where C=1) gives term } C",
+    note: "Group 2: A=B=1, C=0 and A=B=C=1 — already covered by Group 1 partially; minimal extra term is A·B."
+  },
+  {
+    op: "Check",
+    eq: "f = A \\cdot B + C \\text{ — this is already minimal. No further simplification.} \\checkmark"
+  }
+])
+```
+
+5. A school cafeteria has a vending machine that releases a drink if:
+   the student has a valid card ($V$) AND has credit ($C$), OR the
+   machine is in guest mode ($G$). Write the expression. Simplify it
+   if possible. Then find what NAND gates are needed to implement
+   your simplified expression.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  {
+    op: "Write the expression",
+    eq: "f = V \\cdot C + G"
+  },
+  {
+    op: "Check for simplification using laws",
+    eq: "\\text{No common factor; the expression is already minimal.}",
+    note: "V and C share no factor with G, so distributive factoring doesn't help."
+  },
+  {
+    op: "Express AND as NAND + NOT",
+    eq: "V \\cdot C = \\overline{\\overline{V \\cdot C}} = \\text{NOT}(\\text{NAND}(V, C))"
+  },
+  {
+    op: "Express OR using De Morgan's (3 NANDs)",
+    eq: "V \\cdot C + G = \\overline{\\overline{V \\cdot C} \\cdot \\bar{G}}",
+    note: "Apply A+B = NOT(NAND(NOT A, NOT B)), where A = V·C and B = G."
+  },
+  {
+    op: "Check",
+    eq: "\\text{Implementation: 1 NAND for } V \\cdot C,\\ 1 \\text{ NAND for NOT } G,\\ 1 \\text{ NAND combining them} = 3 \\text{ NAND gates total} \\checkmark"
+  }
+])
+```

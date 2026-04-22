@@ -1,0 +1,617 @@
+---
+title: "Series expansions and numerical root-finding"
+subtitle: "Approximating functions and finding zeros iteratively"
+
+volume: 5
+chapter: 5
+layer: "bridge"
+status: "draft"
+
+axiom: |
+  You know how to differentiate a function and find its higher derivatives.
+  Those derivatives encode everything about how the function behaves near
+  a point — enough to reconstruct the function itself as a polynomial.
+
+rewrite: |
+  The Maclaurin series writes any smooth function as an infinite
+  polynomial centred at zero, using nothing but its derivatives at that
+  point. Newton's method uses the derivative to find where a function
+  equals zero by iterating along tangent lines. Numerical integration
+  (trapezoidal and Simpson rules) uses the same geometric idea to
+  approximate definite integrals that resist exact methods.
+  Together these techniques bridge exact calculus and practical computation.
+
+opens_to:
+  - id: "numerics"
+    label: "Numerical methods"
+    volume: 7
+    relationship: "enables"
+  - id: "fourier_series"
+    label: "Fourier series"
+    volume: 7
+    relationship: "enriches"
+  - id: "complex_analysis"
+    label: "Complex analysis"
+    volume: 7
+    relationship: "enriches"
+
+prerequisite_ids:
+  - "diff_calc"
+  - "int_calc"
+  - "exp_log"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Newton's method is built into every engineering calculator and root-finding library. Maclaurin series underlie the small-angle approximations used throughout mechanics and optics."
+    career_example: "Mechanical engineer finding the buckling load of a strut numerically"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Series expansions of exponential and trigonometric functions appear throughout quantum mechanics, statistical mechanics, and optics."
+    career_example: "Physicist approximating the partition function of a quantum system"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Every floating-point implementation of sin(), exp(), and log() uses a polynomial approximation — a truncated power series."
+    career_example: "Software engineer implementing a numerically stable transcendental function"
+
+hook: |
+  You want to solve $x^3 - 2x - 5 = 0$. There is no general formula.
+  You want to integrate $e^{-x^2}$. There is no closed form. You want
+  to evaluate $\cos(0.1)$ to ten decimal places without a calculator.
+
+  The same mathematical ideas answer all three questions. They are the
+  tools that let calculus move from the blackboard into the computer.
+
+definitions_introduced:
+  - term: "power series"
+    means: "An infinite sum of terms of the form aₙxⁿ — a polynomial with infinitely many terms."
+  - term: "Maclaurin series"
+    means: "The power series expansion of a function centred at x = 0, using the function's derivatives at that point."
+  - term: "radius of convergence"
+    means: "The distance from the centre within which the series converges to the function."
+  - term: "Newton's method"
+    means: "An iterative algorithm that finds roots of a function by repeatedly following the tangent line to the x-axis."
+
+notation_introduced:
+  - symbol: "f(x) = \\sum_{n=0}^{\\infty} \\frac{f^{(n)}(0)}{n!} x^n"
+    reads_as: "the Maclaurin series — f of x written as an infinite sum of derivative terms"
+    notation_weight: 4
+  - symbol: "x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)}"
+    reads_as: "Newton's iteration formula — the next approximation from the current one"
+    notation_weight: 3
+
+exercises:
+  type: "investigation"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: null
+  strand: "Analysis"
+  outcome: null
+uofa_course: "MATH 101"
+stroud_programme: 13
+kreyszig_chapter: 19
+---
+
+You want to solve $x^3 - 2x - 5 = 0$. There is no general formula.
+You want to integrate $e^{-x^2}$. There is no closed form. You want
+to evaluate $\cos(0.1)$ to ten decimal places without a calculator.
+
+The same mathematical ideas answer all three questions. They are the
+tools that let calculus move from the blackboard into the computer.
+
+---
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.42rem 0.95rem; border:1px solid #2563eb; border-radius:5px; background:#2563eb; color:#ffffff; cursor:pointer; font-size:0.9em; font-weight:600; box-shadow:0 1px 2px rgba(37,99,235,0.18);";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.42rem 0.8rem; border:1px solid #cbd5e1; border-radius:5px; background:#f8fafc; cursor:pointer; font-size:0.9em; color:#475569; font-weight:500;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+---
+
+## Part A — Maclaurin series
+
+### Every smooth function is secretly a polynomial
+
+Near any point, a smooth function and a polynomial can be made to agree — not just in value but in every derivative. That is not an approximation. It is an exact equality, expressed as an infinite sum.
+
+Here is the argument. Suppose $f(x)$ can be written as a power series — a polynomial with infinitely many terms — centred at zero:
+
+$$f(x) = a_0 + a_1 x + a_2 x^2 + a_3 x^3 + \cdots$$
+
+We want to find the coefficients $a_0, a_1, a_2, \ldots$ in terms of $f$ itself.
+
+Set $x = 0$: the series collapses to $f(0) = a_0$.
+
+Differentiate both sides once. Using the power rule term by term:
+
+$$f'(x) = a_1 + 2a_2 x + 3a_3 x^2 + \cdots$$
+
+Set $x = 0$: $f'(0) = a_1$.
+
+Differentiate again:
+
+$$f''(x) = 2a_2 + 6a_3 x + \cdots$$
+
+Set $x = 0$: $f''(0) = 2a_2$, so $a_2 = \dfrac{f''(0)}{2}$.
+
+The pattern is clear. Differentiating $n$ times and setting $x = 0$ gives $f^{(n)}(0) = n!\, a_n$, so:
+
+$$a_n = \frac{f^{(n)}(0)}{n!}$$
+
+Substituting back, the **Maclaurin series** — the power series expansion of $f(x)$ centred at $x = 0$ — is:
+
+$$f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!} x^n$$
+
+Read that as: "the Maclaurin series, written as an infinite sum where the $n$-th coefficient is the $n$-th derivative at zero divided by $n$-factorial." The notation $f^{(n)}(0)$ means the $n$-th derivative of $f$, evaluated at zero. The symbol $n!$ (read: "$n$ factorial") means $1 \times 2 \times 3 \times \cdots \times n$, with $0! = 1$ by convention.
+
+::: {.callout-note appearance="simple"}
+**Why this works**
+
+The key step is differentiating a power series term by term. This is valid whenever the series converges absolutely — which all the standard series below do, within their radius of convergence. The derivatives at zero uniquely determine the series: there is only one power series that matches $f$ and all its derivatives at $x = 0$.
+:::
+
+### The standard series
+
+Each of these is derived the same way: compute the $n$-th derivative, evaluate at zero, substitute into the formula above. The pattern in each case produces a series you can write down immediately.
+
+**The exponential function $e^x$**
+
+Every derivative of $e^x$ is $e^x$, so $f^{(n)}(0) = e^0 = 1$ for all $n$. Therefore:
+
+$$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots$$
+
+This series converges for all real $x$. The **radius of convergence** — the range of $x$ values for which the series converges to $f(x)$ — is infinite.
+
+Numerical check: $e^{0.5} \approx 1 + 0.5 + 0.125 + 0.0208 + 0.0026 + \cdots \approx 1.6487$. The true value is $1.6487\ldots$. Four terms already give five-digit accuracy.
+
+**The sine function $\sin x$**
+
+The derivatives cycle: $\sin x$, $\cos x$, $-\sin x$, $-\cos x$, then back to $\sin x$. Evaluated at $x = 0$: $0, 1, 0, -1, 0, 1, \ldots$ The zero derivatives contribute nothing; the pattern of $\pm 1$ gives the odd powers only:
+
+$$\sin x = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + \cdots = \sum_{n=0}^{\infty} \frac{(-1)^n}{(2n+1)!} x^{2n+1}$$
+
+Converges for all $x$.
+
+**The cosine function $\cos x$**
+
+The same cycling derivatives, but $\cos(0) = 1$ and the pattern gives even powers:
+
+$$\cos x = 1 - \frac{x^2}{2!} + \frac{x^4}{4!} - \frac{x^6}{6!} + \cdots = \sum_{n=0}^{\infty} \frac{(-1)^n}{(2n)!} x^{2n}$$
+
+Converges for all $x$. Notice: differentiating the $\sin x$ series term by term gives the $\cos x$ series exactly. The algebra and the calculus agree.
+
+**The natural logarithm $\ln(1 + x)$**
+
+Here $f(x) = \ln(1 + x)$. Note we shift to $\ln(1+x)$ rather than $\ln x$ because $\ln(0)$ is undefined — the series must be centred where $f$ is defined. The derivatives are $f'(x) = (1+x)^{-1}$, $f''(x) = -(1+x)^{-2}$, $f'''(x) = 2(1+x)^{-3}$, and so on. At $x = 0$: $f^{(n)}(0) = (-1)^{n-1}(n-1)!$ for $n \geq 1$, and $f(0) = 0$. So:
+
+$$\ln(1+x) = x - \frac{x^2}{2} + \frac{x^3}{3} - \frac{x^4}{4} + \cdots = \sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n} x^n$$
+
+This one has a **radius of convergence** of 1 — it converges only for $|x| \leq 1$ (with the boundary value $x = 1$ included but $x = -1$ excluded). Outside that range the series diverges. This is the first time we meet a series with a finite radius of convergence, and it is worth pausing on: the series is not the function everywhere, only within that radius.
+
+**The general binomial series $(1 + x)^n$**
+
+When $n$ is a positive integer this is just the binomial theorem. But when $n$ is any real number (including fractions and negatives), the pattern continues past the $(n+1)$-th term:
+
+$$(1 + x)^n = 1 + nx + \frac{n(n-1)}{2!}x^2 + \frac{n(n-1)(n-2)}{3!}x^3 + \cdots$$
+
+This converges for $|x| < 1$ when $n$ is not a non-negative integer. For example, $(1+x)^{1/2} = 1 + \frac{1}{2}x - \frac{1}{8}x^2 + \frac{1}{16}x^3 - \cdots$, which is the series for $\sqrt{1+x}$ — useful for approximating square roots of numbers close to 1.
+
+<!-- VIZ: Interactive convergence plot for Maclaurin series. Show f(x) = e^x (black curve). Slider for number of terms N (1 to 8). Plot the N-term partial sum as a coloured curve that changes from light to dark as N increases. The approximation hugs f(x) near x=0 and peels away for large |x|. Show the current partial sum formula updating below the plot. Reader can drag x to see the approximation error at that point. -->
+
+### Engineering applications of series
+
+The series are not just a way to evaluate functions numerically. They are also a way to understand how functions behave near zero.
+
+**Small-angle approximations.** The first-order Maclaurin approximation for $\sin x$ is just $x$ — the linear term. The second-order approximation for $\cos x$ is $1 - x^2/2$. For small $\theta$ (in radians):
+
+$$\sin\theta \approx \theta \qquad \cos\theta \approx 1 - \frac{\theta^2}{2}$$
+
+How accurate is this? Here is the error at a few angles:
+
+| Angle | $\sin\theta$ | $\theta$ | Error |
+|-------|-------------|----------|-------|
+| 5° = 0.0873 rad | 0.08716 | 0.08727 | 0.13% |
+| 10° = 0.1745 rad | 0.17365 | 0.17453 | 0.51% |
+| 20° = 0.3491 rad | 0.34202 | 0.34907 | 2.06% |
+
+Below about 10°, the error is under 0.5%. Throughout structural mechanics, optics, and electronics, engineers use $\sin\theta \approx \theta$ to linearise equations — converting a transcendental equation into an algebraic one. This is not a cheat; it is a precise statement about the first-order behaviour of the sine.
+
+**Error propagation.** If $y = f(x)$ and $x$ is measured with a small error $\delta x$, how much does $y$ change?
+
+The Taylor series gives the answer directly. Near a point $x_0$:
+
+$$f(x_0 + \delta x) \approx f(x_0) + f'(x_0)\,\delta x$$
+
+So the error in $y$ is $\delta y \approx f'(x_0)\,\delta x$ — the derivative scales the error.
+
+**Worked example: sphere volume.** The volume of a sphere of radius $r$ is $V = \frac{4}{3}\pi r^3$. Suppose you measure $r = 5$ cm with an error of $\pm 2\%$, meaning $\delta r = 0.02 \times 5 = 0.1$ cm. What is the error in $V$?
+
+$$\frac{dV}{dr} = 4\pi r^2$$
+
+At $r = 5$: $\frac{dV}{dr} = 4\pi(25) = 100\pi \approx 314.2$ cm² per cm.
+
+$$\delta V \approx 314.2 \times 0.1 \approx 31.4 \text{ cm}^3$$
+
+As a percentage: $V = \frac{4}{3}\pi(125) \approx 523.6$ cm³, so the error is about $31.4/523.6 \approx 6\%$. A 2% error in radius produces a 6% error in volume — exactly three times as much, which you can also see directly from the exponent in $r^3$.
+
+**Integrating series term by term.** The integral $\int_0^1 e^{-x^2}\,dx$ has no closed form in terms of elementary functions. But the series for $e^u = 1 + u + u^2/2! + \cdots$, with $u = -x^2$, gives:
+
+$$e^{-x^2} = 1 - x^2 + \frac{x^4}{2!} - \frac{x^6}{3!} + \cdots$$
+
+Integrating term by term:
+
+$$\int_0^1 e^{-x^2}\,dx = \left[x - \frac{x^3}{3} + \frac{x^5}{10} - \frac{x^7}{42} + \cdots\right]_0^1 = 1 - \frac{1}{3} + \frac{1}{10} - \frac{1}{42} + \cdots$$
+
+$\approx 1 - 0.333 + 0.100 - 0.024 + \cdots \approx 0.747$
+
+The true value is $0.7468\ldots$ — the series converges quickly because $x \in [0, 1]$ keeps the terms small.
+
+---
+
+## Part B — Newton's method
+
+### The geometric idea
+
+You have a function $f(x)$ and you want to find a root — a value of $x$ where $f(x) = 0$. Start with a guess $x_0$ somewhere near the root.
+
+At the point $(x_0, f(x_0))$, draw the tangent line. A tangent line is not the curve, but it is the best linear approximation to the curve at that point. The tangent line crosses the $x$-axis somewhere — call that crossing point $x_1$. The curve and the tangent line agree at $x_0$; the tangent line gives a better approximation of where $f$ equals zero than the original guess.
+
+The equation of the tangent line at $x_0$ is:
+
+$$y - f(x_0) = f'(x_0)(x - x_0)$$
+
+Setting $y = 0$ (the $x$-axis) and solving for $x$:
+
+$$x_1 = x_0 - \frac{f(x_0)}{f'(x_0)}$$
+
+Repeat with $x_1$ in place of $x_0$. The general iteration formula — the **Newton's method** formula — is:
+
+$$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
+
+Read that as: "the next approximation $x_{n+1}$ equals the current approximation $x_n$ minus $f$ of $x_n$ divided by $f$-prime of $x_n$."
+
+This is not a formula to memorise. It is a direct consequence of the tangent-line equation. If you can write down a tangent line, you can derive Newton's method in one step.
+
+<!-- VIZ: Newton's method animation. Plot a cubic f(x) = x^3 - 2x - 5 in black. Show the current approximation x_n as a vertical red dashed line from the x-axis to the curve. Draw the tangent line at (x_n, f(x_n)) extending to where it crosses the x-axis — mark that crossing as x_{n+1}. A "Next iteration" button advances one step, animating the tangent line pivoting and the new vertical line appearing. Show the table of x_n, f(x_n), f'(x_n) updating each step. Include a "Reset" button. -->
+
+### Speed of convergence
+
+Newton's method converges **quadratically** near the root — each iteration roughly doubles the number of correct decimal places. Start with one correct digit; after one step you have two; after two steps, four; after three steps, eight. This is exceptionally fast.
+
+Two situations where it fails:
+
+- If $f'(x_n) = 0$, the tangent line is horizontal. It never crosses the $x$-axis. The formula breaks because you would be dividing by zero.
+- If the initial guess $x_0$ is far from the root, the tangent line may point toward a different root, or cycle indefinitely between points without converging.
+
+In practice: for smooth functions with a reasonable starting guess, Newton's method almost always converges, and converges fast.
+
+### Worked examples
+
+**Example 1: finding $\sqrt{2}$**
+
+$\sqrt{2}$ is the positive root of $f(x) = x^2 - 2$. So $f'(x) = 2x$. Newton's formula gives:
+
+$$x_{n+1} = x_n - \frac{x_n^2 - 2}{2x_n} = \frac{x_n}{2} + \frac{1}{x_n}$$
+
+Start with $x_0 = 1$:
+
+| $n$ | $x_n$ | $f(x_n) = x_n^2 - 2$ | $x_{n+1}$ |
+|-----|--------|----------------------|-----------|
+| 0 | 1.000000 | −1.000000 | 1.500000 |
+| 1 | 1.500000 | 0.250000 | 1.416667 |
+| 2 | 1.416667 | 0.006944 | 1.414216 |
+| 3 | 1.414216 | 0.000006 | 1.414214 |
+
+After three iterations, $x_3 = 1.414214$ is correct to six decimal places. The exact value is $\sqrt{2} = 1.41421356\ldots$
+
+Check: $1.414214^2 = 1.99999927\ldots \approx 2$. Yes.
+
+**Example 2: solving a cubic**
+
+Solve $x^3 - 2x - 5 = 0$. There is a formula for cubics, but it is unwieldy. Newton's method is cleaner.
+
+$f(x) = x^3 - 2x - 5$, so $f'(x) = 3x^2 - 2$. Start with $x_0 = 2$ (since $f(2) = 8 - 4 - 5 = -1$, close to zero):
+
+| $n$ | $x_n$ | $f(x_n)$ | $f'(x_n)$ | $x_{n+1}$ |
+|-----|--------|----------|----------|-----------|
+| 0 | 2.000000 | −1.000000 | 10.000000 | 2.100000 |
+| 1 | 2.100000 | 0.061000 | 11.230000 | 2.094569 |
+| 2 | 2.094569 | 0.000100 | 11.163912 | 2.094552 |
+| 3 | 2.094552 | 0.000000 | — | 2.094552 |
+
+The root is $x \approx 2.0946$.
+
+Check: $2.0946^3 - 2(2.0946) - 5 = 9.190 - 4.189 - 5 = 0.001$. The tiny residual is rounding in the table; the true answer satisfies $f(x) = 0$ to high precision.
+
+**Example 3: a nonlinear circuit (engineering)**
+
+A diode and resistor in series. The diode current is $I = 0.01(e^{40V} - 1)$ amperes; Ohm's law gives $I = (5 - V)/1000$ amperes (a 5V supply, 1000 Ω resistor). The operating point satisfies both equations simultaneously:
+
+$$0.01(e^{40V} - 1) = \frac{5 - V}{1000}$$
+
+Rearrange to $f(V) = 0$:
+
+$$f(V) = 0.01(e^{40V} - 1) - \frac{5 - V}{1000} = 0$$
+
+Then $f'(V) = 0.01 \times 40\, e^{40V} + \frac{1}{1000} = 0.4\,e^{40V} + 0.001$.
+
+Start with $V_0 = 0.1$ V (a reasonable guess for a silicon diode):
+
+| $n$ | $V_n$ (V) | $f(V_n)$ | $V_{n+1}$ (V) |
+|-----|-----------|----------|---------------|
+| 0 | 0.100 | −0.00391 | 0.1169 |
+| 1 | 0.1169 | 0.000312 | 0.1158 |
+| 2 | 0.1158 | −0.000002 | 0.1158 |
+
+The operating voltage is $V \approx 0.1158$ V. This is the kind of calculation that sits inside every SPICE circuit simulation — Newton's method applied to a nonlinear system of equations.
+
+---
+
+## Part C — Numerical integration
+
+### Why we need it
+
+Some functions have no antiderivative you can write in closed form: $e^{-x^2}$, $\sqrt{1 - k^2\sin^2\theta}$ (the elliptic integral), $\sin(x)/x$. Others are defined only by measured data — a sensor reading every millisecond, not a formula. In both cases, you need to compute $\int_a^b f(x)\,dx$ without an antiderivative.
+
+The strategy is geometric: approximate the area under the curve using shapes whose area you can compute exactly.
+
+### The trapezoidal rule
+
+Divide the interval $[a, b]$ into $n$ equal strips of width $h = (b-a)/n$. Label the endpoints $x_0 = a$, $x_1 = a + h$, $x_2 = a + 2h$, $\ldots$, $x_n = b$.
+
+In each strip, approximate the curve with a straight line connecting the two endpoints of that strip. Each strip becomes a trapezoid. The area of a trapezoid with parallel sides $p$ and $q$ and width $h$ is $h(p + q)/2$.
+
+Summing all strips:
+
+$$\int_a^b f(x)\,dx \approx \frac{h}{2}\left[f(x_0) + 2f(x_1) + 2f(x_2) + \cdots + 2f(x_{n-1}) + f(x_n)\right]$$
+
+The interior points each appear twice (once as the right edge of one trapezoid, once as the left edge of the next). The two endpoint values appear only once.
+
+The error in this approximation is $O(h^2)$: roughly proportional to $h^2$. Double the number of strips (halving $h$) and the error quarters.
+
+### Simpson's rule
+
+The trapezoidal rule uses straight lines. Simpson's rule uses parabolas — three points determine a unique parabola, and integrating a parabola exactly is straightforward. Each pair of adjacent strips (three points) is replaced by a parabola through those points.
+
+This requires $n$ to be even. The formula is:
+
+$$\int_a^b f(x)\,dx \approx \frac{h}{3}\left[f(x_0) + 4f(x_1) + 2f(x_2) + 4f(x_3) + \cdots + 4f(x_{n-1}) + f(x_n)\right]$$
+
+The pattern of coefficients is $1, 4, 2, 4, 2, \ldots, 4, 1$. The error is $O(h^4)$: halving $h$ reduces the error by a factor of 16. For smooth functions, Simpson's rule is dramatically more accurate than trapezoidal at the same computational cost.
+
+<!-- VIZ: Numerical integration accuracy interactive. Show a smooth curve (e.g. f(x) = sin(x) over [0, pi]). Toggle between Trapezoidal and Simpson's rule. Slider for n (number of subintervals, even values from 2 to 20). Show the approximating shapes overlaid on the curve (trapezoids or parabolic strips in translucent colour). Display the approximate value and the error versus the exact value, updating live. The reader sees that Simpson's rule at n=4 beats trapezoidal at n=20. -->
+
+::: {.callout-note appearance="simple"}
+**Why Simpson's rule is so much better**
+
+A parabola exactly integrates any polynomial up to degree 3. This means that if $f$ is well-approximated by a cubic locally, Simpson's rule gets the right answer — the $h^3$ and $h^4$ errors both cancel. The net error comes from the $h^5$ term, which explains the $O(h^4)$ global error rate. The trapezoidal rule only matches linear functions exactly, so its error is larger by two powers of $h$.
+:::
+
+### Worked examples
+
+**Example 4: integrating $e^{-x^2}$**
+
+Estimate $\int_0^1 e^{-x^2}\,dx$ using $n = 4$ strips ($h = 0.25$).
+
+$x$ values: $0, 0.25, 0.5, 0.75, 1.0$
+
+$f$ values: $f(0) = 1.0000$, $f(0.25) = 0.9394$, $f(0.5) = 0.7788$, $f(0.75) = 0.5698$, $f(1.0) = 0.3679$
+
+**Trapezoidal** ($n = 4$):
+
+$$\frac{0.25}{2}\left[1.0000 + 2(0.9394) + 2(0.7788) + 2(0.5698) + 0.3679\right]$$
+$$= 0.125 \times [1.0000 + 1.8788 + 1.5576 + 1.1396 + 0.3679]$$
+$$= 0.125 \times 5.9439 = 0.7430$$
+
+**Simpson's** ($n = 4$):
+
+$$\frac{0.25}{3}\left[1.0000 + 4(0.9394) + 2(0.7788) + 4(0.5698) + 0.3679\right]$$
+$$= \frac{0.25}{3} \times [1.0000 + 3.7576 + 1.5576 + 2.2792 + 0.3679]$$
+$$= \frac{0.25}{3} \times 8.9623 = 0.7469$$
+
+The known value is $0.74682\ldots$ Simpson's is accurate to four decimal places with just 4 strips; trapezoidal requires many more strips to match that.
+
+**Example 5: integrating tabulated data**
+
+An oscilloscope measures current $i$ (amperes) through a circuit at equally spaced times over $0 \leq t \leq 0.02$ seconds. The charge transferred is $Q = \int_0^{0.02} i\,dt$.
+
+| $t$ (s) | 0 | 0.004 | 0.008 | 0.012 | 0.016 | 0.020 |
+|---------|---|-------|-------|-------|-------|-------|
+| $i$ (A) | 0 | 3.1 | 5.9 | 7.6 | 6.8 | 4.2 |
+
+Here $n = 5$ strips of width $h = 0.004$ s. But Simpson's rule requires even $n$. With 6 data points ($n=5$ strips) we cannot use pure Simpson's on all strips. Use Simpson's on the first 4 strips and trapezoidal on the last — or use the composite rule for $n = 4$ strips (taking the first 5 points) then the trapezoidal rule for the last strip separately.
+
+Alternatively: apply Simpson's rule across all 6 points using $n = 5$ by treating it as Simpson's 3/8 rule plus the trapezoidal rule for the remaining strip. In practice, if the data has an odd number of gaps, the standard approach is to use Simpson's where you can and trapezoidal for the remainder.
+
+Using trapezoidal on all 5 strips:
+
+$$Q \approx \frac{0.004}{2}\left[0 + 2(3.1) + 2(5.9) + 2(7.6) + 2(6.8) + 4.2\right]$$
+$$= 0.002 \times [0 + 6.2 + 11.8 + 15.2 + 13.6 + 4.2]$$
+$$= 0.002 \times 51.0 = 0.102 \text{ C}$$
+
+Using Simpson's on the first 4 strips (5 points, $n = 4$, $h = 0.004$) and trapezoidal on the last:
+
+$$Q_{\text{Simpson}} = \frac{0.004}{3}[0 + 4(3.1) + 2(5.9) + 4(7.6) + 6.8]$$
+$$= \frac{0.004}{3}[0 + 12.4 + 11.8 + 30.4 + 6.8] = \frac{0.004}{3} \times 61.4 = 0.0819 \text{ C}$$
+
+$$Q_{\text{trap, last}} = \frac{0.004}{2}[6.8 + 4.2] = 0.002 \times 11.0 = 0.022 \text{ C}$$
+
+$$Q \approx 0.0819 + 0.022 = 0.104 \text{ C}$$
+
+The two estimates agree to within 2% — consistent with the expected accuracy at this number of strips.
+
+---
+
+## Where this goes
+
+Newton's method in one dimension generalises directly to **systems** of nonlinear equations in Vol 7 numerical methods. There, the derivative $f'(x_n)$ is replaced by the Jacobian matrix — the multidimensional analogue of the derivative — and the formula extends to finding where several functions simultaneously equal zero. The same quadratic convergence applies.
+
+The Maclaurin series is the foundation of **complex analysis** in Vol 7. When $x$ is replaced by a complex number $z$, the series $e^z = \sum z^n/n!$ still converges, and from it follows Euler's formula $e^{i\theta} = \cos\theta + i\sin\theta$ — the algebraic key that connects the exponential and trigonometric functions. The radius of convergence, which seemed like a technical detail here, becomes the central concept of the theory of analytic functions. Numerical integration methods — especially Gaussian quadrature and adaptive integration — underpin **numerical ODE solvers** (Euler's method, Runge-Kutta) in Vol 7, which appear throughout engineering whenever differential equations resist exact solution.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- **Engineering:** Newton's method is the core algorithm inside every engineering root-finder, from circuit simulators (SPICE) to finite-element solvers. The small-angle approximation $\sin\theta \approx \theta$ underlies the linearised pendulum, beam deflection, and antenna theory.
+- **Sciences:** The integral $\int e^{-x^2}\,dx$ appears throughout probability and statistics as the Gaussian integral. Quantum mechanics uses Maclaurin series to approximate partition functions and transition probabilities. Numerical integration is how quantum chemistry codes evaluate multi-dimensional integrals over electron wavefunctions.
+- **Computing:** Every CPU's floating-point unit computes $\sin$, $\exp$, and $\ln$ using polynomial approximations — truncated Maclaurin series, adjusted for accuracy across a bounded domain. Newton's method is the standard algorithm for computing reciprocals and square roots in hardware.
+:::
+
+---
+
+## Exercises
+
+These exercises are investigations: each one has a specific numerical answer, but the process of finding it — choosing how many terms, how many strips, when to stop — is part of what you are learning.
+
+**Exercise 1.** Write the first four non-zero terms of the Maclaurin series for $\sqrt{1+x} = (1+x)^{1/2}$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write as an equation", eq: "(1+x)^{1/2} = 1 + nx + \\frac{n(n-1)}{2!}x^2 + \\frac{n(n-1)(n-2)}{3!}x^3 + \\cdots", note: "Apply the general binomial series with n = 1/2." },
+  { op: "Substitute n = 1/2", eq: "(1+x)^{1/2} = 1 + \\tfrac{1}{2}x + \\frac{\\tfrac{1}{2}(-\\tfrac{1}{2})}{2}x^2 + \\frac{\\tfrac{1}{2}(-\\tfrac{1}{2})(-\\tfrac{3}{2})}{6}x^3 + \\cdots" },
+  { op: "Simplify coefficients", eq: "(1+x)^{1/2} = 1 + \\frac{1}{2}x - \\frac{1}{8}x^2 + \\frac{1}{16}x^3 - \\cdots", note: "Valid for |x| < 1." },
+  { op: "Check at x = 0", eq: "\\sqrt{1} = 1 + 0 - 0 + \\cdots = 1 \\checkmark" }
+])
+```
+
+**Exercise 2.** Use the Maclaurin series for $e^x$ to estimate $e^{0.2}$ to 4 decimal places. How many terms are needed?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Write the series at x = 0.2", eq: "e^{0.2} = 1 + 0.2 + \\frac{(0.2)^2}{2!} + \\frac{(0.2)^3}{3!} + \\frac{(0.2)^4}{4!} + \\cdots" },
+  { op: "Evaluate each term", eq: "= 1 + 0.2 + 0.02 + 0.001333 + 0.000067 + \\cdots" },
+  { op: "Sum the first 5 terms", eq: "\\approx 1.2214", note: "The 5th term (0.000067) is below 0.00005, so 5 terms give 4 d.p. accuracy." },
+  { op: "Check", eq: "e^{0.2} = 1.22140\\ldots \\checkmark" }
+])
+```
+
+**Exercise 3.** A pendulum of length 1 m. For what maximum angle (in degrees) does the small-angle approximation $\sin\theta \approx \theta$ give a relative error of less than 1%?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Write the error condition", eq: "\\left|\\frac{\\sin\\theta - \\theta}{\\sin\\theta}\\right| < 0.01", note: "Relative error in sin θ compared to the approximation θ." },
+  { op: "Use the next series term", eq: "\\sin\\theta \\approx \\theta - \\frac{\\theta^3}{6},\\quad \\text{so error} \\approx \\frac{\\theta^3/6}{\\theta} = \\frac{\\theta^2}{6}", note: "The leading error term in the approximation sin θ ≈ θ." },
+  { op: "Set error < 0.01", eq: "\\frac{\\theta^2}{6} < 0.01 \\implies \\theta^2 < 0.06 \\implies \\theta < 0.245 \\text{ rad}" },
+  { op: "Convert to degrees", eq: "\\theta < 0.245 \\times \\frac{180}{\\pi} \\approx 14.0^\\circ" },
+  { op: "Check", eq: "\\theta = 0.245{:}\\quad \\sin(0.245) = 0.2429,\\quad \\text{error} = \\frac{0.245-0.2429}{0.2429} = 0.86\\% < 1\\% \\checkmark" }
+])
+```
+
+**Exercise 4.** Use Newton's method to find the root of $f(x) = x^3 + x - 1$ to 4 decimal places, starting from $x_0 = 0.5$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write the iteration formula", eq: "x_{n+1} = x_n - \\frac{x_n^3 + x_n - 1}{3x_n^2 + 1}", note: "f'(x) = 3x² + 1; the +1 means f'(x) > 0 everywhere, so there is exactly one real root." },
+  { op: "Iteration n=0", eq: "x_1 = 0.5 - \\frac{0.125 + 0.5 - 1}{3(0.25) + 1} = 0.5 - \\frac{-0.375}{1.75} = 0.7143" },
+  { op: "Iteration n=1", eq: "x_2 = 0.7143 - \\frac{0.3644 + 0.7143 - 1}{3(0.5102) + 1} = 0.7143 - \\frac{0.0787}{2.5306} = 0.6834" },
+  { op: "Iteration n=2", eq: "x_3 = 0.6834 - \\frac{0.3194 + 0.6834 - 1}{3(0.4670) + 1} = 0.6834 - \\frac{0.0028}{2.4010} = 0.6822" },
+  { op: "Iteration n=3", eq: "x_4 = 0.6823 \\approx 0.6823", note: "The change from x_3 to x_4 is below 0.0001." },
+  { op: "Check", eq: "0.6823^3 + 0.6823 - 1 = 0.3178 + 0.6823 - 1 = 0.0001 \\approx 0 \\checkmark" }
+])
+```
+
+**Exercise 5.** Estimate $\int_1^3 \ln(x)\,dx$ using the trapezoidal rule with $n = 4$ strips. Compare to the exact value.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Set up strips", eq: "h = \\frac{3-1}{4} = 0.5,\\quad x = 1,\\,1.5,\\,2,\\,2.5,\\,3" },
+  { op: "Evaluate f at each point", eq: "\\ln(1)=0,\\;\\ln(1.5)=0.4055,\\;\\ln(2)=0.6931,\\;\\ln(2.5)=0.9163,\\;\\ln(3)=1.0986" },
+  { op: "Apply trapezoidal rule", eq: "\\frac{0.5}{2}[0 + 2(0.4055) + 2(0.6931) + 2(0.9163) + 1.0986]" },
+  { op: "Simplify", eq: "= 0.25 \\times [0 + 0.8110 + 1.3862 + 1.8326 + 1.0986] = 0.25 \\times 5.1284 = 1.2821" },
+  { op: "Compare to exact value", eq: "\\int_1^3 \\ln x\\,dx = [x\\ln x - x]_1^3 = (3\\ln 3 - 3) - (0 - 1) = 3(1.0986) - 2 = 1.2958", note: "Error ≈ 0.0137, about 1.1% — consistent with O(h²) accuracy at h = 0.5." },
+  { op: "Check", eq: "\\text{Error} = |1.2958 - 1.2821| = 0.0137 \\checkmark" }
+])
+```
+
+**Exercise 6.** Estimate $\int_0^{\pi} \sin(x)\,dx$ using Simpson's rule with $n = 6$ strips. Compare to the exact value.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Set up strips", eq: "h = \\frac{\\pi}{6} \\approx 0.5236,\\quad x_k = k\\pi/6 \\text{ for } k=0,\\ldots,6" },
+  { op: "Evaluate f at each point", eq: "\\sin(0)=0,\\;\\sin(\\pi/6)=0.5,\\;\\sin(\\pi/3)=0.8660,\\;\\sin(\\pi/2)=1,\\;\\sin(2\\pi/3)=0.8660,\\;\\sin(5\\pi/6)=0.5,\\;\\sin(\\pi)=0" },
+  { op: "Apply Simpson's coefficients: 1,4,2,4,2,4,1", eq: "S = 0 + 4(0.5) + 2(0.8660) + 4(1) + 2(0.8660) + 4(0.5) + 0 = 2 + 1.7320 + 4 + 1.7320 + 2 = 11.4640" },
+  { op: "Multiply by h/3", eq: "\\int_0^\\pi \\sin x\\,dx \\approx \\frac{0.5236}{3} \\times 11.4640 = 0.1745 \\times 11.4640 \\approx 2.0001" },
+  { op: "Exact value", eq: "\\int_0^\\pi \\sin x\\,dx = [-\\cos x]_0^\\pi = -\\cos\\pi + \\cos 0 = 1 + 1 = 2" },
+  { op: "Check", eq: "\\text{Error} = |2.0001 - 2| = 0.0001 \\checkmark", note: "Simpson's rule is exact for polynomials up to degree 3; sin x is smooth, so the error at n=6 is negligible." }
+])
+```

@@ -17,3 +17,5 @@ By the end of this volume, you will be comfortable navigating exponential growth
 | 2 | Complex numbers | Expanding the number plane |
 | 3 | Systems and matrices | Handling multiple relationships at once |
 | 4 | Sequences and series | Identifying and summing discrete patterns |
+| 5 | Partial fractions | Breaking a complicated fraction into simpler pieces |
+| 6 | Phasors and alternating waveforms | A rotating complex number traces a sine wave |

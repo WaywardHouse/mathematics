@@ -1,0 +1,585 @@
+---
+title: "Partial fractions"
+subtitle: "Breaking a complicated fraction into simpler pieces"
+
+volume: 4
+chapter: 5
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You know how to combine fractions by finding a common denominator.
+  Partial fractions runs that process in reverse: starting from a single
+  complicated fraction and splitting it into simpler ones.
+
+rewrite: |
+  Any rational expression with a factorable denominator can be written
+  as a sum of simpler fractions — one for each factor. This decomposition
+  is a pure algebraic technique, but it unlocks a large class of
+  integrals in Vol 5 and inverse Laplace transforms in Vol 7.
+
+opens_to:
+  - id: "int_calc"
+    label: "Integral calculus"
+    volume: 5
+    relationship: "enables"
+  - id: "laplace"
+    label: "Laplace transforms"
+    volume: 7
+    relationship: "enables"
+  - id: "odes"
+    label: "Differential equations"
+    volume: 7
+    relationship: "enriches"
+
+prerequisite_ids:
+  - "poly"
+  - "func"
+  - "systems"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Inverse Laplace transforms — the tool for solving ODEs in control engineering — almost always require partial fractions."
+    career_example: "Control engineer computing the step response of a second-order system"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Reaction rate equations in chemical kinetics integrate to logarithmic forms that require partial fractions."
+    career_example: "Chemical engineer modelling the time evolution of a reaction"
+  - field: "comp"
+    label: "Computing and data"
+    hook: "Z-transform inversion in digital signal processing uses partial fractions to recover time-domain sequences."
+    career_example: "Signal processing engineer designing a digital filter"
+  - field: "biz"
+    label: "Finance and quant"
+    hook: "Some discounted cash flow integrals reduce to partial fraction forms when the discount structure is rational."
+    career_example: "Quantitative analyst pricing structured products"
+
+hook: |
+  Suppose you need to integrate the fraction $\dfrac{3x+5}{(x+1)(x+2)}$.
+  Neither standard rule applies directly. But if you could write it as
+  $\dfrac{A}{x+1} + \dfrac{B}{x+2}$ — two simple fractions — each piece
+  integrates immediately to a logarithm.
+
+  Partial fractions is the technique for finding $A$ and $B$. It is
+  a pure algebra step, but its purpose is always to make the next step
+  (integration, inversion, summation) possible.
+
+definitions_introduced:
+  - term: "rational expression"
+    means: "A fraction where both numerator and denominator are polynomials."
+  - term: "proper fraction"
+    means: "A rational expression where the degree of the numerator is strictly less than the degree of the denominator."
+  - term: "partial fraction decomposition"
+    means: "Writing a rational expression as a sum of simpler fractions, one per factor in the denominator."
+
+notation_introduced:
+  - symbol: "\\frac{P(x)}{Q(x)}"
+    reads_as: "a rational expression — polynomial P divided by polynomial Q"
+    notation_weight: 1
+  - symbol: "\\frac{A}{x-a}"
+    reads_as: "a partial fraction term with linear factor x minus a"
+    notation_weight: 2
+
+exercises:
+  type: "drill"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: null
+  strand: "Algebra"
+  outcome: null
+uofa_course: "MATH 101"
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+Suppose you need to integrate the fraction $\dfrac{3x+5}{(x+1)(x+2)}$.
+Neither standard rule applies directly. But if you could write it as
+$\dfrac{A}{x+1} + \dfrac{B}{x+2}$ — two simple fractions — each piece
+integrates immediately to a logarithm.
+
+Partial fractions is the technique for finding $A$ and $B$. It is
+a pure algebra step, but its purpose is always to make the next step
+(integration, inversion, summation) possible.
+
+## The reverse of fraction addition
+
+You know how to add two fractions. Find a common denominator, rewrite each fraction over it, combine the numerators:
+
+$$\frac{1}{x+1} + \frac{2}{x+2} = \frac{(x+2) + 2(x+1)}{(x+1)(x+2)} = \frac{3x+4}{(x+1)(x+2)}$$
+
+That direction is automatic. This chapter asks the reverse question: given $\dfrac{3x+4}{(x+1)(x+2)}$, can you find two simpler fractions that add up to it?
+
+The answer is yes, and the process is called **partial fraction decomposition** — writing a rational expression (that is, a fraction $\dfrac{P(x)}{Q(x)}$ where both numerator and denominator are polynomials) as a sum of simpler fractions, one for each factor in the denominator.
+
+Why would you want to? Here is the clearest possible reason. The integral
+
+$$\int \frac{3x+4}{(x+1)(x+2)}\, dx$$
+
+has no obvious rule. But once you know the decomposition,
+
+$$\int \frac{1}{x+1}\, dx + \int \frac{2}{x+2}\, dx = \ln|x+1| + 2\ln|x+2| + C$$
+
+— two standard logarithm integrals, each taking one line. The algebra unlocks the calculus. The same pattern shows up in Laplace transforms, in digital signal processing, in chemical kinetics. The tool is always the same.
+
+<!-- VIZ: Side-by-side toggle showing fraction combination (left: two separate fractions, right: combined over common denominator). User clicks "Combine →" to animate numerators merging, then "Split →" to watch the decomposition happen in reverse. Both the algebraic form and a graph of each fraction (as a curve) should be visible, with the graph updating to show how the two pieces add to form the combined curve. -->
+
+## When can we decompose?
+
+Before we start splitting fractions, there is one check to make.
+
+Partial fractions only works directly when the fraction is **proper** — that is, when the degree of the numerator is strictly less than the degree of the denominator.
+
+The **degree** of a polynomial is the highest power of $x$ in it. So $3x + 4$ has degree 1, and $(x+1)(x+2) = x^2 + 3x + 2$ has degree 2. Here the numerator degree (1) is less than the denominator degree (2), so we are in good shape.
+
+If the numerator degree is equal to or greater than the denominator degree, you must do polynomial long division first to produce a proper fraction, then decompose the remainder.
+
+<!-- VIZ: Two inputs — "numerator degree" and "denominator degree" — as simple number selectors (0–5). Output: a clear YES/NO verdict on whether long division is needed, with a brief explanation. If YES, show a placeholder example of the long division step before decomposition. -->
+
+**Example of an improper fraction.** Consider $\dfrac{2x^2 - 9x - 35}{(x+1)(x-2)(x+3)}$.
+
+Expanding the denominator: $(x+1)(x-2)(x+3) = x^3 + 2x^2 - 5x - 6$. The numerator has degree 2, the denominator has degree 3. Here the numerator degree is less, so no long division is needed. (We will use this example below in Case 2.) But consider instead $\dfrac{x^3 + 1}{x^2 - 1}$, where numerator degree 3 exceeds denominator degree 2. That one would need long division first. We will see one such example in the worked section.
+
+::: {.callout-note appearance="simple"}
+**The proper-fraction check**
+
+Before decomposing $\dfrac{P(x)}{Q(x)}$:
+
+- Count the highest power of $x$ in the numerator. Call it $m$.
+- Count the highest power of $x$ in the denominator. Call it $n$.
+- If $m < n$: decompose directly.
+- If $m \geq n$: divide first. The result is a polynomial plus a proper fraction. Decompose the proper-fraction part.
+:::
+
+## What the notation is saying
+
+We write a rational expression as $\dfrac{P(x)}{Q(x)}$, read as "polynomial $P$ divided by polynomial $Q$." When we decompose it, we write it as a sum of terms, each of the form $\dfrac{A}{x - a}$, read as "the constant $A$ divided by the linear factor $x$ minus $a$." The constants $A$, $B$, $C$, ... are what we need to find. They are numbers, not expressions in $x$.
+
+The form of each partial fraction term depends on how the denominator factors. There are three cases.
+
+## Case 1 — Distinct linear factors
+
+If the denominator factors into linear factors with no repeats — say $Q(x) = (x - a)(x - b)(x - c)$ — then the decomposition has one term per factor:
+
+$$\frac{P(x)}{(x-a)(x-b)(x-c)} = \frac{A}{x-a} + \frac{B}{x-b} + \frac{C}{x-c}$$
+
+To find $A$, $B$, and $C$, multiply both sides by the full denominator and then either substitute convenient values of $x$, or equate coefficients.
+
+There is also a shortcut called the **cover-up method** for finding each constant directly.
+
+**The cover-up method.** To find $A$ — the constant above the factor $(x - a)$ — cover up that factor in the original denominator and substitute $x = a$ into what remains:
+
+$$A = \left.\frac{P(x)}{\text{remaining factors}}\right|_{x=a}$$
+
+This works because of what happens when you multiply both sides by $(x - a)$ and then substitute $x = a$: every term on the right containing $(x - a)$ vanishes, leaving only $A$ on the right, and $P(a)$ divided by the other factors on the left.
+
+<!-- VIZ: Interactive cover-up demonstration. Show the fraction (5x-3)/((x-1)(x+2)). User clicks on a factor in the denominator to "cover" it. The covered factor greys out. A substitution box appears showing the value of x to plug in (x=1 for covering (x-1), x=-2 for covering (x+2)). The calculation animates to show the value of A or B. -->
+
+### Worked example 1 — Two distinct linear factors
+
+Decompose $\dfrac{5x - 3}{(x-1)(x+2)}$.
+
+Write the form of the decomposition:
+
+$$\frac{5x - 3}{(x-1)(x+2)} = \frac{A}{x-1} + \frac{B}{x+2}$$
+
+**Finding $A$ by cover-up.** Cover the factor $(x - 1)$ in the denominator and substitute $x = 1$:
+
+$$A = \left.\frac{5x - 3}{x+2}\right|_{x=1} = \frac{5(1) - 3}{1 + 2} = \frac{2}{3}$$
+
+**Finding $B$ by cover-up.** Cover the factor $(x + 2)$ in the denominator. Note that $x + 2 = x - (-2)$, so the root is $x = -2$. Substitute:
+
+$$B = \left.\frac{5x - 3}{x-1}\right|_{x=-2} = \frac{5(-2) - 3}{-2 - 1} = \frac{-13}{-3} = \frac{13}{3}$$
+
+**The decomposition:**
+
+$$\frac{5x - 3}{(x-1)(x+2)} = \frac{2/3}{x-1} + \frac{13/3}{x+2}$$
+
+**Check.** Recombine by finding the common denominator:
+
+$$\frac{(2/3)(x+2) + (13/3)(x-1)}{(x-1)(x+2)} = \frac{\frac{2x + 4 + 13x - 13}{3}}{(x-1)(x+2)} = \frac{\frac{15x - 9}{3}}{(x-1)(x+2)} = \frac{5x - 3}{(x-1)(x+2)} \checkmark$$
+
+<!-- VIZ: After this worked example, show a live graph of the original function (5x-3)/((x-1)(x+2)) and the two partial fraction terms (2/3)/(x-1) and (13/3)/(x+2) plotted together on the same axes. The user can see that the two simpler curves add pointwise to produce the original curve. Vertical asymptotes at x=1 and x=-2 are clearly marked. -->
+
+### Worked example 2 — Three distinct linear factors
+
+Decompose $\dfrac{5x - 3}{(x+1)(x-2)(x+3)}$.
+
+Write the form:
+
+$$\frac{5x - 3}{(x+1)(x-2)(x+3)} = \frac{A}{x+1} + \frac{B}{x-2} + \frac{C}{x+3}$$
+
+**Finding $A$.** Cover $(x + 1)$, substitute $x = -1$:
+
+$$A = \left.\frac{5x - 3}{(x-2)(x+3)}\right|_{x=-1} = \frac{5(-1) - 3}{(-1-2)(-1+3)} = \frac{-8}{(-3)(2)} = \frac{-8}{-6} = \frac{4}{3}$$
+
+**Finding $B$.** Cover $(x - 2)$, substitute $x = 2$:
+
+$$B = \left.\frac{5x - 3}{(x+1)(x+3)}\right|_{x=2} = \frac{5(2) - 3}{(2+1)(2+3)} = \frac{7}{(3)(5)} = \frac{7}{15}$$
+
+**Finding $C$.** Cover $(x + 3)$, substitute $x = -3$:
+
+$$C = \left.\frac{5x - 3}{(x+1)(x-2)}\right|_{x=-3} = \frac{5(-3) - 3}{(-3+1)(-3-2)} = \frac{-18}{(-2)(-5)} = \frac{-18}{10} = -\frac{9}{5}$$
+
+**The decomposition:**
+
+$$\frac{5x - 3}{(x+1)(x-2)(x+3)} = \frac{4/3}{x+1} + \frac{7/15}{x-2} - \frac{9/5}{x+3}$$
+
+**Check** by substituting a convenient value, say $x = 0$:
+
+Left side: $\dfrac{5(0) - 3}{(1)(-2)(3)} = \dfrac{-3}{-6} = \dfrac{1}{2}$
+
+Right side: $\dfrac{4/3}{1} + \dfrac{7/15}{-2} + \dfrac{-9/5}{3} = \dfrac{4}{3} - \dfrac{7}{30} - \dfrac{3}{5}$
+
+Convert to thirtieths: $\dfrac{40}{30} - \dfrac{7}{30} - \dfrac{18}{30} = \dfrac{15}{30} = \dfrac{1}{2}$ $\checkmark$
+
+## Case 2 — Repeated linear factors
+
+When a factor appears more than once in the denominator — say $(x - a)^2$ — a single term $\dfrac{A}{x - a}$ is not enough to capture it. You need one term for each power up to the multiplicity:
+
+$$\frac{P(x)}{(x-a)^2} = \frac{A}{x-a} + \frac{B}{(x-a)^2}$$
+
+More generally, if $(x - a)^n$ appears, you need $n$ terms: $\dfrac{A_1}{x-a} + \dfrac{A_2}{(x-a)^2} + \cdots + \dfrac{A_n}{(x-a)^n}$.
+
+The cover-up shortcut finds the coefficient for the highest power directly. For the lower-power terms, substitute a convenient value of $x$ (other than $x = a$, which makes those terms blow up) and solve for the remaining unknowns.
+
+### Worked example 3 — One repeated factor
+
+Decompose $\dfrac{2x + 3}{(x - 2)^2}$.
+
+Write the form:
+
+$$\frac{2x + 3}{(x-2)^2} = \frac{A}{x-2} + \frac{B}{(x-2)^2}$$
+
+**Finding $B$ by cover-up.** Cover $(x - 2)^2$ (the highest power) and substitute $x = 2$:
+
+$$B = \left.(2x + 3)\right|_{x=2} = 2(2) + 3 = 7$$
+
+**Finding $A$.** Multiply both sides by $(x - 2)^2$:
+
+$$2x + 3 = A(x - 2) + B$$
+
+Substitute $x = 0$ (any value except 2 works):
+
+$$2(0) + 3 = A(0 - 2) + 7$$
+$$3 = -2A + 7$$
+$$-2A = -4$$
+$$A = 2$$
+
+**The decomposition:**
+
+$$\frac{2x + 3}{(x-2)^2} = \frac{2}{x-2} + \frac{7}{(x-2)^2}$$
+
+**Check** at $x = 0$: Left side $= \dfrac{3}{4}$. Right side $= \dfrac{2}{-2} + \dfrac{7}{4} = -1 + \dfrac{7}{4} = \dfrac{3}{4}$ $\checkmark$
+
+### Worked example 4 — Mixed: one distinct and one repeated factor
+
+Decompose $\dfrac{5x^2 + 2x - 19}{(x + 1)(x - 3)^2}$.
+
+Check: numerator degree 2, denominator degree 3. Proper fraction — proceed.
+
+Write the form. There is one distinct factor $(x + 1)$ giving term $\dfrac{A}{x+1}$, and one repeated factor $(x - 3)^2$ giving two terms $\dfrac{B}{x-3} + \dfrac{C}{(x-3)^2}$:
+
+$$\frac{5x^2 + 2x - 19}{(x+1)(x-3)^2} = \frac{A}{x+1} + \frac{B}{x-3} + \frac{C}{(x-3)^2}$$
+
+**Finding $A$ by cover-up.** Cover $(x + 1)$, substitute $x = -1$:
+
+$$A = \frac{5(-1)^2 + 2(-1) - 19}{(-1-3)^2} = \frac{5 - 2 - 19}{16} = \frac{-16}{16} = -1$$
+
+**Finding $C$ by cover-up.** Cover $(x - 3)^2$, substitute $x = 3$:
+
+$$C = \frac{5(3)^2 + 2(3) - 19}{3 + 1} = \frac{45 + 6 - 19}{4} = \frac{32}{4} = 8$$
+
+**Finding $B$.** Multiply both sides by $(x+1)(x-3)^2$:
+
+$$5x^2 + 2x - 19 = A(x-3)^2 + B(x+1)(x-3) + C(x+1)$$
+
+Substitute $x = 0$ (with $A = -1$, $C = 8$):
+
+$$5(0) + 2(0) - 19 = -1(0-3)^2 + B(0+1)(0-3) + 8(0+1)$$
+$$-19 = -9 - 3B + 8$$
+$$-19 = -1 - 3B$$
+$$-18 = -3B$$
+$$B = 6$$
+
+**The decomposition:**
+
+$$\frac{5x^2 + 2x - 19}{(x+1)(x-3)^2} = \frac{-1}{x+1} + \frac{6}{x-3} + \frac{8}{(x-3)^2}$$
+
+**Check** at $x = 0$: Left side $= \dfrac{-19}{(1)(9)} = -\dfrac{19}{9}$. Right side $= \dfrac{-1}{1} + \dfrac{6}{-3} + \dfrac{8}{9} = -1 - 2 + \dfrac{8}{9} = -3 + \dfrac{8}{9} = -\dfrac{19}{9}$ $\checkmark$
+
+<!-- VIZ: Interactive constant finder for Case 2. Show the fraction (5x^2+2x-19)/((x+1)(x-3)^2) with blanks for A, B, C. User enters values. A "Check" button recombines the partial fractions and shows whether the numerator of the recombination matches 5x^2+2x-19 (coefficients highlighted green/red). This gives the reader immediate feedback on whether they found the right constants. -->
+
+## Case 3 — Irreducible quadratic factors
+
+Some quadratic factors cannot be factored over the real numbers — that is, they have no real roots. You can check: a quadratic $ax^2 + bx + c$ is irreducible over the reals when the discriminant $b^2 - 4ac < 0$.
+
+For an irreducible quadratic factor, a single constant in the numerator is not enough. The corresponding partial fraction term needs a linear numerator:
+
+$$\frac{P(x)}{(x-a)(bx^2 + cx + d)} = \frac{A}{x-a} + \frac{Bx + C}{bx^2 + cx + d}$$
+
+Read the second term as "the linear expression $Bx + C$ divided by the irreducible quadratic $bx^2 + cx + d$." You cannot use the cover-up for $B$ and $C$ because the quadratic has no real roots to substitute. Instead, after finding $A$ by cover-up, multiply out and equate coefficients.
+
+### Worked example 5 — One linear and one irreducible quadratic factor
+
+Decompose $\dfrac{3x^2 + 16x + 15}{(x+3)(x^2 + x + 3)}$.
+
+First check that $x^2 + x + 3$ is irreducible: discriminant $= 1^2 - 4(1)(3) = 1 - 12 = -11 < 0$. Yes, no real roots.
+
+Write the form:
+
+$$\frac{3x^2 + 16x + 15}{(x+3)(x^2+x+3)} = \frac{A}{x+3} + \frac{Bx + C}{x^2+x+3}$$
+
+**Finding $A$ by cover-up.** Cover $(x + 3)$, substitute $x = -3$:
+
+$$A = \frac{3(-3)^2 + 16(-3) + 15}{(-3)^2 + (-3) + 3} = \frac{27 - 48 + 15}{9 - 3 + 3} = \frac{-6}{9} = -\frac{2}{3}$$
+
+**Finding $B$ and $C$.** Multiply both sides by $(x+3)(x^2+x+3)$:
+
+$$3x^2 + 16x + 15 = A(x^2+x+3) + (Bx+C)(x+3)$$
+
+With $A = -\frac{2}{3}$, expand:
+
+$$3x^2 + 16x + 15 = -\frac{2}{3}(x^2+x+3) + (Bx+C)(x+3)$$
+
+$$3x^2 + 16x + 15 = -\frac{2}{3}x^2 - \frac{2}{3}x - 2 + Bx^2 + 3Bx + Cx + 3C$$
+
+Equate coefficients of $x^2$:
+
+$$3 = -\frac{2}{3} + B \implies B = 3 + \frac{2}{3} = \frac{11}{3}$$
+
+Equate constant terms:
+
+$$15 = -2 + 3C \implies 3C = 17 \implies C = \frac{17}{3}$$
+
+**The decomposition:**
+
+$$\frac{3x^2 + 16x + 15}{(x+3)(x^2+x+3)} = \frac{-2/3}{x+3} + \frac{\frac{11}{3}x + \frac{17}{3}}{x^2+x+3}$$
+
+**Check** at $x = 0$: Left side $= \dfrac{15}{(3)(3)} = \dfrac{15}{9} = \dfrac{5}{3}$.
+
+Right side $= \dfrac{-2/3}{3} + \dfrac{17/3}{3} = -\dfrac{2}{9} + \dfrac{17}{9} = \dfrac{15}{9} = \dfrac{5}{3}$ $\checkmark$
+
+## Why this works
+
+::: {.callout-note appearance="simple"}
+**Why partial fractions always works**
+
+When you write $\dfrac{P(x)}{Q(x)} = \dfrac{A}{x-a} + \dfrac{B}{x-b} + \cdots$ and multiply both sides by $Q(x)$, you get an equation between two polynomials. Two polynomials are equal for all values of $x$ if and only if their coefficients match. This gives you a system of equations for $A$, $B$, etc. — and that system always has a unique solution when the fraction is proper and $Q(x)$ has been fully factored.
+
+The cover-up method is just a clever shortcut: multiplying both sides by $(x - a)$ and substituting $x = a$ zeroes out every term except $A$, so you can read it off directly.
+:::
+
+## Where this goes
+
+This chapter is entirely algebra — no calculus appears here. But it opens two large doors.
+
+The first is **integral calculus** (Volume 5). When you integrate a rational function like $\int \dfrac{5x-3}{(x-1)(x+2)}\,dx$, there is no single rule that applies. Once you decompose into partial fractions, each term is a constant over a linear expression, and the integral of $\dfrac{A}{x-a}$ is $A\ln|x-a|$. This is how essentially every rational-function integral is solved.
+
+The second is **Laplace transforms** (Volume 7). An engineer solving a differential equation often ends up with a transfer function — a rational expression in the variable $s$ — and needs to invert it to get back to the time domain. Almost every such inversion passes through a partial fraction decomposition. For example, the transfer function of a simple RC circuit has the form $\dfrac{1}{s(s+a)}$, which decomposes into $\dfrac{1/a}{s} - \dfrac{1/a}{s+a}$, and each term inverts to a known time-domain function. The algebra you practiced here is exactly what an engineer does before writing down the circuit's step response.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- **Electrical engineering.** The step response of every second-order control system requires inverting a rational Laplace transform — always via partial fractions.
+- **Chemical engineering.** Rate equations for competing reactions integrate to logarithmic forms; the integration requires decomposing a rational expression in concentration.
+- **Signal processing.** Inverting a z-transform to recover a digital filter's impulse response uses the same decomposition, with $z$ in place of $s$.
+- **Mathematics.** The partial fraction form is used in the proof of the residue theorem in complex analysis, and in computing many definite integrals that have no elementary antiderivative in their original form.
+:::
+
+## Exercises
+
+Each exercise below has a single clean answer. Work each one fully before revealing steps.
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.42rem 0.95rem; border:1px solid #2563eb; border-radius:5px; background:#2563eb; color:#ffffff; cursor:pointer; font-size:0.9em; font-weight:600; box-shadow:0 1px 2px rgba(37,99,235,0.18);";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.42rem 0.8rem; border:1px solid #cbd5e1; border-radius:5px; background:#f8fafc; cursor:pointer; font-size:0.9em; color:#475569; font-weight:500;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**1.** Decompose $\dfrac{7}{(x+1)(x-3)}$ into partial fractions.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write the form",
+    eq: "\\frac{7}{(x+1)(x-3)} = \\frac{A}{x+1} + \\frac{B}{x-3}" },
+  { op: "Cover-up for A (substitute x = −1)",
+    eq: "A = \\frac{7}{-1-3} = \\frac{7}{-4} = -\\frac{7}{4}",
+    note: "Cover the factor (x+1) in the denominator and substitute x = −1." },
+  { op: "Cover-up for B (substitute x = 3)",
+    eq: "B = \\frac{7}{3+1} = \\frac{7}{4}",
+    note: "Cover the factor (x−3) in the denominator and substitute x = 3." },
+  { op: "Write the decomposition",
+    eq: "\\frac{7}{(x+1)(x-3)} = \\frac{-7/4}{x+1} + \\frac{7/4}{x-3}" },
+  { op: "Check (substitute x = 0)",
+    eq: "\\text{Left: } \\frac{7}{(1)(-3)} = -\\frac{7}{3}. \\quad \\text{Right: } \\frac{-7/4}{1} + \\frac{7/4}{-3} = -\\frac{7}{4} - \\frac{7}{12} = -\\frac{21}{12} - \\frac{7}{12} = -\\frac{28}{12} = -\\frac{7}{3} \\checkmark" }
+])
+```
+
+**2.** Decompose $\dfrac{x + 11}{(x-1)(x+2)(x-4)}$ into partial fractions.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Write the form",
+    eq: "\\frac{x+11}{(x-1)(x+2)(x-4)} = \\frac{A}{x-1} + \\frac{B}{x+2} + \\frac{C}{x-4}" },
+  { op: "Cover-up for A (substitute x = 1)",
+    eq: "A = \\frac{1+11}{(1+2)(1-4)} = \\frac{12}{(3)(-3)} = \\frac{12}{-9} = -\\frac{4}{3}" },
+  { op: "Cover-up for B (substitute x = −2)",
+    eq: "B = \\frac{-2+11}{(-2-1)(-2-4)} = \\frac{9}{(-3)(-6)} = \\frac{9}{18} = \\frac{1}{2}" },
+  { op: "Cover-up for C (substitute x = 4)",
+    eq: "C = \\frac{4+11}{(4-1)(4+2)} = \\frac{15}{(3)(6)} = \\frac{15}{18} = \\frac{5}{6}" },
+  { op: "Write the decomposition",
+    eq: "\\frac{x+11}{(x-1)(x+2)(x-4)} = \\frac{-4/3}{x-1} + \\frac{1/2}{x+2} + \\frac{5/6}{x-4}" },
+  { op: "Check (substitute x = 0)",
+    eq: "\\text{Left: } \\frac{11}{(-1)(2)(-4)} = \\frac{11}{8}. \\quad \\text{Right: } \\frac{-4/3}{-1} + \\frac{1/2}{2} + \\frac{5/6}{-4} = \\frac{4}{3} + \\frac{1}{4} - \\frac{5}{24} = \\frac{32}{24} + \\frac{6}{24} - \\frac{5}{24} = \\frac{33}{24} = \\frac{11}{8} \\checkmark" }
+])
+```
+
+**3.** Decompose $\dfrac{3x + 1}{x(x-1)^2}$ into partial fractions.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Write the form",
+    eq: "\\frac{3x+1}{x(x-1)^2} = \\frac{A}{x} + \\frac{B}{x-1} + \\frac{C}{(x-1)^2}",
+    note: "The repeated factor (x−1)^2 needs two terms: one for (x−1) and one for (x−1)^2." },
+  { op: "Cover-up for A (substitute x = 0)",
+    eq: "A = \\frac{3(0)+1}{(0-1)^2} = \\frac{1}{1} = 1" },
+  { op: "Cover-up for C (substitute x = 1)",
+    eq: "C = \\frac{3(1)+1}{1} = 4",
+    note: "Cover the highest power (x−1)^2 and substitute x = 1." },
+  { op: "Find B — multiply out and substitute x = 2",
+    eq: "3x+1 = A(x-1)^2 + Bx(x-1) + Cx. \\quad \\text{At } x=2: 7 = 1(1) + B(2)(1) + 4(2) \\implies 7 = 1 + 2B + 8 \\implies B = -1" },
+  { op: "Write the decomposition",
+    eq: "\\frac{3x+1}{x(x-1)^2} = \\frac{1}{x} - \\frac{1}{x-1} + \\frac{4}{(x-1)^2}" },
+  { op: "Check (substitute x = 2)",
+    eq: "\\text{Left: } \\frac{7}{2(1)^2} = \\frac{7}{2}. \\quad \\text{Right: } \\frac{1}{2} - \\frac{1}{1} + \\frac{4}{1} = \\frac{1}{2} + 3 = \\frac{7}{2} \\checkmark" }
+])
+```
+
+**4.** The fraction $\dfrac{x^2 + 3x - 4}{(x-1)(x+2)}$ is improper. Perform polynomial long division first, then decompose the remainder.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Check degrees",
+    eq: "\\text{Numerator degree} = 2, \\quad \\text{Denominator degree} = 2. \\quad \\text{Degrees are equal, so long division is needed.}",
+    note: "When numerator degree ≥ denominator degree, divide first." },
+  { op: "Expand denominator",
+    eq: "(x-1)(x+2) = x^2 + x - 2" },
+  { op: "Long division: divide x^2+3x−4 by x^2+x−2",
+    eq: "x^2 + 3x - 4 = 1 \\cdot (x^2 + x - 2) + (2x - 2)",
+    note: "Quotient is 1; remainder is (x^2+3x−4) − (x^2+x−2) = 2x−2." },
+  { op: "Write as polynomial plus proper fraction",
+    eq: "\\frac{x^2+3x-4}{(x-1)(x+2)} = 1 + \\frac{2x-2}{(x-1)(x+2)}" },
+  { op: "Factor the remainder numerator",
+    eq: "\\frac{2x-2}{(x-1)(x+2)} = \\frac{2(x-1)}{(x-1)(x+2)} = \\frac{2}{x+2}",
+    note: "The (x−1) cancels — always check for common factors before decomposing." },
+  { op: "Write the final result",
+    eq: "\\frac{x^2+3x-4}{(x-1)(x+2)} = 1 + \\frac{2}{x+2}" },
+  { op: "Check (substitute x = 0)",
+    eq: "\\text{Left: } \\frac{-4}{(-1)(2)} = 2. \\quad \\text{Right: } 1 + \\frac{2}{2} = 1 + 1 = 2 \\checkmark" }
+])
+```
+
+**5.** A control engineer is analysing an RC circuit. The transfer function in the Laplace domain is
+
+$$H(s) = \frac{s + 3}{s(s+1)(s+2)}$$
+
+Decompose $H(s)$ into partial fractions. (Use $s$ in place of $x$ throughout. The partial fractions are the first step toward reading off the time-domain response.)
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Write the form",
+    eq: "\\frac{s+3}{s(s+1)(s+2)} = \\frac{A}{s} + \\frac{B}{s+1} + \\frac{C}{s+2}",
+    note: "Three distinct linear factors in s — one term each." },
+  { op: "Cover-up for A (substitute s = 0)",
+    eq: "A = \\frac{0+3}{(0+1)(0+2)} = \\frac{3}{2}" },
+  { op: "Cover-up for B (substitute s = −1)",
+    eq: "B = \\frac{-1+3}{(-1)(-1+2)} = \\frac{2}{(-1)(1)} = -2" },
+  { op: "Cover-up for C (substitute s = −2)",
+    eq: "C = \\frac{-2+3}{(-2)(-2+1)} = \\frac{1}{(-2)(-1)} = \\frac{1}{2}" },
+  { op: "Write the decomposition",
+    eq: "H(s) = \\frac{3/2}{s} - \\frac{2}{s+1} + \\frac{1/2}{s+2}" },
+  { op: "Check (substitute s = 1)",
+    eq: "\\text{Left: } \\frac{4}{(1)(2)(3)} = \\frac{2}{3}. \\quad \\text{Right: } \\frac{3/2}{1} - \\frac{2}{2} + \\frac{1/2}{3} = \\frac{3}{2} - 1 + \\frac{1}{6} = \\frac{9}{6} - \\frac{6}{6} + \\frac{1}{6} = \\frac{4}{6} = \\frac{2}{3} \\checkmark",
+    note: "In Vol 7 each term inverts: 3/2 → constant, −2e^{−t}, (1/2)e^{−2t}. That sum is the step response." }
+])
+```

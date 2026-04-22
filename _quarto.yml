@@ -83,22 +83,27 @@ book:
         - vol-03/02-trigonometry.qmd
         - vol-03/03-polynomials-factoring.qmd
         - vol-03/04-functions-relations.qmd
+        - vol-03/05-boolean-logic.qmd
     - part: "Volume 4 — Functions and change"
-      number-offset: 19
+      number-offset: 20
       chapters:
         - vol-04/index.qmd
         - vol-04/01-exponents-logarithms.qmd
         - vol-04/02-complex-numbers.qmd
         - vol-04/03-systems-matrices.qmd
         - vol-04/04-sequences-series.qmd
+        - vol-04/05-partial-fractions.qmd
+        - vol-04/06-phasors-waveforms.qmd
     - part: "Volume 5 — Analysis and proof"
-      number-offset: 04
+      number-offset: 28
       chapters:
         - vol-05/index.qmd
         - vol-05/01-limits-continuity.qmd
         - vol-05/02-differential-calculus.qmd
         - vol-05/03-integral-calculus.qmd
         - vol-05/04-proof-reasoning.qmd
+        - vol-05/05-series-numerical.qmd
+        - vol-05/06-integral-engineering.qmd
     - part: "Volume 6 — Probability and data"
       number-offset: 09
       chapters:

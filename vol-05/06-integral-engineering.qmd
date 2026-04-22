@@ -1,0 +1,879 @@
+---
+title: "Engineering integral applications"
+subtitle: "Centroids, second moments, and RMS values"
+
+volume: 5
+chapter: 6
+layer: "bridge"
+status: "draft"
+
+axiom: |
+  You know how to evaluate a definite integral and compute areas and
+  volumes. Integration is accumulation: adding up infinitely many
+  infinitesimally thin slices of something.
+
+rewrite: |
+  The same accumulation idea extends to more complex quantities.
+  The centroid of a shape is the average position of its area —
+  computed by integration. The second moment of area measures how
+  area is distributed around an axis — the key to predicting beam
+  deflection and shaft stress. The RMS value of a waveform is the
+  effective value of an alternating quantity — what makes a 240V AC
+  supply deliver the same power as 240V DC. These are the integrals
+  that engineering courses assume you know.
+
+opens_to:
+  - id: "odes"
+    label: "Differential equations"
+    volume: 7
+    relationship: "enriches"
+  - id: "vector_integral"
+    label: "Vector integral calculus"
+    volume: 7
+    relationship: "enables"
+
+prerequisite_ids:
+  - "int_calc"
+  - "geom"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "Second moment of area determines beam stiffness; centroid determines where a distributed load acts; RMS determines AC power — three different engineering quantities, one mathematical technique."
+    career_example: "Structural engineer sizing an I-beam to carry a specified load without exceeding allowable stress"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Centre of mass calculations in astrophysics, moment of inertia in rotational dynamics, and RMS speed in kinetic theory of gases all use these integrals."
+    career_example: "Physicist computing the moment of inertia of a non-uniform rotating body"
+
+hook: |
+  A steel I-beam holds up a floor. How much can it carry before it bends
+  too far? The answer depends on a number called the second moment of
+  area — an integral you compute once from the beam's cross-section.
+  Every structural engineering table of beam properties lists this number.
+
+  An AC power supply delivers 240V. But 240V of what? The voltage
+  oscillates between +340V and −340V. The RMS value — root mean square
+  — is the equivalent DC voltage that delivers the same power. It is
+  an integral.
+
+  These are not abstract exercises. They are the specific results that
+  structural, mechanical, and electrical engineering courses use in
+  every problem set.
+
+definitions_introduced:
+  - term: "centroid"
+    means: "The geometric centre of a shape — the point where it would balance if made from uniform material."
+  - term: "first moment of area"
+    means: "The integral of position times area element — used to locate the centroid."
+  - term: "second moment of area"
+    means: "The integral of (distance from axis)² times area element — measures resistance to bending."
+  - term: "radius of gyration"
+    means: "The distance from an axis at which the total area could be concentrated to give the same second moment."
+  - term: "RMS value"
+    means: "Root mean square — the square root of the mean of the squared values over one cycle. Gives the effective value of an alternating quantity."
+
+notation_introduced:
+  - symbol: "I_x = \\int y^2 \\, dA"
+    reads_as: "second moment of area about the x-axis"
+    notation_weight: 4
+  - symbol: "\\bar{x} = \\frac{\\int x \\, dA}{A}"
+    reads_as: "x-coordinate of the centroid"
+    notation_weight: 3
+  - symbol: "V_{\\text{rms}} = \\sqrt{\\frac{1}{T}\\int_0^T v^2 \\, dt}"
+    reads_as: "RMS voltage over one period T"
+    notation_weight: 4
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: null
+  strand: "Calculus"
+  outcome: null
+uofa_course: "ENGG 130"
+stroud_programme: null
+kreyszig_chapter: null
+---
+
+A steel I-beam holds up a floor. How much can it carry before it bends
+too far? The answer depends on a number called the second moment of
+area — an integral you compute once from the beam's cross-section.
+Every structural engineering table of beam properties lists this number.
+
+An AC power supply delivers 240V. But 240V of what? The voltage
+oscillates between +340V and −340V. The RMS value — root mean square
+— is the equivalent DC voltage that delivers the same power. It is
+an integral.
+
+These are not abstract exercises. They are the specific results that
+structural, mechanical, and electrical engineering courses use in
+every problem set.
+
+---
+
+## Section A: Mean values and RMS values
+
+### The mean value of a function
+
+You already know the mean of a list of numbers: add them up, divide by
+how many there are. The mean value of a function over an interval is the
+same idea, extended to a continuous quantity.
+
+The **mean value** of $f(x)$ over $[a, b]$ is:
+
+$$\bar{f} = \frac{1}{b-a} \int_a^b f(x) \, dx$$
+
+Read that as: "the integral (the total accumulation) divided by the width
+of the interval." It is the height of a rectangle with the same area as
+the region under the curve.
+
+This matters directly for electrical engineering. The mean value of a
+sinusoidal voltage over one full cycle is zero — the positive half
+cancels the negative half. That is why a voltmeter measuring DC cannot
+read AC: it reads zero. But a half-wave rectified signal (only the
+positive half, the negative half clipped to zero) has a nonzero mean.
+
+**Worked example.** Find the mean value of $v = 10 \sin \theta$ over
+$\theta = 0$ to $\pi$ (one positive half-cycle).
+
+$$\bar{v} = \frac{1}{\pi - 0} \int_0^\pi 10 \sin \theta \, d\theta$$
+
+$$= \frac{10}{\pi} \left[ -\cos \theta \right]_0^\pi$$
+
+$$= \frac{10}{\pi} \left( -\cos \pi + \cos 0 \right)$$
+
+$$= \frac{10}{\pi} \left( -(-1) + 1 \right) = \frac{10}{\pi} \times 2 = \frac{20}{\pi}$$
+
+$$\bar{v} \approx 6.37 \text{ V}$$
+
+Interpretation: if you build a half-wave rectifier circuit and connect a
+DC voltmeter across the output, it reads $20/\pi \approx 6.37$ V. That
+is the mean value of the half-sine waveform.
+
+---
+
+### Root mean square (RMS)
+
+The mean value answers "what is the average height of the waveform?" But
+for power calculations you need something different.
+
+Electrical power dissipated in a resistor is $P = V^2 / R$. It depends
+on the *square* of the voltage. To find the equivalent DC voltage that
+delivers the same average power, you take the mean of $V^2$ and then
+take the square root. That is: root, mean, square — in that order,
+applied in reverse.
+
+The **RMS value** of $f(x)$ over $[a, b]$ is:
+
+$$f_{\text{rms}} = \sqrt{\frac{1}{b-a} \int_a^b \left[f(x)\right]^2 dx}$$
+
+For a sinusoidal voltage $v = V_0 \sin(\omega t)$ over one complete
+period $T = 2\pi/\omega$:
+
+$$\int_0^T V_0^2 \sin^2(\omega t) \, dt$$
+
+Use the identity $\sin^2(\omega t) = \frac{1 - \cos(2\omega t)}{2}$:
+
+$$= V_0^2 \int_0^T \frac{1 - \cos(2\omega t)}{2} \, dt = V_0^2 \cdot \frac{T}{2}$$
+
+(The cosine term integrates to zero over a full period.)
+
+So:
+$$V_{\text{rms}} = \sqrt{\frac{1}{T} \cdot V_0^2 \cdot \frac{T}{2}} = \frac{V_0}{\sqrt{2}} \approx 0.707 \, V_0$$
+
+This is why UK mains is described as "240V": the peak is $240\sqrt{2}
+\approx 340$ V, but the RMS — the power-equivalent DC value — is 240 V.
+Your kettle consumes the same power as it would from a 240 V DC supply.
+
+<!-- VIZ: Draw a sine wave with adjustable amplitude slider (0–200V). Below it, show the squared waveform (always non-negative). Show the mean of the squared waveform as a horizontal dashed line at V₀²/2. Below that, show V_rms = V₀/√2 updating live. Label all three quantities. The reader should see why squaring removes the sign problem, and why the mean of the square is half the peak square for a sine wave. -->
+
+**Worked example 1.** Find the RMS value of $v = 150 \sin(100\pi t)$ volts.
+
+Here $V_0 = 150$ V. Therefore:
+
+$$V_{\text{rms}} = \frac{150}{\sqrt{2}} = \frac{150\sqrt{2}}{2} \approx 106.1 \text{ V}$$
+
+**Worked example 2.** Find the RMS value of a square wave that alternates
+between $+10$ V and $-10$ V.
+
+The square of $\pm 10$ is always 100, so $[f(t)]^2 = 100$ at every
+point in time. The mean of a constant is that constant, and its square
+root is 10. Therefore $V_{\text{rms}} = 10$ V. For a square wave, the
+RMS equals the peak — there is no reduction from $1/\sqrt{2}$ because
+the waveform never dips toward zero between peaks.
+
+::: {.callout-note appearance="simple"}
+**Why squaring first?**
+
+Taking the mean of $v$ directly would give zero for any symmetric AC
+waveform — positive and negative halves cancel. Squaring makes everything
+positive, so the mean measures the actual "size" of the oscillations.
+Taking the square root at the end brings the units back from V² to V.
+The ordering is deliberate: square first, then mean, then root.
+:::
+
+---
+
+## Section B: Centroids and first moments of area
+
+### What a centroid is
+
+Hold a flat shape at its centroid and it balances. Let it go and it
+stays level. The centroid is the average position of all the area in the
+shape — the point where gravity acts on a uniform lamina.
+
+In structural engineering, the centroid of a beam's cross-section is the
+**neutral axis** — the line along which the cross-section neither
+stretches nor compresses under bending. Everything above it is in
+compression; everything below it is in tension. Locating the centroid
+correctly is the first step in any bending calculation.
+
+### The first moment of area
+
+The notation $\bar{x}$, read as "x-bar", gives the $x$-coordinate of
+the centroid:
+
+$$\bar{x} = \frac{\int x \, dA}{A}$$
+
+And $\bar{y}$, the $y$-coordinate:
+
+$$\bar{y} = \frac{\int y \, dA}{A}$$
+
+Both expressions follow from the definition of a mean: integrate
+(accumulate) the position weighted by area, then divide by the total
+area. The integral $\int x \, dA$ is called the **first moment of area**
+about the $y$-axis; $\int y \, dA$ is the first moment about the
+$x$-axis.
+
+For a shape defined by a function $y(x)$ from $x = a$ to $x = b$,
+taking vertical strips of width $dx$ and height $y(x)$:
+
+$$\bar{x} = \frac{\int_a^b x \cdot y(x) \, dx}{A} \qquad \bar{y} = \frac{\int_a^b \frac{y(x)}{2} \cdot y(x) \, dx}{A} = \frac{\frac{1}{2}\int_a^b [y(x)]^2 \, dx}{A}$$
+
+The factor of $\frac{1}{2}$ in the $\bar{y}$ formula: each vertical
+strip has its centre of mass at its midpoint, which is at height
+$y(x)/2$ above the $x$-axis.
+
+### Standard results derived
+
+**Rectangle** (width $b$, height $h$, base along $x$-axis):
+
+$$A = bh$$
+
+By symmetry, $\bar{x} = b/2$ and:
+
+$$\bar{y} = \frac{\frac{1}{2}\int_0^b h^2 \, dx}{bh} = \frac{\frac{1}{2} h^2 \cdot b}{bh} = \frac{h}{2}$$
+
+The centroid is at the geometric centre. Not surprising — but useful to
+confirm, because it validates the method on a shape whose answer you
+already know.
+
+**Triangle** (base $b$, height $h$, apex at top, base along $x$-axis):
+
+The height at position $x$ from the left is $y(x) = h\left(1 - x/b\right)$
+for the case where the apex is above the left corner. For a general
+triangle, integration gives $\bar{y} = h/3$ from the base. The centroid
+sits one-third of the height up from the base — closer to the base than
+the apex.
+
+Setting up the integral:
+
+$$A = \frac{1}{2}bh$$
+
+$$\int_0^b \frac{1}{2}[y(x)]^2 \, dx = \frac{1}{2}\int_0^b h^2\left(1 - \frac{x}{b}\right)^2 dx$$
+
+Let $u = 1 - x/b$, $du = -dx/b$:
+
+$$= \frac{1}{2} h^2 b \int_0^1 u^2 \, du = \frac{1}{2} h^2 b \cdot \frac{1}{3} = \frac{h^2 b}{6}$$
+
+Therefore:
+
+$$\bar{y} = \frac{h^2 b / 6}{bh/2} = \frac{h}{3}$$
+
+**Semicircle** (radius $r$, flat edge along $x$-axis):
+
+The centroid lies on the axis of symmetry. By integration (or a result
+you will derive in Vol 7 using polar coordinates):
+
+$$\bar{y} = \frac{4r}{3\pi} \approx 0.424 \, r$$
+
+This is the standard result. The centroid is slightly less than halfway
+up from the flat edge — pulled down because there is more area near the
+flat edge than near the curved top.
+
+<!-- VIZ: Draw a shape selector (rectangle, triangle, semicircle). Show the shape with the centroid dot marked. Include a slider for one dimension (height for rectangle/triangle, radius for semicircle). As the slider moves, update the centroid dot position and display the first moment of area calculation numerically. The reader should see how the centroid tracks a fixed fraction of the height/radius regardless of scale. -->
+
+### Composite shapes
+
+Real cross-sections are rarely simple shapes. An L-section is two
+rectangles; a T-section is three. The key fact: the centroid of a
+composite shape is the area-weighted mean of the individual centroids.
+
+$$\bar{y} = \frac{\sum_i A_i \bar{y}_i}{\sum_i A_i}$$
+
+**Worked example.** Find the centroid of an L-section: a vertical
+rectangle 80 mm tall × 20 mm wide, sitting on a horizontal rectangle
+60 mm wide × 20 mm thick (the foot).
+
+Take $y = 0$ at the base of the foot.
+
+| Part | Width (mm) | Height (mm) | Area $A_i$ (mm²) | $\bar{y}_i$ (mm) | $A_i \bar{y}_i$ (mm³) |
+|------|-----------|-------------|------------------|------------------|----------------------|
+| Foot | 60 | 20 | 1200 | 10 | 12 000 |
+| Web | 20 | 80 | 1600 | 20 + 40 = 60 | 96 000 |
+
+$$\bar{y} = \frac{12\,000 + 96\,000}{1200 + 1600} = \frac{108\,000}{2800} \approx 38.6 \text{ mm from the base}$$
+
+### Pappus's theorem
+
+Rotate a plane figure of area $A$ about an external axis. The volume of
+the solid of revolution is:
+
+$$V = 2\pi \bar{y} \cdot A$$
+
+where $\bar{y}$ is the distance from the centroid to the axis of
+rotation.
+
+**Verification.** Rotate a rectangle of width $w$ and height $h$ about a
+parallel axis at distance $d$ from its near edge. The rectangle generates
+a hollow cylinder with outer radius $d + w$ and inner radius $d$.
+
+The centroid of the rectangle is at distance $\bar{y} = d + w/2$ from
+the axis. Pappus gives:
+
+$$V = 2\pi \left(d + \frac{w}{2}\right) \cdot wh$$
+
+The actual volume of the hollow cylinder:
+
+$$V = \pi(d+w)^2 h - \pi d^2 h = \pi h \left[(d+w)^2 - d^2\right] = \pi h \cdot w(2d + w)$$
+
+These are the same — confirmed.
+
+---
+
+## Section C: Second moments of area
+
+This is the material that every structural and mechanical engineering
+course assumes. If a chapter in this series earns the label "gating
+content," this is it.
+
+### Why the second moment appears
+
+A beam bends under load. The bending stress at a point in the
+cross-section is:
+
+$$\sigma = \frac{M \cdot y}{I}$$
+
+where $M$ is the bending moment (the internal moment at that
+cross-section), $y$ is the distance from the neutral axis to the point
+in question, and $I$ is the second moment of area about the neutral
+axis.
+
+The **second moment of area**, written $I_x$ for the axis $x$, is:
+
+$$I_x = \int y^2 \, dA$$
+
+Read that as: "the integral of $y$ squared times area element,
+accumulated over the whole cross-section." It is not a moment of force —
+it is purely a geometric property of the cross-section shape.
+
+A larger $I$ means less stress for the same bending moment. This is why
+I-beams have that shape: most of the material (the flanges) sits far
+from the neutral axis (the web), maximising $I$ without maximising
+weight.
+
+The units of $I$ are length to the fourth power: mm⁴ or m⁴. The
+numbers get large. An I-beam with 150 mm total depth typically has
+$I$ in the range $10^6$–$10^7$ mm⁴.
+
+### Standard results derived by integration
+
+**Rectangle** (width $b$, height $h$, axis through the centroid):
+
+Take the $x$-axis through the centroid. Each strip at height $y$ has
+area $dA = b \, dy$:
+
+$$I_x = \int_{-h/2}^{h/2} y^2 \cdot b \, dy = b \left[\frac{y^3}{3}\right]_{-h/2}^{h/2} = b \cdot \frac{2(h/2)^3}{3} = \frac{bh^3}{12}$$
+
+$$\boxed{I_x = \frac{bh^3}{12}}$$
+
+**Rectangle** (axis along the base, i.e., $y = 0$ at the base):
+
+$$I_{\text{base}} = \int_0^h y^2 \cdot b \, dy = b \cdot \frac{h^3}{3} = \frac{bh^3}{3}$$
+
+$$\boxed{I_{\text{base}} = \frac{bh^3}{3}}$$
+
+**Triangle** (base $b$, height $h$, axis through centroid at $h/3$ from base):
+
+The strip width at height $y$ from the apex is $b(h - y)/h$ (the cross-section narrows linearly to zero at the apex). Integrating $y^2$ times this width from 0 to $h$ gives $I$ about the base as $bh^3/12$. Shifting to the centroidal axis (at $h/3$) using the parallel axis theorem:
+
+$$I_{\text{centroid}} = \frac{bh^3}{12} - \frac{bh}{2} \cdot \left(\frac{h}{3}\right)^2 = \frac{bh^3}{12} - \frac{bh^3}{18} = \frac{bh^3}{36}$$
+
+$$\boxed{I_{\text{centroid}} = \frac{bh^3}{36}}$$
+
+**Solid circle** (radius $r$, axis through centre):
+
+Using circular strips (or converting to polar): each strip at radius $\rho$ has
+$dA = 2\pi\rho \, d\rho$, and its contribution to $I_x$ involves both
+$x^2$ and $y^2$ components. By symmetry $I_x = I_y$, and $I_x + I_y = I_z$
+where $I_z = \int \rho^2 \, dA$:
+
+$$I_z = \int_0^r \rho^2 \cdot 2\pi\rho \, d\rho = 2\pi \cdot \frac{r^4}{4} = \frac{\pi r^4}{2}$$
+
+So $I_x = I_y = I_z / 2$:
+
+$$\boxed{I_x = \frac{\pi r^4}{4}}$$
+
+**Hollow circle** (outer radius $R$, inner radius $r$):
+
+Subtract the inner circle's contribution:
+
+$$\boxed{I_x = \frac{\pi(R^4 - r^4)}{4}}$$
+
+**Semicircle** (radius $r$, axis along the diameter):
+
+$$\boxed{I_x = \frac{\pi r^4}{8}}$$
+
+**Reference table:**
+
+| Shape | Axis | $I$ |
+|-------|------|-----|
+| Rectangle $b \times h$ | Centroidal ($x$) | $bh^3/12$ |
+| Rectangle $b \times h$ | Base | $bh^3/3$ |
+| Triangle base $b$, height $h$ | Centroidal | $bh^3/36$ |
+| Solid circle radius $r$ | Centre | $\pi r^4/4$ |
+| Hollow circle $R$, $r$ | Centre | $\pi(R^4 - r^4)/4$ |
+| Semicircle radius $r$ | Diameter | $\pi r^4/8$ |
+
+### The parallel axis theorem
+
+You now know $I$ for simple shapes about their own centroidal axes. But a
+composite section has parts whose centroids are not at the overall
+centroid. To shift $I$ from one axis to a parallel one:
+
+$$I = I_{\text{centroid}} + A d^2$$
+
+where $d$ is the perpendicular distance between the two parallel axes.
+
+**Why it works.** Let the centroidal axis be at $y = 0$. Any parallel
+axis is at $y = -d$, so distances from it are $y + d$. Then:
+
+$$I = \int (y + d)^2 \, dA = \int y^2 \, dA + 2d \int y \, dA + d^2 \int dA$$
+
+The middle integral is $\int y \, dA$ — which equals zero by definition
+of the centroid (the first moment about the centroidal axis is zero).
+The last integral is $A$. So:
+
+$$I = I_{\text{centroid}} + Ad^2$$
+
+The $2d\int y \, dA$ term always drops out when the first axis IS the
+centroidal axis. This is the key step — it only works if you start from
+the centroidal axis.
+
+**Worked example 1 — verification.** Rectangle $b \times h$, axis along
+the base. Using the parallel axis theorem (centroid is at $h/2$ from the
+base):
+
+$$I_{\text{base}} = \frac{bh^3}{12} + bh \cdot \left(\frac{h}{2}\right)^2 = \frac{bh^3}{12} + \frac{bh^3}{4} = \frac{bh^3 + 3bh^3}{12} = \frac{bh^3}{3} \checkmark$$
+
+This confirms the direct result derived above.
+
+**Worked example 2 — numerical.** A solid circle of radius 50 mm, axis
+100 mm from its centre.
+
+$$I_{\text{centroid}} = \frac{\pi (50)^4}{4} = \frac{\pi \times 6\,250\,000}{4} \approx 4.91 \times 10^6 \text{ mm}^4$$
+
+$$A = \pi (50)^2 \approx 7854 \text{ mm}^2$$
+
+$$I = 4.91 \times 10^6 + 7854 \times (100)^2 = 4.91 \times 10^6 + 78.54 \times 10^6 \approx 83.4 \times 10^6 \text{ mm}^4$$
+
+The $Ad^2$ term dominates — moving the axis 100 mm away contributes
+$78.5 \times 10^6$ mm⁴ versus the intrinsic $4.9 \times 10^6$ mm⁴. Area
+far from the axis contributes disproportionately.
+
+### The perpendicular axis theorem
+
+For a flat lamina (a thin plate lying in the $xy$-plane):
+
+$$I_z = I_x + I_y$$
+
+where $I_z$ is the second moment about the axis perpendicular to the
+lamina through the same point. This follows directly from $r^2 = x^2 +
+y^2$ in the definition $I_z = \int r^2 \, dA = \int (x^2 + y^2) \, dA$.
+
+For a rectangle $b \times h$: $I_x = bh^3/12$, $I_y = hb^3/12$, so
+$I_z = bh(h^2 + b^2)/12$. The theorem holds.
+
+### Radius of gyration
+
+The **radius of gyration** $k$ is defined by:
+
+$$k = \sqrt{\frac{I}{A}}$$
+
+Read it as: the distance from the axis at which all the area could be
+concentrated to produce the same $I$. Two cross-sections with the same
+$A$ and the same $I$ have the same $k$, regardless of their shape.
+
+For a solid circle of radius $r$: $k = \sqrt{\pi r^4/4 \div \pi r^2} = r/2$.
+
+For a thin hollow cylinder of radius $r$ (all area at radius $r$):
+$k = r$.
+
+The hollow cylinder has a larger radius of gyration for the same area —
+this is why thin-walled tubes are efficient structural members.
+
+### Full worked example: I-beam composite section
+
+An I-beam has:
+
+- Top flange: 120 mm wide × 15 mm thick
+- Web: 10 mm wide × 150 mm tall
+- Bottom flange: 120 mm wide × 15 mm thick
+
+Total depth: $15 + 150 + 15 = 180$ mm. The section is symmetric, so the
+centroid is at the mid-depth: $\bar{y} = 90$ mm from the base.
+
+**Step 1 — $I$ of each part about its own centroidal axis.**
+
+Flanges (each): $I_{\text{own}} = \frac{120 \times 15^3}{12} = \frac{120 \times 3375}{12} = 33\,750 \text{ mm}^4$
+
+Web: $I_{\text{own}} = \frac{10 \times 150^3}{12} = \frac{10 \times 3\,375\,000}{12} = 2\,812\,500 \text{ mm}^4$
+
+**Step 2 — distance from each part's centroid to the overall centroid.**
+
+Bottom flange centroid: $7.5$ mm from base → $d = 90 - 7.5 = 82.5$ mm
+
+Web centroid: $15 + 75 = 90$ mm from base → $d = 0$ mm (it IS the centroid)
+
+Top flange centroid: $15 + 150 + 7.5 = 172.5$ mm from base → $d = 172.5 - 90 = 82.5$ mm
+
+**Step 3 — apply parallel axis theorem to each part.**
+
+Bottom flange: $I = 33\,750 + (120 \times 15) \times 82.5^2 = 33\,750 + 1800 \times 6806.25 = 33\,750 + 12\,251\,250 = 12\,285\,000 \text{ mm}^4$
+
+Web: $I = 2\,812\,500 + 0 = 2\,812\,500 \text{ mm}^4$
+
+Top flange: same as bottom flange by symmetry: $12\,285\,000 \text{ mm}^4$
+
+**Step 4 — total $I$.**
+
+$$I = 12\,285\,000 + 2\,812\,500 + 12\,285\,000 = 27\,382\,500 \text{ mm}^4 \approx 2.74 \times 10^7 \text{ mm}^4$$
+
+**Interpretation.** If this beam carries a bending moment $M = 50$ kN·m
+$= 50 \times 10^6$ N·mm, the maximum bending stress (at the outermost
+fibre, $y_{\max} = 90$ mm from the neutral axis) is:
+
+$$\sigma_{\max} = \frac{M \cdot y_{\max}}{I} = \frac{50 \times 10^6 \times 90}{2.74 \times 10^7} \approx 164 \text{ N/mm}^2 = 164 \text{ MPa}$$
+
+Structural steel yields at around 250 MPa, so this beam has a reasonable
+safety margin under this load.
+
+<!-- VIZ: Draw a rectangular cross-section with a height slider (20–200 mm) and a width slider (10–100 mm). Show horizontal strips at height y from the centroid; shade the strip's contribution darker the further it is from the neutral axis (proportional to y²). Display I_x updating live. Add a toggle to switch to an I-beam shape (fixed proportions), showing how the flanges dominate the I value despite the thin web. Label each component's contribution to the total I. -->
+
+### Ship stability — a note
+
+The righting moment of a ship after heeling by a small angle involves
+the **metacentric height** $GM$, which depends on $I_{WP}/V$ — the
+second moment of the waterplane area about the ship's centreline, divided
+by the underwater volume. A large waterplane $I$ gives a large restoring
+force and a stiff (but sometimes too stiff) ride. Naval architects
+optimise $I_{WP}$ just as structural engineers optimise beam $I$. The
+mathematics is the same; the application is a hull form rather than a
+cross-section.
+
+::: {.callout-note appearance="simple"}
+**Why the second moment of area matters in bending**
+
+The bending stress formula $\sigma = My/I$ tells you that stress is
+proportional to $M$ (how hard you're bending it) and $y$ (how far from
+the neutral axis), and inversely proportional to $I$ (how area is
+distributed). For a given loading, you reduce stress by increasing $I$.
+The cheapest way to increase $I$ is to move material further from the
+neutral axis — which is exactly what the flanges of an I-beam do.
+:::
+
+---
+
+## Section D: Volumes of revolution — brief recap
+
+You met volumes of revolution in Vol 5 Ch 3. This section places them in
+the engineering applications cluster and adds the shell method.
+
+**Disk method** (rotation about the $x$-axis):
+
+$$V = \pi \int_a^b \left[y(x)\right]^2 dx$$
+
+Each slice perpendicular to the $x$-axis is a disk of radius $y(x)$ and
+thickness $dx$.
+
+**Shell method** (rotation about the $y$-axis):
+
+$$V = 2\pi \int_a^b x \cdot y(x) \, dx$$
+
+Each shell is a cylindrical surface at radius $x$, height $y(x)$, and
+thickness $dx$.
+
+**Worked example — disk method.** Find the volume of a cone with base
+radius $r$ and height $h$, formed by rotating the line $y = (r/h)x$
+about the $x$-axis from $x = 0$ to $x = h$.
+
+$$V = \pi \int_0^h \left(\frac{r}{h} x\right)^2 dx = \pi \frac{r^2}{h^2} \cdot \frac{h^3}{3} = \frac{\pi r^2 h}{3}$$
+
+This is the standard formula for the volume of a cone.
+
+**Worked example — shell method.** Find the volume of the solid formed by
+rotating $y = x^2$ between $x = 0$ and $x = 2$ about the $y$-axis.
+
+$$V = 2\pi \int_0^2 x \cdot x^2 \, dx = 2\pi \int_0^2 x^3 \, dx = 2\pi \left[\frac{x^4}{4}\right]_0^2 = 2\pi \times 4 = 8\pi \approx 25.1$$
+
+---
+
+## Where this goes
+
+Second moments of area connect directly to the beam bending equation in
+Vol 7 (structural analysis). There, the bending moment $M$, shear force
+$V$, and deflection $\delta$ all depend on $EI$ — the product of
+Young's modulus and $I$. Integrating the bending moment diagram twice,
+with $I$ as a geometric factor, gives beam deflections. The composite
+section calculation you did above is exactly what engineers run before
+writing those integrals.
+
+Centroids and first moments extend into Vol 7's vector integral calculus.
+In three dimensions, the centre of mass of a solid body involves a triple
+integral, and the moment of inertia tensor — a 3×3 matrix whose entries
+are second moments and products of inertia — governs 3D rotation. The
+flat cross-section results from this chapter are the $I_{xx}$,
+$I_{yy}$, and $I_{xy}$ components of that tensor restricted to two
+dimensions. RMS connects to Vol 7's Fourier series: Parseval's theorem
+states that the RMS of a periodic function equals the RMS computed from
+its Fourier coefficients. That is, the RMS is preserved when you
+decompose a waveform into sinusoids — a statement about energy that uses
+exactly the integral definition you have here.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- Structural engineers compute $I$ for every beam and column in a
+  building frame — the number determines both stress and deflection.
+- Mechanical engineers use centroids to find the balance point of
+  rotating components, and second moments (as moments of inertia) to
+  predict angular acceleration under applied torque.
+- Electrical engineers use RMS values for every AC power calculation —
+  the rating on any transformer, motor, or cable is an RMS quantity.
+- Naval architects compute the second moment of the waterplane area
+  to assess ship stability and design hull forms.
+- Aerospace engineers compute moments of inertia of aircraft and
+  spacecraft for stability and control analysis.
+:::
+
+---
+
+## Exercises
+
+These are puzzles, not drills. Each has one clean numerical answer —
+the interesting part is setting up the integral correctly and tracking
+the units.
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:220px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.42rem 0.95rem; border:1px solid #2563eb; border-radius:5px; background:#2563eb; color:#ffffff; cursor:pointer; font-size:0.9em; font-weight:600; box-shadow:0 1px 2px rgba(37,99,235,0.18);";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.42rem 0.8rem; border:1px solid #cbd5e1; border-radius:5px; background:#f8fafc; cursor:pointer; font-size:0.9em; color:#475569; font-weight:500;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**1.** Find the mean value of $i = 15 \sin \theta$ over $0 \leq \theta \leq \pi/2$ (the first quarter of a sine cycle, as in the positive quarter-wave of a rectified current).
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  { op: "Write the mean value formula",
+    eq: "\\bar{i} = \\frac{1}{\\pi/2 - 0}\\int_0^{\\pi/2} 15\\sin\\theta\\,d\\theta" },
+  { op: "Factor out constants",
+    eq: "= \\frac{2}{\\pi} \\cdot 15 \\int_0^{\\pi/2} \\sin\\theta\\,d\\theta" },
+  { op: "Integrate",
+    eq: "= \\frac{30}{\\pi}\\left[-\\cos\\theta\\right]_0^{\\pi/2}" },
+  { op: "Evaluate limits",
+    eq: "= \\frac{30}{\\pi}(-\\cos(\\pi/2) + \\cos 0) = \\frac{30}{\\pi}(0 + 1) = \\frac{30}{\\pi}",
+    note: "cos(π/2) = 0 and cos(0) = 1." },
+  { op: "Check",
+    eq: "\\bar{i} = 30/\\pi \\approx 9.55\\text{ A}. \\text{ Reasonable: the peak is 15 A, the mean over a quarter-sine is between 0 and 15.}" }
+])
+```
+
+---
+
+**2.** Find the RMS value of $v = 100 \sin(314t)$ volts, where $t$ is time in seconds. This represents a 50 Hz mains waveform with 100 V peak.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  { op: "Identify V₀",
+    eq: "V_0 = 100\\text{ V}" },
+  { op: "Apply the sine RMS formula",
+    eq: "V_{\\text{rms}} = \\frac{V_0}{\\sqrt{2}}",
+    note: "For any sinusoidal v = V₀ sin(ωt), the RMS is V₀/√2 regardless of frequency." },
+  { op: "Compute",
+    eq: "V_{\\text{rms}} = \\frac{100}{\\sqrt{2}} = \\frac{100\\sqrt{2}}{2} = 50\\sqrt{2}" },
+  { op: "Check",
+    eq: "50\\sqrt{2} \\approx 70.7\\text{ V}. \\text{ This is the effective voltage — a 70.7 V DC supply delivers the same power.}" }
+])
+```
+
+---
+
+**3.** A triangular lamina has base $b = 6$ cm and height $h = 8$ cm. Find the $y$-coordinate of its centroid, measured from the base.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  { op: "Write the centroid formula for a triangle",
+    eq: "\\bar{y} = \\frac{h}{3}" },
+  { op: "Substitute h = 8 cm",
+    eq: "\\bar{y} = \\frac{8}{3} \\approx 2.67\\text{ cm from the base}" },
+  { op: "Check",
+    eq: "\\text{Centroid at } h/3 \\text{ from base, i.e., } 2h/3 \\text{ from apex. For h=8: } 8/3 \\approx 2.67\\text{ cm}. \\checkmark" }
+])
+```
+
+---
+
+**4.** Find $I_x$ for a rectangle 40 mm wide × 60 mm tall: (a) about its centroidal axis, and (b) about its base.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  { op: "Write centroidal formula",
+    eq: "I_{\\text{centroid}} = \\frac{bh^3}{12}" },
+  { op: "Substitute b = 40, h = 60",
+    eq: "I_{\\text{centroid}} = \\frac{40 \\times 60^3}{12} = \\frac{40 \\times 216\\,000}{12} = 720\\,000\\text{ mm}^4" },
+  { op: "Write base formula",
+    eq: "I_{\\text{base}} = \\frac{bh^3}{3}" },
+  { op: "Substitute",
+    eq: "I_{\\text{base}} = \\frac{40 \\times 60^3}{3} = \\frac{40 \\times 216\\,000}{3} = 2\\,880\\,000\\text{ mm}^4" },
+  { op: "Verify with parallel axis theorem",
+    eq: "I_{\\text{base}} = I_{\\text{centroid}} + Ad^2 = 720\\,000 + (40\\times60)\\times30^2 = 720\\,000 + 2\\,160\\,000 = 2\\,880\\,000\\text{ mm}^4\\checkmark",
+    note: "d = h/2 = 30 mm is the distance from centroid to base." }
+])
+```
+
+---
+
+**5.** An I-beam has a web 100 mm × 8 mm, and equal top and bottom flanges each 60 mm × 10 mm. The section is symmetric. Find $I$ about the centroidal axis (parallel to the flanges).
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  { op: "Find total depth and centroid",
+    eq: "\\text{Total depth} = 10 + 100 + 10 = 120\\text{ mm};\\quad \\bar{y} = 60\\text{ mm from base (by symmetry)}" },
+  { op: "I of each flange about its own centroidal axis",
+    eq: "I_{\\text{flange,own}} = \\frac{60 \\times 10^3}{12} = 5000\\text{ mm}^4" },
+  { op: "Distance from each flange centroid to overall centroid",
+    eq: "d_{\\text{bottom flange}} = 60 - 5 = 55\\text{ mm};\\quad d_{\\text{top flange}} = 55\\text{ mm (symmetric)}" },
+  { op: "I of each flange about overall centroid (parallel axis)",
+    eq: "I_{\\text{flange}} = 5000 + (60\\times10)\\times55^2 = 5000 + 1\\,815\\,000 = 1\\,820\\,000\\text{ mm}^4" },
+  { op: "I of web about overall centroid (centroid of web coincides with overall centroid)",
+    eq: "I_{\\text{web}} = \\frac{8 \\times 100^3}{12} = \\frac{8\\,000\\,000}{12} \\approx 666\\,667\\text{ mm}^4" },
+  { op: "Total I",
+    eq: "I = 2\\times 1\\,820\\,000 + 666\\,667 = 3\\,640\\,000 + 666\\,667 \\approx 4\\,307\\,000\\text{ mm}^4 \\approx 4.31\\times10^6\\text{ mm}^4" },
+  { op: "Check",
+    eq: "\\text{Flanges contribute } 3.64\\times10^6\\text{ mm}^4 \\text{ (84\\%), web } 0.67\\times10^6\\text{ mm}^4 \\text{ (16\\%)}. \\checkmark \\text{ Flanges dominate, as expected.}" }
+])
+```
+
+---
+
+**6.** A solid circle has diameter 50 mm (radius 25 mm). Find (a) $I$ about its centroidal axis, and (b) $I$ about a parallel axis 30 mm from the centre.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(6, [
+  { op: "Write I for solid circle",
+    eq: "I_{\\text{centroid}} = \\frac{\\pi r^4}{4}" },
+  { op: "Substitute r = 25 mm",
+    eq: "I_{\\text{centroid}} = \\frac{\\pi \\times 25^4}{4} = \\frac{\\pi \\times 390\\,625}{4} \\approx 306\\,796\\text{ mm}^4" },
+  { op: "Apply parallel axis theorem, d = 30 mm",
+    eq: "I = I_{\\text{centroid}} + Ad^2" },
+  { op: "Compute A",
+    eq: "A = \\pi r^2 = \\pi \\times 625 \\approx 1963\\text{ mm}^2" },
+  { op: "Compute Ad²",
+    eq: "Ad^2 = 1963 \\times 900 \\approx 1\\,766\\,858\\text{ mm}^4" },
+  { op: "Total",
+    eq: "I = 306\\,796 + 1\\,766\\,858 \\approx 2\\,073\\,654\\text{ mm}^4 \\approx 2.07\\times10^6\\text{ mm}^4" },
+  { op: "Check",
+    eq: "\\text{The } Ad^2 \\text{ term (1.77}\\times10^6\\text{) is about 5.8× the centroidal I (0.31}\\times10^6\\text{).} \\checkmark \\text{ Moving the axis far out dominates.}" }
+])
+```

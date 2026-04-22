@@ -1,0 +1,1085 @@
+---
+title: "Phasors and alternating waveforms"
+subtitle: "A rotating complex number traces a sine wave"
+
+volume: 4
+chapter: 6
+layer: "pre-university"
+status: "draft"
+
+axiom: |
+  You know that complex numbers live in a plane, and that multiplying
+  by i rotates a number by 90 degrees. You also know that sine and cosine
+  describe oscillation. These two ideas are the same idea.
+
+rewrite: |
+  A phasor is a complex number that rotates. As it spins, its real part
+  traces a cosine wave and its imaginary part traces a sine wave.
+  This means that adding sinusoidal signals — the core problem of AC
+  circuit analysis — is equivalent to adding complex numbers, which is
+  far simpler. Engineers use j (not i) for the imaginary unit; the
+  notation is different, the mathematics is identical.
+
+opens_to:
+  - id: "fourier_series"
+    label: "Fourier series"
+    volume: 7
+    relationship: "motivates"
+  - id: "complex_analysis"
+    label: "Complex analysis"
+    volume: 7
+    relationship: "motivates"
+  - id: "laplace"
+    label: "Laplace transforms"
+    volume: 7
+    relationship: "motivates"
+
+prerequisite_ids:
+  - "complex_seed"
+  - "trig"
+  - "exp_log"
+
+destinations:
+  - field: "eng"
+    label: "Engineering"
+    hook: "AC circuit analysis — impedance, power factor, resonance — is phasor arithmetic. Every electrical engineering course runs on this."
+    career_example: "Electrical engineer computing the voltage across a capacitor in an RLC circuit"
+  - field: "sci"
+    label: "Sciences"
+    hook: "Wave superposition in optics, acoustics, and quantum mechanics is phasor addition."
+    career_example: "Physicist computing the interference pattern of two coherent light sources"
+
+hook: |
+  Two AC voltages arrive at a junction in a circuit. They oscillate at
+  the same frequency but at different phases — one peaks a little before
+  the other. What is the combined voltage?
+
+  You could set up a trigonometric identity and expand. It works, but
+  it is laborious. Or you could represent each voltage as a complex number,
+  add them in two lines, and read off the result. That shortcut — replacing
+  a trigonometric addition with a complex addition — is the phasor method,
+  and it is how electrical engineers have analysed circuits since the 1890s.
+
+definitions_introduced:
+  - term: "phasor"
+    means: "A complex number representing a sinusoidal quantity by its amplitude and phase angle."
+  - term: "amplitude"
+    means: "The peak value of a sinusoidal wave — the distance from zero to the crest."
+  - term: "phase angle"
+    means: "The horizontal shift of a wave, measured in radians or degrees from a reference."
+  - term: "impedance"
+    means: "The complex-valued generalisation of resistance for AC circuits, written Z = R + jX."
+
+notation_introduced:
+  - symbol: "j"
+    reads_as: "the imaginary unit in engineering notation (same as i in mathematics)"
+    notation_weight: 1
+  - symbol: "A\\angle\\phi"
+    reads_as: "a phasor with amplitude A and phase angle phi"
+    notation_weight: 2
+  - symbol: "Z = R + jX"
+    reads_as: "complex impedance: R is resistance, X is reactance"
+    notation_weight: 3
+
+exercises:
+  type: "puzzle"
+  real_world_context: true
+
+alberta_curriculum:
+  grade: null
+  strand: "Functions and Trigonometry"
+  outcome: null
+uofa_course: "ECE 202"
+stroud_programme: null
+kreyszig_chapter: 13
+---
+
+Two AC voltages arrive at a junction in a circuit. They oscillate at
+the same frequency but at different phases — one peaks a little before
+the other. What is the combined voltage?
+
+You could set up a trigonometric identity and expand. It works, but
+it is laborious. Or you could represent each voltage as a complex number,
+add them in two lines, and read off the result. That shortcut — replacing
+a trigonometric addition with a complex addition — is the phasor method,
+and it is how electrical engineers have analysed circuits since the 1890s.
+
+## Rotation and oscillation are the same thing
+
+Here is the connection at the heart of this chapter. Take Euler's formula:
+
+$$e^{j\theta} = \cos\theta + j\sin\theta$$
+
+Read it as: the complex number $e^{j\theta}$ — that is, *e to the power of j times theta* — sits on the unit circle at angle $\theta$ from the positive real axis. Its real part is $\cos\theta$ and its imaginary part is $\sin\theta$.
+
+Now replace $\theta$ with $\omega t$ — that is, angle increasing at a constant rate $\omega$ (called the **angular frequency**, read as *omega*) over time $t$:
+
+$$e^{j\omega t} = \cos(\omega t) + j\sin(\omega t)$$
+
+As $t$ increases, the angle $\omega t$ increases, and the point $e^{j\omega t}$ rotates steadily around the unit circle. Its real part traces a cosine wave. Its imaginary part traces a sine wave. The rotation and the oscillation are the same object viewed two different ways.
+
+This is not a trick or an approximation. It is an exact identity. A **phasor** is a complex number that rotates in exactly this way. The wave you observe — say, the voltage across a component in a circuit — is the real part of the phasor as it spins.
+
+One more notation to be clear about: engineers write $j$ where mathematicians write $i$ for the imaginary unit (to avoid confusion with current, which is also called $i$). The mathematics is identical.
+
+<!-- VIZ: Rotating phasor animation. Draw a unit circle on the left half of the canvas. An arrow (the phasor) rotates around the origin — either auto-animating with a Play/Pause button, or controlled by an angle slider. As the angle increases, project the tip of the arrow horizontally onto a cosine wave drawn to the right of the circle, and vertically onto a sine wave drawn below. The projection lines should be dashed and update in real time. Label the real axis, imaginary axis, the angle θ = ωt, and the two waveforms. The reader should see that the rotating arrow and the oscillating wave are the same thing. -->
+
+```{ojs}
+//| echo: false
+d3 = require("d3@7")
+```
+
+```{ojs}
+//| echo: false
+viewof phasorAngleDeg = Inputs.range([0, 360], {
+  label: "Angle θ (degrees)",
+  step: 1,
+  value: 45
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const W = 620, H = 340;
+  const cx = 130, cy = 170, r = 100;
+  const waveStartX = 260, waveW = 340, waveH = 200;
+  const waveCY = cy;
+
+  const theta = (phasorAngleDeg * Math.PI) / 180;
+  const tipX = cx + r * Math.cos(theta);
+  const tipY = cy - r * Math.sin(theta);  // SVG y inverted
+
+  const cosVal = Math.cos(theta);
+  const sinVal = Math.sin(theta);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // ── Unit circle ──
+  svg.append("circle")
+    .attr("cx", cx).attr("cy", cy).attr("r", r)
+    .attr("fill", "none").attr("stroke", "#d1d5db").attr("stroke-width", 1.5);
+
+  // Axes through centre
+  svg.append("line").attr("x1", cx - r - 15).attr("y1", cy).attr("x2", cx + r + 15).attr("y2", cy)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1);
+  svg.append("line").attr("x1", cx).attr("y1", cy - r - 15).attr("x2", cx).attr("y2", cy + r + 15)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1);
+
+  svg.append("text").attr("x", cx + r + 18).attr("y", cy + 4).attr("font-size","11px").attr("fill","#9ca3af").text("Re");
+  svg.append("text").attr("x", cx - 6).attr("y", cy - r - 18).attr("font-size","11px").attr("fill","#9ca3af").text("Im");
+
+  // Phasor arrow
+  svg.append("line")
+    .attr("x1", cx).attr("y1", cy)
+    .attr("x2", tipX).attr("y2", tipY)
+    .attr("stroke", "#2563eb").attr("stroke-width", 2.5).attr("stroke-linecap", "round");
+
+  svg.append("circle").attr("cx", tipX).attr("cy", tipY).attr("r", 5)
+    .attr("fill", "#2563eb");
+
+  // Angle arc
+  const arcPath = d3.arc()({
+    innerRadius: 28, outerRadius: 28,
+    startAngle: -theta, endAngle: 0
+  });
+  svg.append("path").attr("d", arcPath)
+    .attr("transform", `translate(${cx},${cy})`)
+    .attr("fill", "none").attr("stroke", "#f59e0b").attr("stroke-width", 1.5);
+  svg.append("text").attr("x", cx + 34).attr("y", cy - 6).attr("font-size","11px").attr("fill","#f59e0b").text("θ");
+
+  // ── Projection lines (dashed) ──
+  const waveX0 = waveStartX;
+
+  // Cosine projection: horizontal from tip to wave plot
+  const cosWaveX = waveX0 + (phasorAngleDeg / 360) * waveW;
+  const cosWaveY = waveCY - cosVal * (waveH / 2 - 20);
+
+  svg.append("line")
+    .attr("x1", tipX).attr("y1", tipY)
+    .attr("x2", cosWaveX).attr("y2", tipY)
+    .attr("stroke", "#0d9488").attr("stroke-width", 1).attr("stroke-dasharray", "4,3");
+
+  // Sine projection: vertical from tip down
+  const sineWaveY = waveCY + (waveH / 2 + 30) + (cosVal * (waveH / 2 - 20));
+  // Actually draw sine below in a simpler way:
+  // We'll just show the dot on each wave
+
+  // ── Cosine wave ──
+  const cosPoints = [];
+  for (let deg = 0; deg <= 360; deg += 2) {
+    const rad = (deg * Math.PI) / 180;
+    cosPoints.push([waveX0 + (deg / 360) * waveW, waveCY - Math.cos(rad) * 70]);
+  }
+  svg.append("path")
+    .attr("d", `M ${cosPoints.map(p => p.join(",")).join(" L ")}`)
+    .attr("stroke", "#0d9488").attr("stroke-width", 2).attr("fill", "none");
+
+  svg.append("text").attr("x", waveX0).attr("y", waveCY - 82).attr("font-size","11px").attr("fill","#0d9488").text("cos(θ) = Re part");
+
+  // Dot on cosine wave at current angle
+  const cosDotX = waveX0 + (phasorAngleDeg / 360) * waveW;
+  const cosDotY = waveCY - cosVal * 70;
+  svg.append("circle").attr("cx", cosDotX).attr("cy", cosDotY).attr("r", 5).attr("fill", "#0d9488");
+
+  // ── Sine wave (below) ──
+  const sineBase = waveCY + 140;
+  const sinPoints = [];
+  for (let deg = 0; deg <= 360; deg += 2) {
+    const rad = (deg * Math.PI) / 180;
+    sinPoints.push([waveX0 + (deg / 360) * waveW, sineBase - Math.sin(rad) * 55]);
+  }
+  svg.append("path")
+    .attr("d", `M ${sinPoints.map(p => p.join(",")).join(" L ")}`)
+    .attr("stroke", "#a855f7").attr("stroke-width", 2).attr("fill", "none");
+
+  svg.append("text").attr("x", waveX0).attr("y", sineBase - 62).attr("font-size","11px").attr("fill","#a855f7").text("sin(θ) = Im part");
+
+  const sinDotX = waveX0 + (phasorAngleDeg / 360) * waveW;
+  const sinDotY = sineBase - sinVal * 55;
+  svg.append("circle").attr("cx", sinDotX).attr("cy", sinDotY).attr("r", 5).attr("fill", "#a855f7");
+
+  // Vertical dashed from phasor tip to x-axis (shows cos value)
+  svg.append("line")
+    .attr("x1", tipX).attr("y1", tipY)
+    .attr("x2", tipX).attr("y2", cy)
+    .attr("stroke", "#a855f7").attr("stroke-width", 1).attr("stroke-dasharray", "4,3");
+
+  // Values readout
+  svg.append("text").attr("x", waveX0).attr("y", H - 10)
+    .attr("font-size","12px").attr("fill","#374151").attr("font-weight","600")
+    .text(`θ = ${phasorAngleDeg}°   cos θ = ${cosVal.toFixed(3)}   sin θ = ${sinVal.toFixed(3)}`);
+
+  return svg.node();
+}
+```
+
+Drag the angle slider. Watch the dot on each wave move exactly as the phasor tip moves. They are describing the same thing.
+
+## What the notation is saying
+
+A sinusoidal signal takes the form:
+
+$$v(t) = A\sin(\omega t + \phi)$$
+
+Read it as: "v of t equals A times sine of omega t plus phi." Four pieces:
+
+- $A$ — the **amplitude** (*ay*): the peak value, the distance from zero to the crest
+- $\omega$ — the **angular frequency** (*omega*, in radians per second): how fast the phasor rotates; $\omega = 2\pi f$ where $f$ is frequency in hertz
+- $t$ — time in seconds
+- $\phi$ — the **phase angle** (*phi*, in radians or degrees): how much the wave is shifted from a reference wave
+
+The **period** — the time for one complete cycle — is $T = 2\pi/\omega$.
+
+Now, the phasor. When we write the full rotating complex number $Ae^{j(\omega t + \phi)}$, the $e^{j\omega t}$ part is the same for every signal in a circuit operating at frequency $\omega$. It is just the shared rotation. The part that distinguishes one signal from another is $Ae^{j\phi}$ — the amplitude and the phase shift.
+
+So we define the **phasor** for the signal $A\sin(\omega t + \phi)$ as:
+
+$$\mathbf{V} = A\angle\phi$$
+
+Read that as: "A at angle phi" — a complex number with magnitude $A$ and argument $\phi$. The $\angle$ symbol is shorthand for polar form: $A\angle\phi = A(\cos\phi + j\sin\phi)$.
+
+When we need to add sinusoidal signals, we convert each to a phasor, add the phasors (as complex numbers), and convert the result back to a sinusoid. The $e^{j\omega t}$ rotation is implicit — it is the same for all signals and can be dropped during the calculation, then restored at the end.
+
+::: {.callout-note appearance="simple"}
+**Why we can drop $e^{j\omega t}$**
+
+Every signal in the circuit rotates at the same angular frequency $\omega$. The relative angles between phasors do not change during rotation — only the absolute positions change. So for addition and subtraction, the rotating part is irrelevant. We work with the amplitudes and phase angles alone, then restore the rotation at the end when we write the answer as a waveform.
+:::
+
+## Adding sinusoidal waveforms — the key technique
+
+Suppose you need to add these two voltages:
+
+$$v_1 = 120\sin(100\pi t) \qquad v_2 = 80\sin(100\pi t + 60°)$$
+
+Both oscillate at the same frequency ($\omega = 100\pi$ rad/s). The question is: what is $v_1 + v_2$?
+
+**The trigonometric route.** You can expand $\sin(100\pi t + 60°)$ using the angle-addition formula, collect terms, and simplify. It takes half a page and is error-prone.
+
+**The phasor route.** Convert each signal to a phasor:
+
+$$\mathbf{V}_1 = 120\angle 0° \qquad \mathbf{V}_2 = 80\angle 60°$$
+
+Convert to Cartesian form ($\mathbf{V} = A\cos\phi + jA\sin\phi$):
+
+$$\mathbf{V}_1 = 120\cos 0° + j\cdot 120\sin 0° = 120 + 0j$$
+
+$$\mathbf{V}_2 = 80\cos 60° + j\cdot 80\sin 60° = 80(0.5) + j\cdot 80(0.866) = 40 + 69.28j$$
+
+Add them component by component:
+
+$$\mathbf{V} = (120 + 40) + j(0 + 69.28) = 160 + 69.28j$$
+
+Convert back to polar form:
+
+$$|\mathbf{V}| = \sqrt{160^2 + 69.28^2} = \sqrt{25600 + 4799.7} = \sqrt{30399.7} \approx 174.4$$
+
+$$\phi = \arctan\!\left(\frac{69.28}{160}\right) = \arctan(0.433) \approx 23.4° = 0.408 \text{ rad}$$
+
+The combined voltage is:
+
+$$v = 174.4\sin(100\pi t + 0.408) \text{ V}$$
+
+Two lines of arithmetic instead of half a page.
+
+<!-- VIZ: Phasor addition diagram. Draw an Argand plane in the left half. Show two phasors V1 and V2 as arrows from the origin — V1 pointing along the positive real axis, V2 at an angle. Show their vector sum V as a third arrow (tip-to-tail construction or direct from origin). To the right, show the three corresponding sinusoidal waveforms (v1, v2, and v = v1+v2) over one full period. Sliders for the amplitude and phase of each phasor (A1, phi1, A2, phi2). As the sliders move, all three phasors and all three waveforms update simultaneously. This lets the reader see that phasor addition is geometrically the same as vector addition, and verify that the sum waveform is correct. -->
+
+```{ojs}
+//| echo: false
+viewof A1 = Inputs.range([10, 200], { label: "V₁ amplitude A₁", step: 1, value: 120 })
+```
+
+```{ojs}
+//| echo: false
+viewof phi1deg = Inputs.range([0, 360], { label: "V₁ phase φ₁ (degrees)", step: 1, value: 0 })
+```
+
+```{ojs}
+//| echo: false
+viewof A2 = Inputs.range([10, 200], { label: "V₂ amplitude A₂", step: 1, value: 80 })
+```
+
+```{ojs}
+//| echo: false
+viewof phi2deg = Inputs.range([0, 360], { label: "V₂ phase φ₂ (degrees)", step: 1, value: 60 })
+```
+
+```{ojs}
+//| echo: false
+{
+  const phi1 = (phi1deg * Math.PI) / 180;
+  const phi2 = (phi2deg * Math.PI) / 180;
+
+  // Cartesian components
+  const v1r = A1 * Math.cos(phi1), v1i = A1 * Math.sin(phi1);
+  const v2r = A2 * Math.cos(phi2), v2i = A2 * Math.sin(phi2);
+  const vr = v1r + v2r, vi = v1i + v2i;
+  const Av = Math.sqrt(vr * vr + vi * vi);
+  const phiv = Math.atan2(vi, vr);
+  const phivDeg = (phiv * 180 / Math.PI + 360) % 360;
+
+  const W = 640, H = 340;
+  const planeCX = 155, planeCY = 165, scale = 120 / 200;  // scale to fit max 200 in ~120px
+  const waveX0 = 320, waveW = 300, waveH = 280;
+  const waveCY = H / 2;
+
+  const toSVG = (val) => val * scale;
+  const phasX = (re) => planeCX + toSVG(re);
+  const phasY = (im) => planeCY - toSVG(im);
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // ── Argand plane ──
+  svg.append("line").attr("x1", planeCX - 130).attr("y1", planeCY).attr("x2", planeCX + 130).attr("y2", planeCY)
+    .attr("stroke", "#d1d5db").attr("stroke-width", 1);
+  svg.append("line").attr("x1", planeCX).attr("y1", planeCY - 130).attr("x2", planeCX).attr("y2", planeCY + 130)
+    .attr("stroke", "#d1d5db").attr("stroke-width", 1);
+  svg.append("text").attr("x", planeCX + 132).attr("y", planeCY + 4).attr("font-size","10px").attr("fill","#9ca3af").text("Re");
+  svg.append("text").attr("x", planeCX + 2).attr("y", planeCY - 132).attr("font-size","10px").attr("fill","#9ca3af").text("Im");
+
+  const drawArrow = (x1, y1, x2, y2, color, label) => {
+    svg.append("line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
+      .attr("stroke", color).attr("stroke-width", 2.5).attr("stroke-linecap","round");
+    svg.append("circle").attr("cx", x2).attr("cy", y2).attr("r", 4).attr("fill", color);
+    if (label) {
+      svg.append("text").attr("x", x2 + 6).attr("y", y2 - 4).attr("font-size","11px").attr("fill", color).attr("font-weight","600").text(label);
+    }
+  };
+
+  // V1 + V2 tip-to-tail
+  drawArrow(planeCX, planeCY, phasX(v1r), phasY(v1i), "#2563eb", `V₁`);
+  // V2 from tip of V1
+  drawArrow(phasX(v1r), phasY(v1i), phasX(v1r + v2r), phasY(v1i + v2i), "#a855f7", `V₂`);
+  // Resultant from origin
+  drawArrow(planeCX, planeCY, phasX(vr), phasY(vi), "#0d9488", `V`);
+
+  // Dashed v2 from origin (for reference)
+  svg.append("line").attr("x1", planeCX).attr("y1", planeCY).attr("x2", phasX(v2r)).attr("y2", phasY(v2i))
+    .attr("stroke", "#a855f7").attr("stroke-width", 1).attr("stroke-dasharray","4,3").attr("opacity", 0.5);
+
+  // Readout
+  svg.append("text").attr("x", 10).attr("y", H - 18).attr("font-size","11px").attr("fill","#374151")
+    .text(`|V| = ${Av.toFixed(1)},  φ = ${phivDeg.toFixed(1)}°`);
+
+  // ── Waveforms ──
+  const periods = 360;
+  const waveScale = (waveH / 2 - 18) / 220;  // max amplitude 220, fits in half height
+
+  const drawWave = (amplitude, phaseRad, color, yOffset) => {
+    const pts = [];
+    for (let deg = 0; deg <= periods; deg += 2) {
+      const rad = (deg * Math.PI) / 180;
+      pts.push([waveX0 + (deg / periods) * waveW, waveCY + yOffset - amplitude * Math.sin(rad + phaseRad) * waveScale]);
+    }
+    svg.append("path").attr("d", `M ${pts.map(p=>p.join(",")).join(" L ")}`)
+      .attr("stroke", color).attr("stroke-width", 1.8).attr("fill","none");
+  };
+
+  // x-axis for waves
+  svg.append("line").attr("x1", waveX0).attr("y1", waveCY).attr("x2", waveX0 + waveW).attr("y2", waveCY)
+    .attr("stroke", "#e5e7eb").attr("stroke-width", 1);
+
+  drawWave(A1, phi1, "#2563eb", 0);
+  drawWave(A2, phi2, "#a855f7", 0);
+  drawWave(Av, phiv, "#0d9488", 0);
+
+  // Legend
+  const ly = 14;
+  [["V₁", "#2563eb"], ["V₂", "#a855f7"], ["V = V₁+V₂", "#0d9488"]].forEach(([lbl, col], i) => {
+    svg.append("rect").attr("x", waveX0 + i * 105).attr("y", ly - 9).attr("width", 22).attr("height", 3).attr("fill", col);
+    svg.append("text").attr("x", waveX0 + i * 105 + 26).attr("y", ly).attr("font-size","11px").attr("fill", col).attr("font-weight","600").text(lbl);
+  });
+
+  return svg.node();
+}
+```
+
+Adjust the amplitudes and phases. Notice that the resultant phasor (green arrow) is always the vector sum of the other two, and the green waveform always matches.
+
+### The $a\sin\omega t + b\cos\omega t$ form
+
+A common variation: you have one sine and one cosine at the same frequency, and you want to write their sum as a single sinusoid.
+
+$$a\sin\omega t + b\cos\omega t = R\sin(\omega t + \phi)$$
+
+Expand the right side using the angle-addition formula:
+
+$$R\sin(\omega t + \phi) = R\cos\phi\sin\omega t + R\sin\phi\cos\omega t$$
+
+Match coefficients:
+
+$$R\cos\phi = a \qquad R\sin\phi = b$$
+
+Square and add: $R^2\cos^2\phi + R^2\sin^2\phi = a^2 + b^2$, so:
+
+$$R = \sqrt{a^2 + b^2}$$
+
+Divide: $\tan\phi = b/a$, so $\phi = \arctan(b/a)$.
+
+This is exactly the polar-form conversion of the complex number $a + jb$. The phasor $a + jb$ has magnitude $\sqrt{a^2+b^2}$ and argument $\arctan(b/a)$ — which confirms that the combination formula is just a restatement of complex arithmetic.
+
+## Worked examples
+
+**Example 1: phasor addition (engineering context)**
+
+Two AC currents enter a node: $i_1 = 15\sin(\omega t)$ A and $i_2 = 10\sin(\omega t + 45°)$ A. Find the total current.
+
+Write the phasors:
+
+$$\mathbf{I}_1 = 15\angle 0° \qquad \mathbf{I}_2 = 10\angle 45°$$
+
+Convert to Cartesian:
+
+$$\mathbf{I}_1 = 15 + 0j$$
+
+$$\mathbf{I}_2 = 10\cos 45° + j\cdot 10\sin 45° = 7.071 + 7.071j$$
+
+Add:
+
+$$\mathbf{I} = 22.071 + 7.071j$$
+
+Convert to polar:
+
+$$|\mathbf{I}| = \sqrt{22.071^2 + 7.071^2} = \sqrt{487.1 + 50.0} = \sqrt{537.1} \approx 23.18 \text{ A}$$
+
+$$\phi = \arctan\!\left(\frac{7.071}{22.071}\right) = \arctan(0.3204) \approx 17.8°$$
+
+Total current: $i = 23.18\sin(\omega t + 17.8°)$ A.
+
+Check: the magnitude of the sum (23.18) is less than $15 + 10 = 25$ because the two currents are not in phase — they partially cancel.
+
+---
+
+**Example 2: the $a\sin + b\cos$ form (signal processing)**
+
+Simplify $3\sin\omega t + 4\cos\omega t$ to the form $R\sin(\omega t + \phi)$.
+
+$$R = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5$$
+
+$$\phi = \arctan\!\left(\frac{4}{3}\right) = \arctan(1.333) \approx 53.1°$$
+
+So $3\sin\omega t + 4\cos\omega t = 5\sin(\omega t + 53.1°)$.
+
+Check: at $\omega t = 0$: left side $= 3(0) + 4(1) = 4$. Right side $= 5\sin(53.1°) = 5(0.8) = 4$. Yes.
+
+This is a 3-4-5 right triangle in the phasor plane — the amplitude 5 is the hypotenuse.
+
+---
+
+**Example 3: all four methods for adding two phasors**
+
+Add $\mathbf{V}_1 = 100\angle 0°$ and $\mathbf{V}_2 = 60\angle 30°$.
+
+**Method 1 — Graphical.** Draw $\mathbf{V}_1$ as a horizontal arrow of length 100. Draw $\mathbf{V}_2$ from the tip of $\mathbf{V}_1$ at 30° above horizontal, length 60. Measure the resultant arrow from origin to the final tip. (Requires accurate drawing; gives approximate answer.)
+
+**Method 2 — Sine and cosine rules.** The angle between the two phasors is 30°. The phasor triangle has sides 100, 60, and unknown, with included angle $180° - 30° = 150°$ (exterior). By the cosine rule:
+
+$$|\mathbf{V}|^2 = 100^2 + 60^2 - 2(100)(60)\cos 150° = 10000 + 3600 - 12000(-0.866) = 13600 + 10392 = 23992$$
+
+$$|\mathbf{V}| = \sqrt{23992} \approx 154.9 \text{ V}$$
+
+For the angle, use the sine rule to find how much above zero the resultant sits.
+
+**Method 3 — Resolving components (Cartesian).** This is the method we used above:
+
+$$\mathbf{V}_1 = 100 + 0j \qquad \mathbf{V}_2 = 60\cos 30° + j\cdot 60\sin 30° = 51.96 + 30j$$
+
+$$\mathbf{V} = 151.96 + 30j$$
+
+$$|\mathbf{V}| = \sqrt{151.96^2 + 30^2} = \sqrt{23092 + 900} = \sqrt{23992} \approx 154.9 \text{ V}$$
+
+$$\phi = \arctan(30/151.96) \approx 11.2°$$
+
+**Method 4 — Complex arithmetic directly.** Same as Method 3, but written explicitly as complex number addition. This is the preferred method for more than two phasors.
+
+All four methods give $|\mathbf{V}| \approx 154.9$ V at approximately $11.2°$. Methods 3 and 4 are fastest when working with three or more phasors. Methods 1 and 2 help build geometric intuition.
+
+## Complex impedance
+
+In a DC circuit, resistance $R$ (in ohms) relates voltage and current by Ohm's law: $V = IR$. Resistance is a single real number — it scales the current but does not shift the timing.
+
+In an AC circuit, components affect both the amplitude and the phase of the current. The complex-valued generalisation of resistance is called **impedance**, written $Z = R + jX$ — read as "Z equals R plus j times X." The symbol $j$ is the imaginary unit in engineering notation. $R$ is the resistance (real part) and $X$ is the **reactance** (*ree-AK-tense*, imaginary part).
+
+Three types of component:
+
+**Resistor.** Impedance $Z_R = R$. Purely real — no phase shift. A resistor opposes current equally at all frequencies.
+
+**Inductor.** Impedance $Z_L = j\omega L$ where $L$ is inductance in henries. Voltage leads current by 90°. At higher frequencies, an inductor has higher impedance — it resists change in current.
+
+**Capacitor.** Impedance $Z_C = \dfrac{1}{j\omega C} = \dfrac{-j}{\omega C}$ where $C$ is capacitance in farads. Current leads voltage by 90°. At higher frequencies, a capacitor has lower impedance — it passes high-frequency signals easily.
+
+For series components, total impedance is:
+
+$$Z = Z_R + Z_L + Z_C = R + j\!\left(\omega L - \frac{1}{\omega C}\right) = R + jX$$
+
+The magnitude $|Z| = \sqrt{R^2 + X^2}$ tells you the overall opposition to current. The argument $\phi = \arctan(X/R)$ tells you the phase shift between voltage and current. The **power factor** — how efficiently the circuit uses electrical power — is $\cos\phi$.
+
+<!-- VIZ: RLC impedance visualiser. Sliders for R (0–500 Ω), L (0–1 H), C (10–1000 µF), and ω (1–1000 rad/s). Compute Z = R + j(ωL - 1/(ωC)) in real time. On an Argand plane, draw the impedance phasor Z as an arrow from the origin. Label the real axis (R) and imaginary axis (X = ωL - 1/ωC). Show |Z|, the phase angle φ, and the power factor cos(φ) as numeric readouts updating with the sliders. When X > 0 (inductive), shade the arrow blue; when X < 0 (capacitive), shade it orange; when X = 0 (resonance), highlight in green with a label "Resonance: Z = R". -->
+
+```{ojs}
+//| echo: false
+viewof rlc_R = Inputs.range([0, 500], { label: "Resistance R (Ω)", step: 1, value: 100 })
+```
+
+```{ojs}
+//| echo: false
+viewof rlc_L = Inputs.range([0, 1], { label: "Inductance L (H)", step: 0.01, value: 0.1 })
+```
+
+```{ojs}
+//| echo: false
+viewof rlc_C = Inputs.range([10, 1000], { label: "Capacitance C (µF)", step: 10, value: 100 })
+```
+
+```{ojs}
+//| echo: false
+viewof rlc_omega = Inputs.range([1, 1000], { label: "Angular frequency ω (rad/s)", step: 1, value: 100 })
+```
+
+```{ojs}
+//| echo: false
+{
+  const R = rlc_R;
+  const L = rlc_L;
+  const C = rlc_C * 1e-6;
+  const omega = rlc_omega;
+
+  const X = omega * L - 1 / (omega * C);
+  const absZ = Math.sqrt(R * R + X * X);
+  const phi = Math.atan2(X, R);
+  const phiDeg = phi * 180 / Math.PI;
+  const pf = Math.cos(phi);
+
+  const W = 420, H = 320;
+  const cx = 140, cy = 160;
+  const maxVal = Math.max(absZ, 100, Math.abs(X) + 10, R + 10);
+  const sc = Math.min(110, 110) / maxVal;
+
+  const arrowColor = Math.abs(X) < 5 ? "#059669" : X > 0 ? "#2563eb" : "#f59e0b";
+  const label = Math.abs(X) < 5 ? "Resonance (Z = R)" : X > 0 ? "Inductive (X > 0)" : "Capacitive (X < 0)";
+
+  const svg = d3.create("svg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("style", `max-width:${W}px; font-family:inherit;`);
+
+  // Axes
+  svg.append("line").attr("x1", cx - 120).attr("y1", cy).attr("x2", cx + 130).attr("y2", cy)
+    .attr("stroke", "#d1d5db").attr("stroke-width", 1.5);
+  svg.append("line").attr("x1", cx).attr("y1", cy - 120).attr("x2", cx).attr("y2", cy + 120)
+    .attr("stroke", "#d1d5db").attr("stroke-width", 1.5);
+
+  svg.append("text").attr("x", cx + 134).attr("y", cy + 4).attr("font-size","11px").attr("fill","#9ca3af").text("R (Ω)");
+  svg.append("text").attr("x", cx + 3).attr("y", cy - 124).attr("font-size","11px").attr("fill","#9ca3af").text("X (Ω)");
+
+  // R component (horizontal)
+  svg.append("line").attr("x1", cx).attr("y1", cy).attr("x2", cx + R * sc).attr("y2", cy)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5).attr("stroke-dasharray","4,3");
+
+  // X component (vertical)
+  svg.append("line").attr("x1", cx + R * sc).attr("y1", cy).attr("x2", cx + R * sc).attr("y2", cy - X * sc)
+    .attr("stroke", "#9ca3af").attr("stroke-width", 1.5).attr("stroke-dasharray","4,3");
+
+  // Impedance arrow
+  const tipX = cx + R * sc;
+  const tipY = cy - X * sc;
+  svg.append("line").attr("x1", cx).attr("y1", cy).attr("x2", tipX).attr("y2", tipY)
+    .attr("stroke", arrowColor).attr("stroke-width", 3).attr("stroke-linecap","round");
+  svg.append("circle").attr("cx", tipX).attr("cy", tipY).attr("r", 5).attr("fill", arrowColor);
+
+  // Z label
+  svg.append("text").attr("x", tipX + 6).attr("y", tipY - 4).attr("font-size","12px").attr("fill", arrowColor).attr("font-weight","600")
+    .text("Z");
+
+  // Angle arc
+  if (R > 0) {
+    const arcR = 30;
+    const arcPath = d3.arc()({
+      innerRadius: arcR, outerRadius: arcR,
+      startAngle: -Math.max(Math.min(phi, Math.PI), -Math.PI), endAngle: 0
+    });
+    svg.append("path").attr("d", arcPath).attr("transform", `translate(${cx},${cy})`)
+      .attr("fill","none").attr("stroke","#f59e0b").attr("stroke-width",1.5);
+    svg.append("text").attr("x", cx + 34).attr("y", cy - (X > 0 ? 6 : -14)).attr("font-size","10px").attr("fill","#f59e0b").text("φ");
+  }
+
+  // Readout panel
+  const px = W - 195, py = 20;
+  svg.append("rect").attr("x", px).attr("y", py).attr("width", 188).attr("height", 130)
+    .attr("rx",6).attr("fill","#f9fafb").attr("stroke","#e5e7eb").attr("stroke-width",1);
+
+  const rows = [
+    ["X = ωL − 1/ωC", `${X.toFixed(1)} Ω`],
+    ["|Z| = √(R²+X²)", `${absZ.toFixed(1)} Ω`],
+    ["φ = arctan(X/R)", `${phiDeg.toFixed(1)}°`],
+    ["Power factor cos φ", `${pf.toFixed(3)}`],
+    ["", label]
+  ];
+
+  rows.forEach(([k, v], i) => {
+    svg.append("text").attr("x", px + 8).attr("y", py + 20 + i * 22).attr("font-size","10px").attr("fill","#6b7280").text(k);
+    svg.append("text").attr("x", px + 180).attr("y", py + 20 + i * 22).attr("text-anchor","end").attr("font-size","11px").attr("fill", i === 4 ? arrowColor : "#1f2937").attr("font-weight","600").text(v);
+  });
+
+  return svg.node();
+}
+```
+
+**Worked example — RLC series circuit.**
+
+Given: $R = 100\ \Omega$, $L = 0.1\ \text{H}$, $C = 100\ \mu\text{F}$, $\omega = 100\ \text{rad/s}$.
+
+Compute the reactances:
+
+$$X_L = \omega L = 100 \times 0.1 = 10\ \Omega$$
+
+$$X_C = \frac{1}{\omega C} = \frac{1}{100 \times 100 \times 10^{-6}} = \frac{1}{0.01} = 100\ \Omega$$
+
+Total impedance:
+
+$$Z = R + j(X_L - X_C) = 100 + j(10 - 100) = 100 - 90j\ \Omega$$
+
+Magnitude:
+
+$$|Z| = \sqrt{100^2 + 90^2} = \sqrt{10000 + 8100} = \sqrt{18100} \approx 134.5\ \Omega$$
+
+Phase angle:
+
+$$\phi = \arctan\!\left(\frac{-90}{100}\right) = \arctan(-0.9) \approx -42.0°$$
+
+Negative angle means capacitive dominates at this frequency — current leads voltage. Power factor:
+
+$$\cos\phi = \cos(-42.0°) \approx 0.743$$
+
+Try setting the sliders above to these values to confirm the readout.
+
+## Where this goes
+
+This chapter is the gateway to the frequency-domain methods that run through most of Vol 7.
+
+**Fourier series** (Vol 7, Fourier and PDEs section) extends what you have done here: instead of adding two or three phasors at one frequency, it decomposes an arbitrary periodic signal into a sum of phasors at many frequencies — the fundamental and its harmonics. The coefficient of each phasor tells you how much of that frequency is present. Every concept in Fourier analysis rests on the rotating-phasor picture you have just built.
+
+**Laplace transforms** (Vol 7) take the phasor method further: instead of assuming sinusoidal steady-state signals (as phasors do), the Laplace transform handles any signal — including switch-on transients, impulses, and arbitrary time functions — by working with complex frequencies $s = \sigma + j\omega$. The phasor you know ($j\omega$) is a special case of $s$ with $\sigma = 0$. Understanding phasors first makes the Laplace transform feel like a natural extension rather than an abstract tool.
+
+::: {.callout-tip appearance="simple"}
+**Where this shows up**
+
+- **Electrical engineering:** every AC circuit calculation — power factor correction, filter design, motor drives, transmission lines — uses phasors. This chapter is how ECE 202 begins.
+- **Acoustics:** sound waves from two speakers interfere constructively or destructively depending on the phase difference. The loudness at any point is the magnitude of the phasor sum.
+- **Optics and physics:** thin-film interference, diffraction, and quantum mechanical probability amplitudes all use phasor addition. The double-slit pattern is a phasor diagram.
+- **Signal processing:** digital filters are specified and analysed in the frequency domain using the complex frequency response $H(j\omega)$ — the impedance concept applied to signals rather than circuits.
+- **Structural engineering:** vibrating structures have resonant frequencies where the impedance analogue (dynamic stiffness) passes through zero. The mathematics is identical to RLC resonance.
+:::
+
+## Exercises
+
+These are puzzles. Each one has a clean numerical answer, but the interesting step is always the translation: turning the waveform description into a phasor, doing the arithmetic in the complex plane, and reading the answer back out.
+
+```{ojs}
+//| echo: false
+katex = require("katex@0.16")
+```
+
+```{ojs}
+//| echo: false
+function makeStepperHTML(exerciseNum, steps) {
+  let current = 0;
+  const totalSteps = steps.length;
+  const container = document.createElement("div");
+  container.style.cssText = "border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin:0.75rem 0; font-family:inherit;";
+  const stepsDiv = document.createElement("div");
+  stepsDiv.style.marginBottom = "0.75rem";
+
+  function renderSteps() {
+    stepsDiv.innerHTML = "";
+    for (let i = 0; i < current; i++) {
+      const s = steps[i];
+      const row = document.createElement("div");
+      row.style.cssText = "display:grid; grid-template-columns:200px 1fr; gap:0.35rem 1rem; align-items:baseline; padding:0.35rem 0; border-top:1px solid #f3f4f6;";
+      const opCell = document.createElement("span");
+      opCell.style.cssText = "font-size:0.85em; color:#6b7280; font-style:italic;";
+      opCell.textContent = s.op;
+      const eqCell = document.createElement("span");
+      eqCell.innerHTML = katex.renderToString(s.eq, { throwOnError: false, displayMode: false });
+      row.appendChild(opCell);
+      row.appendChild(eqCell);
+      if (s.note) {
+        const noteRow = document.createElement("div");
+        noteRow.style.cssText = "grid-column:2; font-size:0.82em; color:#6b7280; padding-bottom:0.2rem;";
+        noteRow.textContent = s.note;
+        row.appendChild(noteRow);
+      }
+      stepsDiv.appendChild(row);
+    }
+    if (current === totalSteps) {
+      const done = document.createElement("div");
+      done.style.cssText = "margin-top:0.5rem; font-size:0.9em; color:#059669; font-weight:500;";
+      done.textContent = "✓ Solution complete";
+      stepsDiv.appendChild(done);
+    }
+  }
+
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex; gap:0.5rem; align-items:center;";
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Next step →";
+  nextBtn.style.cssText = "padding:0.42rem 0.95rem; border:1px solid #2563eb; border-radius:5px; background:#2563eb; color:#ffffff; cursor:pointer; font-size:0.9em; font-weight:600; box-shadow:0 1px 2px rgba(37,99,235,0.18);";
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "Reset";
+  resetBtn.style.cssText = "padding:0.42rem 0.8rem; border:1px solid #cbd5e1; border-radius:5px; background:#f8fafc; cursor:pointer; font-size:0.9em; color:#475569; font-weight:500;";
+  const counter = document.createElement("span");
+  counter.style.cssText = "font-size:0.82em; color:#9ca3af; margin-left:0.25rem;";
+
+  function updateButtons() {
+    nextBtn.disabled = current === totalSteps;
+    nextBtn.style.opacity = current === totalSteps ? "0.4" : "1";
+    counter.textContent = current === 0 ? "Click to reveal steps" : `Step ${current} of ${totalSteps}`;
+  }
+
+  nextBtn.onclick = () => { if (current < totalSteps) { current++; renderSteps(); updateButtons(); } };
+  resetBtn.onclick = () => { current = 0; renderSteps(); updateButtons(); };
+  controls.appendChild(nextBtn);
+  controls.appendChild(resetBtn);
+  controls.appendChild(counter);
+  container.appendChild(stepsDiv);
+  container.appendChild(controls);
+  renderSteps();
+  updateButtons();
+  return container;
+}
+```
+
+**1.** Express $v = 50\sin(200\pi t + 0.4)$ in phasor form, then state the amplitude, angular frequency, frequency in Hz, and phase angle.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(1, [
+  {
+    op: "Identify the parameters",
+    eq: "v = A\\sin(\\omega t + \\phi),\\quad A = 50,\\ \\omega = 200\\pi,\\ \\phi = 0.4 \\text{ rad}",
+    note: "Read off directly: amplitude is the coefficient of sin, ω is the coefficient of t, φ is the added constant inside sin."
+  },
+  {
+    op: "Write phasor form",
+    eq: "\\mathbf{V} = 50\\angle 0.4 \\text{ (rad)} = 50\\angle 22.9°"
+  },
+  {
+    op: "Compute frequency",
+    eq: "f = \\frac{\\omega}{2\\pi} = \\frac{200\\pi}{2\\pi} = 100 \\text{ Hz},\\quad T = \\frac{1}{f} = 10 \\text{ ms}"
+  },
+  {
+    op: "Check",
+    eq: "50\\angle 22.9° \\Rightarrow 50\\sin(200\\pi t + 0.4) \\checkmark"
+  }
+])
+```
+
+<!-- STEPPER
+exercise: 1
+steps:
+  - op: "Identify the parameters"
+    eq: "v = A\\sin(\\omega t + \\phi),\\quad A = 50,\\ \\omega = 200\\pi,\\ \\phi = 0.4 \\text{ rad}"
+    note: "Read off directly: amplitude is the coefficient of sin, ω is the coefficient of t, φ is the added constant inside sin."
+  - op: "Write phasor form"
+    eq: "\\mathbf{V} = 50\\angle 0.4 \\text{ rad} = 50\\angle 22.9°"
+    note: ~
+  - op: "Compute frequency in Hz"
+    eq: "f = \\frac{\\omega}{2\\pi} = \\frac{200\\pi}{2\\pi} = 100 \\text{ Hz},\\quad T = 10 \\text{ ms}"
+    note: ~
+  - op: "Check"
+    eq: "50\\angle 22.9° \\Rightarrow 50\\sin(200\\pi t + 0.4) \\checkmark"
+    note: ~
+-->
+
+---
+
+**2.** Add the two currents $i_1 = 12\sin(\omega t)$ A and $i_2 = 8\sin(\omega t + 30°)$ A. Express the result as a single sinusoidal current.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(2, [
+  {
+    op: "Write the phasors",
+    eq: "\\mathbf{I}_1 = 12\\angle 0°,\\quad \\mathbf{I}_2 = 8\\angle 30°"
+  },
+  {
+    op: "Convert to Cartesian",
+    eq: "\\mathbf{I}_1 = 12 + 0j,\\quad \\mathbf{I}_2 = 8\\cos30° + j\\cdot8\\sin30° = 6.928 + 4j"
+  },
+  {
+    op: "Add components",
+    eq: "\\mathbf{I} = (12 + 6.928) + j(0 + 4) = 18.928 + 4j"
+  },
+  {
+    op: "Convert to polar",
+    eq: "|\\mathbf{I}| = \\sqrt{18.928^2 + 4^2} = \\sqrt{358.3 + 16} = \\sqrt{374.3} \\approx 19.35 \\text{ A}"
+  },
+  {
+    op: "Find phase angle",
+    eq: "\\phi = \\arctan\\!\\left(\\frac{4}{18.928}\\right) = \\arctan(0.2113) \\approx 11.9°"
+  },
+  {
+    op: "Write the answer",
+    eq: "i = 19.35\\sin(\\omega t + 11.9°) \\text{ A}"
+  },
+  {
+    op: "Check",
+    eq: "19.35 < 12 + 8 = 20 \\checkmark \\text{ (partial phase cancellation reduces the sum below } 20\\text{)}"
+  }
+])
+```
+
+<!-- STEPPER
+exercise: 2
+steps:
+  - op: "Write the phasors"
+    eq: "\\mathbf{I}_1 = 12\\angle 0°,\\quad \\mathbf{I}_2 = 8\\angle 30°"
+    note: ~
+  - op: "Convert to Cartesian"
+    eq: "\\mathbf{I}_1 = 12 + 0j,\\quad \\mathbf{I}_2 = 6.928 + 4j"
+    note: ~
+  - op: "Add components"
+    eq: "\\mathbf{I} = 18.928 + 4j"
+    note: ~
+  - op: "Convert to polar"
+    eq: "|\\mathbf{I}| = \\sqrt{18.928^2 + 4^2} \\approx 19.35 \\text{ A}"
+    note: ~
+  - op: "Find phase angle"
+    eq: "\\phi = \\arctan(4/18.928) \\approx 11.9°"
+    note: ~
+  - op: "Write the answer"
+    eq: "i = 19.35\\sin(\\omega t + 11.9°) \\text{ A}"
+    note: ~
+  - op: "Check"
+    eq: "19.35 < 12 + 8 = 20 \\checkmark"
+    note: "The result is less than 20 because the two phasors are not aligned — partial cancellation occurs."
+-->
+
+---
+
+**3.** Express $3\sin\omega t + 4\cos\omega t$ in the form $R\sin(\omega t + \phi)$.
+
+```{ojs}
+//| echo: false
+makeStepperHTML(3, [
+  {
+    op: "Identify a and b",
+    eq: "a\\sin\\omega t + b\\cos\\omega t:\\quad a = 3,\\ b = 4",
+    note: "The coefficient of sin ωt gives a; the coefficient of cos ωt gives b."
+  },
+  {
+    op: "Compute R",
+    eq: "R = \\sqrt{a^2 + b^2} = \\sqrt{9 + 16} = \\sqrt{25} = 5"
+  },
+  {
+    op: "Compute phase angle",
+    eq: "\\phi = \\arctan\\!\\left(\\frac{b}{a}\\right) = \\arctan\\!\\left(\\frac{4}{3}\\right) \\approx 53.1°"
+  },
+  {
+    op: "Write the answer",
+    eq: "3\\sin\\omega t + 4\\cos\\omega t = 5\\sin(\\omega t + 53.1°)"
+  },
+  {
+    op: "Check",
+    eq: "\\text{At }\\omega t = 0:\\quad 3(0)+4(1)=4;\\quad 5\\sin(53.1°)=5(0.8)=4 \\checkmark"
+  }
+])
+```
+
+<!-- STEPPER
+exercise: 3
+steps:
+  - op: "Identify a and b"
+    eq: "a = 3,\\ b = 4"
+    note: "In a sin ωt + b cos ωt, a is the sine coefficient and b is the cosine coefficient."
+  - op: "Compute R"
+    eq: "R = \\sqrt{3^2 + 4^2} = \\sqrt{25} = 5"
+    note: ~
+  - op: "Compute phase angle"
+    eq: "\\phi = \\arctan(b/a) = \\arctan(4/3) \\approx 53.1°"
+    note: ~
+  - op: "Write the answer"
+    eq: "5\\sin(\\omega t + 53.1°)"
+    note: ~
+  - op: "Check"
+    eq: "\\text{At }\\omega t=0:\\; 3(0)+4(1)=4;\\; 5\\sin(53.1°)=4 \\checkmark"
+    note: ~
+-->
+
+---
+
+**4.** An RLC series circuit has $R = 50\ \Omega$, $L = 0.2\ \text{H}$, $C = 200\ \mu\text{F}$ at $\omega = 50\ \text{rad/s}$. Find the total impedance $Z$, its magnitude, phase angle, and power factor. Is the circuit inductive or capacitive at this frequency?
+
+```{ojs}
+//| echo: false
+makeStepperHTML(4, [
+  {
+    op: "Compute inductive reactance",
+    eq: "X_L = \\omega L = 50 \\times 0.2 = 10\\ \\Omega"
+  },
+  {
+    op: "Compute capacitive reactance",
+    eq: "X_C = \\frac{1}{\\omega C} = \\frac{1}{50 \\times 200 \\times 10^{-6}} = \\frac{1}{0.01} = 100\\ \\Omega"
+  },
+  {
+    op: "Total impedance",
+    eq: "Z = R + j(X_L - X_C) = 50 + j(10 - 100) = 50 - 90j\\ \\Omega",
+    note: "Negative imaginary part means the circuit is capacitive at this frequency."
+  },
+  {
+    op: "Magnitude",
+    eq: "|Z| = \\sqrt{50^2 + 90^2} = \\sqrt{2500 + 8100} = \\sqrt{10600} \\approx 102.9\\ \\Omega"
+  },
+  {
+    op: "Phase angle",
+    eq: "\\phi = \\arctan\\!\\left(\\frac{-90}{50}\\right) = \\arctan(-1.8) \\approx -60.9°"
+  },
+  {
+    op: "Power factor",
+    eq: "\\cos\\phi = \\cos(-60.9°) \\approx 0.486",
+    note: "A power factor below 1 means some of the supplied power is returned to the source each cycle — reactive power."
+  },
+  {
+    op: "Check",
+    eq: "50 - 90j:\\; |\\cdot| = \\sqrt{50^2+90^2} \\approx 102.9\\ \\checkmark"
+  }
+])
+```
+
+<!-- STEPPER
+exercise: 4
+steps:
+  - op: "Compute inductive reactance"
+    eq: "X_L = \\omega L = 50 \\times 0.2 = 10\\ \\Omega"
+    note: ~
+  - op: "Compute capacitive reactance"
+    eq: "X_C = 1/(\\omega C) = 1/(50 \\times 200 \\times 10^{-6}) = 100\\ \\Omega"
+    note: ~
+  - op: "Total impedance"
+    eq: "Z = 50 + j(10-100) = 50 - 90j\\ \\Omega"
+    note: "Negative imaginary part means capacitive dominance at this frequency."
+  - op: "Magnitude"
+    eq: "|Z| = \\sqrt{50^2 + 90^2} \\approx 102.9\\ \\Omega"
+    note: ~
+  - op: "Phase angle"
+    eq: "\\phi = \\arctan(-90/50) \\approx -60.9°"
+    note: ~
+  - op: "Power factor"
+    eq: "\\cos\\phi = \\cos(-60.9°) \\approx 0.486"
+    note: "Power factor less than 1 means reactive power is present."
+  - op: "Check"
+    eq: "\\sqrt{50^2+90^2} \\approx 102.9 \\checkmark"
+    note: ~
+-->
+
+---
+
+**5.** Two parallel branches of an AC circuit carry currents $\mathbf{I}_1 = 5\angle 0°$ A and $\mathbf{I}_2 = 3\angle{-45°}$ A. Find the total supply current phasor and express it as a sinusoid (leave $\omega$ symbolic).
+
+```{ojs}
+//| echo: false
+makeStepperHTML(5, [
+  {
+    op: "Write the phasors",
+    eq: "\\mathbf{I}_1 = 5\\angle 0°,\\quad \\mathbf{I}_2 = 3\\angle{-45°}"
+  },
+  {
+    op: "Convert I₂ to Cartesian",
+    eq: "\\mathbf{I}_2 = 3\\cos(-45°) + j\\cdot3\\sin(-45°) = 2.121 - 2.121j",
+    note: "cos(−45°) = cos(45°) = 0.7071; sin(−45°) = −0.7071."
+  },
+  {
+    op: "Add the phasors",
+    eq: "\\mathbf{I} = (5 + 2.121) + j(0 - 2.121) = 7.121 - 2.121j"
+  },
+  {
+    op: "Magnitude",
+    eq: "|\\mathbf{I}| = \\sqrt{7.121^2 + 2.121^2} = \\sqrt{50.71 + 4.50} = \\sqrt{55.21} \\approx 7.43 \\text{ A}"
+  },
+  {
+    op: "Phase angle",
+    eq: "\\phi = \\arctan\\!\\left(\\frac{-2.121}{7.121}\\right) = \\arctan(-0.2979) \\approx -16.6°"
+  },
+  {
+    op: "Write as sinusoid",
+    eq: "i = 7.43\\sin(\\omega t - 16.6°) \\text{ A}"
+  },
+  {
+    op: "Check",
+    eq: "7.43 < 5 + 3 = 8 \\checkmark \\text{ and } -16.6° \\text{ is between } 0° \\text{ and } -45° \\checkmark"
+  }
+])
+```
+
+<!-- STEPPER
+exercise: 5
+steps:
+  - op: "Write the phasors"
+    eq: "\\mathbf{I}_1 = 5\\angle 0°,\\quad \\mathbf{I}_2 = 3\\angle{-45°}"
+    note: ~
+  - op: "Convert I₂ to Cartesian"
+    eq: "\\mathbf{I}_2 = 3\\cos(-45°) + j\\cdot3\\sin(-45°) = 2.121 - 2.121j"
+    note: "Negative angle means below the real axis — a lagging current."
+  - op: "Add the phasors"
+    eq: "\\mathbf{I} = 7.121 - 2.121j"
+    note: ~
+  - op: "Magnitude"
+    eq: "|\\mathbf{I}| = \\sqrt{7.121^2 + 2.121^2} \\approx 7.43 \\text{ A}"
+    note: ~
+  - op: "Phase angle"
+    eq: "\\phi = \\arctan(-2.121/7.121) \\approx -16.6°"
+    note: ~
+  - op: "Write as sinusoid"
+    eq: "i = 7.43\\sin(\\omega t - 16.6°) \\text{ A}"
+    note: ~
+  - op: "Check"
+    eq: "7.43 < 8 \\checkmark,\\quad -16.6° \\text{ between } 0° \\text{ and } -45° \\checkmark"
+    note: ~
+-->
