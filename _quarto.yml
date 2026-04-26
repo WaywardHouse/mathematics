@@ -40,19 +40,19 @@ book:
     center: |
       **Reading**
 
-      [Articles](/articles/)
+      [Essays](https://wayward.house/essays/)
 
-      [Learn](/learn/)
+      [System Signals](https://wayward.house/signals/)
 
-      [Archive](/archive.html)
+      [Library](https://wayward.house/learn/)
     right: |
       **Resources**
 
-      [Choose Your Path](https://wayward.house/start-here.html)
+      [Start Here](https://wayward.house/start-here/)
 
-      [Privacy](https://wayward.house/privacy.html)
+      [Privacy](https://wayward.house/privacy/)
 
-      [Terms](https://wayward.house/terms.html)
+      [Terms](https://wayward.house/terms/)
 
   chapters:
     - index.qmd
@@ -167,10 +167,7 @@ book:
 
 format:
   html:
-    css:
-      - _extensions/wayward-book/wayward-book.css
-      - assets/css/wh-widgets.css
-    include-in-header: _extensions/wayward-book/head.html
+    theme: cosmo
     smooth-scroll: true
     toc: true
     toc-depth: 3
