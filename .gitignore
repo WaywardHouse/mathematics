@@ -25,3 +25,9 @@ EDITORIAL_PROSE_POLISH_V2C1.md
 EDITORIAL_JOURNEY_V2C1_COMPLETE.md
 EDITORIAL_EDITS_APPLIED_V2C1.md
 EDITORIAL_DESIGN_BRIEF_V2C1.md
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

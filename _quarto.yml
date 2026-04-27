@@ -33,26 +33,7 @@ book:
       - icon: github
         href: https://github.com/wayward-house/mathematics
         aria-label: Repository
-  page-footer:
-    left: |
-      **WaywardHouse.**
-      Understanding how place, economy, and environment interact through analysis, modelling, and open tools.
-    center: |
-      **Reading**
-
-      [Essays](https://wayward.house/essays/)
-
-      [System Signals](https://wayward.house/signals/)
-
-      [Library](https://wayward.house/learn/)
-    right: |
-      **Resources**
-
-      [Start Here](https://wayward.house/start-here/)
-
-      [Privacy](https://wayward.house/privacy/)
-
-      [Terms](https://wayward.house/terms/)
+  # Footer is provided by the waywardhouse/book extension — no page-footer needed here
 
   chapters:
     - index.qmd
@@ -166,14 +147,8 @@ book:
         - vol-08/07-nonlinear-optimisation.qmd
 
 format:
-  html:
-    theme: cosmo
-    smooth-scroll: true
-    toc: true
-    toc-depth: 3
+  waywardhouse-book-html:
     number-sections: true
-    fig-align: center
-    callout-appearance: simple
     code-fold: true
 
 execute:
