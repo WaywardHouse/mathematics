@@ -147,7 +147,7 @@ book:
         - vol-08/07-nonlinear-optimisation.qmd
 
 format:
-  waywardhouse-book-html:
+  WaywardHouse/waywardhouse-book-html:
     number-sections: true
     code-fold: true
 
