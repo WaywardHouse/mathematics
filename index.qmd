@@ -1,7 +1,7 @@
 ---
 title: "Mathematics"
 subtitle: "A series for people who want to understand, not just pass"
-body-classes: split-home page-home
+body-classes: page-home
 ---
 
 Most mathematics education answers the question *how*. This series

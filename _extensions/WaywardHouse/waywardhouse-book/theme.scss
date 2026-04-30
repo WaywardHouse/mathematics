@@ -807,6 +807,40 @@ body.split-home {
   pointer-events: none;
 }
 
+/* ── Story pages: suppress margin TOC, expand map to full available width ──
+   On pages that contain .story-section, the right-side in-page TOC
+   (#quarto-margin-sidebar) steals ~250px of horizontal space that belongs
+   to the map. Suppress it and let the document content column grow into
+   the freed space by switching the page-columns grid to flex layout.
+   Uses CSS :has() — supported in all modern browsers.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@supports selector(:has(.story-section)) {
+  body:has(.story-section) {
+    /* Remove the right-side in-page TOC */
+    #quarto-margin-sidebar {
+      display: none !important;
+    }
+
+    /* Convert grid to flex so #quarto-document-content grows into freed space */
+    #quarto-content.page-columns {
+      display: flex !important;
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
+    /* Left sidebar keeps its fixed width; content fills the rest */
+    #quarto-sidebar {
+      flex: 0 0 auto;
+    }
+
+    #quarto-document-content {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+}
+
 /* ── Mobile: un-stick the map, stack vertically ─────────────────────────── */
 @media (max-width: 767px) {
   .story-section {
