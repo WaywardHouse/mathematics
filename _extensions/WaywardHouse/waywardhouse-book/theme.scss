@@ -891,6 +891,18 @@ body.hero-page {
     margin-inline: 0;
   }
 
+  /* Docked-sidebar books (nav-sidebar.docked) apply a CSS grid to all
+     .page-columns descendants via .docked.fullcontent .page-columns.
+     This traps section.level2 in the body-width column, which then
+     constrains .wh-hero inside it. Force section.level2 to block so
+     .wh-hero and other full-bleed components can escape the column. */
+  #quarto-document-content section.level2 {
+    display:    block !important;
+    max-width:  none !important;
+    margin:     0 !important;
+    padding:    0 !important;
+  }
+
   /* Contain headings and prose that sit outside the component blocks.
      Quarto wraps markdown H2 sections in <section class="level2">, so the
      direct-child combinator must reach one level deeper. The wh-hero,
