@@ -3,6 +3,7 @@ title: "Volume 6 — Probability and data"
 page-layout: article
 body-classes: hero-page split-home split-home-core page-home
 toc: false
+number-sections: false
 ---
 
 ::: {.section-kicker}

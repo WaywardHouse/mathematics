@@ -3,6 +3,7 @@ title: "Volume 5 — Analysis and proof"
 page-layout: article
 body-classes: hero-page split-home split-home-core page-home
 toc: false
+number-sections: false
 ---
 
 ::: {.section-kicker}
