@@ -865,3 +865,545 @@ body.split-home {
 
   .story-step:first-child { margin-top: 1rem; }
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   17. PART / SECTION LANDING PAGES  (body.hero-page)
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Pages with body-classes: hero-page split-home get a full-bleed hero
+   section, illustrated route maps, and a card grid. The split-home rule
+   already hides the sidebar and constrains content to 900px — this section
+   overrides that constraint and provides all component styles.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── hero-page: remove the 900px constraint; components self-contain ──────── */
+body.hero-page {
+  /* Quarto's title block is redundant — the hero provides the heading */
+  #title-block-header {
+    display: none !important;
+  }
+
+  /* Let document content go edge-to-edge so hero is full-bleed.
+     display:block overrides the page-columns grid Quarto injects on main */
+  #quarto-document-content {
+    display:       block !important;
+    max-width:     none;
+    padding:       0;
+    margin-inline: 0;
+  }
+
+  /* Contain headings and prose that sit outside the component blocks.
+     Quarto wraps markdown H2 sections in <section class="level2">, so the
+     direct-child combinator must reach one level deeper. The wh-hero,
+     wh-book-grid, cg-ill elements self-contain; we only target text nodes. */
+  #quarto-document-content > .section-kicker {
+    width:         min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+    margin-inline: auto;
+    box-sizing:    border-box;
+  }
+
+  /* H2/H3/H4 section headings inside Quarto's level2 wrappers */
+  #quarto-document-content section.level2 > h2,
+  #quarto-document-content section.level2 > h3,
+  #quarto-document-content section.level2 > h4 {
+    width:         min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+    margin-inline: auto;
+    box-sizing:    border-box;
+  }
+
+  /* Prose paragraphs and lists (e.g. "What You Need" section) */
+  #quarto-document-content section.level2 > p,
+  #quarto-document-content section.level2 > ul,
+  #quarto-document-content section.level2 > ol {
+    width:         min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+    margin-inline: auto;
+    box-sizing:    border-box;
+    /* Restore Literata read font for prose sections */
+    font-family:   var(--wh-ff-read);
+    font-size:     1.05rem;
+    line-height:   1.75;
+  }
+}
+
+/* ── Section kicker (mono label above H2 on landing pages) ───────────────── */
+.section-kicker {
+  display:        block;
+  font-family:    var(--wh-ff-mono);
+  font-size:      0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color:          var(--wh-red);
+  padding-top:    1.5rem;
+  margin-bottom:  0.25rem;
+}
+
+/* ── Hero section (.wh-hero) ──────────────────────────────────────────────── */
+.wh-hero {
+  background:    var(--wh-black);
+  color:         rgba(255, 255, 255, 0.88);
+  padding:       3.5rem 0;
+  margin-bottom: 3rem;
+  /* Override any Quarto page-columns / page-full layout injected on sections */
+  display:       block !important;
+  width:         100%;
+  margin-left:   0 !important;
+  margin-right:  0 !important;
+}
+
+/* geo-mountains: dark mountainscape gradient variant */
+.wh-hero.geo-mountains {
+  background: linear-gradient(150deg, #0e0e0a 0%, #141410 100%);
+}
+
+.wh-hero__body {
+  width:                 min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+  margin-inline:         auto;
+  /* !important to win over Quarto's .page-columns grid-template injection */
+  display:               grid !important;
+  grid-template-columns: 1fr minmax(280px, 360px) !important;
+  grid-template-rows:    unset !important;
+  gap:                   3rem;
+  align-items:           start;
+}
+
+.wh-hero__left > p {
+  font-family:   var(--wh-ff-body);
+  font-size:     1.05rem;
+  line-height:   1.7;
+  color:         rgba(255, 255, 255, 0.78);
+  max-width:     40rem;
+  margin-bottom: 1rem;
+}
+
+.wh-hero__actions {
+  display:       flex;
+  flex-wrap:     wrap;
+  gap:           0.65rem;
+  margin-bottom: 1.25rem;
+  margin-top:    1.5rem;
+}
+
+/* Buttons */
+.wh-hero__btn {
+  display:         inline-block;
+  font-family:     var(--wh-ff-display);
+  font-size:       0.8rem;
+  font-weight:     600;
+  letter-spacing:  0.14em;
+  text-transform:  uppercase;
+  padding:         0.6rem 1.4rem;
+  text-decoration: none;
+  border:          2px solid transparent;
+  transition:      background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.wh-hero__btn--primary {
+  background:  var(--wh-red);
+  color:       #fff;
+  border-color: var(--wh-red);
+}
+.wh-hero__btn--primary:hover {
+  background:      var(--wh-red-dk);
+  border-color:    var(--wh-red-dk);
+  color:           #fff;
+  text-decoration: none;
+}
+
+.wh-hero__btn--secondary {
+  background:  transparent;
+  color:       rgba(255, 255, 255, 0.75);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.wh-hero__btn--secondary:hover {
+  color:           #fff;
+  border-color:    rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+}
+
+.wh-hero__btn--ghost {
+  background:  transparent;
+  color:       rgba(255, 255, 255, 0.58);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.wh-hero__btn--ghost:hover {
+  color:           rgba(255, 255, 255, 0.85);
+  border-color:    rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+}
+
+/* Book pills (tag row below actions) */
+.book-pill-row {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       0.4rem;
+}
+
+.book-pill {
+  font-family:    var(--wh-ff-mono);
+  font-size:      0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          rgba(255, 255, 255, 0.48);
+  border:         1px solid rgba(255, 255, 255, 0.15);
+  padding:        0.18rem 0.55rem;
+}
+
+/* Right panel (aside with info cards) */
+.wh-hero__right {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.5rem;
+}
+
+.wh-hero__panel-label {
+  font-family:    var(--wh-ff-mono);
+  font-size:      0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color:          var(--wh-amber);
+  margin-bottom:  0.15rem;
+}
+
+.wh-hero__cards {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.65rem;
+}
+
+.wh-hero-card {
+  background:  rgba(255, 255, 255, 0.05);
+  border:      1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--wh-red);
+  padding:     1rem 1.1rem;
+}
+
+.wh-hero-card__type {
+  font-family:    var(--wh-ff-mono);
+  font-size:      0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--wh-amber);
+  margin-bottom:  0.15rem;
+}
+
+.wh-hero-card__title {
+  font-family:    var(--wh-ff-display);
+  font-size:      0.95rem;
+  font-weight:    700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color:          #fff;
+  margin-bottom:  0.3rem;
+}
+
+.wh-hero-card__dek {
+  font-family: var(--wh-ff-body);
+  font-size:   0.84rem;
+  line-height: 1.55;
+  color:       rgba(255, 255, 255, 0.65);
+}
+
+/* ── cg-ill: illustrated route / flow diagrams ───────────────────────────── */
+figure.cg-ill {
+  display:       block;
+  margin:        0 0 3rem;
+  padding:       0;
+  border:        none;
+}
+
+.cg-ill__frame {
+  background:    var(--wh-paper-2);
+  border:        1px solid var(--wh-rule);
+  border-left:   3px solid var(--wh-red);
+  padding:       2rem 2.25rem;
+  width:         min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+  margin-inline: auto;
+  box-sizing:    border-box;
+}
+
+.cg-ill__eyebrow {
+  display:        block;
+  font-family:    var(--wh-ff-mono);
+  font-size:      0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color:          var(--wh-red);
+  margin-bottom:  0.5rem;
+}
+
+.cg-ill__title {
+  font-family:    var(--wh-ff-display);
+  font-size:      clamp(1.2rem, 2.5vw, 2rem);
+  font-weight:    800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height:    0.96;
+  color:          var(--wh-black);
+  margin:         0 0 0.75rem;
+}
+
+.cg-ill__lede {
+  font-family:  var(--wh-ff-body);
+  font-size:    0.94rem;
+  line-height:  1.65;
+  color:        var(--wh-mid);
+  max-width:    58rem;
+  margin:       0 0 1.5rem;
+}
+
+.cg-ill__route-map {
+  display:       flex;
+  align-items:   stretch;
+  margin-bottom: 0;
+}
+
+.cg-ill__route-stage {
+  flex:       1 1 0;
+  border:     1px solid var(--wh-rule);
+  padding:    1rem 1.15rem;
+  background: var(--wh-white);
+  min-width:  0;
+}
+.cg-ill__route-stage + .cg-ill__route-stage {
+  border-left: none;
+}
+
+.cg-ill__route-kicker {
+  display:        block;
+  font-family:    var(--wh-ff-mono);
+  font-size:      0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--wh-red);
+  margin-bottom:  0.2rem;
+}
+
+.cg-ill__route-stage h4 {
+  font-family:    var(--wh-ff-display);
+  font-size:      0.94rem;
+  font-weight:    700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color:          var(--wh-black);
+  margin:         0 0 0.45rem;
+  /* override the global h4 margin-top for this context */
+  margin-top:     0;
+}
+
+.cg-ill__route-stage p,
+.cg-ill__route-stage ul {
+  font-family:  var(--wh-ff-body);
+  font-size:    0.82rem;
+  line-height:  1.55;
+  color:        var(--wh-mid);
+  margin:       0;
+}
+.cg-ill__route-stage ul {
+  padding-left: 1rem;
+  margin-top:   0.35rem;
+}
+.cg-ill__route-stage ul li {
+  margin-bottom: 0.15rem;
+}
+.cg-ill__route-stage ul a {
+  color:           var(--wh-mid);
+  text-decoration: none;
+}
+.cg-ill__route-stage ul a:hover {
+  color: var(--wh-red);
+}
+
+.cg-ill__route-arrow {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  color:           var(--wh-muted);
+  font-size:       1.25rem;
+  padding:         0 0.35rem;
+  flex-shrink:     0;
+  align-self:      center;
+}
+
+.cg-ill__route-footer {
+  border-top:  1px solid var(--wh-rule);
+  padding-top: 0.75rem;
+  margin-top:  1rem;
+}
+
+.cg-ill__route-note {
+  font-family: var(--wh-ff-body);
+  font-size:   0.84rem;
+  color:       var(--wh-muted);
+  font-style:  italic;
+  margin:      0;
+}
+
+/* figcaption inside cg-ill */
+figure.cg-ill figcaption {
+  font-family:  var(--wh-ff-body);
+  font-size:    0.82rem;
+  color:        var(--wh-muted);
+  font-style:   italic;
+  width:        min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+  margin-inline: auto;
+  margin-top:   0.5rem;
+}
+
+/* ── wh-book-grid / wh-book-card: chapter card grid ─────────────────────── */
+.wh-book-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap:                   1.25rem;
+  width:                 min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+  margin-inline:         auto;
+  margin-bottom:         3rem;
+}
+
+.wh-book-card {
+  border:         1px solid var(--wh-rule);
+  background:     var(--wh-white);
+  padding:        1.25rem 1.4rem;
+  display:        flex;
+  flex-direction: column;
+  gap:            0.4rem;
+}
+
+.wh-book-card__status {
+  display:        inline-block;
+  font-family:    var(--wh-ff-mono);
+  font-size:      0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color:          var(--wh-white);
+  background:     var(--wh-mid);
+  padding:        0.15rem 0.5rem;
+  align-self:     flex-start;
+}
+
+.wh-book-card__title {
+  font-family:    var(--wh-ff-display);
+  font-size:      1.05rem;
+  font-weight:    700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color:          var(--wh-black);
+}
+
+.wh-book-card__title a {
+  color:           var(--wh-black);
+  text-decoration: none;
+}
+.wh-book-card__title a:hover {
+  color:           var(--wh-red);
+  text-decoration: none;
+}
+
+.wh-book-card > ul,
+.wh-book-card > p {
+  font-family:  var(--wh-ff-body);
+  font-size:    0.875rem;
+  line-height:  1.65;
+  color:        var(--wh-mid);
+  margin:       0.2rem 0;
+}
+.wh-book-card > ul {
+  padding-left: 1.1rem;
+}
+.wh-book-card ul a {
+  color:           var(--wh-mid);
+  text-decoration: none;
+}
+.wh-book-card ul a:hover {
+  color:           var(--wh-red);
+  text-decoration: underline;
+}
+
+.wh-book-card__desc {
+  font-family: var(--wh-ff-body);
+  font-size:   0.82rem;
+  line-height: 1.55;
+  color:       var(--wh-muted);
+  font-style:  italic;
+}
+
+/* ── book-part-grid / book-part-card: part overview grid ────────────────── */
+.book-part-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap:                   1.25rem;
+  width:                 min(100% - calc(var(--wh-gutter) * 2), var(--wh-max));
+  margin-inline:         auto;
+  margin-bottom:         3rem;
+}
+
+.book-part-card {
+  border:         1px solid var(--wh-rule);
+  border-top:     3px solid var(--wh-red);
+  background:     var(--wh-white);
+  padding:        1.25rem 1.4rem;
+  display:        flex;
+  flex-direction: column;
+  gap:            0.5rem;
+}
+
+.book-part-card h3 {
+  font-family:    var(--wh-ff-display);
+  font-size:      1.1rem;
+  font-weight:    700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color:          var(--wh-black);
+  margin:         0;
+}
+
+.book-part-card p {
+  font-family:  var(--wh-ff-body);
+  font-size:    0.875rem;
+  line-height:  1.6;
+  color:        var(--wh-mid);
+  margin:       0;
+}
+
+.book-part-card .wh-hero__actions {
+  margin-top:    0.75rem;
+  margin-bottom: 0;
+}
+
+/* ── Landing-page responsive breakpoints ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .wh-hero__body {
+    grid-template-columns: 1fr;
+  }
+
+  .wh-hero__right {
+    border-top:  1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .wh-hero {
+    padding: 2.5rem 0;
+  }
+
+  .cg-ill__route-map {
+    flex-direction: column;
+  }
+
+  .cg-ill__route-stage {
+    border:     1px solid var(--wh-rule) !important;
+    border-top: none !important;
+  }
+  .cg-ill__route-stage:first-of-type {
+    border-top: 1px solid var(--wh-rule) !important;
+  }
+
+  /* Arrows don't translate to vertical flow */
+  .cg-ill__route-arrow {
+    display: none;
+  }
+
+  .wh-book-grid,
+  .book-part-grid {
+    grid-template-columns: 1fr;
+  }
+}
