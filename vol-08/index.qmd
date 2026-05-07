@@ -1,95 +1,95 @@
 ---
 title: "Volume 8 — Upper-year engineering mathematics"
 status: "draft"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-Volume 8 is where the mathematics stops appearing as a course title and
-starts appearing as the working language of upper-year engineering.
+::: {.section-kicker}
+Volume 8
+:::
 
-By this point the reader should already have the Vol 7 toolkit: ODEs,
-linear algebra, vector calculus, transforms, PDEs, numerical methods,
-optimisation, and probability. The job now is different. Not "learn the
-next theorem" in isolation, but learn how mathematical structures reappear
-inside controls, signals, transport, simulation, estimation, reliability,
-and design.
+## Upper-Year Engineering Mathematics {#vol-08 .section-title}
 
-This volume is anchored to the kinds of mathematics that show up across
-years 3 and 4 of University of Alberta engineering programmes: feedback
-loops, sampled systems, continuum laws, discretised models, noisy data,
-uncertain failure, and constrained nonlinear tradeoffs.
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>This is where mathematics stops appearing as a course title and starts appearing as the working language of upper-year engineering. The job is no longer "learn the next theorem" in isolation — it is learning how mathematical structures reappear inside controls, signals, transport, simulation, estimation, reliability, and design.</p>
+      <p>You do not need to feel like an "upper-year engineering maths person" to use this volume. If you are a math-curious geographer, an environmental scientist, or a computing student who wants the machinery without the bravado, that is a perfect reason to be here. Every chapter carries a symbol guide and optional domain viewpoints that reveal the same structure in different fields.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./01-control-feedback.html">Start Volume 8</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">7 chapters</span>
+        <span class="book-pill">Third/fourth year engineering</span>
+        <span class="book-pill">Needs Volume 7</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Mathematics as working language</div>
+          <div class="wh-hero-card__dek">Each chapter shows how Volume 7 tools — transforms, eigenvalues, numerical methods — reappear in the core problems of upper-year disciplines. The mathematics transfers; only the context changes.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">The full Volume 7 toolkit: ODEs, linear algebra, transforms, PDEs, numerical methods, optimisation, and probability. All of it is used.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Optional viewpoints</div>
+          <div class="wh-hero-card__dek">Each chapter includes parallel perspectives from hard sciences, computing/data, quantitative finance, and geography/environment — the same structure, different language.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-Optional viewpoints from other domains are built in on purpose. The same
-tools matter in atmospheric science, quantitative finance, machine learning,
-geophysics, remote sensing, and operations research. Those side doors are
-not distractions; they help the reader see the mathematics as a transferable
-way of thinking instead of a discipline-specific dialect.
+## Chapter Map {#chapter-map .section-title}
 
-## How to read this volume (without getting spooked)
-
-You do not need to feel like an "upper-year engineering maths person" to use
-this volume. If you are a math-curious geographer, an environmental scientist,
-or a computing student who wants the machinery without the bravado, that is a
-perfect reason to be here.
-
-Two practical promises guide the editing:
-
-- **Symbols are treated as names first.** A symbol is usually just a label for
-  a quantity you already understand in words: a rate, a state, a cost, a risk.
-- **Every chapter carries a small “new language” guide.** Near the start you
-  will see a short list of *new symbols* (with how to read them aloud) and
-  *new definitions* (in plain language). When a page starts to feel dense, jump
-  back to those boxes and keep going.
-
-The goal is not to turn you into someone who already understands the maths.
-The goal is to give you a path through it.
-
-The pipeline for this volume is different too. The authoring job is not
-simply to continue adding topics. It is to test each chapter from several
-angles at once:
-
-- mathematical dependence: does this genuinely grow out of Volume 7?
-- engineering honesty: does this match how upper-year students meet the tool?
-- student readability: does the embedded context obscure the mathematics?
-- visual design: can the system be seen moving, not just described?
-- cross-domain transfer: does the optional viewpoint reveal the same structure?
-
-## Chapters
-
-| Chapter | Title | Core move |
-|---------|-------|-----------|
-| 1 | Control, feedback, and stability | Turn dynamics into decisions about response and robustness |
-| 2 | Discrete-time systems and signal processing | Move from continuous models to sampled systems and filters |
-| 3 | Continuum mechanics and transport | Express materials, fluids, heat, and diffusion as field laws |
-| 4 | Computational methods for engineering models | Turn governing equations into mesh-based computations |
-| 5 | Estimation, inverse problems, and filtering | Recover hidden states and parameters from noisy observations |
-| 6 | Reliability, stochastic systems, and quality | Model failure, queues, variability, and risk over time |
-| 7 | Nonlinear optimisation for design and operations | Choose the best feasible design when tradeoffs are real |
-
-## U of A anchors
-
-This volume is not a copy of any one programme calendar, but it is anchored
-to the kinds of mathematical work that appear in current upper-year UAlberta
-engineering courses: control systems, signals and systems, process dynamics,
-engineering statistics, process data analytics, and simulation-heavy design.
-
-## Pipeline notes
-
-The first pipeline pass on Volume 8 produced three main decisions:
-
-1. Keep the centre of gravity on engineering practice, not on a second pass
-through generic advanced mathematics.
-2. Make every chapter carry at least one optional viewpoint from another
-domain, but only where the structure is truly parallel.
-3. Treat visualisation as mandatory, because upper-year mathematics is now
-about systems, flows, feedback loops, noisy measurements, and tradeoff
-surfaces.
-
-## Optional viewpoints
-
-| Viewpoint | What it adds |
-|-----------|--------------|
-| Hard sciences | Stability, waves, transport, and inverse problems in physical systems |
-| Computing and data | Signal processing, state estimation, control software, and learned models |
-| Finance and quant | Filtering, stochastic evolution, optimisation under uncertainty |
-| Geography and environment | Flow, dispersion, remote sensing inversion, and spatial risk |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 1</span>
+    <div class="wh-book-card__title"><a href="./01-control-feedback.html">Control, feedback, and stability</a></div>
+    <div class="wh-book-card__desc">Turn dynamics into decisions about response and robustness. Transfer functions, root locus, Bode plots — the mathematics of keeping systems on target.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 2</span>
+    <div class="wh-book-card__title"><a href="./02-discrete-systems-signals.html">Discrete-time systems and signal processing</a></div>
+    <div class="wh-book-card__desc">Move from continuous models to sampled systems and filters. The z-transform, difference equations, FIR and IIR filters — the mathematics of digital signals.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 3</span>
+    <div class="wh-book-card__title"><a href="./03-continuum-transport.html">Continuum mechanics and transport</a></div>
+    <div class="wh-book-card__desc">Express materials, fluids, heat, and diffusion as field laws. Stress tensors, Navier-Stokes, advection-diffusion — the PDEs that govern continuous physical media.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 4</span>
+    <div class="wh-book-card__title"><a href="./04-computational-methods.html">Computational methods for engineering models</a></div>
+    <div class="wh-book-card__desc">Turn governing equations into mesh-based computations. Finite difference, finite element, and finite volume methods — discretising continuous problems into solvable systems.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 5</span>
+    <div class="wh-book-card__title"><a href="./05-estimation-inverse.html">Estimation, inverse problems, and filtering</a></div>
+    <div class="wh-book-card__desc">Recover hidden states and parameters from noisy observations. Least squares, Kalman filtering, regularisation — the mathematics of learning what you can't directly measure.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 6</span>
+    <div class="wh-book-card__title"><a href="./06-reliability-stochastic.html">Reliability, stochastic systems, and quality</a></div>
+    <div class="wh-book-card__desc">Model failure, queues, variability, and risk over time. Reliability functions, Markov chains, queuing theory — when the question is not "will it fail?" but "when?"</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 7</span>
+    <div class="wh-book-card__title"><a href="./07-nonlinear-optimisation.html">Nonlinear optimisation for design and operations</a></div>
+    <div class="wh-book-card__desc">Choose the best feasible design when tradeoffs are real. KKT conditions, gradient methods, interior-point solvers — optimisation without the luxury of linearity.</div>
+  </article>
+</div>
+```

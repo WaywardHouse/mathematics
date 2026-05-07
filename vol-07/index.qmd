@@ -1,33 +1,90 @@
 ---
 title: "Volume 7 — Engineering mathematics"
 status: "draft"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-This volume is the core mathematics sequence that first- and second-year
-engineering students usually experience as separate courses: ordinary
-differential equations, linear algebra, multivariable calculus, vector
-calculus, Fourier methods, PDEs, complex analysis, numerical methods,
-optimisation, and probability.
+::: {.section-kicker}
+Volume 7
+:::
 
-The build is intentionally broad before it becomes specialised. The aim is
-not to imitate a single textbook chapter order, but to give readers the
-mathematical objects that upper-year engineering courses assume they can
-already use: state equations, eigenmodes, fields, transforms, discretised
-systems, feasible regions, and distributions.
+## Engineering Mathematics {#vol-07 .section-title}
 
-Volume 8 extends this into the mathematics that appears inside third- and
-fourth-year discipline courses: control and feedback, discrete-time systems,
-continuum models, computational simulation, estimation, reliability, and
-nonlinear design optimisation.
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>This volume covers the core mathematics sequence that first- and second-year engineering students usually experience as separate courses: ordinary differential equations, linear algebra, vector calculus, Fourier methods, PDEs, complex analysis, numerical methods, optimisation, and probability.</p>
+      <p>The aim is not to imitate a single textbook chapter order, but to give you the mathematical objects that upper-year engineering courses assume you can already use: state equations, eigenmodes, fields, transforms, discretised systems, and feasible regions.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./odes/01-first-order.html">Start with ODEs</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">6 sections</span>
+        <span class="book-pill">First/second year engineering</span>
+        <span class="book-pill">Needs Volumes 4–5</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Building the toolkit</div>
+          <div class="wh-hero-card__dek">Each section introduces a class of mathematical object engineers manipulate daily — differential equations, vector spaces, transforms. Broad before specialised.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">Volumes 4 and 5 — especially calculus (derivatives and integrals), complex numbers, and linear systems. These are used constantly from the first chapter.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">What comes next</div>
+          <div class="wh-hero-card__dek">Volume 8 applies this toolkit inside upper-year disciplines: control, signal processing, continuum mechanics, estimation, and nonlinear optimisation.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-## Sections
+## Section Map {#section-map .section-title}
 
-| Section | Core move |
-|---------|-----------|
-| ODEs | Model change by relating a system to its own rates |
-| Linear algebra and vector calculus | Move from single equations to spaces, fields, and operators |
-| Fourier analysis and PDEs | Decompose signals and solve distributed physical systems |
-| Complex analysis | Use the complex plane as a practical computational tool |
-| Numerical methods | Replace exact formulas with controlled approximation |
-| Optimisation and probability | Decide and infer under constraints and uncertainty |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Vol 7.1</span>
+    <div class="wh-book-card__title"><a href="./odes/01-first-order.html">ODEs and Laplace transforms</a></div>
+    <div class="wh-book-card__desc">Model change by relating a system to its own rates. First-order, second-order, systems of ODEs, and the Laplace transform as an algebraic shortcut for solving them.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Vol 7.2</span>
+    <div class="wh-book-card__title"><a href="./linear-algebra/01-matrices-systems.html">Linear algebra and vector calculus</a></div>
+    <div class="wh-book-card__desc">Move from single equations to spaces, fields, and operators. Eigenvalues, vector differential and integral calculus — the language of multivariable physical systems.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Vol 7.3</span>
+    <div class="wh-book-card__title"><a href="./fourier-pdes/01-fourier-series.html">Fourier analysis and PDEs</a></div>
+    <div class="wh-book-card__desc">Decompose signals and solve distributed physical systems. Fourier series, Fourier transforms, and partial differential equations for heat, wave, and diffusion problems.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Vol 7.4</span>
+    <div class="wh-book-card__title"><a href="./complex-analysis/01-complex-functions.html">Complex analysis</a></div>
+    <div class="wh-book-card__desc">Use the complex plane as a practical computational tool. Analytic functions, contour integration, residues, and conformal mapping — with direct application to transforms and filters.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Vol 7.5</span>
+    <div class="wh-book-card__title"><a href="./numerics/01-numerical-methods.html">Numerical methods</a></div>
+    <div class="wh-book-card__desc">Replace exact formulas with controlled approximation. Root finding, interpolation, numerical integration, and numerical methods for ODEs and PDEs — what to use when calculus can't give a closed form.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Vol 7.6</span>
+    <div class="wh-book-card__title"><a href="./optimisation/01-linear-programming.html">Optimisation and probability</a></div>
+    <div class="wh-book-card__desc">Decide and infer under constraints and uncertainty. Linear programming, graph algorithms, mathematical statistics, and probability theory at engineering depth.</div>
+  </article>
+</div>
+```

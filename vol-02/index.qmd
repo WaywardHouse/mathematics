@@ -1,28 +1,79 @@
 ---
 title: "Volume 2 — Patterns and algebra"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-The central move of this volume is naming the gap.
+::: {.section-kicker}
+Volume 2
+:::
 
-You already know how numbers behave. This volume is about what happens
-when one of the numbers is missing — and about the notation that lets
-you work with that absence as if it were a thing you could hold.
+## Patterns and Algebra {#vol-02 .section-title}
 
-By the end of this volume you will be able to write a relationship down
-symbolically, solve for unknowns, recognise when a relationship is
-linear versus something else, and read a graph as a statement about
-how two quantities relate.
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>You already know how numbers behave. This volume is about what happens when one of the numbers is missing — and about the notation that lets you work with that absence as if it were a thing you could hold.</p>
+      <p>By the end you will be able to write a relationship down symbolically, solve for unknowns, recognise when a relationship is linear versus something else, and read a graph as a statement about how two quantities relate. These are the tools every quantitative field uses before it reaches for anything more sophisticated.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./01-linear-equations.html">Start Volume 2</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">4 chapters</span>
+        <span class="book-pill">Grade 8–9</span>
+        <span class="book-pill">Needs Volume 1</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Naming the gap</div>
+          <div class="wh-hero-card__dek">When a number is unknown, algebra gives it a name and a set of rules for finding it. That shift from arithmetic to algebra is this volume's core contribution.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">Volume 1 — comfortable with integers, fractions, and ratios. You need to be able to do arithmetic fluently before introducing unknowns.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">What comes next</div>
+          <div class="wh-hero-card__dek">Volume 3 (Shape and Measure) uses algebra to describe physical space — turning equations into geometry and geometry back into equations.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-These are not abstract skills. They are the toolkit that every
-quantitative field — engineering, science, finance, computing,
-geography — uses before it reaches for anything more sophisticated.
+## Chapter Map {#chapter-map .section-title}
 
-## Chapters
-
-| Chapter | Title | Core move |
-|---------|-------|-----------|
-| 1 | Linear equations | Isolating the unknown |
-| 2 | Inequalities | When the answer is a range |
-| 3 | Patterns and sequences | When the relationship repeats |
-| 4 | Graphing relations | When the relationship has a shape |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 1</span>
+    <div class="wh-book-card__title"><a href="./01-linear-equations.html">Linear equations</a></div>
+    <div class="wh-book-card__desc">Isolating the unknown. The mechanics of solving for x — and why the same operations on both sides preserve the balance.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 2</span>
+    <div class="wh-book-card__title"><a href="./02-inequalities.html">Inequalities</a></div>
+    <div class="wh-book-card__desc">When the answer is a range. Solving inequalities, reading solution sets on a number line, and what flipping the inequality sign actually means.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 3</span>
+    <div class="wh-book-card__title"><a href="./03-patterns-sequences.html">Patterns and sequences</a></div>
+    <div class="wh-book-card__desc">When the relationship repeats. Arithmetic and geometric sequences, finding the nth term, and the difference between adding the same amount and multiplying by the same amount.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 4</span>
+    <div class="wh-book-card__title"><a href="./04-graphing-relations.html">Graphing relations</a></div>
+    <div class="wh-book-card__desc">When the relationship has a shape. Plotting equations in the coordinate plane, reading slope and intercept, and seeing linear versus non-linear at a glance.</div>
+  </article>
+</div>
+```

@@ -1,21 +1,89 @@
 ---
 title: "Volume 5 — Analysis and proof"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-The central move of this volume is taming the infinite.
+::: {.section-kicker}
+Volume 5
+:::
 
-Up until now, you've relied on assumptions about how numbers behave between points. This volume strips away those assumptions and rebuilds mathematics on a rigorous foundation of limits, instantaneous rates of change, and continuous accumulation.
+## Analysis and Proof {#vol-05 .section-title}
 
-By the end of this volume, you will understand how to freeze a changing system precisely at a moment in time, how to add up an infinite number of infinitely small pieces, and how to construct a rock-solid logical argument that proves why something must guaranteeably be true.
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>Up until now, you have relied on assumptions about how numbers behave between points. This volume strips away those assumptions and rebuilds mathematics on a rigorous foundation of limits, instantaneous rates of change, and continuous accumulation.</p>
+      <p>By the end you will understand how to freeze a changing system precisely at a moment in time, how to add up an infinite number of infinitely small pieces, and how to construct a logical argument that proves something must be true — not just probably, but necessarily.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./01-limits-continuity.html">Start Volume 5</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">6 chapters</span>
+        <span class="book-pill">Grade 11–12</span>
+        <span class="book-pill">Needs Volume 4</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Taming the infinite</div>
+          <div class="wh-hero-card__dek">Calculus is the mathematics of change and accumulation at the infinitesimally small scale. This volume builds it from its foundations — limits — through to engineering applications.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">Volume 4 — especially functions, sequences, and exponentials. Calculus extends these ideas into continuous rather than discrete territory.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">What comes next</div>
+          <div class="wh-hero-card__dek">Volume 7 (Engineering Mathematics) applies and extends calculus into ODEs, PDEs, transforms, and numerical methods — the toolkit for modelling physical systems.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-## Chapters
+## Chapter Map {#chapter-map .section-title}
 
-| Chapter | Title | Core move |
-|---------|-------|-----------|
-| 1 | Limits and continuity | Approaching the boundary |
-| 2 | Differential calculus | Measuring instantaneous change |
-| 3 | Integral calculus | Accumulating continuous amounts |
-| 4 | Proof and reasoning | Establishing absolute certainty |
-| 5 | Series expansions and numerical methods | Approximating functions and finding zeros |
-| 6 | Engineering integral applications | Centroids, second moments, and RMS values |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 1</span>
+    <div class="wh-book-card__title"><a href="./01-limits-continuity.html">Limits and continuity</a></div>
+    <div class="wh-book-card__desc">Approaching the boundary. The formal definition of a limit, continuity, and why these ideas are the foundation all of calculus is built on.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 2</span>
+    <div class="wh-book-card__title"><a href="./02-differential-calculus.html">Differential calculus</a></div>
+    <div class="wh-book-card__desc">Measuring instantaneous change. Derivatives as limits of difference quotients, differentiation rules, and the chain rule — with geometric and physical interpretation throughout.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 3</span>
+    <div class="wh-book-card__title"><a href="./03-integral-calculus.html">Integral calculus</a></div>
+    <div class="wh-book-card__desc">Accumulating continuous amounts. The definite integral as a limit of Riemann sums, the Fundamental Theorem, and integration techniques including substitution and parts.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 4</span>
+    <div class="wh-book-card__title"><a href="./04-proof-reasoning.html">Proof and reasoning</a></div>
+    <div class="wh-book-card__desc">Establishing absolute certainty. Direct proof, contradiction, induction — the logical structures that separate "this always works" from "this happened to work."</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 5</span>
+    <div class="wh-book-card__title"><a href="./05-series-numerical.html">Series expansions and numerical methods</a></div>
+    <div class="wh-book-card__desc">Approximating functions and finding zeros. Taylor and Maclaurin series, convergence tests, Newton's method — because most real problems don't have closed-form solutions.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 6</span>
+    <div class="wh-book-card__title"><a href="./06-integral-engineering.html">Engineering integral applications</a></div>
+    <div class="wh-book-card__desc">Centroids, second moments, and RMS values. Integration applied to the physical quantities that structural, electrical, and mechanical engineering depend on.</div>
+  </article>
+</div>
+```

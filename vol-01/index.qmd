@@ -1,34 +1,90 @@
 ---
 title: "Volume 1 — Numbers and operations"
 status: "draft"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-The central move of this volume is placement.
+::: {.section-kicker}
+Volume 1
+:::
 
-Every number has a location: on a line, relative to zero, relative to
-other numbers. This volume is about understanding that structure — not
-as abstract symbol manipulation, but as a description of real things.
-Debts and credits. Divided portions. Rates of change. Samples from
-populations.
+## Numbers and Operations {#vol-01 .section-title}
 
-You already know that numbers exist. What this volume builds is
-fluency with how they relate — how to scale them (ratio), express them
-as parts of wholes (fractions and decimals), talk about change
-(percents and rates), move in both directions from zero (integers),
-and reason about collections of them (statistics and probability).
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>Every number has a location: on a line, relative to zero, relative to other numbers. This volume is about understanding that structure — not as abstract symbol manipulation, but as a description of real things. Debts and credits. Divided portions. Rates of change. Samples from populations.</p>
+      <p>None of this requires anything beyond counting. But it requires counting carefully, in the right direction, with the right units. That discipline is what the rest of the series stands on.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./01-number-line.html">Start Volume 1</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">6 chapters</span>
+        <span class="book-pill">Grade 7–8</span>
+        <span class="book-pill">No prerequisites</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Placement</div>
+          <div class="wh-hero-card__dek">Numbers are not just symbols — they are positions. Every chapter in this volume builds fluency with where numbers sit and how they relate.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">You can count and add. That is genuinely enough to begin. Everything else is built here from scratch.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">What comes next</div>
+          <div class="wh-hero-card__dek">Volume 2 (Patterns and Algebra) picks up once you can handle any number. It introduces the idea of a missing number — and the notation for working with absence.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-None of this requires anything beyond counting. But it requires
-counting carefully, in the right direction, with the right units.
-That discipline is what the rest of the series stands on.
+## Chapter Map {#chapter-map .section-title}
 
-## Chapters
-
-| Chapter | Title | Core move |
-|---------|-------|-----------|
-| 1 | Numbers and the number line | Placing any number exactly |
-| 2 | Ratio and proportion | Comparing two quantities of the same kind |
-| 3 | Percent and rates | Expressing change as a fraction of something |
-| 4 | Integers and signed arithmetic | Extending the number line in both directions |
-| 5 | Fractions and decimals | Arithmetic with parts of wholes |
-| 6 | Statistics and probability | Reasoning honestly from limited data |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 1</span>
+    <div class="wh-book-card__title"><a href="./01-number-line.html">Numbers and the number line</a></div>
+    <div class="wh-book-card__desc">Placing any number exactly on a line. Positive, negative, rational, and irrational — all have a precise location relative to zero.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 2</span>
+    <div class="wh-book-card__title"><a href="./02-ratio-proportion.html">Ratio and proportion</a></div>
+    <div class="wh-book-card__desc">Comparing two quantities of the same kind. Scaling recipes, maps, and measurements without changing the underlying relationship.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 3</span>
+    <div class="wh-book-card__title"><a href="./03-percent-rates.html">Percent and rates</a></div>
+    <div class="wh-book-card__desc">Expressing change as a fraction of something. Percent as a special ratio, and rates as ratios where the denominator is time or another reference quantity.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 4</span>
+    <div class="wh-book-card__title"><a href="./04-integers.html">Integers and signed arithmetic</a></div>
+    <div class="wh-book-card__desc">Extending the number line in both directions. Debts, temperatures below zero, and elevation — signed arithmetic is arithmetic with direction.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 5</span>
+    <div class="wh-book-card__title"><a href="./05-fractions-decimals.html">Fractions and decimals</a></div>
+    <div class="wh-book-card__desc">Arithmetic with parts of wholes. Why dividing by a fraction flips it, how repeating decimals relate to fractions, and how to move between representations.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 6</span>
+    <div class="wh-book-card__title"><a href="./06-statistics-probability.html">Statistics and probability</a></div>
+    <div class="wh-book-card__desc">Reasoning honestly from limited data. Averages, spread, and the basics of chance — because any single number is rarely the whole story.</div>
+  </article>
+</div>
+```

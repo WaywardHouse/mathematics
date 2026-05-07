@@ -1,19 +1,79 @@
 ---
 title: "Volume 6 — Probability and data"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-The central move of this volume is quantifying uncertainty.
+::: {.section-kicker}
+Volume 6
+:::
 
-Often, you won't have the exact formula or the complete set of facts. This volume provides the tools for operating in those gray areas where outcomes are determined by chance or obscured by noise.
+## Probability and Data {#vol-06 .section-title}
 
-By the end of this volume, you will learn how to formally measure the likelihood of future events, recognize the natural shapes that variation takes, draw robust conclusions from limited samples, and separate true signals from random fluctuations.
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>Often you won't have the exact formula or the complete set of facts. This volume provides the tools for operating in those grey areas where outcomes are determined by chance or obscured by noise.</p>
+      <p>By the end you will be able to formally measure the likelihood of future events, recognise the natural shapes that variation takes, draw robust conclusions from limited samples, and separate real signals from random fluctuations.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./01-probability-theory.html">Start Volume 6</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">4 chapters</span>
+        <span class="book-pill">Grade 11–12</span>
+        <span class="book-pill">Needs Volumes 4–5</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Quantifying uncertainty</div>
+          <div class="wh-hero-card__dek">Probability is the mathematics of what you don't know yet. Statistics is the inverse — inferring the unknown from what you can measure. Both are essential for any quantitative work in the real world.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">Volumes 4–5 — integration appears in continuous distributions, and proof structures appear throughout hypothesis testing.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">What comes next</div>
+          <div class="wh-hero-card__dek">Vol 7.6 (Optimisation and Probability) and Vol 8 (Ch 6) extend these ideas into stochastic processes, reliability, and Bayesian estimation.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-## Chapters
+## Chapter Map {#chapter-map .section-title}
 
-| Chapter | Title | Core move |
-|---------|-------|-----------|
-| 1 | Probability theory | Modeling unpredictable events |
-| 2 | Distributions | Recognizing shapes of variation |
-| 3 | Statistical inference | Drawing conclusions from valid samples |
-| 4 | Data analysis | Finding signals in noise |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 1</span>
+    <div class="wh-book-card__title"><a href="./01-probability-theory.html">Probability theory</a></div>
+    <div class="wh-book-card__desc">Modelling unpredictable events. Sample spaces, events, conditional probability, Bayes' theorem — the formal language for reasoning about chance.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 2</span>
+    <div class="wh-book-card__title"><a href="./02-distributions.html">Distributions</a></div>
+    <div class="wh-book-card__desc">Recognising shapes of variation. Binomial, Poisson, and Normal distributions — the recurring patterns that appear wherever random quantities accumulate.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 3</span>
+    <div class="wh-book-card__title"><a href="./03-statistical-inference.html">Statistical inference</a></div>
+    <div class="wh-book-card__desc">Drawing conclusions from valid samples. Confidence intervals, hypothesis tests, and why a result being unlikely under chance is not the same as it being meaningful.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 4</span>
+    <div class="wh-book-card__title"><a href="./04-data-analysis.html">Data analysis</a></div>
+    <div class="wh-book-card__desc">Finding signals in noise. Regression, correlation, and exploratory techniques — the practical workflow from raw numbers to defensible conclusions.</div>
+  </article>
+</div>
+```

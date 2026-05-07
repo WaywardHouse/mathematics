@@ -1,21 +1,89 @@
 ---
 title: "Volume 4 — Functions and change"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-The central move of this volume is tracking scale and structure.
+::: {.section-kicker}
+Volume 4
+:::
 
-In previous volumes, you studied relationships where scaling happens in simple or periodic ways. This volume is about what happens when growth accelerates, when dimensions expand, and when you need to handle many different, changing variables all at once.
+## Functions and Change {#vol-04 .section-title}
 
-By the end of this volume, you will be comfortable navigating exponential growth and decay, working within the complex plane, organizing large sets of linear constraints using matrices, and making sense of infinite step-by-step accumulations.
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>In previous volumes, you studied relationships where scaling happens in simple or periodic ways. This volume is about what happens when growth accelerates, when dimensions expand, and when you need to handle many different, changing variables all at once.</p>
+      <p>By the end you will be comfortable navigating exponential growth and decay, working within the complex plane, organising large sets of linear constraints using matrices, and making sense of infinite step-by-step accumulations.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./01-exponents-logarithms.html">Start Volume 4</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">6 chapters</span>
+        <span class="book-pill">Grade 10–11</span>
+        <span class="book-pill">Needs Volume 3</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Tracking scale and structure</div>
+          <div class="wh-hero-card__dek">When linear relationships are no longer enough, you need tools for multiplicative growth, higher-dimensional spaces, and simultaneous constraints. This volume provides them.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">Volume 3 — you should understand functions, polynomials, and trigonometry before extending into exponentials and complex numbers.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">What comes next</div>
+          <div class="wh-hero-card__dek">Volume 5 (Analysis and Proof) uses the tools built here to handle continuous change — limits, derivatives, and integrals — rigorously.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-## Chapters
+## Chapter Map {#chapter-map .section-title}
 
-| Chapter | Title | Core move |
-|---------|-------|-----------|
-| 1 | Exponents and logarithms | Managing multiplicative growth |
-| 2 | Complex numbers | Expanding the number plane |
-| 3 | Systems and matrices | Handling multiple relationships at once |
-| 4 | Sequences and series | Identifying and summing discrete patterns |
-| 5 | Partial fractions | Breaking a complicated fraction into simpler pieces |
-| 6 | Phasors and alternating waveforms | A rotating complex number traces a sine wave |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 1</span>
+    <div class="wh-book-card__title"><a href="./01-exponents-logarithms.html">Exponents and logarithms</a></div>
+    <div class="wh-book-card__desc">Managing multiplicative growth. Exponential functions and their inverses — logarithms as the answer to "what power gives me this result?"</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 2</span>
+    <div class="wh-book-card__title"><a href="./02-complex-numbers.html">Complex numbers</a></div>
+    <div class="wh-book-card__desc">Expanding the number plane. The imaginary unit as a rotation, Argand diagrams, polar form, and why complex numbers solve problems real numbers cannot.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 3</span>
+    <div class="wh-book-card__title"><a href="./03-systems-matrices.html">Systems and matrices</a></div>
+    <div class="wh-book-card__desc">Handling multiple relationships at once. Matrix notation, row reduction, determinants, and the geometric meaning of a system of linear equations.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 4</span>
+    <div class="wh-book-card__title"><a href="./04-sequences-series.html">Sequences and series</a></div>
+    <div class="wh-book-card__desc">Identifying and summing discrete patterns. Convergence, geometric series, and the surprising fact that infinitely many terms can have a finite sum.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 5</span>
+    <div class="wh-book-card__title"><a href="./05-partial-fractions.html">Partial fractions</a></div>
+    <div class="wh-book-card__desc">Breaking a complicated fraction into simpler pieces. A technique that appears in integration and in Laplace transforms — decomposing to compute.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 6</span>
+    <div class="wh-book-card__title"><a href="./06-phasors-waveforms.html">Phasors and alternating waveforms</a></div>
+    <div class="wh-book-card__desc">A rotating complex number traces a sine wave. Phasors let you do AC circuit analysis with algebra instead of trigonometric identities.</div>
+  </article>
+</div>
+```

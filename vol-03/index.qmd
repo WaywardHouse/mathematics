@@ -1,22 +1,84 @@
 ---
 title: "Volume 3 — Shape and measure"
-body-classes: split-home page-home
+page-layout: article
+body-classes: hero-page split-home split-home-core page-home
+toc: false
 ---
 
-The central move of this volume is giving coordinates to space.
+::: {.section-kicker}
+Volume 3
+:::
 
-You already know how to calculate and balance equations. This volume shows you how algebraic tools can be used to describe the physical world and how the world, in turn, can give meaning to abstract math.
+## Shape and Measure {#vol-03 .section-title}
 
-By the end of this volume, you will be able to map distances, relate angles to side lengths, understand the structures behind non-linear relationships, and formally describe how different parameters interact.
+```{=html}
+<section class="wh-hero geo-mountains">
+  <div class="wh-hero__body">
+    <div class="wh-hero__left">
+      <p>You already know how to calculate and balance equations. This volume shows you how algebraic tools can describe the physical world — and how the world, in turn, can give meaning to abstract mathematics.</p>
+      <p>This is the bridge where algebra stops being just letters on a page and starts becoming a map of reality. By the end you will be able to map distances, relate angles to side lengths, deconstruct non-linear relationships, and formally describe how different parameters interact.</p>
+      <div class="wh-hero__actions">
+        <a class="wh-hero__btn wh-hero__btn--primary" href="./01-geometry-measurement.html">Start Volume 3</a>
+        <a class="wh-hero__btn wh-hero__btn--ghost" href="../">Back to Contents</a>
+      </div>
+      <div class="book-pill-row">
+        <span class="book-pill">5 chapters</span>
+        <span class="book-pill">Grade 9–10</span>
+        <span class="book-pill">Needs Volume 2</span>
+      </div>
+    </div>
+    <aside class="wh-hero__right">
+      <div class="wh-hero__panel-label">Details</div>
+      <div class="wh-hero__cards">
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Central move</div>
+          <div class="wh-hero-card__title">Giving coordinates to space</div>
+          <div class="wh-hero-card__dek">Geometry is algebra with a picture. This volume builds the habit of moving between the symbolic and the spatial — seeing each as a different view of the same thing.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">Prerequisite</div>
+          <div class="wh-hero-card__dek">Volume 2 — you should be comfortable solving linear equations and reading graphs before adding geometric structure.</div>
+        </div>
+        <div class="wh-hero-card">
+          <div class="wh-hero-card__type">Info</div>
+          <div class="wh-hero-card__title">What comes next</div>
+          <div class="wh-hero-card__dek">Volume 4 (Functions and Change) extends functions to exponential and complex forms — the tools needed when linear is no longer sufficient.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+```
 
-This is the bridge where algebra stops being just letters on a page and starts becoming a map of reality.
+## Chapter Map {#chapter-map .section-title}
 
-## Chapters
-
-| Chapter | Title | Core move |
-|---------|-------|-----------|
-| 1 | Geometry and measurement | Quantifying physical space |
-| 2 | Trigonometry | Relating angles to side lengths |
-| 3 | Polynomials and factoring | Deconstructing complex equations |
-| 4 | Functions and relations | Mapping inputs to outputs |
-| 5 | Boolean algebra and logic circuits | The algebra of true and false |
+```{=html}
+<div class="wh-book-grid wh-reveal">
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 1</span>
+    <div class="wh-book-card__title"><a href="./01-geometry-measurement.html">Geometry and measurement</a></div>
+    <div class="wh-book-card__desc">Quantifying physical space. Perimeter, area, volume, and the coordinate geometry that lets you describe any shape with numbers.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 2</span>
+    <div class="wh-book-card__title"><a href="./02-trigonometry.html">Trigonometry</a></div>
+    <div class="wh-book-card__desc">Relating angles to side lengths. Sine, cosine, and tangent as ratios — and how a right triangle connects every angle to a ratio you can calculate.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 3</span>
+    <div class="wh-book-card__title"><a href="./03-polynomials-factoring.html">Polynomials and factoring</a></div>
+    <div class="wh-book-card__desc">Deconstructing complex equations. Polynomials as sums of power terms, factoring as reverse multiplication, and the quadratic formula as a shortcut.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 4</span>
+    <div class="wh-book-card__title"><a href="./04-functions-relations.html">Functions and relations</a></div>
+    <div class="wh-book-card__desc">Mapping inputs to outputs. The formal definition of a function, domain and range, composition, and what it means for a function to be invertible.</div>
+  </article>
+  <article class="wh-book-card">
+    <span class="wh-book-card__status">Ch 5</span>
+    <div class="wh-book-card__title"><a href="./05-boolean-logic.html">Boolean algebra and logic circuits</a></div>
+    <div class="wh-book-card__desc">The algebra of true and false. AND, OR, NOT as operations — and how the same algebraic rules that govern numbers also govern logic and digital circuits.</div>
+  </article>
+</div>
+```
