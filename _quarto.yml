@@ -93,7 +93,7 @@ book:
         - vol-06/02-distributions.qmd
         - vol-06/03-statistical-inference.qmd
         - vol-06/04-data-analysis.qmd
-    - part: "Volume 7 — Engineering mathematics: ODEs"
+    - part: "Vol 7.1 — ODEs and Laplace transforms"
       number-offset: 34
       chapters:
         - vol-07/index.qmd
@@ -101,33 +101,33 @@ book:
         - vol-07/odes/02-second-order.qmd
         - vol-07/odes/03-systems-phase-plane.qmd
         - vol-07/odes/04-laplace-transforms.qmd
-    - part: "Volume 7 — Linear algebra and vector calculus"
+    - part: "Vol 7.2 — Linear algebra and vector calculus"
       number-offset: 39
       chapters:
         - vol-07/linear-algebra/01-matrices-systems.qmd
         - vol-07/linear-algebra/02-eigenvalues.qmd
         - vol-07/linear-algebra/03-vector-differential.qmd
         - vol-07/linear-algebra/04-vector-integral.qmd
-    - part: "Volume 7 — Fourier analysis and PDEs"
+    - part: "Vol 7.3 — Fourier analysis and PDEs"
       number-offset: 43
       chapters:
         - vol-07/fourier-pdes/01-fourier-series.qmd
         - vol-07/fourier-pdes/02-fourier-transforms.qmd
         - vol-07/fourier-pdes/03-partial-differential-equations.qmd
-    - part: "Volume 7 — Complex analysis"
+    - part: "Vol 7.4 — Complex analysis"
       number-offset: 46
       chapters:
         - vol-07/complex-analysis/01-complex-functions.qmd
         - vol-07/complex-analysis/02-complex-integration.qmd
         - vol-07/complex-analysis/03-series-residues.qmd
         - vol-07/complex-analysis/04-conformal-mapping.qmd
-    - part: "Volume 7 — Numerical methods"
+    - part: "Vol 7.5 — Numerical methods"
       number-offset: 50
       chapters:
         - vol-07/numerics/01-numerical-methods.qmd
         - vol-07/numerics/02-numerical-linear-algebra.qmd
         - vol-07/numerics/03-numerical-odes-pdes.qmd
-    - part: "Volume 7 — Optimisation and probability"
+    - part: "Vol 7.6 — Optimisation and probability"
       number-offset: 53
       chapters:
         - vol-07/optimisation/01-linear-programming.qmd
